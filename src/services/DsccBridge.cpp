@@ -64,6 +64,21 @@ void logNotification(const QString &prefix, const dscc::Notification &notificati
                .arg(notificationParamsText(notification));
 }
 
+QString notificationDisplayText(const dscc::Notification &notification,
+                                const QString &fallback)
+{
+    QString message = notification.Localized().trimmed();
+    if (message.isEmpty()) {
+        message = notification.DefaultText().trimmed();
+    }
+    return message.isEmpty() ? fallback : message;
+}
+
+bool isTemporaryDomainCode(const QString &domainCode)
+{
+    return domainCode.startsWith(QStringLiteral("TMP_D"));
+}
+
 QString variantMapText(const QVariantMap &map)
 {
     QStringList keys = map.keys();
@@ -151,6 +166,7 @@ void DsccBridge::shutdown()
         m_assets->Shutdown();
         m_assets.reset();
     }
+    m_domainCreateFailureMessages.clear();
     m_currentUserId.clear();
     m_currentUserName.clear();
 }
@@ -175,6 +191,7 @@ void DsccBridge::setCurrentUser(const QString &userId,
         m_assets->Shutdown();
         m_assets.reset();
     }
+    m_domainCreateFailureMessages.clear();
 
     const QString domainDbPath = userDomainDbPath(trimmedUserId);
     QDir().mkpath(QFileInfo(domainDbPath).absolutePath());
@@ -199,6 +216,7 @@ void DsccBridge::clearCurrentUser()
         m_assets->Shutdown();
         m_assets.reset();
     }
+    m_domainCreateFailureMessages.clear();
     m_currentUserId.clear();
     m_currentUserName.clear();
     emit domainListLoaded(QVariantList());
@@ -225,6 +243,9 @@ void DsccBridge::connectAssetSignals()
                 logNotification(QStringLiteral("corelib DomainCreateFailed operationId=%1")
                                     .arg(operationId),
                                 notification);
+                m_domainCreateFailureMessages.insert(
+                    operationId,
+                    notificationDisplayText(notification, QStringLiteral("安全域创建失败")));
                 emit domainCreateFailed(operationId, notification);
             });
 
@@ -268,15 +289,32 @@ QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
     summary.insert(QStringLiteral("description"), info.remarks);
     summary.insert(QStringLiteral("payer"),
                    info.pay_type == 2 ? QStringLiteral("使用者") : QStringLiteral("创建者"));
-    summary.insert(QStringLiteral("status"),
-                   info.domain_status == dscc::db::kDomainStatusClosed ? QStringLiteral("已关闭")
-                                                             : QStringLiteral("运行中"));
+    QString statusText = info.domain_status == dscc::db::kDomainStatusClosed
+                             ? QStringLiteral("已关闭")
+                             : QStringLiteral("运行中");
+    if (info.sync_status == dscc::db::kDomainSyncStatusFailed
+        && isTemporaryDomainCode(info.domain_code)) {
+        statusText = QStringLiteral("创建失败");
+    }
+    summary.insert(QStringLiteral("status"), statusText);
     summary.insert(QStringLiteral("creator"),
                    info.creator_user_name.isEmpty() ? info.creator_user_id
                                                     : info.creator_user_name);
     summary.insert(QStringLiteral("createdAt"), timestampToIsoString(info.created_at));
     summary.insert(QStringLiteral("updatedAt"), timestampToIsoString(info.updated_at));
     return summary;
+}
+
+QString DsccBridge::domainCreateFailureMessage(uint32_t operationId,
+                                               const QString &fallback) const
+{
+    const QString message = m_domainCreateFailureMessages.value(operationId).trimmed();
+    if (!message.isEmpty()) {
+        return message;
+    }
+
+    const QString trimmedFallback = fallback.trimmed();
+    return trimmedFallback.isEmpty() ? QStringLiteral("安全域创建失败") : trimmedFallback;
 }
 
 void DsccBridge::loadDomainList()
@@ -341,6 +379,7 @@ void DsccBridge::createDomain(const QVariantMap &info)
 {
     if (!m_assets) {
         qWarning().noquote() << QStringLiteral("[DsccBridge] createDomain rejected because UserAssets is not initialized");
+        m_domainCreateFailureMessages.insert(0, QStringLiteral("安全域创建失败"));
         emit domainCreateFailed(0, dscc::Notification());
         return;
     }

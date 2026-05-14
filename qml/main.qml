@@ -301,8 +301,16 @@ ApplicationWindow {
 
         function onDomainCreateFailed(operationId, notification) {
             createSecurityDomainForm.isSubmitting = false
-            var errorMessage = notification && notification.Localized ? notification.Localized() : ""
-            window.showError(errorMessage || "安全域创建失败", "安全域创建")
+            var errorMessage = DsccBridge.domainCreateFailureMessage(operationId, "安全域创建失败")
+            errorDialog.errorMessage = errorMessage || "安全域创建失败"
+            if (errorDialog.opened) {
+                errorTimer.restart()
+            } else {
+                errorDialog.open()
+            }
+            Qt.callLater(function() {
+                DsccBridge.loadDomainList()
+            })
         }
 
         function onDomainClosed(operationId, domainCode) {

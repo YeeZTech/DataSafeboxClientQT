@@ -1,6 +1,7 @@
 #ifndef DSCCBRIDGE_H
 #define DSCCBRIDGE_H
 
+#include <QHash>
 #include <QObject>
 #include <QVariantList>
 #include <QVariantMap>
@@ -32,6 +33,8 @@ public:
     Q_INVOKABLE void loadDomainList();
     Q_INVOKABLE void loadDomainSummary(const QString &domainCode);
     Q_INVOKABLE void createDomain(const QVariantMap &info);
+    Q_INVOKABLE QString domainCreateFailureMessage(uint32_t operation_id,
+                                                   const QString &fallback) const;
 
 signals:
     void domainListLoaded(QVariantList domains);
@@ -51,6 +54,7 @@ private:
     QString m_credential;
     QString m_currentUserId;
     QString m_currentUserName;
+    QHash<uint32_t, QString> m_domainCreateFailureMessages;
 };
 
 #endif // DSCCBRIDGE_H
