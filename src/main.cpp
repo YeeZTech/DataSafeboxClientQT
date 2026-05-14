@@ -25,6 +25,7 @@
 #include "AppConfig.h"
 #include "DsccBridge.h"
 #include "ArrearsManager.h"
+#include "LanguageManager.h"
 #include <QQuickStyle>
 #include <QSettings>
 #include <QDebug>
@@ -457,6 +458,12 @@ int main(int argc, char *argv[])
     // Register AppConfig (unified service URL config — edit AppConfig.h to switch environments)
     AppConfig *appConfig = new AppConfig(&app);
     engine.rootContext()->setContextProperty("AppConfig", appConfig);
+
+    // Register LanguageManager — must be done before DsccBridge so that
+    // Notification::SetTranslator is installed before any notifications are created.
+    LanguageManager *languageManager = new LanguageManager(&app);
+    languageManager->applyInitialLanguage();
+    engine.rootContext()->setContextProperty("LanguageManager", languageManager);
 
     // Register DsccBridge (business logic dynamic library)
     const QString dsccDbPath = pathManager->featureDataDir("dscc");

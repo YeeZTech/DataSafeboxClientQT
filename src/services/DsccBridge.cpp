@@ -213,12 +213,7 @@ void DsccBridge::setCurrentUser(const QString &userId,
 
 QString DsccBridge::notificationToString(const dscc::Notification &n) const
 {
-    QString msg = n.DefaultText();
-    for (auto it = n.params.cbegin(); it != n.params.cend(); ++it) {
-        msg.replace(QStringLiteral("{") + it.key() + QStringLiteral("}"),
-                    it.value().toString());
-    }
-    return msg;
+    return n.Localized();
 }
 
 // ── 读操作实现 ────────────────────────────────────────────────────────────────
