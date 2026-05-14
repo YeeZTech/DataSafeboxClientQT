@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <algorithm>
 
+#include "dscc/core/db/domain_ops.h"
 #include "dscc/core/db/organization.h"
 #include "dscc/core/interface/global.h"
 #include "dscc/core/interface/organization.h"
@@ -268,7 +269,7 @@ QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
     summary.insert(QStringLiteral("payer"),
                    info.pay_type == 2 ? QStringLiteral("使用者") : QStringLiteral("创建者"));
     summary.insert(QStringLiteral("status"),
-                   info.domain_status == kDomainStatusClosed ? QStringLiteral("已关闭")
+                   info.domain_status == dscc::db::kDomainStatusClosed ? QStringLiteral("已关闭")
                                                              : QStringLiteral("运行中"));
     summary.insert(QStringLiteral("creator"),
                    info.creator_user_name.isEmpty() ? info.creator_user_id
