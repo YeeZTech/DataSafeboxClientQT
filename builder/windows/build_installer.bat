@@ -14,6 +14,7 @@ rem   set QT_BIN=C:\Qt\6.7.3\msvc2022_64\bin
 rem   set IFW_BIN=C:\Qt\Tools\QtInstallerFramework\4.10\bin
 rem   set VCPKG_DIR=D:\vcpkg
 rem   set SENTRY_ROOT_DIR=D:\vcpkg\installed\x64-windows
+rem   set DSCC_DIR=D:\DSCC
 rem ===========================================================================
 
 rem ------------------------------------------------------------------
@@ -54,8 +55,7 @@ set "BINARYCREATOR=%IFW_BIN%\binarycreator.exe"
 set "WINDEPLOYQT=%QT_BIN%\windeployqt.exe"
 set "QMAKE=%QT_BIN%\qmake.exe"
 
-if not defined VCPKG_DIR       set "VCPKG_DIR=%PROJECT_ROOT%\..\vcpkg"
-if not defined SENTRY_ROOT_DIR set "SENTRY_ROOT_DIR=%VCPKG_DIR%\installed\%VCPKG_TRIPLET%"
+if not defined SENTRY_ROOT_DIR if defined VCPKG_DIR set "SENTRY_ROOT_DIR=%VCPKG_DIR%\installed\%VCPKG_TRIPLET%"
 
 echo.
 echo ==================================================
@@ -63,6 +63,7 @@ echo   DatasafeBox Windows Build + Package
 echo   Qt      : %QT_BIN%
 echo   IFW     : %IFW_BIN%
 echo   Sentry  : %SENTRY_ROOT_DIR%
+echo   DSCC    : %DSCC_DIR%
 echo   Arch    : %VCPKG_TRIPLET%
 echo ==================================================
 echo.
@@ -125,7 +126,6 @@ cd /d "%PROJECT_ROOT%"
 if exist "%BUILD_DIR%" rd /s /q "%BUILD_DIR%"
 if exist "%PROJECT_ROOT%\resources_qmlcache.qrc" del /Q "%PROJECT_ROOT%\resources_qmlcache.qrc"
 
-if not defined DSCC_DIR set "DSCC_DIR=C:/Program Files/DSCC"
 "%QMAKE%" datasafebox-qt-client.pro CONFIG+=release CONFIG-=qtquickcompiler SENTRY_ROOT_DIR="%SENTRY_ROOT_DIR:\=/%" DSCC_DIR="%DSCC_DIR%"
 if errorlevel 1 goto :fail
 nmake release
@@ -375,6 +375,17 @@ echo   [OK]      Visual Studio found at: !VS_INSTALL_PATH!
 exit /b 0
 
 :check_sentry
+if not defined SENTRY_ROOT_DIR (
+    set "PREFLIGHT_FAIL=1"
+    echo   [MISSING] SENTRY_ROOT_DIR
+    echo             Fix: set SENTRY_ROOT_DIR to the vcpkg installed triplet root.
+    echo             Example:
+    echo               set SENTRY_ROOT_DIR=D:\vcpkg\installed\%VCPKG_TRIPLET%
+    echo             Or set VCPKG_DIR before running this script:
+    echo               set VCPKG_DIR=D:\vcpkg
+    echo.
+    exit /b 0
+)
 set "SENTRY_H=%SENTRY_ROOT_DIR%\include\sentry.h"
 if exist "%SENTRY_H%" goto :check_sentry_found
 set "PREFLIGHT_FAIL=1"
@@ -382,8 +393,8 @@ echo   [MISSING] sentry-native via vcpkg
 echo             Expected : %SENTRY_H%
 echo             Fix:
 echo               1. Clone vcpkg:
-echo                  git clone https://github.com/microsoft/vcpkg.git ..\vcpkg
-echo                  ..\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+echo                  git clone https://github.com/microsoft/vcpkg.git D:\vcpkg
+echo                  D:\vcpkg\bootstrap-vcpkg.bat -disableMetrics
 echo               2. Install sentry-native:
 echo                  vcpkg install sentry-native --triplet %VCPKG_TRIPLET%
 echo               Or set env var: set SENTRY_ROOT_DIR=D:\vcpkg\installed\%VCPKG_TRIPLET%
@@ -407,17 +418,29 @@ if not exist "%SENTRY_ROOT_DIR%\tools\sentry-native\crashpad_handler.exe" (
 exit /b 0
 
 :check_dscc
-if not defined DSCC_DIR set "DSCC_DIR=C:\Program Files\DSCC"
-if exist "%DSCC_DIR%\bin\dscc_core.dll" (
+if not defined DSCC_DIR (
+    set "PREFLIGHT_FAIL=1"
+    echo   [MISSING] DSCC_DIR
+    echo             Fix: set DSCC_DIR to the DSCC SDK/runtime root before running this script.
+    echo             Example:
+    echo               set DSCC_DIR=D:\DSCC
+    echo.
+    goto :check_dscc_vcredist
+)
+set "DSCC_OK=0"
+if exist "%DSCC_DIR%\include\dscc\core\common\active_notify.h" if exist "%DSCC_DIR%\bin\dscc_core.dll" set "DSCC_OK=1"
+if "%DSCC_OK%"=="1" (
     echo   [OK]      DSCC found at %DSCC_DIR%
 ) else (
     set "PREFLIGHT_FAIL=1"
-    echo   [MISSING] DSCC runtime library
-    echo             Expected : %DSCC_DIR%\bin\dscc_core.dll
-    echo             Fix: Install DSCC to default path or set env var:
-    echo               set DSCC_DIR=C:\Program Files\DSCC
+    echo   [MISSING] DSCC SDK/runtime
+    echo             Expected : %DSCC_DIR%\include\dscc\core\common\active_notify.h
+    echo                        %DSCC_DIR%\bin\dscc_core.dll
+    echo             Fix: set DSCC_DIR to the DSCC SDK/runtime root, for example:
+    echo               set DSCC_DIR=D:\DSCC
     echo.
 )
+:check_dscc_vcredist
 if exist "%DATA_DIR%\..\vc_redist.x64.exe" (
     echo   [OK]      vc_redist.x64.exe found in installer data
 ) else (

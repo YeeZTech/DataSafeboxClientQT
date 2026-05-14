@@ -3,6 +3,7 @@ QT += quick qml network core svg quickcontrols2 widgets webenginequick
 CONFIG += c++17
 
 CONFIG -= qtquickcompiler
+win32:CONFIG -= depend_includepath
 
 # Application name
 TARGET = safebox
@@ -102,8 +103,8 @@ linux {
 
 # ===========================================================================
 # 外部库路径配置
-# 优先级：qmake 命令行参数 > 环境变量 > 下方平台默认值
-# 默认值对应项目组标准开发机器路径，修改为实际路径后重新执行 qmake 生效。
+# 优先级：qmake 命令行参数 > 环境变量。
+# 不在工程文件中探测本机相对目录或构建产物目录；请显式设置 SENTRY_ROOT_DIR / DSCC_DIR。
 # 所有运行时服务配置（URL / 密钥 / DSN）统一在 AppConfig.h 中管理。
 # ===========================================================================
 
@@ -111,34 +112,68 @@ linux {
 # SENTRY_DSN 已移入 AppConfig.h
 isEmpty(SENTRY_ROOT_DIR): SENTRY_ROOT_DIR = $$(SENTRY_ROOT_DIR)
 isEmpty(SENTRY_ROOT_DIR) {
-    win32:  SENTRY_ROOT_DIR = $$PWD/../vcpkg/installed/x64-windows
-    macx:   SENTRY_ROOT_DIR = $$PWD/../vcpkg/installed/x64-osx
-    linux:  SENTRY_ROOT_DIR = $$PWD/../vcpkg/installed/x64-linux
+    error("Sentry Native not found. Set SENTRY_ROOT_DIR to the vcpkg installed triplet root, for example D:/vcpkg/installed/x64-windows")
+}
+SENTRY_ROOT_DIR = $$clean_path($$SENTRY_ROOT_DIR)
+!exists("$$SENTRY_ROOT_DIR/include/sentry.h") {
+    error("Sentry Native headers not found at $$SENTRY_ROOT_DIR/include/sentry.h. Set SENTRY_ROOT_DIR to a valid installed triplet root.")
 }
 message("Sentry root dir: $$SENTRY_ROOT_DIR")
-INCLUDEPATH += $$SENTRY_ROOT_DIR/include
-LIBS        += -L$$SENTRY_ROOT_DIR/lib -lsentry
+INCLUDEPATH += "$$SENTRY_ROOT_DIR/include"
+LIBS        += -L"$$SENTRY_ROOT_DIR/lib" -lsentry
 # Linux 上 sentry-native 的 crashpad backend 依赖 curl
 linux: LIBS += -lcurl
 
 # 运行时依赖：
-#   Windows: sentry.dll + crashpad_handler.exe 需放入 release/ 目录
+#   Windows: sentry.dll + crashpad_handler.exe 需放入输出目录
 #   macOS:   crashpad_handler 需打入 .app/Contents/MacOS
 #   Linux:   crashpad_handler 需与可执行文件同目录
+win32 {
+    SENTRY_RUNTIME_FILES = \
+        $$SENTRY_ROOT_DIR/bin/sentry.dll \
+        $$SENTRY_ROOT_DIR/bin/zlib1.dll \
+        $$SENTRY_ROOT_DIR/tools/sentry-native/crashpad_handler.exe
+
+    CONFIG(release, debug|release) {
+        for(file, SENTRY_RUNTIME_FILES) {
+            exists($$file): QMAKE_POST_LINK += copy /Y $$shell_quote($$shell_path($$file)) $$shell_quote($$shell_path($$OUT_PWD/release)) >nul &
+        }
+    }
+    CONFIG(debug, debug|release) {
+        for(file, SENTRY_RUNTIME_FILES) {
+            exists($$file): QMAKE_POST_LINK += copy /Y $$shell_quote($$shell_path($$file)) $$shell_quote($$shell_path($$OUT_PWD/debug)) >nul &
+        }
+    }
+}
 
 # ===========================================================================
 # DSCC 核心动态库（dscc_common + dscc_core）
-# 优先级：qmake 命令行参数 DSCC_DIR= > 环境变量 DSCC_DIR > 下方平台默认路径
+# 优先级：qmake 命令行参数 DSCC_DIR= > 环境变量 DSCC_DIR。
 # ===========================================================================
 isEmpty(DSCC_DIR): DSCC_DIR = $$(DSCC_DIR)
 isEmpty(DSCC_DIR) {
-    win32: DSCC_DIR = C:/Program Files/DSCC
+    error("DSCC SDK not found. Set DSCC_DIR to a DSCC package root, for example D:/DSCC")
 }
 
 win32 {
+    DSCC_DIR = $$clean_path($$DSCC_DIR)
+    !exists("$$DSCC_DIR/include/dscc/core/common/active_notify.h") {
+        error("DSCC SDK not found. Set DSCC_DIR to a DSCC package root that contains include/dscc/core/common/active_notify.h")
+    }
+    !exists("$$DSCC_DIR/bin/dscc_core.dll") {
+        error("DSCC runtime not found. Set DSCC_DIR to a DSCC package root that contains bin/dscc_core.dll")
+    }
+    message("DSCC root dir: $$DSCC_DIR")
+
     INCLUDEPATH += "$$DSCC_DIR/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/boost/include"
     INCLUDEPATH += "$$DSCC_DIR/deps/wcdb/include"
     INCLUDEPATH += "$$DSCC_DIR/deps/ycrypto/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/openssl/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/secp256k1/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/glog/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/gflags/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/fflib/include"
     LIBS += -L"$$DSCC_DIR/lib" -ldscc_common -ldscc_core
     LIBS += -L"$$DSCC_DIR/deps/wcdb/lib" -lWCDB
     LIBS += -L"$$DSCC_DIR/deps/ycrypto/lib" -lycrypto_stdeth

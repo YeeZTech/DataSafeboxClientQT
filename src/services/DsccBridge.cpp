@@ -358,65 +358,65 @@ void DsccBridge::createDomain(const QVariantMap &info)
     auto handle = m_assets->CreateDomain(domainInfo);
     // operationId 关联本次提交的 DomainInfo，回调时用来取 domain_name
     m_pendingCreateDomain.insert(handle.GetOperationId(), domainInfo);
-    handle.Start();
+    // DSCC Handle starts automatically when it leaves scope.
 }
 
 void DsccBridge::closeDomain(const QString &domainCode)
 {
     auto handle = m_assets->CloseDomain(domainCode);
-    handle.Start();
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::updateDomainDesc(const QString &domainCode, const QString &desc)
 {
     auto handle = m_assets->UpdateDomainDesc(domainCode, desc);
-    handle.Start();
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::addUserToDomain(const QString &domainCode, const QString &userId)
 {
     auto handle = m_assets->AddUserToDomain(domainCode, userId);
-    handle.Start();
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::removeUserFromDomain(const QString &domainCode, const QString &userId)
 {
     auto handle = m_assets->RemoveUserFromDomain(domainCode, userId);
-    handle.Start();
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::startInstance(const QString &instanceCode)
 {
     auto handle = m_assets->StartInstance(instanceCode);
-    handle.Start();
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::deleteInstance(const QString &instanceCode)
 {
     auto handle = m_assets->DeleteInstance(instanceCode);
-    handle.Start();
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::addWhitelistToInstance(const QString &instanceCode, const QString &filePath)
 {
     auto handle = m_assets->AddWhitelistToInstance(instanceCode, filePath);
-    handle.Start();
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::removeWhitelistFromInstance(const QString &instanceCode, const QString &fileCode)
 {
     auto handle = m_assets->RemoveWhitelistFromInstance(instanceCode, fileCode);
-    handle.Start();
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::importFileToInstance(const QString &instanceCode, const QString &filePath)
 {
     auto handle = m_assets->ImportFileToInstance(instanceCode, filePath);
-    handle.Start();
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::exportFileFromInstance(const QString &instanceCode, const QString &filePath)
 {
     auto handle = m_assets->ExportFileFromInstance(instanceCode, filePath);
-    handle.Start();
+    Q_UNUSED(handle);
 }

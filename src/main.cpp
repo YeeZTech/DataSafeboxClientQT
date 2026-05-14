@@ -468,7 +468,7 @@ int main(int argc, char *argv[])
         "",
         &app);
     dsccBridge->initialize();
-    engine.rootContext()->setContextProperty("DsccBridge", dsccBridge);
+    engine.rootContext()->setContextProperty("DsccBridge", static_cast<QObject *>(dsccBridge));
 
     // Register ArrearsManager (account arrears/paused status)
     ArrearsManager *arrearsManager = new ArrearsManager(&app);
