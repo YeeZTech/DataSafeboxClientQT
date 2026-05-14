@@ -36,8 +36,8 @@ public:
 signals:
     void domainListLoaded(QVariantList domains);
     void domainSummaryLoaded(QString domainCode, QVariantMap summary);
-    void DomainCreated(uint32_t operation_id, QString domain_code);
-    void DomainCreateFailed(uint32_t operation_id, dscc::Notification notification);
+    void domainCreated(uint32_t operation_id, QString domain_code);
+    void domainCreateFailed(uint32_t operation_id, dscc::Notification notification);
 
 private:
     void connectAssetSignals();

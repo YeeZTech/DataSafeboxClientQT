@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
+#include <QStringList>
 #include <algorithm>
 
 #include "dscc/core/db/organization.h"
@@ -26,6 +27,40 @@ QString timestampToIsoString(uint64_t timestamp)
                                    ? QDateTime::fromMSecsSinceEpoch(value)
                                    : QDateTime::fromSecsSinceEpoch(value);
     return dateTime.toString(Qt::ISODate);
+}
+
+QString logHash(const QString &value)
+{
+    const QString trimmed = value.trimmed();
+    if (trimmed.isEmpty()) {
+        return QStringLiteral("<empty>");
+    }
+
+    return QString::fromLatin1(QCryptographicHash::hash(trimmed.toUtf8(),
+                                                        QCryptographicHash::Sha256)
+                                   .toHex()
+                                   .left(12));
+}
+
+QString notificationParamsText(const dscc::Notification &notification)
+{
+    QStringList parts;
+    for (auto it = notification.params.cbegin(); it != notification.params.cend(); ++it) {
+        parts.append(QStringLiteral("%1=%2").arg(it.key(), it.value().toString()));
+    }
+    return QStringLiteral("{%1}").arg(parts.join(QStringLiteral(", ")));
+}
+
+void logNotification(const QString &prefix, const dscc::Notification &notification)
+{
+    qWarning().noquote()
+        << QStringLiteral("[DsccBridge] %1 code=%2 type=%3 localized=\"%4\" default=\"%5\" params=%6")
+               .arg(prefix)
+               .arg(static_cast<int>(notification.code))
+               .arg(static_cast<int>(notification.type))
+               .arg(notification.Localized())
+               .arg(notification.DefaultText())
+               .arg(notificationParamsText(notification));
 }
 }  // namespace
 
@@ -62,6 +97,10 @@ DsccBridge::~DsccBridge()
 
 void DsccBridge::initialize()
 {
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] initialize metaDbPath=\"%1\" dsccDataRoot=\"%2\" serverUrl=\"%3\"")
+               .arg(m_metaDbPath, m_dsccDataRoot, m_serverUrl);
+
     dscc::LoadSetting().Call(m_metaDbPath.toStdString());
 
     dscc::db::Organization org;
@@ -88,7 +127,10 @@ void DsccBridge::setCurrentUser(const QString &userId,
 
     const QString trimmedUserId = userId.trimmed();
     if (trimmedUserId.isEmpty() || accessToken.isEmpty()) {
-        qWarning() << "DsccBridge refusing to initialize UserAssets without user id or access token";
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] setCurrentUser refused userHash=%1 accessTokenLength=%2")
+                   .arg(logHash(trimmedUserId))
+                   .arg(accessToken.size());
         clearCurrentUser();
         return;
     }
@@ -100,6 +142,12 @@ void DsccBridge::setCurrentUser(const QString &userId,
 
     const QString domainDbPath = userDomainDbPath(trimmedUserId);
     QDir().mkpath(QFileInfo(domainDbPath).absolutePath());
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] setCurrentUser userHash=%1 userName=\"%2\" domainDbPath=\"%3\" accessTokenLength=%4 refreshTokenLength=%5")
+               .arg(logHash(trimmedUserId), userName.trimmed(), domainDbPath)
+               .arg(accessToken.size())
+               .arg(refreshToken.size());
 
     m_assets = std::make_unique<dscc::UserAssets>(domainDbPath, m_credential);
     connectAssetSignals();
@@ -126,10 +174,42 @@ void DsccBridge::connectAssetSignals()
     }
 
     connect(m_assets.get(), &dscc::UserAssets::DomainCreated,
-            this, &DsccBridge::DomainCreated);
+            this, [this](uint32_t operationId, QString domainCode) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib DomainCreated operationId=%1 domainCode=\"%2\"")
+                           .arg(operationId)
+                           .arg(domainCode);
+                emit domainCreated(operationId, domainCode);
+            });
 
     connect(m_assets.get(), &dscc::UserAssets::DomainCreateFailed,
-            this, &DsccBridge::DomainCreateFailed);
+            this, [this](uint32_t operationId, dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib DomainCreateFailed operationId=%1")
+                                    .arg(operationId),
+                                notification);
+                emit domainCreateFailed(operationId, notification);
+            });
+
+    connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
+            &dscc::ActiveNotify::MessageReceived,
+            this,
+            [](dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib MessageReceived"), notification);
+            });
+
+    connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
+            &dscc::ActiveNotify::WarningOccurred,
+            this,
+            [](dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib WarningOccurred"), notification);
+            });
+
+    connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
+            &dscc::ActiveNotify::ErrorOccurred,
+            this,
+            [](dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib ErrorOccurred"), notification);
+            });
 }
 
 QString DsccBridge::userDomainDbPath(const QString &userId) const
@@ -198,31 +278,61 @@ void DsccBridge::loadDomainSummary(const QString &domainCode)
 void DsccBridge::createDomain(const QVariantMap &info)
 {
     if (!m_assets) {
-        emit DomainCreateFailed(0, dscc::Notification());
+        qWarning().noquote() << QStringLiteral("[DsccBridge] createDomain rejected because UserAssets is not initialized");
+        emit domainCreateFailed(0, dscc::Notification());
         return;
     }
 
     dscc::DomainInfo domainInfo;
-    domainInfo.domain_name = info.value("domainName").toString();
+    domainInfo.domain_name = info.value("domainName").toString().trimmed();
 
     const QString remarks = info.value("remarks").toString().trimmed();
     domainInfo.remarks = remarks.isEmpty() ? domainInfo.domain_name : remarks;
 
-    const QString payer = info.value("payer").toString();
+    const QString payer = info.value("payer").toString().trimmed();
     domainInfo.pay_type = (payer == QStringLiteral("使用者")) ? 2 : 1;
 
     const QVariantList visibleUsers = info.value("visibleUsers").toList();
+    int visibleUserIndex = 0;
     for (const QVariant &v : visibleUsers) {
         const QVariantMap u = v.toMap();
         dscc::VisibleUserInfo user;
-        user.account = u.value("account").toString();
-        user.auth_user_id = u.value("authUserId").toString();
-        user.auth_user_name = u.value("authUserName").toString();
-        user.display_name = u.value("displayName").toString();
+        user.account = u.value("account").toString().trimmed();
+        user.auth_user_id = u.value("authUserId").toString().trimmed();
+        user.auth_user_name = u.value("authUserName").toString().trimmed();
+        user.display_name = u.value("displayName").toString().trimmed();
         if (!user.account.isEmpty() && !user.auth_user_id.isEmpty()) {
             domainInfo.visible_users.append(user);
+            qInfo().noquote()
+                << QStringLiteral("[DsccBridge] createDomain visibleUser[%1] accepted account=\"%2\" authUserIdHash=%3 authUserName=\"%4\" displayName=\"%5\"")
+                       .arg(visibleUserIndex)
+                       .arg(user.account, logHash(user.auth_user_id), user.auth_user_name, user.display_name);
+        } else {
+            qWarning().noquote()
+                << QStringLiteral("[DsccBridge] createDomain visibleUser[%1] skipped account=\"%2\" authUserIdHash=%3 authUserName=\"%4\" displayName=\"%5\"")
+                       .arg(visibleUserIndex)
+                       .arg(user.account, logHash(user.auth_user_id), user.auth_user_name, user.display_name);
         }
+        ++visibleUserIndex;
     }
 
-    m_assets->CreateDomain(domainInfo);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] createDomain request domainName=\"%1\" nameLength=%2 remarksLength=%3 remarksAutoFilled=%4 payerRaw=\"%5\" payType=%6 visibleUsersInput=%7 visibleUsersAccepted=%8 currentUserHash=%9 bridgePubKeyEmpty=%10 bridgePriKeyEmpty=%11")
+               .arg(domainInfo.domain_name)
+               .arg(domainInfo.domain_name.size())
+               .arg(domainInfo.remarks.size())
+               .arg(remarks.isEmpty())
+               .arg(payer)
+               .arg(domainInfo.pay_type)
+               .arg(visibleUsers.size())
+               .arg(domainInfo.visible_users.size())
+               .arg(logHash(m_currentUserId))
+               .arg(domainInfo.domain_pub_key.isEmpty())
+               .arg(domainInfo.domain_pri_key.isEmpty());
+
+    const dscc::Handle handle = m_assets->CreateDomain(domainInfo);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] createDomain submitted operationId=%1")
+               .arg(handle.GetOperationId());
+    Q_UNUSED(handle);
 }
