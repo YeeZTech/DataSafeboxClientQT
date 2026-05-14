@@ -46,6 +46,10 @@ set "ICONS_SRC_DIR=%PROJECT_ROOT%\icons"
 set "ICON_SRC=%ICONS_SRC_DIR%\SafeLogo.svg"
 set "ICON_SRC_ICO=%ICONS_SRC_DIR%\SafeLogo_256.ico"
 set "ICONS_DST=%DATA_DIR%\icons"
+set "LICENSE_SRC=%PROJECT_ROOT%\LICENSE"
+set "NOTICE_SRC=%PROJECT_ROOT%\THIRD_PARTY_NOTICES.md"
+set "LICENSES_SRC_DIR=%PROJECT_ROOT%\LICENSES"
+set "LICENSES_DST=%DATA_DIR%\licenses"
 set "BINARYCREATOR=%IFW_BIN%\binarycreator.exe"
 set "WINDEPLOYQT=%QT_BIN%\windeployqt.exe"
 set "QMAKE=%QT_BIN%\qmake.exe"
@@ -237,6 +241,17 @@ if exist "%ICON_SRC_ICO%" (
     if not exist "%ICONS_DST%" mkdir "%ICONS_DST%"
     copy /Y "%ICON_SRC_ICO%" "%ICONS_DST%\" >nul
 )
+
+if not exist "%LICENSE_SRC%" (echo [Error] Missing license file: %LICENSE_SRC% & goto :fail)
+if not exist "%NOTICE_SRC%" (echo [Error] Missing third-party notice file: %NOTICE_SRC% & goto :fail)
+if not exist "%LICENSES_SRC_DIR%" (echo [Error] Missing license directory: %LICENSES_SRC_DIR% & goto :fail)
+
+if not exist "%LICENSES_DST%" mkdir "%LICENSES_DST%"
+copy /Y "%LICENSE_SRC%" "%LICENSES_DST%\LICENSE" >nul
+copy /Y "%NOTICE_SRC%" "%LICENSES_DST%\THIRD_PARTY_NOTICES.md" >nul
+robocopy "%LICENSES_SRC_DIR%" "%LICENSES_DST%\LICENSES" /E >nul
+if errorlevel 8 goto :fail
+echo [OK] License files copied
 
 rem --- Step 6/6: build installer ---
 echo.

@@ -7,6 +7,6 @@
     <Default>true</Default>
     <Script>installscript.qs</Script>
     <Licenses>
-        <License name="最终用户许可协议" file="license_zh_CN.txt"/>
+        <License name="开源许可与第三方组件声明" file="license_zh_CN.txt"/>
     </Licenses>
 </Package>
