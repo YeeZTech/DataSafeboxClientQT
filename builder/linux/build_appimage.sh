@@ -198,6 +198,15 @@ else
     warn "crashpad_handler 未找到（${CRASHPAD}），Sentry 崩溃捕获不可用"
 fi
 
+# 拷贝开源许可与第三方组件声明
+DOC_DIR="${APPDIR}/usr/share/doc/datasafebox-client"
+info "拷贝开源许可文件..."
+mkdir -p "${DOC_DIR}"
+cp "${PROJECT_DIR}/LICENSE" "${DOC_DIR}/LICENSE"
+cp "${PROJECT_DIR}/THIRD_PARTY_NOTICES.md" "${DOC_DIR}/THIRD_PARTY_NOTICES.md"
+cp -R "${PROJECT_DIR}/LICENSES" "${DOC_DIR}/LICENSES"
+success "开源许可文件已打入 AppDir"
+
 # AppRun 入口
 cat > "${APPDIR}/AppRun" <<'APPRUN'
 #!/usr/bin/env bash

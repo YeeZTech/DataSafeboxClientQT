@@ -60,6 +60,12 @@
 
 更详细的 Windows 本地编译配置见 [docs/INSTALL_GUIDE.md](docs/INSTALL_GUIDE.md)。
 
+## 开源许可
+
+本仓库自有源码以 `LGPL-3.0-or-later` 开源，版权主体为北京熠智科技有限公司。完整授权说明见 [LICENSE](LICENSE)，GNU LGPLv3/GPLv3 正文见 [LICENSES](LICENSES)。
+
+项目基于 Qt Quick/QML 构建。使用和分发 Qt 运行时、QML 模块、插件、Qt WebEngine/Chromium 组件时，应同时遵守 Qt 开源许可和对应第三方组件许可。Sentry Native、DSCC SDK/运行时及其依赖的许可说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。发布安装包时应随附本项目许可文件和第三方声明。
+
 ## 构建与打包
 
 - Windows：运行 `builder\windows\build_installer.bat`

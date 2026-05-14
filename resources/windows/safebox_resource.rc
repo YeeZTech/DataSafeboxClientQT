@@ -1,4 +1,5 @@
 #include <windows.h>
+#pragma code_page(65001)
 
 IDI_ICON1	ICON	"..\\..\\icons\\SafeLogo_256.ico"
 
@@ -19,10 +20,10 @@ VS_VERSION_INFO VERSIONINFO
 		BEGIN
 			BLOCK "040904b0"
 			BEGIN
-				VALUE "CompanyName", "\0"
+				VALUE "CompanyName", "北京熠智科技有限公司\0"
 				VALUE "FileDescription", "\0"
 				VALUE "FileVersion", "0.0.0.0\0"
-				VALUE "LegalCopyright", "\0"
+				VALUE "LegalCopyright", "Copyright (C) 2026 北京熠智科技有限公司\0"
 				VALUE "OriginalFilename", "safebox.exe\0"
 				VALUE "ProductName", "safebox\0"
 				VALUE "ProductVersion", "0.0.0.0\0"

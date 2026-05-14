@@ -329,6 +329,16 @@ done
 TOOLING="${APP_BUNDLE}/Contents/Resources/qml/QtQuick/tooling"
 [[ -d "${TOOLING}" ]] && rm -rf "${TOOLING}" && info "Removed QtQuick/tooling"
 
+# Copy open-source license and third-party notices before signing.
+LICENSE_DST="${APP_BUNDLE}/Contents/Resources/licenses"
+info "Copying open-source license files..."
+rm -rf "${LICENSE_DST}"
+mkdir -p "${LICENSE_DST}"
+cp "${PROJECT_DIR}/LICENSE" "${LICENSE_DST}/LICENSE"
+cp "${PROJECT_DIR}/THIRD_PARTY_NOTICES.md" "${LICENSE_DST}/THIRD_PARTY_NOTICES.md"
+cp -R "${PROJECT_DIR}/LICENSES" "${LICENSE_DST}/LICENSES"
+success "License files copied"
+
 # Re-apply code signature after all post-processing modifications.
 # macdeployqt signs the bundle; subsequent file removal (locales, QML styles)
 # invalidates that signature. macOS then blocks QtWebEngineProcess from launching,
