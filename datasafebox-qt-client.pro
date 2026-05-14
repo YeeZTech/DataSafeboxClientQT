@@ -33,6 +33,7 @@ SOURCES += \
     src/main.cpp \
     src/app/SingleApplication.cpp \
     src/core/PathManager.cpp \
+    src/core/LanguageManager.cpp \
     src/services/CasdoorHelper.cpp \
     src/services/UpdateManager.cpp \
     src/services/SentryBridge.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     src/config/AppConfig.h \
     src/app/SingleApplication.h \
     src/core/PathManager.h \
+    src/core/LanguageManager.h \
     src/services/CasdoorHelper.h \
     src/services/UpdateManager.h \
     src/services/SentryBridge.h \
@@ -57,6 +59,12 @@ INCLUDEPATH += \
 
 # Enable MOC for source files and headers that contain Q_OBJECT classes
 CONFIG += automoc
+
+# Qt Linguist — automatically compile .ts → .qm during the build.
+# Adding lrelease to CONFIG makes qmake invoke lrelease as a build step.
+CONFIG += lrelease
+TRANSLATIONS += \
+    translations/notification_zh_CN.ts
 
 RESOURCES += resources/resources.qrc
 

@@ -1,4 +1,4 @@
-#include "DsccBridge.h"
+﻿#include "DsccBridge.h"
 
 #include <QCryptographicHash>
 #include <QDateTime>
