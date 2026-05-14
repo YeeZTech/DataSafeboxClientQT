@@ -50,6 +50,7 @@ private:
     QString m_serverUrl;
     QString m_credential;
     QString m_currentUserId;
+    QString m_currentUserName;
 };
 
 #endif // DSCCBRIDGE_H
