@@ -1,6 +1,10 @@
 #include "DsccBridge.h"
 
+#include <QCryptographicHash>
 #include <QDateTime>
+#include <QDebug>
+#include <QDir>
+#include <QFileInfo>
 #include <QMetaType>
 #include <algorithm>
 
@@ -38,22 +42,17 @@ void registerDsccBridgeMetaTypes()
 }  // namespace
 
 DsccBridge::DsccBridge(const QString &metaDbPath,
-                       const QString &dbPath,
+                       const QString &dsccDataRoot,
                        const QString &serverUrl,
                        const QString &credential,
                        QObject *parent)
     : QObject(parent)
-    , m_assets(std::make_unique<dscc::UserAssets>(dbPath, credential))
     , m_metaDbPath(metaDbPath)
+    , m_dsccDataRoot(QDir::cleanPath(dsccDataRoot))
     , m_serverUrl(serverUrl)
+    , m_credential(credential)
 {
     registerDsccBridgeMetaTypes();
-
-    connect(m_assets.get(), &dscc::UserAssets::DomainCreated,
-            this, &DsccBridge::DomainCreated);
-
-    connect(m_assets.get(), &dscc::UserAssets::DomainCreateFailed,
-            this, &DsccBridge::DomainCreateFailed);
 }
 
 DsccBridge::~DsccBridge()
@@ -75,7 +74,9 @@ void DsccBridge::shutdown()
 {
     if (m_assets) {
         m_assets->Shutdown();
+        m_assets.reset();
     }
+    m_currentUserId.clear();
 }
 
 void DsccBridge::setCurrentUser(const QString &userId,
@@ -85,8 +86,59 @@ void DsccBridge::setCurrentUser(const QString &userId,
 {
     Q_UNUSED(userName);
 
+    const QString trimmedUserId = userId.trimmed();
+    if (trimmedUserId.isEmpty() || accessToken.isEmpty()) {
+        qWarning() << "DsccBridge refusing to initialize UserAssets without user id or access token";
+        clearCurrentUser();
+        return;
+    }
+
+    if (m_assets) {
+        m_assets->Shutdown();
+        m_assets.reset();
+    }
+
+    const QString domainDbPath = userDomainDbPath(trimmedUserId);
+    QDir().mkpath(QFileInfo(domainDbPath).absolutePath());
+
+    m_assets = std::make_unique<dscc::UserAssets>(domainDbPath, m_credential);
+    connectAssetSignals();
+    m_currentUserId = trimmedUserId;
     m_assets->SetCurrentUser(userId, accessToken, refreshToken);
     m_assets->Initialize();
+}
+
+void DsccBridge::clearCurrentUser()
+{
+    if (m_assets) {
+        m_assets->Shutdown();
+        m_assets.reset();
+    }
+    m_currentUserId.clear();
+    emit domainListLoaded(QVariantList());
+    emit domainSummaryLoaded(QString(), QVariantMap());
+}
+
+void DsccBridge::connectAssetSignals()
+{
+    if (!m_assets) {
+        return;
+    }
+
+    connect(m_assets.get(), &dscc::UserAssets::DomainCreated,
+            this, &DsccBridge::DomainCreated);
+
+    connect(m_assets.get(), &dscc::UserAssets::DomainCreateFailed,
+            this, &DsccBridge::DomainCreateFailed);
+}
+
+QString DsccBridge::userDomainDbPath(const QString &userId) const
+{
+    const QByteArray digest = QCryptographicHash::hash(userId.toUtf8(),
+                                                       QCryptographicHash::Sha256)
+                                  .toHex();
+    return QDir(QDir(m_dsccDataRoot).filePath(QStringLiteral("users")))
+        .filePath(QString::fromLatin1(digest) + QStringLiteral("/domain.db"));
 }
 
 QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
@@ -111,6 +163,11 @@ QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
 
 void DsccBridge::loadDomainList()
 {
+    if (!m_assets) {
+        emit domainListLoaded(QVariantList());
+        return;
+    }
+
     QList<dscc::DomainInfo> domains = m_assets->ListDomains();
     std::sort(domains.begin(), domains.end(), [](const dscc::DomainInfo &a,
                                                  const dscc::DomainInfo &b) {
@@ -129,7 +186,7 @@ void DsccBridge::loadDomainSummary(const QString &domainCode)
 {
     QVariantMap summary;
     const QString trimmedDomainCode = domainCode.trimmed();
-    if (!trimmedDomainCode.isEmpty()) {
+    if (m_assets && !trimmedDomainCode.isEmpty()) {
         const auto info = m_assets->DetailDomainInfo(trimmedDomainCode);
         if (info.has_value()) {
             summary = domainInfoToSummary(*info);
@@ -140,6 +197,11 @@ void DsccBridge::loadDomainSummary(const QString &domainCode)
 
 void DsccBridge::createDomain(const QVariantMap &info)
 {
+    if (!m_assets) {
+        emit DomainCreateFailed(0, dscc::Notification());
+        return;
+    }
+
     dscc::DomainInfo domainInfo;
     domainInfo.domain_name = info.value("domainName").toString();
 

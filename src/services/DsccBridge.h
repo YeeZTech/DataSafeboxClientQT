@@ -14,7 +14,7 @@ class DsccBridge : public QObject
 
 public:
     explicit DsccBridge(const QString &metaDbPath,
-                        const QString &dbPath,
+                        const QString &dsccDataRoot,
                         const QString &serverUrl,
                         const QString &credential,
                         QObject *parent = nullptr);
@@ -27,6 +27,7 @@ public:
                                     const QString &userName,
                                     const QString &accessToken,
                                     const QString &refreshToken);
+    Q_INVOKABLE void clearCurrentUser();
 
     Q_INVOKABLE void loadDomainList();
     Q_INVOKABLE void loadDomainSummary(const QString &domainCode);
@@ -39,11 +40,16 @@ signals:
     void DomainCreateFailed(uint32_t operation_id, dscc::Notification notification);
 
 private:
+    void connectAssetSignals();
+    QString userDomainDbPath(const QString &userId) const;
     QVariantMap domainInfoToSummary(const dscc::DomainInfo &info) const;
 
     std::unique_ptr<dscc::UserAssets> m_assets;
     QString m_metaDbPath;
+    QString m_dsccDataRoot;
     QString m_serverUrl;
+    QString m_credential;
+    QString m_currentUserId;
 };
 
 #endif // DSCCBRIDGE_H

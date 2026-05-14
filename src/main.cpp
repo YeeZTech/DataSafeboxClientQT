@@ -463,7 +463,7 @@ int main(int argc, char *argv[])
     QDir().mkpath(dsccDbPath);
     DsccBridge *dsccBridge = new DsccBridge(
         QDir(dsccDbPath).filePath("meta.db"),
-        QDir(dsccDbPath).filePath("domain.db"),
+        dsccDbPath,
         QString::fromLatin1(AppCfg::API_BASE_URL),
         "",
         &app);

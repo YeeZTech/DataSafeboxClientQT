@@ -135,6 +135,21 @@ ApplicationWindow {
         window.dataVersion++
         return true
     }
+
+    function resetDsccUserState() {
+        window.selectedDomainCode = ""
+        window.selectedDomainPubKey = ""
+        if (securityDomainRepeater) {
+            securityDomainRepeater.model = []
+        }
+        if (securityDomainDetail) {
+            securityDomainDetail.currentDomainCode = ""
+            securityDomainDetail.domainName = ""
+            securityDomainDetail.domainPubKey = ""
+            securityDomainDetail.domainDetailLoading = false
+        }
+        domainRefreshAnim.running = false
+    }
     
     // Handle successful login
     function handleLoginSuccess(user) {
@@ -153,6 +168,7 @@ ApplicationWindow {
             user.token      || "",
             ""
         )
+        window.resetDsccUserState()
         DsccBridge.loadDomainList()
         window.authPage = "main"
         ArrearsManager.getArrearsOverview(user.token || "")
@@ -174,6 +190,9 @@ ApplicationWindow {
         if (casdoorLoginWebView && casdoorLoginWebView.clearState) {
             casdoorLoginWebView.clearState()
         }
+
+        DsccBridge.clearCurrentUser()
+        window.resetDsccUserState()
         
         window.currentUser = null
         if (dataManager) {
