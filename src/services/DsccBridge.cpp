@@ -1,6 +1,7 @@
 #include "DsccBridge.h"
 
 #include <QDateTime>
+#include <QMetaType>
 #include <algorithm>
 
 #include "dscc/core/db/organization.h"
@@ -24,6 +25,18 @@ QString timestampToIsoString(uint64_t timestamp)
 }
 }  // namespace
 
+namespace {
+void registerDsccBridgeMetaTypes()
+{
+    static const bool registered = [] {
+        qRegisterMetaType<dscc::Notification>("dscc::Notification");
+        qRegisterMetaType<dscc::Notification>("Notification");
+        return true;
+    }();
+    Q_UNUSED(registered);
+}
+}  // namespace
+
 DsccBridge::DsccBridge(const QString &metaDbPath,
                        const QString &dbPath,
                        const QString &serverUrl,
@@ -34,18 +47,13 @@ DsccBridge::DsccBridge(const QString &metaDbPath,
     , m_metaDbPath(metaDbPath)
     , m_serverUrl(serverUrl)
 {
+    registerDsccBridgeMetaTypes();
+
     connect(m_assets.get(), &dscc::UserAssets::DomainCreated,
-            this, [this](uint32_t operationId, QString domainCode) {
-                const auto info = m_assets->DetailDomainInfo(domainCode);
-                emit domainCreated(operationId,
-                                   domainCode,
-                                   info.has_value() ? info->domain_name : QString());
-            });
+            this, &DsccBridge::DomainCreated);
 
     connect(m_assets.get(), &dscc::UserAssets::DomainCreateFailed,
-            this, [this](uint32_t operationId, dscc::Notification notification) {
-                emit domainCreateFailed(operationId, notificationToString(notification));
-            });
+            this, &DsccBridge::DomainCreateFailed);
 }
 
 DsccBridge::~DsccBridge()
@@ -79,16 +87,6 @@ void DsccBridge::setCurrentUser(const QString &userId,
 
     m_assets->SetCurrentUser(userId, accessToken, refreshToken);
     m_assets->Initialize();
-}
-
-QString DsccBridge::notificationToString(const dscc::Notification &notification) const
-{
-    QString msg = notification.DefaultText();
-    for (auto it = notification.params.cbegin(); it != notification.params.cend(); ++it) {
-        msg.replace(QStringLiteral("{") + it.key() + QStringLiteral("}"),
-                    it.value().toString());
-    }
-    return msg;
 }
 
 QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
@@ -164,6 +162,5 @@ void DsccBridge::createDomain(const QVariantMap &info)
         }
     }
 
-    auto handle = m_assets->CreateDomain(domainInfo);
-    Q_UNUSED(handle);
+    m_assets->CreateDomain(domainInfo);
 }

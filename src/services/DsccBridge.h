@@ -35,11 +35,10 @@ public:
 signals:
     void domainListLoaded(QVariantList domains);
     void domainSummaryLoaded(QString domainCode, QVariantMap summary);
-    void domainCreated(quint32 operationId, QString domainCode, QString domainName);
-    void domainCreateFailed(quint32 operationId, QString errorMessage);
+    void DomainCreated(uint32_t operation_id, QString domain_code);
+    void DomainCreateFailed(uint32_t operation_id, dscc::Notification notification);
 
 private:
-    QString notificationToString(const dscc::Notification &notification) const;
     QVariantMap domainInfoToSummary(const dscc::DomainInfo &info) const;
 
     std::unique_ptr<dscc::UserAssets> m_assets;

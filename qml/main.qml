@@ -260,11 +260,11 @@ ApplicationWindow {
     Connections {
         target: DsccBridge
 
-        function onDomainCreated(operationId, domainCode, domainName) {
+        function onDomainCreated(operationId, domainCode) {
             createSecurityDomainForm.resetForm()
             if (securityDomainDetail) {
                 securityDomainDetail.currentDomainCode = domainCode
-                securityDomainDetail.domainName = domainName
+                securityDomainDetail.domainName = ""
                 securityDomainDetail.domainPubKey = ""
                 securityDomainDetail.domainDetailLoading = false
             }
@@ -280,8 +280,9 @@ ApplicationWindow {
             domainRefreshAnim.running = false
         }
 
-        function onDomainCreateFailed(operationId, errorMessage) {
+        function onDomainCreateFailed(operationId, notification) {
             createSecurityDomainForm.isSubmitting = false
+            var errorMessage = notification && notification.Localized ? notification.Localized() : ""
             window.showError(errorMessage || "安全域创建失败", "安全域创建")
         }
 
