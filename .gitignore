@@ -1,0 +1,104 @@
+# Qt/QML Build artifacts
+*.pro.user
+*.pro.user.*
+*.qmlc
+*.jsc
+*.qmltypes
+*.qmlproject.user
+*.qmlproject.user.*
+
+# Build directories
+build/
+build-*/
+*.build/
+Debug/
+Release/
+*.xcodeproj/
+*.xcworkspace/
+
+# Compiled Object files
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Qt Creator
+*.creator
+*.creator.user
+*.creator.user.*
+*.autosave
+.qtc_clangd/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake
+!CMakeLists.txt
+
+# QMake
+Makefile*
+*.prl
+*.pri
+*.pro.user
+*.pro.user.*
+.qmake.stash
+
+# Temporary files
+*~
+*.tmp
+*.bak
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# IDE specific
+.idea/
+.vscode/
+*.code-workspace
+
+# QML runtime cache
+.qmlcache/
+*.qmlcache
+
+# Resource files (if auto-generated)
+qrc_*.cpp
+moc_*.cpp
+ui_*.h
+datasafebox-qt-client_resource.rc
+resources_qmlcache.qrc
+
+# Logs
+*.log
+
+# Windows specific
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.sln.docstates
+
+# macOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+builder/macos/*.dmg
+
+# Linux specific
+*~
+builder/linux/*.AppImage
+.directory
+
+installer/packages/com.datasafebox.client/data/
+
+# macOS DMG output
+dist/
+
+# Generated icons (produced by icons/generate_platform_icons.sh)
+SafeLogo.icns
+icons/SafeLogo.icns
+icons/SafeLogo_256.png
+icons/SafeLogo.iconset/

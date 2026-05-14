@@ -1,0 +1,26 @@
+# Auto-detect text files, treat them as text
+* text=auto
+
+# Shell scripts and Linux-specific files MUST use LF (not CRLF) even on Windows checkouts
+*.sh        text eol=lf
+*.bash      text eol=lf
+*.desktop   text eol=lf
+Info.plist  text eol=lf
+
+# Windows scripts use CRLF
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# Binary files - do not touch newlines
+*.exe binary
+*.dll binary
+*.so binary
+*.sys binary
+*.cat binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.icns binary
+*.dmg binary
+*.AppImage binary

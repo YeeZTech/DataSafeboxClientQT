@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=DatasafeBox
+Name[zh_CN]=数据安全柜
+GenericName=Data Security Client
+GenericName[zh_CN]=数据安全客户端
+Comment=Secure data vault client
+Comment[zh_CN]=安全数据保险柜客户端
+Exec=/opt/datasafebox-client/datasafebox-qt-client %u
+Icon=datasafebox-client
+Terminal=false
+Categories=Office;Security;Utility;
+MimeType=x-scheme-handler/datasafebox;
+StartupNotify=true
+StartupWMClass=datasafebox-qt-client

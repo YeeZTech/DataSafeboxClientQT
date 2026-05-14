@@ -1,0 +1,241 @@
+name: Build & Package
+
+# 触发条件：推送到 main/master 分支，或创建 v* 版本标签，或手动触发
+on:
+  push:
+    branches: [ main, master ]
+    tags:     [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+# 三平台并行构建
+jobs:
+  # ============================================================
+  # Windows — MSVC2022 + Qt 6.7.3 + IFW → .exe 安装包
+  # ============================================================
+  build-windows:
+    name: Windows (MSVC2022)
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 安装 Qt（含 WebEngine + Qt IFW）
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version:   '6.7.3'
+          host:      'windows'
+          target:    'desktop'
+          arch:      'win64_msvc2022_64'
+          modules:   'qtwebengine qtquick3d'
+          tools:     'tools_ifw'
+          cache:     true
+
+      # vcpkg 缓存 + 安装 sentry-native
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: C:/vcpkg/installed
+          key:  vcpkg-windows-sentry-${{ hashFiles('vcpkg.json') }}
+
+      - name: Install sentry-native (vcpkg)
+        shell: pwsh
+        run: |
+          C:/vcpkg/vcpkg.exe install sentry-native --triplet x64-windows
+        env:
+          VCPKG_ROOT: C:/vcpkg
+
+      # MSVC 环境初始化 + 编译
+      - name: Build (qmake + nmake)
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          qmake datasafebox-qt-client.pro CONFIG+=release ^
+                SENTRY_ROOT_DIR=C:/vcpkg/installed/x64-windows
+          nmake release
+
+      # 从 vcpkg 拷 sentry 运行时到 release/
+      - name: Copy sentry runtime
+        shell: pwsh
+        run: |
+          Copy-Item C:/vcpkg/installed/x64-windows/bin/sentry.dll          release/
+          Copy-Item C:/vcpkg/installed/x64-windows/tools/sentry-native/crashpad_handler.exe release/
+
+      # 打包成 .exe 安装包
+      - name: Package installer
+        shell: cmd
+        run: builder\windows\build_installer.bat
+
+      # 上传产物（.exe 安装包）
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-windows
+          path: builder/windows/safebox_*.exe
+          retention-days: 30
+
+  # ============================================================
+  # macOS — Clang + Qt 6.7.3 + macdeployqt → .dmg
+  # ============================================================
+  build-macos:
+    name: macOS (Clang)
+    runs-on: macos-14        # Apple Silicon runner（免费额度更多）
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 生成图标（需要 librsvg + iconutil）
+      - name: Install icon tools
+        run: brew install librsvg
+
+      - name: Generate macOS icons
+        run: |
+          chmod +x icons/generate_platform_icons.sh
+          bash icons/generate_platform_icons.sh
+
+      # 安装 Qt
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.3'
+          host:    'mac'
+          target:  'desktop'
+          arch:    'clang_64'
+          modules: 'qtwebengine qtquick3d'
+          cache:   true
+
+      # vcpkg 缓存 + sentry-native
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: ~/vcpkg/installed
+          key:  vcpkg-macos-sentry-${{ hashFiles('vcpkg.json') }}
+
+      - name: Install sentry-native (vcpkg)
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git ~/vcpkg || true
+          ~/vcpkg/bootstrap-vcpkg.sh
+          ~/vcpkg/vcpkg install sentry-native --triplet x64-osx
+
+      # 打包（build_dmg.sh 内部包含 qmake + make + macdeployqt）
+      - name: Build & Package dmg
+        run: |
+          chmod +x builder/macos/build_dmg.sh
+          SENTRY_ROOT_DIR=~/vcpkg/installed/x64-osx ./builder/macos/build_dmg.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-macos
+          path: builder/macos/safebox_*.dmg
+          retention-days: 30
+
+  # ============================================================
+  # Linux — GCC + Qt 6.7.3 + linuxdeploy → .AppImage
+  # ============================================================
+  build-linux:
+    name: Linux (GCC)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 系统依赖
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential libgl1-mesa-dev libglu1-mesa-dev \
+            libxcb-xinerama0-dev libfontconfig1-dev libfreetype-dev \
+            libx11-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev \
+            libxcb1-dev libx11-xcb-dev libxcb-glx0-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev \
+            libcurl4-openssl-dev \
+            librsvg2-bin \
+            libnspr4 libnss3 libasound2
+
+      # 生成 PNG 图标
+      - name: Generate Linux icon
+        run: bash icons/generate_platform_icons.sh
+
+      # 安装 Qt
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.3'
+          host:    'linux'
+          target:  'desktop'
+          arch:    'gcc_64'
+          modules: 'qtwebengine qtquick3d'
+          cache:   true
+
+      # vcpkg + sentry-native
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: ~/vcpkg/installed
+          key:  vcpkg-linux-sentry-${{ hashFiles('vcpkg.json') }}
+
+      - name: Install sentry-native (vcpkg)
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git ~/vcpkg || true
+          ~/vcpkg/bootstrap-vcpkg.sh
+          ~/vcpkg/vcpkg install sentry-native --triplet x64-linux
+
+      # 下载 linuxdeploy 工具
+      - name: Download linuxdeploy
+        run: |
+          curl -Lo linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage
+          curl -Lo linuxdeploy-plugin-qt https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/latest/download/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy linuxdeploy-plugin-qt
+          sudo mv linuxdeploy linuxdeploy-plugin-qt /usr/local/bin/
+
+      # 打包
+      - name: Build & Package AppImage
+        run: |
+          chmod +x builder/linux/build_appimage.sh
+          SENTRY_ROOT_DIR=~/vcpkg/installed/x64-linux ./builder/linux/build_appimage.sh
+        env:
+          QMAKE: qmake
+          DISPLAY: ''
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-linux
+          path: builder/linux/*.AppImage
+          retention-days: 30
+
+  # ============================================================
+  # Release：打 v* 标签时，把三平台产物发布到 GitHub Releases
+  # ============================================================
+  release:
+    name: Create GitHub Release
+    needs: [ build-windows, build-macos, build-linux ]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/installer-windows/safebox_*.exe
+            artifacts/installer-macos/safebox_*.dmg
+            artifacts/installer-linux/*.AppImage
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}

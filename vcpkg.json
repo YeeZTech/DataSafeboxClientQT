@@ -1,0 +1,11 @@
+{
+  "name": "datasafebox-qt-client",
+  "version-string": "1.0.0",
+  "description": "DatasafeBox Qt Client - cross-platform native dependencies",
+  "dependencies": [
+    {
+      "name": "sentry-native",
+      "default-features": false
+    }
+  ]
+}
