@@ -3,6 +3,7 @@
 
 #include <QHash>
 #include <QObject>
+#include <QVariant>
 #include <QVariantList>
 #include <QVariantMap>
 #include <memory>
@@ -34,8 +35,13 @@ public:
     Q_INVOKABLE void loadDomainSummary(const QString &domainCode);
     Q_INVOKABLE void createDomain(const QVariantMap &info);
     Q_INVOKABLE void closeDomain(const QString &domainCode);
+    Q_INVOKABLE void updateDomainDesc(const QString &domainCode, const QString &desc);
+    Q_INVOKABLE void addUserToDomain(const QString &domainCode, const QString &userId);
+    Q_INVOKABLE void removeUserFromDomain(const QString &domainCode, const QString &userId);
     Q_INVOKABLE QString domainCreateFailureMessage(uint32_t operation_id,
                                                    const QString &fallback) const;
+    Q_INVOKABLE QString notificationMessage(const QVariant &notification,
+                                            const QString &fallback) const;
 
 signals:
     void domainListLoaded(QVariantList domains);
@@ -44,6 +50,18 @@ signals:
     void domainCreateFailed(uint32_t operation_id, dscc::Notification notification);
     void domainClosed(uint32_t operation_id, QString domain_code);
     void domainCloseFailed(uint32_t operation_id, QString domain_code, dscc::Notification notification);
+    void domainDescUpdated(uint32_t operation_id, QString domain_code);
+    void domainDescUpdateFailed(uint32_t operation_id, QString domain_code, dscc::Notification notification);
+    void addUserToDomainSuccess(uint32_t operation_id, QString domain_code, QString user_id);
+    void addUserToDomainFailed(uint32_t operation_id,
+                               QString domain_code,
+                               QString user_id,
+                               dscc::Notification notification);
+    void removeUserFromDomainSuccess(uint32_t operation_id, QString domain_code, QString user_id);
+    void removeUserFromDomainFailed(uint32_t operation_id,
+                                    QString domain_code,
+                                    QString user_id,
+                                    dscc::Notification notification);
 
 private:
     void connectAssetSignals();

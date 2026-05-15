@@ -91,6 +91,21 @@ QString variantMapText(const QVariantMap &map)
     return QStringLiteral("{%1}").arg(parts.join(QStringLiteral(", ")));
 }
 
+QVariantList visibleUsersToVariantList(const QList<dscc::VisibleUserInfo> &visibleUsers)
+{
+    QVariantList list;
+    list.reserve(visibleUsers.size());
+    for (const dscc::VisibleUserInfo &visibleUser : visibleUsers) {
+        QVariantMap user;
+        user.insert(QStringLiteral("account"), visibleUser.account);
+        user.insert(QStringLiteral("authUserId"), visibleUser.auth_user_id);
+        user.insert(QStringLiteral("authUserName"), visibleUser.auth_user_name);
+        user.insert(QStringLiteral("displayName"), visibleUser.display_name);
+        list.append(user);
+    }
+    return list;
+}
+
 void logDomainInfoSummarySource(const QString &domainCode, const dscc::DomainInfo &info)
 {
     qInfo().noquote()
@@ -249,6 +264,26 @@ void DsccBridge::connectAssetSignals()
                 emit domainCreateFailed(operationId, notification);
             });
 
+    connect(m_assets.get(), &dscc::UserAssets::DomainUpdated,
+            this, [this](uint32_t operationId, QString domainCode) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib DomainUpdated operationId=%1 domainCode=\"%2\"")
+                           .arg(operationId)
+                           .arg(domainCode);
+                emit domainDescUpdated(operationId, domainCode);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::DomainUpdateFailed,
+            this, [this](uint32_t operationId,
+                         QString domainCode,
+                         dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib DomainUpdateFailed operationId=%1 domainCode=\"%2\"")
+                                    .arg(operationId)
+                                    .arg(domainCode),
+                                notification);
+                emit domainDescUpdateFailed(operationId, domainCode, notification);
+            });
+
     connect(m_assets.get(), &dscc::UserAssets::CloseDomainSuccess,
             this, [this](uint32_t operationId, QString domainCode) {
                 qInfo().noquote()
@@ -267,6 +302,52 @@ void DsccBridge::connectAssetSignals()
                                     .arg(domainCode),
                                 notification);
                 emit domainCloseFailed(operationId, domainCode, notification);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::AddUserToDomainSuccess,
+            this, [this](uint32_t operationId, QString domainCode, QString userId) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib AddUserToDomainSuccess operationId=%1 domainCode=\"%2\" userIdHash=%3")
+                           .arg(operationId)
+                           .arg(domainCode)
+                           .arg(logHash(userId));
+                emit addUserToDomainSuccess(operationId, domainCode, userId);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::AddUserToDomainFailed,
+            this, [this](uint32_t operationId,
+                         QString domainCode,
+                         QString userId,
+                         dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib AddUserToDomainFailed operationId=%1 domainCode=\"%2\" userIdHash=%3")
+                                    .arg(operationId)
+                                    .arg(domainCode)
+                                    .arg(logHash(userId)),
+                                notification);
+                emit addUserToDomainFailed(operationId, domainCode, userId, notification);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::RemoveUserFromDomainSuccess,
+            this, [this](uint32_t operationId, QString domainCode, QString userId) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib RemoveUserFromDomainSuccess operationId=%1 domainCode=\"%2\" userIdHash=%3")
+                           .arg(operationId)
+                           .arg(domainCode)
+                           .arg(logHash(userId));
+                emit removeUserFromDomainSuccess(operationId, domainCode, userId);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::RemoveUserFromDomainFailed,
+            this, [this](uint32_t operationId,
+                         QString domainCode,
+                         QString userId,
+                         dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib RemoveUserFromDomainFailed operationId=%1 domainCode=\"%2\" userIdHash=%3")
+                                    .arg(operationId)
+                                    .arg(domainCode)
+                                    .arg(logHash(userId)),
+                                notification);
+                emit removeUserFromDomainFailed(operationId, domainCode, userId, notification);
             });
 
     connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
@@ -337,6 +418,21 @@ QString DsccBridge::domainCreateFailureMessage(uint32_t operationId,
     return trimmedFallback.isEmpty() ? QStringLiteral("安全域创建失败") : trimmedFallback;
 }
 
+QString DsccBridge::notificationMessage(const QVariant &notification,
+                                        const QString &fallback) const
+{
+    if (notification.canConvert<dscc::Notification>()) {
+        return notificationDisplayText(notification.value<dscc::Notification>(), fallback);
+    }
+
+    const QString directMessage = notification.toString().trimmed();
+    if (!directMessage.isEmpty()) {
+        return directMessage;
+    }
+
+    return fallback.trimmed();
+}
+
 void DsccBridge::loadDomainList()
 {
     if (!m_assets) {
@@ -374,6 +470,8 @@ void DsccBridge::loadDomainSummary(const QString &domainCode)
         if (info.has_value()) {
             logDomainInfoSummarySource(trimmedDomainCode, *info);
             summary = domainInfoToSummary(*info);
+            summary.insert(QStringLiteral("visibleUsers"),
+                           visibleUsersToVariantList(info->visible_users));
         } else {
             qWarning().noquote()
                 << QStringLiteral("[DsccBridge] loadDomainSummary DetailDomainInfo returned empty for domainCode=\"%1\"")
@@ -462,6 +560,151 @@ void DsccBridge::createDomain(const QVariantMap &info)
     qInfo().noquote()
         << QStringLiteral("[DsccBridge] createDomain submitted operationId=%1")
                .arg(handle.GetOperationId());
+    Q_UNUSED(handle);
+}
+
+void DsccBridge::updateDomainDesc(const QString &domainCode, const QString &desc)
+{
+    const QString trimmedDomainCode = domainCode.trimmed();
+    const QString trimmedDesc = desc.trimmed();
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] updateDomainDesc rejected because UserAssets is not initialized domainCode=\"%1\"")
+                   .arg(trimmedDomainCode);
+        emit domainDescUpdateFailed(0, trimmedDomainCode, dscc::Notification());
+        return;
+    }
+
+    if (trimmedDomainCode.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] updateDomainDesc rejected because domainCode is empty");
+        emit domainDescUpdateFailed(
+            0,
+            QString(),
+            dscc::Notification(dscc::Notification::kUpdateDomainDescEmptyDomainCode,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] updateDomainDesc request domainCode=\"%1\" descLength=%2 currentUserHash=%3")
+               .arg(trimmedDomainCode)
+               .arg(trimmedDesc.size())
+               .arg(logHash(m_currentUserId));
+
+    const dscc::Handle handle = m_assets->UpdateDomainDesc(trimmedDomainCode, trimmedDesc);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] updateDomainDesc submitted operationId=%1 domainCode=\"%2\"")
+               .arg(handle.GetOperationId())
+               .arg(trimmedDomainCode);
+    Q_UNUSED(handle);
+}
+
+void DsccBridge::addUserToDomain(const QString &domainCode, const QString &userId)
+{
+    const QString trimmedDomainCode = domainCode.trimmed();
+    const QString trimmedUserId = userId.trimmed();
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] addUserToDomain rejected because UserAssets is not initialized domainCode=\"%1\" userIdHash=%2")
+                   .arg(trimmedDomainCode)
+                   .arg(logHash(trimmedUserId));
+        emit addUserToDomainFailed(0, trimmedDomainCode, trimmedUserId, dscc::Notification());
+        return;
+    }
+
+    if (trimmedDomainCode.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] addUserToDomain rejected because domainCode is empty userIdHash=%1")
+                   .arg(logHash(trimmedUserId));
+        emit addUserToDomainFailed(
+            0,
+            QString(),
+            trimmedUserId,
+            dscc::Notification(dscc::Notification::kAddUserToDomainEmptyDomainCode,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    if (trimmedUserId.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] addUserToDomain rejected because userId is empty domainCode=\"%1\"")
+                   .arg(trimmedDomainCode);
+        emit addUserToDomainFailed(
+            0,
+            trimmedDomainCode,
+            QString(),
+            dscc::Notification(dscc::Notification::kAddUserToDomainEmptyUserId,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] addUserToDomain request domainCode=\"%1\" userIdHash=%2 currentUserHash=%3")
+               .arg(trimmedDomainCode)
+               .arg(logHash(trimmedUserId))
+               .arg(logHash(m_currentUserId));
+
+    const dscc::Handle handle = m_assets->AddUserToDomain(trimmedDomainCode, trimmedUserId);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] addUserToDomain submitted operationId=%1 domainCode=\"%2\" userIdHash=%3")
+               .arg(handle.GetOperationId())
+               .arg(trimmedDomainCode)
+               .arg(logHash(trimmedUserId));
+    Q_UNUSED(handle);
+}
+
+void DsccBridge::removeUserFromDomain(const QString &domainCode, const QString &userId)
+{
+    const QString trimmedDomainCode = domainCode.trimmed();
+    const QString trimmedUserId = userId.trimmed();
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] removeUserFromDomain rejected because UserAssets is not initialized domainCode=\"%1\" userIdHash=%2")
+                   .arg(trimmedDomainCode)
+                   .arg(logHash(trimmedUserId));
+        emit removeUserFromDomainFailed(0, trimmedDomainCode, trimmedUserId, dscc::Notification());
+        return;
+    }
+
+    if (trimmedDomainCode.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] removeUserFromDomain rejected because domainCode is empty userIdHash=%1")
+                   .arg(logHash(trimmedUserId));
+        emit removeUserFromDomainFailed(
+            0,
+            QString(),
+            trimmedUserId,
+            dscc::Notification(dscc::Notification::kRemoveUserFromDomainEmptyDomainCode,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    if (trimmedUserId.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] removeUserFromDomain rejected because userId is empty domainCode=\"%1\"")
+                   .arg(trimmedDomainCode);
+        emit removeUserFromDomainFailed(
+            0,
+            trimmedDomainCode,
+            QString(),
+            dscc::Notification(dscc::Notification::kRemoveUserFromDomainEmptyUserId,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] removeUserFromDomain request domainCode=\"%1\" userIdHash=%2 currentUserHash=%3")
+               .arg(trimmedDomainCode)
+               .arg(logHash(trimmedUserId))
+               .arg(logHash(m_currentUserId));
+
+    const dscc::Handle handle = m_assets->RemoveUserFromDomain(trimmedDomainCode, trimmedUserId);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] removeUserFromDomain submitted operationId=%1 domainCode=\"%2\" userIdHash=%3")
+               .arg(handle.GetOperationId())
+               .arg(trimmedDomainCode)
+               .arg(logHash(trimmedUserId));
     Q_UNUSED(handle);
 }
 

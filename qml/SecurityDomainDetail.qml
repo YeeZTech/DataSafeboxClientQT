@@ -391,7 +391,6 @@ Item {
         if (!root.currentDomainCode) return
         if (typeof DsccBridge === "undefined") return
         DsccBridge.loadDomainSummary(root.currentDomainCode)
-        DsccBridge.loadVisibleUsers(root.currentDomainCode)
         DsccBridge.loadInstances(root.currentDomainCode)
         DsccBridge.loadAudits(root.currentDomainCode, 1)  // 1=白名单
         DsccBridge.loadAudits(root.currentDomainCode, 2)  // 2=导出文件
@@ -3956,7 +3955,7 @@ Item {
             var updated = Object.assign({}, root.domainData, summary)
             // 保持 visibleUsers / instances / appWhitelistAudits / exportAudits 不被覆盖
             if (root.domainData) {
-                if (root.domainData.visibleUsers !== undefined)
+                if (summary.visibleUsers === undefined && root.domainData.visibleUsers !== undefined)
                     updated.visibleUsers = root.domainData.visibleUsers
                 if (root.domainData.instances !== undefined)
                     updated.instances = root.domainData.instances
@@ -3968,13 +3967,6 @@ Item {
             root.domainData = updated
             if (summary.name && summary.name !== root.domainName) root.domainName = summary.name
             if (summary.pubKey && summary.pubKey !== root.domainPubKey) root.domainPubKey = summary.pubKey
-        }
-
-        function onVisibleUsersLoaded(domainCode, users) {
-            if (domainCode !== root.currentDomainCode) return
-            var updated = Object.assign({}, root.domainData)
-            updated.visibleUsers = users || []
-            root.domainData = updated
         }
 
         function onInstancesLoaded(domainCode, instances) {
@@ -4009,13 +4001,14 @@ Item {
             if (domainCode !== root.currentDomainCode) return
             root.pendingAddUserFullInfo = null
             root.visibleUserOperationState_busy = false
-            DsccBridge.loadVisibleUsers(root.currentDomainCode)
+            DsccBridge.loadDomainSummary(root.currentDomainCode)
         }
 
-        function onAddUserToDomainFailed(operationId, domainCode, userId, errorMessage) {
+        function onAddUserToDomainFailed(operationId, domainCode, userId, notification) {
             if (domainCode !== root.currentDomainCode) return
             root.pendingAddUserFullInfo = null
             root.visibleUserOperationState_busy = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "添加用户失败")
             window.showError(errorMessage || "添加用户失败", "添加可见用户")
         }
 
@@ -4026,16 +4019,17 @@ Item {
             root.removeUserState_pendingDomainPubKey = ""
             root.removeUserState_pendingDomainCode = ""
             root.visibleUserOperationState_busy = false
-            DsccBridge.loadVisibleUsers(root.currentDomainCode)
+            DsccBridge.loadDomainSummary(root.currentDomainCode)
         }
 
-        function onRemoveUserFromDomainFailed(operationId, domainCode, userId, errorMessage) {
+        function onRemoveUserFromDomainFailed(operationId, domainCode, userId, notification) {
             if (domainCode !== root.currentDomainCode) return
             root.removeUserState_pendingRemovedAccount = ""
             root.removeUserState_pendingRemovedAuthUserId = ""
             root.removeUserState_pendingDomainPubKey = ""
             root.removeUserState_pendingDomainCode = ""
             root.visibleUserOperationState_busy = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "移除用户失败")
             window.showError(errorMessage || "移除用户失败", "移除可见用户")
         }
 
@@ -4046,17 +4040,19 @@ Item {
             DsccBridge.loadDomainSummary(root.currentDomainCode)
         }
 
-        function onDomainDescUpdateFailed(operationId, domainCode, errorMessage) {
+        function onDomainDescUpdateFailed(operationId, domainCode, notification) {
             if (domainCode !== root.currentDomainCode) return
             root.isDescriptionSaving = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "保存描述失败")
             window.showError(errorMessage || "保存描述失败", "修改描述")
         }
 
-        function onDomainCloseFailed(operationId, domainCode, errorMessage) {
+        function onDomainCloseFailed(operationId, domainCode, notification) {
             if (domainCode !== root.currentDomainCode) return
             deactivateDomainState.isPending = false
             deactivateDomainState.pendingDomainPubKey = ""
             deactivateDomainState.pendingDomainCode = ""
+            var errorMessage = DsccBridge.notificationMessage(notification, "停用安全域失败")
             window.showError(errorMessage || "停用安全域失败", "停用安全域")
         }
         // 注意：onDomainClosed 成功的导航/刷新由 main.qml 统一处理（切换至 home + 刷新列表）
