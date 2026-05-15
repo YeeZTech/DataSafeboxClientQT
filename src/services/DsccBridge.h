@@ -66,6 +66,7 @@ signals:
 private:
     void connectAssetSignals();
     QString userDomainDbPath(const QString &userId) const;
+    bool isDomainInactiveForOperation(const QString &domainCode) const;
     QVariantMap domainInfoToSummary(const dscc::DomainInfo &info) const;
 
     std::unique_ptr<dscc::UserAssets> m_assets;

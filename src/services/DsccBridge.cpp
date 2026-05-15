@@ -15,8 +15,6 @@
 #include "dscc/core/interface/organization.h"
 
 namespace {
-constexpr uint32_t kDomainStatusClosed = 1;
-
 QString timestampToIsoString(uint64_t timestamp)
 {
     if (timestamp == 0) {
@@ -77,6 +75,18 @@ QString notificationDisplayText(const dscc::Notification &notification,
 bool isTemporaryDomainCode(const QString &domainCode)
 {
     return domainCode.startsWith(QStringLiteral("TMP_D"));
+}
+
+bool isDomainCreateFailed(const dscc::DomainInfo &info)
+{
+    return info.sync_status == dscc::db::kDomainSyncStatusFailed
+           && isTemporaryDomainCode(info.domain_code);
+}
+
+bool isDomainInactive(const dscc::DomainInfo &info)
+{
+    return info.domain_status == dscc::db::kDomainStatusClosed
+           || isDomainCreateFailed(info);
 }
 
 QString variantMapText(const QVariantMap &map)
@@ -381,9 +391,27 @@ QString DsccBridge::userDomainDbPath(const QString &userId) const
         .filePath(QString::fromLatin1(digest) + QStringLiteral("/domain.db"));
 }
 
+bool DsccBridge::isDomainInactiveForOperation(const QString &domainCode) const
+{
+    if (!m_assets) {
+        return false;
+    }
+
+    const auto info = m_assets->DetailDomainInfo(domainCode);
+    if (!info.has_value()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] inactive domain check skipped because domain was not found domainCode=\"%1\"")
+                   .arg(domainCode);
+        return false;
+    }
+
+    return isDomainInactive(*info);
+}
+
 QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
 {
     QVariantMap summary;
+    const bool domainCreateFailed = isDomainCreateFailed(info);
     summary.insert(QStringLiteral("domainCode"), info.domain_code);
     summary.insert(QStringLiteral("name"), info.domain_name);
     summary.insert(QStringLiteral("pubKey"), info.domain_pub_key);
@@ -393,11 +421,11 @@ QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
     QString statusText = info.domain_status == dscc::db::kDomainStatusClosed
                              ? QStringLiteral("已关闭")
                              : QStringLiteral("运行中");
-    if (info.sync_status == dscc::db::kDomainSyncStatusFailed
-        && isTemporaryDomainCode(info.domain_code)) {
+    if (domainCreateFailed) {
         statusText = QStringLiteral("创建失败");
     }
     summary.insert(QStringLiteral("status"), statusText);
+    summary.insert(QStringLiteral("isInactive"), isDomainInactive(info));
     summary.insert(QStringLiteral("creator"),
                    info.creator_user_name.isEmpty() ? info.creator_user_id
                                                     : info.creator_user_name);
@@ -586,6 +614,14 @@ void DsccBridge::updateDomainDesc(const QString &domainCode, const QString &desc
         return;
     }
 
+    if (isDomainInactiveForOperation(trimmedDomainCode)) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] updateDomainDesc rejected because domain is inactive domainCode=\"%1\"")
+                   .arg(trimmedDomainCode);
+        emit domainDescUpdateFailed(0, trimmedDomainCode, dscc::Notification());
+        return;
+    }
+
     qInfo().noquote()
         << QStringLiteral("[DsccBridge] updateDomainDesc request domainCode=\"%1\" descLength=%2 currentUserHash=%3")
                .arg(trimmedDomainCode)
@@ -636,6 +672,15 @@ void DsccBridge::addUserToDomain(const QString &domainCode, const QString &userI
             QString(),
             dscc::Notification(dscc::Notification::kAddUserToDomainEmptyUserId,
                                dscc::Notification::kError));
+        return;
+    }
+
+    if (isDomainInactiveForOperation(trimmedDomainCode)) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] addUserToDomain rejected because domain is inactive domainCode=\"%1\" userIdHash=%2")
+                   .arg(trimmedDomainCode)
+                   .arg(logHash(trimmedUserId));
+        emit addUserToDomainFailed(0, trimmedDomainCode, trimmedUserId, dscc::Notification());
         return;
     }
 
@@ -693,6 +738,15 @@ void DsccBridge::removeUserFromDomain(const QString &domainCode, const QString &
         return;
     }
 
+    if (isDomainInactiveForOperation(trimmedDomainCode)) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] removeUserFromDomain rejected because domain is inactive domainCode=\"%1\" userIdHash=%2")
+                   .arg(trimmedDomainCode)
+                   .arg(logHash(trimmedUserId));
+        emit removeUserFromDomainFailed(0, trimmedDomainCode, trimmedUserId, dscc::Notification());
+        return;
+    }
+
     qInfo().noquote()
         << QStringLiteral("[DsccBridge] removeUserFromDomain request domainCode=\"%1\" userIdHash=%2 currentUserHash=%3")
                .arg(trimmedDomainCode)
@@ -727,6 +781,14 @@ void DsccBridge::closeDomain(const QString &domainCode)
             QString(),
             dscc::Notification(dscc::Notification::kCloseDomainEmptyDomainCode,
                                dscc::Notification::kError));
+        return;
+    }
+
+    if (isDomainInactiveForOperation(trimmedDomainCode)) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] closeDomain rejected because domain is inactive domainCode=\"%1\"")
+                   .arg(trimmedDomainCode);
+        emit domainCloseFailed(0, trimmedDomainCode, dscc::Notification());
         return;
     }
 

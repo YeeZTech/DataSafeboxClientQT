@@ -46,7 +46,7 @@ Item {
 
     function isDomainInactiveStatus(statusText) {
         var s = (statusText || "").trim()
-        return s === "已关闭" || s === "停用" || s === "已停用" || s === "停用中"
+        return s === "已关闭" || s === "创建失败" || s === "停用" || s === "已停用" || s === "停用中"
     }
     
     // Check if current user is the creator of this domain
@@ -54,7 +54,12 @@ Item {
         if (!currentUser || !domainData) return false
         return isCurrentUserDomainCreator(domainData)
     }
-    property bool isDomainInactive: isDomainInactiveStatus(root.domainData.status)
+    property bool isDomainInactive: {
+        if (root.domainData && root.domainData.isInactive !== undefined) {
+            return !!root.domainData.isInactive || isDomainInactiveStatus(root.domainData.status)
+        }
+        return isDomainInactiveStatus(root.domainData ? root.domainData.status : "")
+    }
     property bool isDomainReadOnly: root.isDomainInactive || (!root.isCreator)
     
     // Domain data - loaded from DataManager or provided by parent
@@ -153,7 +158,8 @@ Item {
             visibleUsers: [],
             instances: [],
             exportAudits: [],
-            pubKey: domainPubKey || ""
+            pubKey: domainPubKey || "",
+            isInactive: false
         }
     }
 
@@ -553,6 +559,10 @@ Item {
         property string pendingDomainCode: ""
         
         onAddClicked: function(account) {
+            if (root.isDomainReadOnly) {
+                return
+            }
+
             var trimmed = account ? account.trim() : ""
             if (!trimmed) {
                 return
@@ -858,6 +868,9 @@ Item {
                             hoverEnabled: true
                             cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                             onClicked: {
+                                if (root.isDomainReadOnly) {
+                                    return
+                                }
                                 encryptFileDialog.open()
                             }
                         }
@@ -911,6 +924,9 @@ Item {
                             hoverEnabled: true
                             cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                             onClicked: {
+                                if (root.isDomainReadOnly) {
+                                    return
+                                }
                                 root.instantiateRequested()
                             }
                         }
@@ -1248,6 +1264,9 @@ Item {
                                     onReleased: parent.pressed = false
                                     onCanceled: parent.pressed = false
                                     onClicked: {
+                                        if (root.isDomainReadOnly || root.isDescriptionSaving) {
+                                            return
+                                        }
                                         if (root.isEditingDescription) {
                                             if ((root.editedDescription || "").length > root.descriptionMaxLength) {
                                                 root.descriptionErrorMessage = "描述最多可输入500个字符"
@@ -1599,6 +1618,9 @@ Item {
                                 onReleased: parent.pressed = false
                                 onCanceled: parent.pressed = false
                                 onClicked: {
+                                    if (root.isDomainReadOnly || root.visibleUserOperationState_busy) {
+                                        return
+                                    }
                                     addUserDialog.domainCreator = root.domainData.creator || ""
                                     addUserDialog.open()
                                 }
@@ -1816,6 +1838,9 @@ Item {
                                                 onExited: removeText.hovered = false
                                                 onClicked: {
                                                 var _r = visibleUserDelegateRow._pageRoot
+                                                if (_r.isDomainReadOnly) {
+                                                    return
+                                                }
                                                 if (_r.isVisibleUserOperationInProgress()) {
                                                     return
                                                 }
@@ -3784,6 +3809,10 @@ Item {
 
     // Function to handle domain deactivation
     function handleDeactivateDomain() {
+        if (root.isDomainReadOnly) {
+            return
+        }
+
         // Prevent duplicate clicks - check if already pending
         if (deactivateDomainState.isPending) {
             return
