@@ -1800,7 +1800,7 @@ Item {
 
                                         CenteredTooltipText {
                                             anchors.fill: parent
-                                            value: modelData.displayName || modelData.account || ""
+                                            value: modelData.displayName || modelData.authUserName || modelData.account || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 6

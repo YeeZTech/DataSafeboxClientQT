@@ -552,6 +552,12 @@ void DsccBridge::createDomain(const QVariantMap &info)
         user.auth_user_id = u.value("authUserId").toString().trimmed();
         user.auth_user_name = u.value("authUserName").toString().trimmed();
         user.display_name = u.value("displayName").toString().trimmed();
+        if (user.display_name.isEmpty()) {
+            user.display_name = user.auth_user_name.isEmpty() ? user.account : user.auth_user_name;
+        }
+        if (user.auth_user_name.isEmpty()) {
+            user.auth_user_name = user.display_name.isEmpty() ? user.account : user.display_name;
+        }
         if (!user.account.isEmpty() && !user.auth_user_id.isEmpty()) {
             domainInfo.visible_users.append(user);
             qInfo().noquote()
