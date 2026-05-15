@@ -249,6 +249,26 @@ void DsccBridge::connectAssetSignals()
                 emit domainCreateFailed(operationId, notification);
             });
 
+    connect(m_assets.get(), &dscc::UserAssets::CloseDomainSuccess,
+            this, [this](uint32_t operationId, QString domainCode) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib CloseDomainSuccess operationId=%1 domainCode=\"%2\"")
+                           .arg(operationId)
+                           .arg(domainCode);
+                emit domainClosed(operationId, domainCode);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::CloseDomainFailed,
+            this, [this](uint32_t operationId,
+                         QString domainCode,
+                         dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib CloseDomainFailed operationId=%1 domainCode=\"%2\"")
+                                    .arg(operationId)
+                                    .arg(domainCode),
+                                notification);
+                emit domainCloseFailed(operationId, domainCode, notification);
+            });
+
     connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
             &dscc::ActiveNotify::MessageReceived,
             this,
@@ -442,5 +462,40 @@ void DsccBridge::createDomain(const QVariantMap &info)
     qInfo().noquote()
         << QStringLiteral("[DsccBridge] createDomain submitted operationId=%1")
                .arg(handle.GetOperationId());
+    Q_UNUSED(handle);
+}
+
+void DsccBridge::closeDomain(const QString &domainCode)
+{
+    const QString trimmedDomainCode = domainCode.trimmed();
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] closeDomain rejected because UserAssets is not initialized domainCode=\"%1\"")
+                   .arg(trimmedDomainCode);
+        emit domainCloseFailed(0, trimmedDomainCode, dscc::Notification());
+        return;
+    }
+
+    if (trimmedDomainCode.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] closeDomain rejected because domainCode is empty");
+        emit domainCloseFailed(
+            0,
+            QString(),
+            dscc::Notification(dscc::Notification::kCloseDomainEmptyDomainCode,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] closeDomain request domainCode=\"%1\" currentUserHash=%2")
+               .arg(trimmedDomainCode)
+               .arg(logHash(m_currentUserId));
+
+    const dscc::Handle handle = m_assets->CloseDomain(trimmedDomainCode);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] closeDomain submitted operationId=%1 domainCode=\"%2\"")
+               .arg(handle.GetOperationId())
+               .arg(trimmedDomainCode);
     Q_UNUSED(handle);
 }

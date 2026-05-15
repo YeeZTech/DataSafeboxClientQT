@@ -33,6 +33,7 @@ public:
     Q_INVOKABLE void loadDomainList();
     Q_INVOKABLE void loadDomainSummary(const QString &domainCode);
     Q_INVOKABLE void createDomain(const QVariantMap &info);
+    Q_INVOKABLE void closeDomain(const QString &domainCode);
     Q_INVOKABLE QString domainCreateFailureMessage(uint32_t operation_id,
                                                    const QString &fallback) const;
 
@@ -41,6 +42,8 @@ signals:
     void domainSummaryLoaded(QString domainCode, QVariantMap summary);
     void domainCreated(uint32_t operation_id, QString domain_code);
     void domainCreateFailed(uint32_t operation_id, dscc::Notification notification);
+    void domainClosed(uint32_t operation_id, QString domain_code);
+    void domainCloseFailed(uint32_t operation_id, QString domain_code, dscc::Notification notification);
 
 private:
     void connectAssetSignals();
