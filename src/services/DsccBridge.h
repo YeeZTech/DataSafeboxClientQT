@@ -32,6 +32,7 @@ public:
     Q_INVOKABLE void clearCurrentUser();
 
     Q_INVOKABLE void loadDomainList();
+    Q_INVOKABLE void loadInstances(const QString &domainCode);
     Q_INVOKABLE void loadDomainSummary(const QString &domainCode);
     Q_INVOKABLE void createDomain(const QVariantMap &info);
     Q_INVOKABLE void closeDomain(const QString &domainCode);
@@ -46,6 +47,7 @@ public:
 signals:
     void domainListLoaded(QVariantList domains);
     void domainSummaryLoaded(QString domainCode, QVariantMap summary);
+    void instancesLoaded(QString domainCode, QVariantList instances);
     void domainCreated(uint32_t operation_id, QString domain_code);
     void domainCreateFailed(uint32_t operation_id, dscc::Notification notification);
     void domainClosed(uint32_t operation_id, QString domain_code);
@@ -68,6 +70,7 @@ private:
     QString userDomainDbPath(const QString &userId) const;
     bool isDomainInactiveForOperation(const QString &domainCode) const;
     QVariantMap domainInfoToSummary(const dscc::DomainInfo &info) const;
+    QVariantMap instanceInfoToVariant(const dscc::InstanceInfo &info) const;
 
     std::unique_ptr<dscc::UserAssets> m_assets;
     QString m_metaDbPath;

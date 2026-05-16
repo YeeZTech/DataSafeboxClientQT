@@ -443,6 +443,23 @@ QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
     return summary;
 }
 
+QVariantMap DsccBridge::instanceInfoToVariant(const dscc::InstanceInfo &info) const
+{
+    QVariantMap map;
+    map.insert(QStringLiteral("instanceCode"), info.instance_code);
+    map.insert(QStringLiteral("domainCode"), info.domain_code);
+    map.insert(QStringLiteral("instanceName"), info.instance_name);
+    map.insert(QStringLiteral("totalRunTime"), info.total_run_time);
+    map.insert(QStringLiteral("volumnId"), info.volumn_id);
+    map.insert(QStringLiteral("volumnSize"), quint64(info.volumn_size));
+    map.insert(QStringLiteral("diskPartition"), info.disk_partition);
+    map.insert(QStringLiteral("creatorUserId"), info.creator_user_id);
+    map.insert(QStringLiteral("instanceStatus"), info.instance_status);
+    map.insert(QStringLiteral("syncStatus"), info.sync_status);
+    map.insert(QStringLiteral("createdAt"), timestampToIsoString(info.created_at));
+    return map;
+}
+
 QString DsccBridge::domainCreateFailureMessage(uint32_t operationId,
                                                const QString &fallback) const
 {
@@ -489,6 +506,27 @@ void DsccBridge::loadDomainList()
         list.append(domainInfoToSummary(domain));
     }
     emit domainListLoaded(list);
+}
+
+void DsccBridge::loadInstances(const QString &domainCode)
+{
+    if (!m_assets) {
+        emit instancesLoaded(domainCode, QVariantList());
+        return;
+    }
+
+    QList<dscc::InstanceInfo> instances = m_assets->ListInstances(domainCode);
+    std::sort(instances.begin(), instances.end(),
+              [](const dscc::InstanceInfo &a, const dscc::InstanceInfo &b) {
+                  return a.created_at > b.created_at;
+              });
+
+    QVariantList list;
+    list.reserve(instances.size());
+    for (const dscc::InstanceInfo &inst : instances) {
+        list.append(instanceInfoToVariant(inst));
+    }
+    emit instancesLoaded(domainCode, list);
 }
 
 void DsccBridge::loadDomainSummary(const QString &domainCode)
