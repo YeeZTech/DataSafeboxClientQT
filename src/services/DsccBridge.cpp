@@ -6,11 +6,13 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
+#include <QStandardPaths>
 #include <QStringList>
 #include <algorithm>
 
 #include "dscc/core/db/domain_ops.h"
 #include "dscc/core/db/organization.h"
+#include "dscc/core/common/logger.h"
 #include "dscc/core/interface/global.h"
 #include "dscc/core/interface/organization.h"
 
@@ -178,6 +180,13 @@ void DsccBridge::initialize()
                .arg(m_metaDbPath, m_dsccDataRoot, m_serverUrl);
 
     dscc::LoadSetting().Call(m_metaDbPath.toStdString());
+
+    const QString localDataDir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QDir().mkpath(localDataDir);
+    const QString coreLogPath = QDir(localDataDir).filePath(QStringLiteral("dscc-core.log"));
+    dscc::detail::SetLoggerFilePath(coreLogPath);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] corelib log file: \"%1\"").arg(coreLogPath);
 
     dscc::db::Organization org;
     org.server_url = m_serverUrl.toStdString();
