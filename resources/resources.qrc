@@ -1,38 +1,49 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="/">
+        <!-- Entry Point -->
         <file alias="main.qml">../qml/main.qml</file>
-        <file alias="AddVisibleUserDialog.qml">../qml/AddVisibleUserDialog.qml</file>
-        <file alias="BadgeIndicator.qml">../qml/BadgeIndicator.qml</file>
-        <file alias="ShadowBox.qml">../qml/ShadowBox.qml</file>
-        <file alias="Colors.qml">../qml/Colors.qml</file>
-        <file alias="DataManager.qml">../qml/DataManager.qml</file>
-        <file alias="DeactivateConfirmDialog.qml">../qml/DeactivateConfirmDialog.qml</file>
-        <file alias="EncryptFileDialog.qml">../qml/EncryptFileDialog.qml</file>
-        <file alias="InstanceDetailDialog.qml">../qml/InstanceDetailDialog.qml</file>
-        <file alias="AppWhitelistDetailDialog.qml">../qml/AppWhitelistDetailDialog.qml</file>
-        <file alias="ExportFileDialog.qml">../qml/ExportFileDialog.qml</file>
-        <file alias="ExportDetailDialog.qml">../qml/ExportDetailDialog.qml</file>
-        <file alias="SetDurationDialog.qml">../qml/SetDurationDialog.qml</file>
-        <file alias="InstantiationPaymentDialog.qml">../qml/InstantiationPaymentDialog.qml</file>
-        <file alias="PaymentSuccessDialog.qml">../qml/PaymentSuccessDialog.qml</file>
-        <file alias="ImportFileDialog.qml">../qml/ImportFileDialog.qml</file>
-        <file alias="CasdoorWebView.qml">../qml/CasdoorWebView.qml</file>
-        <file alias="SelectableText.qml">../qml/SelectableText.qml</file>
-        <file alias="CenteredTooltipText.qml">../qml/CenteredTooltipText.qml</file>
-        <file alias="InputContextMenu.qml">../qml/InputContextMenu.qml</file>
-        <file alias="SecurityDomainDetail.qml">../qml/SecurityDomainDetail.qml</file>
-        <file alias="SecurityDomainForm.qml">../qml/SecurityDomainForm.qml</file>
-        <file alias="SecurityInstanceDetail.qml">../qml/SecurityInstanceDetail.qml</file>
-        <file alias="InstantiateForm.qml">../qml/InstantiateForm.qml</file>
-        <file alias="InstantiationHelpDialog.qml">../qml/InstantiationHelpDialog.qml</file>
-        <file alias="MessageCenter.qml">../qml/MessageCenter.qml</file>
-        <file alias="Utils.qml">../qml/Utils.qml</file>
-        <file alias="UpdateDialog.qml">../qml/UpdateDialog.qml</file>
-        <file alias="PausedReminderDialog.qml">../qml/PausedReminderDialog.qml</file>
-        <file alias="OnboardingGuide.qml">../qml/OnboardingGuide.qml</file>
-        <file alias="CustomerServiceDialog.qml">../qml/CustomerServiceDialog.qml</file>
         <file alias="qmldir">../qml/qmldir</file>
+
+        <!-- Theme (singletons) -->
+        <file alias="Colors.qml">../qml/Theme/Colors.qml</file>
+        <file alias="DataManager.qml">../qml/Theme/DataManager.qml</file>
+        <file alias="Utils.qml">../qml/Theme/Utils.qml</file>
+
+        <!-- Pages -->
+        <file alias="SecurityDomainForm.qml">../qml/Pages/SecurityDomainForm.qml</file>
+        <file alias="SecurityDomainDetail.qml">../qml/Pages/SecurityDomainDetail.qml</file>
+        <file alias="InstantiateForm.qml">../qml/Pages/InstantiateForm.qml</file>
+        <file alias="SecurityInstanceDetail.qml">../qml/Pages/SecurityInstanceDetail.qml</file>
+
+        <!-- Dialogs -->
+        <file alias="AddVisibleUserDialog.qml">../qml/Dialogs/AddVisibleUserDialog.qml</file>
+        <file alias="AppWhitelistDetailDialog.qml">../qml/Dialogs/AppWhitelistDetailDialog.qml</file>
+        <file alias="CustomerServiceDialog.qml">../qml/Dialogs/CustomerServiceDialog.qml</file>
+        <file alias="DeactivateConfirmDialog.qml">../qml/Dialogs/DeactivateConfirmDialog.qml</file>
+        <file alias="EncryptFileDialog.qml">../qml/Dialogs/EncryptFileDialog.qml</file>
+        <file alias="ExportDetailDialog.qml">../qml/Dialogs/ExportDetailDialog.qml</file>
+        <file alias="ExportFileDialog.qml">../qml/Dialogs/ExportFileDialog.qml</file>
+        <file alias="ImportFileDialog.qml">../qml/Dialogs/ImportFileDialog.qml</file>
+        <file alias="InstanceDetailDialog.qml">../qml/Dialogs/InstanceDetailDialog.qml</file>
+        <file alias="InstantiationHelpDialog.qml">../qml/Dialogs/InstantiationHelpDialog.qml</file>
+        <file alias="InstantiationPaymentDialog.qml">../qml/Dialogs/InstantiationPaymentDialog.qml</file>
+        <file alias="PaymentSuccessDialog.qml">../qml/Dialogs/PaymentSuccessDialog.qml</file>
+        <file alias="PausedReminderDialog.qml">../qml/Dialogs/PausedReminderDialog.qml</file>
+        <file alias="SetDurationDialog.qml">../qml/Dialogs/SetDurationDialog.qml</file>
+        <file alias="UpdateDialog.qml">../qml/Dialogs/UpdateDialog.qml</file>
+
+        <!-- Components -->
+        <file alias="BadgeIndicator.qml">../qml/Components/BadgeIndicator.qml</file>
+        <file alias="CenteredTooltipText.qml">../qml/Components/CenteredTooltipText.qml</file>
+        <file alias="InputContextMenu.qml">../qml/Components/InputContextMenu.qml</file>
+        <file alias="MessageCenter.qml">../qml/Components/MessageCenter.qml</file>
+        <file alias="OnboardingGuide.qml">../qml/Components/OnboardingGuide.qml</file>
+        <file alias="SelectableText.qml">../qml/Components/SelectableText.qml</file>
+        <file alias="ShadowBox.qml">../qml/Components/ShadowBox.qml</file>
+
+        <!-- Auth -->
+        <file alias="CasdoorWebView.qml">../qml/Auth/CasdoorWebView.qml</file>
 
         <file alias="icons/icon-add-user-blue.svg">../icons/icon-add-user-blue.svg</file>
         <file alias="icons/icon-directory.svg">../icons/icon-directory.svg</file>
