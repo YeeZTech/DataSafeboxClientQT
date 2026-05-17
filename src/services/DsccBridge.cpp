@@ -10,11 +10,10 @@
 #include <QStringList>
 #include <algorithm>
 
-#include "dscc/core/db/domain_ops.h"
-#include "dscc/core/db/organization.h"
+#include "AppConfig.h"
 #include "dscc/core/common/logger.h"
-#include "dscc/core/interface/global.h"
-#include "dscc/core/interface/organization.h"
+#include "dscc/core/db/domain_ops.h"
+#include "dscc/core/interface/app_assets.h"
 
 namespace {
 QString timestampToIsoString(uint64_t timestamp)
@@ -162,7 +161,9 @@ DsccBridge::DsccBridge(const QString &metaDbPath,
     : QObject(parent)
     , m_metaDbPath(metaDbPath)
     , m_dsccDataRoot(QDir::cleanPath(dsccDataRoot))
-    , m_serverUrl(serverUrl)
+    , m_serverUrl(serverUrl.trimmed().isEmpty()
+                      ? QString::fromLatin1(AppCfg::API_BASE_URL)
+                      : serverUrl.trimmed())
     , m_credential(credential)
 {
     registerDsccBridgeMetaTypes();
@@ -179,8 +180,6 @@ void DsccBridge::initialize()
         << QStringLiteral("[DsccBridge] initialize metaDbPath=\"%1\" dsccDataRoot=\"%2\" serverUrl=\"%3\"")
                .arg(m_metaDbPath, m_dsccDataRoot, m_serverUrl);
 
-    dscc::LoadSetting().Call(m_metaDbPath.toStdString());
-
     const QString localDataDir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     QDir().mkpath(localDataDir);
     const QString coreLogPath = QDir(localDataDir).filePath(QStringLiteral("dscc-core.log"));
@@ -188,10 +187,8 @@ void DsccBridge::initialize()
     qInfo().noquote()
         << QStringLiteral("[DsccBridge] corelib log file: \"%1\"").arg(coreLogPath);
 
-    dscc::db::Organization org;
-    org.server_url = m_serverUrl.toStdString();
-    org.info = "{}";
-    dscc::SaveOfficialOrg(org);
+    dscc::AppAssets appAssets(m_metaDbPath);
+    appAssets.AddTrustedServer(m_serverUrl, QStringLiteral("{}"));
 }
 
 void DsccBridge::shutdown()
@@ -240,7 +237,7 @@ void DsccBridge::setCurrentUser(const QString &userId,
     connectAssetSignals();
     m_currentUserId = trimmedUserId;
     m_currentUserName = trimmedUserName;
-    m_assets->SetCurrentUser(userId, accessToken, refreshToken);
+    m_assets->SetCurrentUser(trimmedUserId, m_serverUrl, accessToken, refreshToken);
     m_assets->Initialize();
 }
 
@@ -526,6 +523,10 @@ void DsccBridge::loadInstances(const QString &domainCode)
     for (const dscc::InstanceInfo &inst : instances) {
         list.append(instanceInfoToVariant(inst));
     }
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] loadInstances domainCode=\"%1\" count=%2")
+               .arg(domainCode)
+               .arg(list.size());
     emit instancesLoaded(domainCode, list);
 }
 
