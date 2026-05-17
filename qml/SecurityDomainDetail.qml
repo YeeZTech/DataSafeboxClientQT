@@ -157,6 +157,7 @@ Item {
             description: "",
             visibleUsers: [],
             instances: [],
+            appWhitelistAudits: [],
             exportAudits: [],
             pubKey: domainPubKey || "",
             isInactive: false
@@ -204,11 +205,152 @@ Item {
         return normalized
     }
 
-    function sortByTimeDesc(list, primaryField, secondaryField) {
-        if (!list || !Array.isArray(list)) {
+    function toJsArray(value) {
+        if (!value) {
             return []
         }
-        list.sort(function(a, b) {
+        if (Array.isArray(value)) {
+            return value.slice()
+        }
+        if (typeof value === "string" || typeof value !== "object") {
+            return []
+        }
+
+        var length = Number(value.length)
+        if (isNaN(length) || length < 0) {
+            return []
+        }
+
+        var result = []
+        for (var i = 0; i < length; i++) {
+            result.push(value[i])
+        }
+        return result
+    }
+
+    function normalizeInstanceStatus(statusValue) {
+        if (statusValue === undefined || statusValue === null) {
+            return ""
+        }
+
+        var statusText = ("" + statusValue).trim()
+        if (!statusText) {
+            return ""
+        }
+
+        if (statusText === "0") return "待审核"
+        if (statusText === "1") return "已授权"
+        if (statusText === "2") return "已拒绝"
+        if (statusText === "3") return "运行中"
+        if (statusText === "4") return "已结束"
+        return statusText
+    }
+
+    function normalizeInstance(rawInstance) {
+        var raw = rawInstance || {}
+        var instanceId = raw.id || raw.instanceCode || raw.instance_code || ""
+        var instanceName = raw.name || raw.instanceName || raw.instance_name || ""
+        var creatorUserId = raw.creatorUserId || raw.authUserId || raw.creator || raw.userId || ""
+        var statusValue = raw.status !== undefined ? raw.status : raw.instanceStatus
+        var volumeSize = raw.size !== undefined ? raw.size : raw.volumnSize
+
+        var normalized = Object.assign({}, raw)
+        normalized.id = instanceId
+        normalized.instanceCode = raw.instanceCode || instanceId
+        normalized.name = instanceName
+        normalized.instanceName = raw.instanceName || instanceName
+        normalized.status = normalizeInstanceStatus(statusValue)
+        normalized.size = volumeSize
+        normalized.creatorUserId = creatorUserId
+        normalized.authUserId = raw.authUserId || ""
+        normalized.applicantAccount = raw.applicantAccount || raw.account || raw.authUserName || ""
+        normalized.user = raw.user || normalized.applicantAccount || creatorUserId
+        normalized.duration = raw.duration !== undefined ? raw.duration : raw.totalRunTime
+        return normalized
+    }
+
+    function normalizeInstances(instances) {
+        var source = toJsArray(instances)
+        var normalized = []
+        for (var i = 0; i < source.length; i++) {
+            normalized.push(normalizeInstance(source[i]))
+        }
+        return normalized
+    }
+
+    function visibleUserMatchesInstance(visibleUser, instance) {
+        if (!visibleUser || !instance) {
+            return false
+        }
+
+        var userKeys = [
+            visibleUser.authUserId,
+            visibleUser.account,
+            visibleUser.authUserName,
+            visibleUser.displayName
+        ]
+        var instanceKeys = [
+            instance.creatorUserId,
+            instance.authUserId,
+            instance.applicantAccount,
+            instance.user
+        ]
+
+        for (var i = 0; i < userKeys.length; i++) {
+            var userKey = (userKeys[i] || "").toString().trim()
+            if (!userKey) continue
+            for (var j = 0; j < instanceKeys.length; j++) {
+                var instanceKey = (instanceKeys[j] || "").toString().trim()
+                if (instanceKey && instanceKey === userKey) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    function visibleUserText(visibleUser, fallback) {
+        if (!visibleUser) {
+            return fallback || ""
+        }
+
+        var displayName = (visibleUser.displayName || "").toString().trim()
+        var account = (visibleUser.account || "").toString().trim()
+        var authUserName = (visibleUser.authUserName || "").toString().trim()
+        var primary = account || displayName || authUserName
+        var secondary = displayName || authUserName
+
+        if (primary && secondary && primary !== secondary) {
+            return primary + " / " + secondary
+        }
+        return primary || fallback || ""
+    }
+
+    function resolveInstanceApplicantText(instance) {
+        var fallback = (instance && (instance.user || instance.applicantAccount || instance.creatorUserId || instance.authUserId)) ? (instance.user || instance.applicantAccount || instance.creatorUserId || instance.authUserId).toString().trim() : ""
+        var visibleUsers = toJsArray(root.domainData ? root.domainData.visibleUsers : [])
+        for (var i = 0; i < visibleUsers.length; i++) {
+            var visibleUser = visibleUsers[i] || {}
+            if (visibleUserMatchesInstance(visibleUser, instance)) {
+                return visibleUserText(visibleUser, fallback)
+            }
+        }
+        return fallback
+    }
+
+    function isInstanceCreatorVisibleUser(instance) {
+        var visibleUsers = toJsArray(root.domainData ? root.domainData.visibleUsers : [])
+        for (var i = 0; i < visibleUsers.length; i++) {
+            if (visibleUserMatchesInstance(visibleUsers[i], instance)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    function sortByTimeDesc(list, primaryField, secondaryField) {
+        var source = toJsArray(list)
+        source.sort(function(a, b) {
             var ta = toSortableTime(a && a[primaryField] ? a[primaryField] : (secondaryField ? (a && a[secondaryField] ? a[secondaryField] : "") : ""))
             var tb = toSortableTime(b && b[primaryField] ? b[primaryField] : (secondaryField ? (b && b[secondaryField] ? b[secondaryField] : "") : ""))
             if (ta === tb) {
@@ -216,11 +358,11 @@ Item {
             }
             return tb - ta
         })
-        return list
+        return source
     }
 
     function dedupeWhitelistAudits(list) {
-        var source = Array.isArray(list) ? list : []
+        var source = toJsArray(list)
         var deduped = []
         var seen = {}
         for (var i = 0; i < source.length; i++) {
@@ -241,7 +383,7 @@ Item {
     }
 
     function dedupeExportAudits(list) {
-        var source = Array.isArray(list) ? list : []
+        var source = toJsArray(list)
         var deduped = []
         var seen = {}
         for (var i = 0; i < source.length; i++) {
@@ -398,8 +540,6 @@ Item {
         if (typeof DsccBridge === "undefined") return
         DsccBridge.loadDomainSummary(root.currentDomainCode)
         DsccBridge.loadInstances(root.currentDomainCode)
-        DsccBridge.loadAudits(root.currentDomainCode, 1)  // 1=白名单
-        DsccBridge.loadAudits(root.currentDomainCode, 2)  // 2=导出文件
     }
 
     function formatPayerText(payerValue) {
@@ -2020,7 +2160,7 @@ Item {
                 property int rowHeight: 32  // Each instance row height
                 property int margins: 32  // Top and bottom margins (16px * 2)
                 property int spacing: 12  // Spacing between title and table
-                property int instanceCount: root.domainData.instances ? root.domainData.instances.length : 0
+                property int instanceCount: toJsArray(root.domainData.instances).length
 
                 // Pagination properties
                 property int currentPage: 1
@@ -2066,7 +2206,7 @@ Item {
                 readonly property int hdrLM3: 54
 
                 function getPagedInstances() {
-                    var list = root.domainData.instances || []
+                    var list = toJsArray(root.domainData.instances)
                     var start = (relatedInstancesCard.currentPage - 1) * relatedInstancesCard.itemsPerPage
                     return list.slice(start, Math.min(start + relatedInstancesCard.itemsPerPage, list.length))
                 }
@@ -2273,25 +2413,21 @@ Item {
                             visible: relatedInstancesCard.instanceCount > 0
                             
                             Repeater {
-                                model: {
-                                    var list = root.domainData.instances || []
-                                    var start = (relatedInstancesCard.currentPage - 1) * relatedInstancesCard.itemsPerPage
-                                    return list.slice(start, Math.min(start + relatedInstancesCard.itemsPerPage, list.length))
-                                }
+                                model: relatedInstancesCard.getPagedInstances()
                             
                                 Rectangle {
                                     width: parent.width
                                     height: 32
-                                property bool hovered: false
-                                color: hovered ? "#f2f7fd" : "transparent"
+                                    property bool hovered: false
+                                    color: hovered ? "#f2f7fd" : "transparent"
                                 
-                                Rectangle {
-                                    anchors.bottom: parent.bottom
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    height: index < root.domainData.instances.length - 1 ? 1 : 0
-                                    color: Theme.Colors.borderSlate
-                                }
+                                    Rectangle {
+                                        anchors.bottom: parent.bottom
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        height: index < relatedInstancesCard.getPagedInstances().length - 1 ? 1 : 0
+                                        color: Theme.Colors.borderSlate
+                                    }
 
                                 HoverHandler {
                                     id: relatedInstanceHoverHandler
@@ -2310,7 +2446,7 @@ Item {
                                         CenteredTooltipText {
                                             id: instanceApplicantText
                                             anchors.fill: parent
-                                            value: modelData.user || ""
+                                            value: resolveInstanceApplicantText(modelData)
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 6
@@ -2329,7 +2465,7 @@ Item {
                                         CenteredTooltipText {
                                             id: instanceNameText
                                             anchors.fill: parent
-                                            value: modelData.name || ""
+                                            value: modelData.instanceName || modelData.name || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 26
@@ -2415,10 +2551,10 @@ Item {
                                                 onExited: instanceOperationText.hovered = false
                                                 onClicked: {
                                                     // Populate instance dialog with data
-                                                    instanceDetailDialog.instanceId = modelData.id || ""
+                                                    instanceDetailDialog.instanceId = modelData.instanceCode || modelData.id || ""
                                                     instanceDetailDialog.status = modelData.status || ""
-                                                    instanceDetailDialog.creator = modelData.user || ""
-                                                    var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(modelData.size || modelData.volumnSize)
+                                                    instanceDetailDialog.creator = resolveInstanceApplicantText(modelData)
+                                                    var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(modelData.volumnSize !== undefined ? modelData.volumnSize : modelData.size)
                                                     instanceDetailDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes)
                                                     // Pass createdAt (updated to approval time) to details dialog
                                                     instanceDetailDialog.appliedTime = Theme.Utils.formatDateTime(modelData.createdAt || modelData.appliedTime)
@@ -2431,21 +2567,10 @@ Item {
                                                     // Determine if current user should see approver view
                                                     // Logic: Check if the instance creator is in current user's visible user list
                                                     var isApprover = false
-                                                    var instanceCreator = modelData.user || ""
-                                                    
-                                                    if (instanceCreator && root.currentUser) {
+                                                    if (root.currentUser && isInstanceCreatorVisibleUser(modelData)) {
                                                         // Check if current user is the domain creator (has all visible users)
                                                         if (root.isCurrentUserDomainCreator(root.domainData)) {
-                                                            // Current user is domain creator, check if instance creator is in domain's visible users
-                                                            if (root.domainData.visibleUsers) {
-                                                                for (var i = 0; i < root.domainData.visibleUsers.length; i++) {
-                                                                    var visibleUser = root.domainData.visibleUsers[i]
-                                                                    if (visibleUser && visibleUser.account === instanceCreator) {
-                                                                        isApprover = true
-                                                                        break
-                                                                    }
-                                                                }
-                                                            }
+                                                            isApprover = true
                                                         }
                                                     }
                                                     
@@ -3977,6 +4102,7 @@ Item {
     // ──────────────────────────────────────────────────────────────────────────
     Connections {
         target: DsccBridge
+        ignoreUnknownSignals: true
 
         function onDomainSummaryLoaded(domainCode, summary) {
             if (domainCode !== root.currentDomainCode) return
@@ -4001,7 +4127,7 @@ Item {
         function onInstancesLoaded(domainCode, instances) {
             if (domainCode !== root.currentDomainCode) return
             var updated = Object.assign({}, root.domainData)
-            updated.instances = sortByTimeDesc(instances || [], "createdAt", "appliedTime")
+            updated.instances = sortByTimeDesc(normalizeInstances(instances || []), "createdAt", "appliedTime")
             root.domainData = updated
         }
 
