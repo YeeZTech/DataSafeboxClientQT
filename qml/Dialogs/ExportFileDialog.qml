@@ -206,20 +206,20 @@ Popup {
                                 onClicked: fileDialog.open()
                             }
                         }
+                    }
                 }
-            }
 
-            Text {
-                id: fileErrorText
-                width: parent.width
-                text: root.fileError
-                color: "#FB2C36"
-                font.pixelSize: 12
-                visible: root.fileError && root.fileError.length > 0
-            }
+                Text {
+                    id: fileErrorText
+                    width: parent.width
+                    text: root.fileError
+                    color: "#FB2C36"
+                    font.pixelSize: 12
+                    visible: root.fileError && root.fileError.length > 0
+                }
 
-            // 导出原因
-            Column {
+                // 导出原因
+                Column {
                     width: parent.width
                     spacing: 8
 
@@ -272,7 +272,6 @@ Popup {
                         }
                     }
                 }
-
             }
 
             // 文字与按钮之间的间距（与设计稿一致为 16px，额外向下移动按钮 8px）
@@ -286,7 +285,7 @@ Popup {
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: (confirmArea.containsMouse && root.canSubmit) ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
                 opacity: root.canSubmit ? 1 : 0.5
-                
+
                 Behavior on opacity {
                     NumberAnimation {
                         duration: 300

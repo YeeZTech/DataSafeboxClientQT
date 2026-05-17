@@ -261,7 +261,7 @@ Dialog {
 
                 Text {
                     anchors.centerIn: parent
-                        text: UpdateManager.isDownloading ? "下载中..." : (UpdateManager.downloadProgress >= 1.0 ? "立即安装" : "立即更新")
+                    text: UpdateManager.isDownloading ? "下载中..." : (UpdateManager.downloadProgress >= 1.0 ? "立即安装" : "立即更新")
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: "white"
