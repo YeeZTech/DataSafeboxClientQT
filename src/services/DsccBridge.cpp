@@ -366,6 +366,26 @@ void DsccBridge::connectAssetSignals()
                 emit removeUserFromDomainFailed(operationId, domainCode, userId, notification);
             });
 
+    connect(m_assets.get(), &dscc::UserAssets::AuditInstanceRequestSuccess,
+            this, [this](uint32_t operationId, QString instanceCode) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib AuditInstanceRequestSuccess operationId=%1 instanceCode=\"%2\"")
+                           .arg(operationId)
+                           .arg(instanceCode);
+                emit auditInstanceRequestSuccess(operationId, instanceCode);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::AuditInstanceRequestFailed,
+            this, [this](uint32_t operationId,
+                         QString instanceCode,
+                         dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib AuditInstanceRequestFailed operationId=%1 instanceCode=\"%2\"")
+                                    .arg(operationId)
+                                    .arg(instanceCode),
+                                notification);
+                emit auditInstanceRequestFailed(operationId, instanceCode, notification);
+            });
+
     connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
             &dscc::ActiveNotify::MessageReceived,
             this,
@@ -856,5 +876,42 @@ void DsccBridge::closeDomain(const QString &domainCode)
         << QStringLiteral("[DsccBridge] closeDomain submitted operationId=%1 domainCode=\"%2\"")
                .arg(handle.GetOperationId())
                .arg(trimmedDomainCode);
+    Q_UNUSED(handle);
+}
+
+void DsccBridge::auditInstanceRequest(const QString &instanceCode, bool approved)
+{
+    const QString trimmedInstanceCode = instanceCode.trimmed();
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] auditInstanceRequest rejected because UserAssets is not initialized instanceCode=\"%1\"")
+                   .arg(trimmedInstanceCode);
+        emit auditInstanceRequestFailed(0, trimmedInstanceCode, dscc::Notification());
+        return;
+    }
+
+    if (trimmedInstanceCode.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] auditInstanceRequest rejected because instanceCode is empty");
+        emit auditInstanceRequestFailed(
+            0,
+            QString(),
+            dscc::Notification(dscc::Notification::kAuditInstanceRequestEmptyInstanceCode,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] auditInstanceRequest request instanceCode=\"%1\" approved=%2 currentUserHash=%3")
+               .arg(trimmedInstanceCode)
+               .arg(approved)
+               .arg(logHash(m_currentUserId));
+
+    const dscc::Handle handle = m_assets->AuditInstanceRequest(trimmedInstanceCode, approved);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] auditInstanceRequest submitted operationId=%1 instanceCode=\"%2\" approved=%3")
+               .arg(handle.GetOperationId())
+               .arg(trimmedInstanceCode)
+               .arg(approved);
     Q_UNUSED(handle);
 }

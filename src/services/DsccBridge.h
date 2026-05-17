@@ -41,6 +41,7 @@ public:
     Q_INVOKABLE void removeUserFromDomain(const QString &domainCode, const QString &userId);
     Q_INVOKABLE QString domainCreateFailureMessage(uint32_t operation_id,
                                                    const QString &fallback) const;
+    Q_INVOKABLE void auditInstanceRequest(const QString &instanceCode, bool approved);
     Q_INVOKABLE QString notificationMessage(const QVariant &notification,
                                             const QString &fallback) const;
 
@@ -63,6 +64,10 @@ signals:
     void removeUserFromDomainFailed(uint32_t operation_id,
                                     QString domain_code,
                                     QString user_id,
+                                    dscc::Notification notification);
+    void auditInstanceRequestSuccess(uint32_t operation_id, QString instance_code);
+    void auditInstanceRequestFailed(uint32_t operation_id,
+                                    QString instance_code,
                                     dscc::Notification notification);
 
 private:

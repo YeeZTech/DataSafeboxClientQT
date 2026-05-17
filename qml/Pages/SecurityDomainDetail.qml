@@ -29,6 +29,9 @@ Item {
     // Pending state for adding visible user
     property var    pendingAddUserFullInfo: null
 
+    // Pending state for instance audit
+    property bool   instanceAuditPending: false
+
     // Description saving state
     property bool   isDescriptionSaving: false
 
@@ -809,14 +812,22 @@ Item {
     InstanceDetailDialog {
         id: instanceDetailDialog
         parent: Overlay.overlay  // Use application overlay as parent for proper sizing
-        allowApproveReject: !root.isDomainReadOnly
+        allowApproveReject: !root.isDomainReadOnly && !root.instanceAuditPending
 
         onApproveClicked: {
-            instanceDetailDialog.status = "已授权"
+            if (root.instanceAuditPending) return
+            var code = instanceDetailDialog.instanceId || ""
+            if (!code) return
+            root.instanceAuditPending = true
+            DsccBridge.auditInstanceRequest(code, true)
         }
 
         onRejectClicked: {
-            instanceDetailDialog.status = "已拒绝"
+            if (root.instanceAuditPending) return
+            var code = instanceDetailDialog.instanceId || ""
+            if (!code) return
+            root.instanceAuditPending = true
+            DsccBridge.auditInstanceRequest(code, false)
         }
     }
 
@@ -4211,6 +4222,18 @@ Item {
             window.showError(errorMessage || "停用安全域失败", "停用安全域")
         }
         // 注意：onDomainClosed 成功的导航/刷新由 main.qml 统一处理（切换至 home + 刷新列表）
+
+        function onAuditInstanceRequestSuccess(operationId, instanceCode) {
+            root.instanceAuditPending = false
+            DsccBridge.loadInstances(root.currentDomainCode)
+        }
+
+        function onAuditInstanceRequestFailed(operationId, instanceCode, notification) {
+            root.instanceAuditPending = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "实例审核失败")
+            window.showError(errorMessage || "实例审核失败", "实例审核")
+            DsccBridge.loadInstances(root.currentDomainCode)
+        }
     }
 
     // ──────────────────────────────────────────────────────────────────────────
