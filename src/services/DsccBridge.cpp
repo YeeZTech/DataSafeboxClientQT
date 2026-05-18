@@ -615,16 +615,17 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         if (applyType == 1) {
             map.insert(QStringLiteral("appName"), audit.file_name);
             map.insert(QStringLiteral("fileName"), audit.file_name);
-            map.insert(QStringLiteral("fileCount"), quint64(audit.file_count));
             if (!audit.file_name.isEmpty()) {
                 QVariantMap process;
                 process.insert(QStringLiteral("masterFileName"), audit.file_name);
                 map.insert(QStringLiteral("processes"), QVariantList{process});
             }
         } else {
-            map.insert(QStringLiteral("fileCount"), quint64(audit.file_count));
+            map.insert(QStringLiteral("fileName"), audit.file_name);
             map.insert(QStringLiteral("fileSize"), quint64(audit.file_size));
-            map.insert(QStringLiteral("files"), QVariantList());
+            map.insert(QStringLiteral("files"),
+                       audit.file_name.isEmpty() ? QVariantList()
+                                                 : QVariantList{audit.file_name});
         }
 
         list.append(map);

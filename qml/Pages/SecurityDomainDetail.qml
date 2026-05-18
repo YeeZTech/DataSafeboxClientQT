@@ -3328,14 +3328,14 @@ Item {
                 property int itemsPerPage: 3
                 property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
 
-                readonly property int colApplyCode: 100    // 申请编号
-                readonly property int colApplicant: 96     // 申请方
-                readonly property int colFileCount: 72     // 文件数量
-                readonly property int colFileSize: 84      // 文件大小
+                readonly property int colApplyCode: 90     // 申请编号
+                readonly property int colApplicant: 86     // 申请方
+                readonly property int colFileName: 110     // 文件名称
+                readonly property int colFileSize: 80      // 文件大小
                 readonly property int colStatus: 80        // 状态
-                readonly property int colTime: 110         // 申请时间
-                readonly property int colInstance: 126     // 实例名称
-                readonly property int colAction: 78        // 操作
+                readonly property int colTime: 106         // 申请时间
+                readonly property int colInstance: 122     // 实例名称
+                readonly property int colAction: 72        // 操作
 
                 function normalizeCurrentPage() {
                     var total = exportAuditCard.totalPages
@@ -3506,13 +3506,13 @@ Item {
                                 }
 
                                 Item {
-                                    width: exportAuditCard.colFileCount
+                                    width: exportAuditCard.colFileName
                                     height: parent.height
                                     SelectableText {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "文件数量"
+                                        text: "文件名称"
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3661,19 +3661,20 @@ Item {
                                         }
                                     }
 
-                                    // 文件数量
+                                    // 文件名称
                                     Item {
-                                        width: exportAuditCard.colFileCount
+                                        width: exportAuditCard.colFileName
                                         height: parent.height
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 6
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: ((modelData.fileCount !== undefined && modelData.fileCount !== null)
-                                                   ? modelData.fileCount
-                                                   : ((modelData.files && modelData.files.length) ? modelData.files.length : 0)) + ""
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
+                                        CenteredTooltipText {
+                                            anchors.fill: parent
+                                            value: modelData.fileName || modelData.file_name || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
                                         }
                                     }
 
