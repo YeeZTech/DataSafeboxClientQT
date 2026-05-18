@@ -32,6 +32,9 @@ Item {
     // Pending state for instance audit
     property bool   instanceAuditPending: false
 
+    // Pending state for audit request (app whitelist / export)
+    property bool   auditRequestPending: false
+
     // Description saving state
     property bool   isDescriptionSaving: false
 
@@ -793,20 +796,28 @@ Item {
     ExportDetailDialog {
         id: exportDetailDialog
         isCreator: root.isCreator
-        allowApproveReject: !root.isDomainReadOnly  // Disable approve/reject when domain is closed or current user isn't creator
-        
+        allowApproveReject: !root.isDomainReadOnly && !root.auditRequestPending
+
         onApproveClicked: {
+            if (root.auditRequestPending) return
             var _applyCode = exportDetailDialog.exportId || ""
             var _fileCode  = exportDetailDialog.fileCode || ""
-            if (!_applyCode || !_fileCode) return
-            exportDetailDialog.status = "已授权"
+            var _fileHash  = exportDetailDialog.fileHash || ""
+            if (!_applyCode) { window.showError("缺少申请编号", "文件导出审核"); return }
+            if (!_fileCode) { window.showError("缺少文件编号", "文件导出审核"); return }
+            if (!_fileHash) { window.showError("缺少文件哈希", "文件导出审核"); return }
+            root.auditRequestPending = true
+            DsccBridge.auditRequest(_applyCode, _fileCode, true, _fileHash)
         }
 
         onRejectClicked: {
+            if (root.auditRequestPending) return
             var _applyCode = exportDetailDialog.exportId || ""
             var _fileCode  = exportDetailDialog.fileCode || ""
-            if (!_applyCode || !_fileCode) return
-            exportDetailDialog.status = "已拒绝"
+            if (!_applyCode) { window.showError("缺少申请编号", "文件导出审核"); return }
+            if (!_fileCode) { window.showError("缺少文件编号", "文件导出审核"); return }
+            root.auditRequestPending = true
+            DsccBridge.auditRequest(_applyCode, _fileCode, false, "")
         }
     }
     
@@ -837,48 +848,28 @@ Item {
     AppWhitelistDetailDialog {
         id: appWhitelistDetailDialog
         parent: Overlay.overlay
-        showActionButtons: !root.isDomainReadOnly
+        showActionButtons: !root.isDomainReadOnly && !root.auditRequestPending
 
         onApproveClicked: {
+            if (root.auditRequestPending) return
             var _applyCode = appWhitelistDetailDialog.applyCode || ""
-            var _processes = appWhitelistDetailDialog.processes || []
-            var _fileList  = []
-            for (var wi = 0; wi < _processes.length; wi++) {
-                var _item = _processes[wi] || {}
-                var _itemFileCode = _item.fileCode || ""
-                if (!_itemFileCode) continue
-                _fileList.push({ fileCode: _itemFileCode })
-            }
-            if (!_applyCode || _fileList.length === 0) return
-            var _wlFileCode1 = _fileList[0].fileCode
-            appWhitelistDetailDialog.status = "已授权"
-            var _updatedProcesses1 = []
-            var _ps1 = appWhitelistDetailDialog.processes || []
-            for (var pi1 = 0; pi1 < _ps1.length; pi1++) {
-                var _pitem1 = _ps1[pi1] || {}; _pitem1.status = "已授权"; _updatedProcesses1.push(_pitem1)
-            }
-            appWhitelistDetailDialog.processes = _updatedProcesses1
+            var _fileCode  = appWhitelistDetailDialog.fileCode || ""
+            var _fileHash  = appWhitelistDetailDialog.fileHash || ""
+            if (!_applyCode) { window.showError("缺少申请编号", "应用白名单审核"); return }
+            if (!_fileCode) { window.showError("缺少文件编号", "应用白名单审核"); return }
+            if (!_fileHash) { window.showError("缺少文件哈希", "应用白名单审核"); return }
+            root.auditRequestPending = true
+            DsccBridge.auditRequest(_applyCode, _fileCode, true, _fileHash)
         }
 
         onRejectClicked: {
+            if (root.auditRequestPending) return
             var _applyCode = appWhitelistDetailDialog.applyCode || ""
-            var _processes = appWhitelistDetailDialog.processes || []
-            var _fileList  = []
-            for (var wi = 0; wi < _processes.length; wi++) {
-                var _item = _processes[wi] || {}
-                var _itemFileCode = _item.fileCode || ""
-                if (!_itemFileCode) continue
-                _fileList.push({ fileCode: _itemFileCode })
-            }
-            if (!_applyCode || _fileList.length === 0) return
-            var _wlFileCode2 = _fileList[0].fileCode
-            appWhitelistDetailDialog.status = "已拒绝"
-            var _updatedProcesses2 = []
-            var _ps2 = appWhitelistDetailDialog.processes || []
-            for (var pi2 = 0; pi2 < _ps2.length; pi2++) {
-                var _pitem2 = _ps2[pi2] || {}; _pitem2.status = "已拒绝"; _updatedProcesses2.push(_pitem2)
-            }
-            appWhitelistDetailDialog.processes = _updatedProcesses2
+            var _fileCode  = appWhitelistDetailDialog.fileCode || ""
+            if (!_applyCode) { window.showError("缺少申请编号", "应用白名单审核"); return }
+            if (!_fileCode) { window.showError("缺少文件编号", "应用白名单审核"); return }
+            root.auditRequestPending = true
+            DsccBridge.auditRequest(_applyCode, _fileCode, false, "")
         }
     }
     
@@ -4252,6 +4243,20 @@ Item {
             var errorMessage = DsccBridge.notificationMessage(notification, "实例审核失败")
             window.showError(errorMessage || "实例审核失败", "实例审核")
             DsccBridge.loadInstances(root.currentDomainCode)
+        }
+
+        function onAuditRequestSuccess(operationId, auditCode, fileCode) {
+            root.auditRequestPending = false
+            DsccBridge.loadAudits(root.currentDomainCode, 1)
+            DsccBridge.loadAudits(root.currentDomainCode, 2)
+        }
+
+        function onAuditRequestFailed(operationId, auditCode, fileCode, notification) {
+            root.auditRequestPending = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "审核操作失败")
+            window.showError(errorMessage || "审核操作失败", "审核操作")
+            DsccBridge.loadAudits(root.currentDomainCode, 1)
+            DsccBridge.loadAudits(root.currentDomainCode, 2)
         }
     }
 

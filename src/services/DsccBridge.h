@@ -43,6 +43,10 @@ public:
     Q_INVOKABLE QString domainCreateFailureMessage(uint32_t operation_id,
                                                    const QString &fallback) const;
     Q_INVOKABLE void auditInstanceRequest(const QString &instanceCode, bool approved);
+    Q_INVOKABLE void auditRequest(const QString &auditCode,
+                                  const QString &fileCode,
+                                  bool approved,
+                                  const QString &reason);
     Q_INVOKABLE QString notificationMessage(const QVariant &notification,
                                             const QString &fallback) const;
 
@@ -67,6 +71,11 @@ signals:
                                     QString domain_code,
                                     QString user_id,
                                     dscc::Notification notification);
+    void auditRequestSuccess(uint32_t operation_id, QString audit_code, QString file_code);
+    void auditRequestFailed(uint32_t operation_id,
+                            QString audit_code,
+                            QString file_code,
+                            dscc::Notification notification);
     void auditInstanceRequestSuccess(uint32_t operation_id, QString instance_code);
     void auditInstanceRequestFailed(uint32_t operation_id,
                                     QString instance_code,

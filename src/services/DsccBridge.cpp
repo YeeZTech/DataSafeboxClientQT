@@ -366,6 +366,29 @@ void DsccBridge::connectAssetSignals()
                 emit removeUserFromDomainFailed(operationId, domainCode, userId, notification);
             });
 
+    connect(m_assets.get(), &dscc::UserAssets::AuditRequestSuccess,
+            this, [this](uint32_t operationId, QString auditCode, QString fileCode) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib AuditRequestSuccess operationId=%1 auditCode=\"%2\" fileCode=\"%3\"")
+                           .arg(operationId)
+                           .arg(auditCode)
+                           .arg(fileCode);
+                emit auditRequestSuccess(operationId, auditCode, fileCode);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::AuditRequestFailed,
+            this, [this](uint32_t operationId,
+                         QString auditCode,
+                         QString fileCode,
+                         dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib AuditRequestFailed operationId=%1 auditCode=\"%2\" fileCode=\"%3\"")
+                                    .arg(operationId)
+                                    .arg(auditCode)
+                                    .arg(fileCode),
+                                notification);
+                emit auditRequestFailed(operationId, auditCode, fileCode, notification);
+            });
+
     connect(m_assets.get(), &dscc::UserAssets::AuditInstanceRequestSuccess,
             this, [this](uint32_t operationId, QString instanceCode) {
                 qInfo().noquote()
@@ -592,6 +615,8 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         map.insert(QStringLiteral("applicant"), audit.applicant_user_id);
         map.insert(QStringLiteral("applicantUserId"), audit.applicant_user_id);
         map.insert(QStringLiteral("instanceCode"), audit.instance_code);
+        map.insert(QStringLiteral("fileCode"), audit.file_code);
+        map.insert(QStringLiteral("fileHash"), audit.file_hash);
 
         const QString instanceName = instanceNameMap.value(audit.instance_code,
                                                             audit.instance_code);
@@ -615,9 +640,13 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         if (applyType == 1) {
             map.insert(QStringLiteral("appName"), audit.file_name);
             map.insert(QStringLiteral("fileName"), audit.file_name);
-            if (!audit.file_name.isEmpty()) {
+            if (!audit.file_name.isEmpty() || !audit.file_code.isEmpty()
+                || !audit.file_hash.isEmpty()) {
                 QVariantMap process;
+                process.insert(QStringLiteral("fileName"), audit.file_name);
                 process.insert(QStringLiteral("masterFileName"), audit.file_name);
+                process.insert(QStringLiteral("fileCode"), audit.file_code);
+                process.insert(QStringLiteral("fileHash"), audit.file_hash);
                 map.insert(QStringLiteral("processes"), QVariantList{process});
             }
         } else {
@@ -1003,4 +1032,78 @@ void DsccBridge::auditInstanceRequest(const QString &instanceCode, bool approved
                .arg(trimmedInstanceCode)
                .arg(approved);
     Q_UNUSED(handle);
+}
+
+void DsccBridge::auditRequest(const QString &auditCode,
+                              const QString &fileCode,
+                              bool approved,
+                              const QString &reason)
+{
+    const QString trimmedAuditCode = auditCode.trimmed();
+    const QString trimmedFileCode = fileCode.trimmed();
+    const QString trimmedReason = reason.trimmed();
+
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] auditRequest rejected because UserAssets is not initialized auditCode=\"%1\"")
+                   .arg(trimmedAuditCode);
+        emit auditRequestFailed(0, trimmedAuditCode, trimmedFileCode, dscc::Notification());
+        return;
+    }
+
+    if (trimmedAuditCode.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] auditRequest rejected because auditCode is empty");
+        emit auditRequestFailed(
+            0,
+            QString(),
+            trimmedFileCode,
+            dscc::Notification(dscc::Notification::kAuditRequestEmptyAuditCode,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    if (trimmedFileCode.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] auditRequest rejected because fileCode is empty auditCode=\"%1\"")
+                   .arg(trimmedAuditCode);
+        emit auditRequestFailed(
+            0,
+            trimmedAuditCode,
+            QString(),
+            dscc::Notification(dscc::Notification::kAuditRequestEmptyFileCode,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    if (approved && trimmedReason.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] auditRequest rejected because approval reason is empty auditCode=\"%1\" fileCode=\"%2\"")
+                   .arg(trimmedAuditCode)
+                   .arg(trimmedFileCode);
+        emit auditRequestFailed(
+            0,
+            trimmedAuditCode,
+            trimmedFileCode,
+            dscc::Notification(dscc::Notification::kAuditRequestMissingApprovalCredential,
+                               dscc::Notification::kError));
+        return;
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] auditRequest request auditCode=\"%1\" fileCode=\"%2\" approved=%3 reasonLength=%4 currentUserHash=%5")
+               .arg(trimmedAuditCode)
+               .arg(trimmedFileCode)
+               .arg(approved)
+               .arg(trimmedReason.size())
+               .arg(logHash(m_currentUserId));
+
+    const dscc::Handle h = m_assets->AuditRequest(trimmedAuditCode, trimmedFileCode, approved, trimmedReason);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] auditRequest submitted operationId=%1 auditCode=\"%2\" fileCode=\"%3\" approved=%4")
+               .arg(h.GetOperationId())
+               .arg(trimmedAuditCode)
+               .arg(trimmedFileCode)
+               .arg(approved);
+    Q_UNUSED(h);
 }
