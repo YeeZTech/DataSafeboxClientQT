@@ -13,7 +13,7 @@ Popup {
     
     property string account: ""
     property bool hasError: false
-    property string errorMessage: "查询用户不存在"
+    property string errorMessage: qsTr("User not found")
     property bool isVerifying: false
     property string pendingAccount: ""
     property var currentUserInfo: null  // 存储当前验证通过的用户信息
@@ -24,12 +24,12 @@ Popup {
     function normalizeUserSearchError(message) {
         var text = message ? message.toString().trim() : ""
         if (!text) {
-            return "查询用户不存在"
+            return qsTr("User not found")
         }
 
         // Defensive fallback for mojibake/garbled backend text.
         if (/[�]/.test(text) || /(钐登|鑠查谢|璧绺|缺少|字段|失败|状态|异常|字碱皮|琀|潏)/.test(text)) {
-            return "查询用户不存在"
+            return qsTr("User not found")
         }
 
         return text
@@ -54,7 +54,7 @@ Popup {
             root.isVerifying = false
             root.pendingAccount = ""
             root.hasError = true
-            root.errorMessage = "网络请求超时，请检查网络后重试"
+            root.errorMessage = qsTr("Network request timed out, please check your connection and retry")
         }
     }
     
@@ -78,7 +78,7 @@ Popup {
         SelectableText {
             x: 24
             y: 24
-            text: "添加可见用户"
+            text: qsTr("Add Visible User")
             font.pixelSize: 18
             font.weight: Font.DemiBold
             color: "#0f172b"
@@ -119,7 +119,7 @@ Popup {
             spacing: 8
 
             SelectableText {
-                text: "账号："
+                text: qsTr("Account:")
                 font.pixelSize: 14
                 font.weight: Font.Medium
                 color: "#314158"
@@ -164,7 +164,7 @@ Popup {
                     Text {
                         anchors.fill: parent
                         verticalAlignment: Text.AlignVCenter
-                        text: "请输入 Casdoor 账号名"
+                        text: qsTr("Please enter the Casdoor account name")
                         font.pixelSize: 14
                         color: "#5a7c9b"
                         visible: !accountInput.text && !accountInput.activeFocus
@@ -245,7 +245,7 @@ Popup {
 
                 SelectableText {
                     anchors.centerIn: parent
-                    text: "取消"
+                    text: qsTr("Cancel")
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: "#314158"
@@ -279,7 +279,7 @@ Popup {
 
                 SelectableText {
                     anchors.centerIn: parent
-                    text: "添加"
+                    text: qsTr("Add")
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: "white"
@@ -322,7 +322,7 @@ Popup {
             var authUserId = (user.authUserId || "").trim()
             if (!account || !authUserId) {
                 root.hasError = true
-                root.errorMessage = "查询结果缺少必填字段，请联系管理员"
+                root.errorMessage = qsTr("Query result is missing required fields, please contact administrator")
                 return
             }
 
@@ -372,7 +372,7 @@ Popup {
 
             SelectableText {
                 width: parent.width
-                text: "提示"
+                text: qsTr("Prompt")
                 font.pixelSize: 16
                 font.weight: Font.Medium
                 color: "#0f172b"
@@ -399,7 +399,7 @@ Popup {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "确定"
+                        text: qsTr("OK")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: Theme.Colors.primaryText
