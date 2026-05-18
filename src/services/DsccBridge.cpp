@@ -550,6 +550,94 @@ void DsccBridge::loadInstances(const QString &domainCode)
     emit instancesLoaded(domainCode, list);
 }
 
+void DsccBridge::loadAudits(const QString &domainCode, int applyType)
+{
+    const QString trimmedDomainCode = domainCode.trimmed();
+    if (!m_assets) {
+        emit auditsLoaded(trimmedDomainCode, applyType, QVariantList());
+        return;
+    }
+
+    if (applyType != 1 && applyType != 2) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] loadAudits unsupported applyType=%1 domainCode=\"%2\"")
+                   .arg(applyType)
+                   .arg(trimmedDomainCode);
+        emit auditsLoaded(trimmedDomainCode, applyType, QVariantList());
+        return;
+    }
+
+    QHash<QString, QString> instanceNameMap;
+    const QList<dscc::InstanceInfo> instances = m_assets->ListInstances(trimmedDomainCode);
+    for (const dscc::InstanceInfo &inst : instances) {
+        if (!inst.instance_code.isEmpty() && !inst.instance_name.isEmpty()) {
+            instanceNameMap.insert(inst.instance_code, inst.instance_name);
+        }
+    }
+
+    QList<dscc::AuditInfo> audits = m_assets->ListAudits(trimmedDomainCode,
+                                                          static_cast<uint32_t>(applyType));
+    std::sort(audits.begin(), audits.end(),
+              [](const dscc::AuditInfo &a, const dscc::AuditInfo &b) {
+                  return a.created_at > b.created_at;
+              });
+
+    QVariantList list;
+    list.reserve(audits.size());
+    for (const dscc::AuditInfo &audit : audits) {
+        QVariantMap map;
+        map.insert(QStringLiteral("applyCode"), audit.apply_code);
+        map.insert(QStringLiteral("id"), audit.apply_code);
+        map.insert(QStringLiteral("applyType"), applyType);
+        map.insert(QStringLiteral("applicant"), audit.applicant_user_id);
+        map.insert(QStringLiteral("applicantUserId"), audit.applicant_user_id);
+        map.insert(QStringLiteral("instanceCode"), audit.instance_code);
+
+        const QString instanceName = instanceNameMap.value(audit.instance_code,
+                                                            audit.instance_code);
+        map.insert(QStringLiteral("instanceName"), instanceName);
+        map.insert(QStringLiteral("instanceId"), audit.instance_code);
+
+        QString statusText;
+        switch (audit.status) {
+        case 0: statusText = QStringLiteral("待审核"); break;
+        case 1: statusText = QStringLiteral("已授权"); break;
+        case 2: statusText = QStringLiteral("已拒绝"); break;
+        default: statusText = QString::number(audit.status); break;
+        }
+        map.insert(QStringLiteral("status"), statusText);
+        map.insert(QStringLiteral("statusCode"), audit.status);
+
+        const QString createdAtStr = timestampToIsoString(audit.created_at);
+        map.insert(QStringLiteral("createdAt"), createdAtStr);
+        map.insert(QStringLiteral("applyTime"), createdAtStr);
+
+        if (applyType == 1) {
+            map.insert(QStringLiteral("appName"), audit.file_name);
+            map.insert(QStringLiteral("fileName"), audit.file_name);
+            map.insert(QStringLiteral("fileCount"), quint64(audit.file_count));
+            if (!audit.file_name.isEmpty()) {
+                QVariantMap process;
+                process.insert(QStringLiteral("masterFileName"), audit.file_name);
+                map.insert(QStringLiteral("processes"), QVariantList{process});
+            }
+        } else {
+            map.insert(QStringLiteral("fileCount"), quint64(audit.file_count));
+            map.insert(QStringLiteral("fileSize"), quint64(audit.file_size));
+            map.insert(QStringLiteral("files"), QVariantList());
+        }
+
+        list.append(map);
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] loadAudits domainCode=\"%1\" applyType=%2 count=%3")
+               .arg(trimmedDomainCode)
+               .arg(applyType)
+               .arg(list.size());
+    emit auditsLoaded(trimmedDomainCode, applyType, list);
+}
+
 void DsccBridge::loadDomainSummary(const QString &domainCode)
 {
     QVariantMap summary;

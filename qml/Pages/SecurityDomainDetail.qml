@@ -543,6 +543,8 @@ Item {
         if (typeof DsccBridge === "undefined") return
         DsccBridge.loadDomainSummary(root.currentDomainCode)
         DsccBridge.loadInstances(root.currentDomainCode)
+        DsccBridge.loadAudits(root.currentDomainCode, 1)
+        DsccBridge.loadAudits(root.currentDomainCode, 2)
     }
 
     function formatPayerText(payerValue) {

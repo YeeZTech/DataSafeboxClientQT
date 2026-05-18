@@ -34,6 +34,7 @@ public:
     Q_INVOKABLE void loadDomainList();
     Q_INVOKABLE void loadInstances(const QString &domainCode);
     Q_INVOKABLE void loadDomainSummary(const QString &domainCode);
+    Q_INVOKABLE void loadAudits(const QString &domainCode, int applyType);
     Q_INVOKABLE void createDomain(const QVariantMap &info);
     Q_INVOKABLE void closeDomain(const QString &domainCode);
     Q_INVOKABLE void updateDomainDesc(const QString &domainCode, const QString &desc);
@@ -49,6 +50,7 @@ signals:
     void domainListLoaded(QVariantList domains);
     void domainSummaryLoaded(QString domainCode, QVariantMap summary);
     void instancesLoaded(QString domainCode, QVariantList instances);
+    void auditsLoaded(QString domainCode, int applyType, QVariantList audits);
     void domainCreated(uint32_t operation_id, QString domain_code);
     void domainCreateFailed(uint32_t operation_id, dscc::Notification notification);
     void domainClosed(uint32_t operation_id, QString domain_code);
