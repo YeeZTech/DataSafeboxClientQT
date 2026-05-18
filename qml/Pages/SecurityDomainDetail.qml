@@ -2748,17 +2748,13 @@ Item {
                 property int currentPage: 1
                 property int itemsPerPage: 3
                 property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
-                readonly property int colApplicant: 120   // 申请方（固定）
-                readonly property int colAction: 52        // 操作（固定）
-                // 中间 5 列等宽：卡片行宽 746(778-32)，可用 574(746-120-52) / 5 ≈ 114
-                readonly property int innerColWidth: 114
-
-                // 各标题在其列 Item 内的 leftMargin（申请方固定 6，操作anchors.right）
-                readonly property int hdrLM1: 3    // 实例名称
-                readonly property int hdrLM2: 6    // 应用名称
-                readonly property int hdrLM3: 9    // 数量
-                readonly property int hdrLM4: 2    // 创建时间
-                readonly property int hdrLM5: 15   // 状态
+                readonly property int colApplyCode: 110    // 申请编号
+                readonly property int colApplicant: 100    // 申请方
+                readonly property int colAppName: 120      // 应用名称
+                readonly property int colStatus: 80        // 状态
+                readonly property int colTime: 120         // 申请时间
+                readonly property int colInstance: 160     // 实例名称
+                readonly property int colAction: 52        // 操作
 
                 function normalizeCurrentPage() {
                     var total = appWhitelistAuditCard.totalPages
@@ -2897,7 +2893,20 @@ Item {
                             Row {
                                 anchors.fill: parent
 
-                                // Applicant column
+                                Item {
+                                    width: appWhitelistAuditCard.colApplyCode
+                                    height: parent.height
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "申请编号"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
                                 Item {
                                     width: appWhitelistAuditCard.colApplicant
                                     height: parent.height
@@ -2912,28 +2921,12 @@ Item {
                                     }
                                 }
 
-                                // Security instance name column
                                 Item {
-                                    width: appWhitelistAuditCard.innerColWidth
+                                    width: appWhitelistAuditCard.colAppName
                                     height: parent.height
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM1
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: "实例名称"
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
-                                    }
-                                }
-
-                                // Application name column
-                                Item {
-                                    width: appWhitelistAuditCard.innerColWidth
-                                    height: parent.height
-                                    SelectableText {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM2
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "应用名称"
                                         font.pixelSize: 14
@@ -2942,43 +2935,12 @@ Item {
                                     }
                                 }
 
-                                // File count column
                                 Item {
-                                    width: appWhitelistAuditCard.innerColWidth
+                                    width: appWhitelistAuditCard.colStatus
                                     height: parent.height
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM3
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: "数量"
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
-                                    }
-                                }
-
-                                // Created time column
-                                Item {
-                                    width: appWhitelistAuditCard.innerColWidth
-                                    height: parent.height
-                                    SelectableText {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM4
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: "创建时间"
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
-                                    }
-                                }
-
-                                // Status column
-                                Item {
-                                    width: appWhitelistAuditCard.innerColWidth
-                                    height: parent.height
-                                    SelectableText {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM5
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "状态"
                                         font.pixelSize: 14
@@ -2987,7 +2949,34 @@ Item {
                                     }
                                 }
 
-                                // Operation column
+                                Item {
+                                    width: appWhitelistAuditCard.colTime
+                                    height: parent.height
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "申请时间"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
+                                Item {
+                                    width: appWhitelistAuditCard.colInstance
+                                    height: parent.height
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "实例名称"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
                                 Item {
                                     width: appWhitelistAuditCard.colAction
                                     height: parent.height
@@ -3040,12 +3029,28 @@ Item {
                                     Row {
                                         anchors.fill: parent
 
-                                        // Applicant cell
+                                        // 申请编号
+                                        Item {
+                                            width: appWhitelistAuditCard.colApplyCode
+                                            height: parent.height
+                                            CenteredTooltipText {
+                                                anchors.fill: parent
+                                                value: modelData.applyCode || modelData.id || ""
+                                                textPixelSize: 14
+                                                textColor: Theme.Colors.textLabel
+                                                leftMargin: 6
+                                                rightMargin: 6
+                                                beforeChars: 6
+                                                afterChars: 4
+                                                boundsItem: appWhitelistAuditCard
+                                            }
+                                        }
+
+                                        // 申请方
                                         Item {
                                             width: appWhitelistAuditCard.colApplicant
                                             height: parent.height
                                             CenteredTooltipText {
-                                                id: wlApplicantText
                                                 anchors.fill: parent
                                                 value: modelData.applicant || ""
                                                 textPixelSize: 14
@@ -3053,35 +3058,16 @@ Item {
                                                 leftMargin: 6
                                                 rightMargin: 6
                                                 beforeChars: 6
-                                                afterChars: 6
+                                                afterChars: 4
                                                 boundsItem: appWhitelistAuditCard
                                             }
                                         }
 
-                                        // Instance name cell
+                                        // 应用名称
                                         Item {
-                                            width: appWhitelistAuditCard.innerColWidth
+                                            width: appWhitelistAuditCard.colAppName
                                             height: parent.height
                                             CenteredTooltipText {
-                                                id: appInstanceNameText
-                                                anchors.fill: parent
-                                                value: modelData.instanceName || ""
-                                                textPixelSize: 14
-                                                textColor: Theme.Colors.textLabel
-                                                leftMargin: 6
-                                                rightMargin: 6
-                                                beforeChars: 6
-                                                afterChars: 6
-                                                boundsItem: appWhitelistAuditCard
-                                            }
-                                        }
-
-                                        // Application name cell
-                                        Item {
-                                            width: appWhitelistAuditCard.innerColWidth
-                                            height: parent.height
-                                            CenteredTooltipText {
-                                                id: appNameText
                                                 anchors.fill: parent
                                                 value: modelData.appName || ""
                                                 textPixelSize: 14
@@ -3089,48 +3075,18 @@ Item {
                                                 leftMargin: 6
                                                 rightMargin: 6
                                                 beforeChars: 6
-                                                afterChars: 6
+                                                afterChars: 4
                                                 boundsItem: appWhitelistAuditCard
                                             }
                                         }
 
-                                        // File count cell
+                                        // 状态
                                         Item {
-                                            width: appWhitelistAuditCard.innerColWidth
-                                            height: parent.height
-                                            Text {
-                                                anchors.left: parent.left
-                                                anchors.leftMargin: appWhitelistAuditCard.hdrLM3
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: ((modelData.fileCount !== undefined && modelData.fileCount !== null)
-                                                       ? modelData.fileCount
-                                                       : ((modelData.processes && modelData.processes.length) ? modelData.processes.length : 0)) + ""
-                                                font.pixelSize: 14
-                                                color: Theme.Colors.textLabel
-                                            }
-                                        }
-
-                                        // Created time cell
-                                        Item {
-                                            width: appWhitelistAuditCard.innerColWidth
-                                            height: parent.height
-                                            Text {
-                                                anchors.left: parent.left
-                                                anchors.leftMargin: appWhitelistAuditCard.hdrLM4
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: Theme.Utils.formatDateTime(modelData.createdAt || modelData.applyTime || "")
-                                                font.pixelSize: 14
-                                                color: Theme.Colors.textLabel
-                                            }
-                                        }
-
-                                        // Status cell
-                                        Item {
-                                            width: appWhitelistAuditCard.innerColWidth
+                                            width: appWhitelistAuditCard.colStatus
                                             height: parent.height
                                             Rectangle {
                                                 anchors.left: parent.left
-                                                anchors.leftMargin: appWhitelistAuditCard.hdrLM5
+                                                anchors.leftMargin: 6
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 width: 68
                                                 height: 24
@@ -3150,11 +3106,42 @@ Item {
                                             }
                                         }
 
-                                        // Operation cell
+                                        // 申请时间
+                                        Item {
+                                            width: appWhitelistAuditCard.colTime
+                                            height: parent.height
+                                            Text {
+                                                anchors.left: parent.left
+                                                anchors.leftMargin: 6
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
+                                                font.pixelSize: 14
+                                                color: Theme.Colors.textLabel
+                                            }
+                                        }
+
+                                        // 实例名称
+                                        Item {
+                                            width: appWhitelistAuditCard.colInstance
+                                            height: parent.height
+                                            CenteredTooltipText {
+                                                anchors.fill: parent
+                                                value: modelData.instanceName || ""
+                                                textPixelSize: 14
+                                                textColor: Theme.Colors.textLabel
+                                                leftMargin: 6
+                                                rightMargin: 6
+                                                beforeChars: 6
+                                                afterChars: 4
+                                                boundsItem: appWhitelistAuditCard
+                                            }
+                                        }
+
+                                        // 操作
                                         Item {
                                             width: appWhitelistAuditCard.colAction
                                             height: parent.height
-                                            
+
                                             Text {
                                                 id: appWhitelistOperationText
                                                 property bool hovered: false
@@ -3166,7 +3153,7 @@ Item {
                                                 font.weight: root.actionTextWeight
                                                 font.underline: hovered
                                                 color: Theme.Colors.primary
-                                                
+
                                                 MouseArea {
                                                     anchors.fill: parent
                                                     cursorShape: Qt.PointingHandCursor
@@ -3182,7 +3169,6 @@ Item {
                                                         appWhitelistDetailDialog.appliedTime = Theme.Utils.formatDateTime(modelData.applyTime || "")
                                                         appWhitelistDetailDialog.duration = modelData.duration ? (modelData.duration + "个月") : "-"
                                                         appWhitelistDetailDialog.cost = modelData.cost || ""
-                                                        // App name from processes[0].masterFileName.
                                                         var whlProcs = resolveWhitelistProcessesByRow(modelData)
                                                         appWhitelistDetailDialog.appName = (whlProcs.length > 0 ? (whlProcs[0].masterFileName || "") : "") || "应用名称"
                                                         appWhitelistDetailDialog.processes = whlProcs
@@ -3342,10 +3328,14 @@ Item {
                 property int itemsPerPage: 3
                 property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
 
-                readonly property int firstColumnWidth: 140
-                readonly property int lastColumnWidth: 78
-                // 卡片宽度固定）778；中间可用宽 = 528，均分 4 列每列132
-                readonly property int middleColumnBaseWidth: 132
+                readonly property int colApplyCode: 100    // 申请编号
+                readonly property int colApplicant: 96     // 申请方
+                readonly property int colFileCount: 72     // 文件数量
+                readonly property int colFileSize: 84      // 文件大小
+                readonly property int colStatus: 80        // 状态
+                readonly property int colTime: 110         // 申请时间
+                readonly property int colInstance: 126     // 实例名称
+                readonly property int colAction: 78        // 操作
 
                 function normalizeCurrentPage() {
                     var total = exportAuditCard.totalPages
@@ -3368,17 +3358,6 @@ Item {
 
                 onAuditCountChanged: normalizeCurrentPage()
                 onTotalPagesChanged: normalizeCurrentPage()
-
-                function middleColumnWidthByIndex(index) {
-                    return middleColumnBaseWidth
-                }
-
-                // 中间 4 个标题列（实例名称/导出文件数/导出时间/状态）在各自列内的 leftMargin，
-                // 使 6 个标题首字等间距（卡片宽固定下的预计算值）
-                readonly property int expHdrLM1: 7
-                readonly property int expHdrLM2: 16
-                readonly property int expHdrLM3: 26
-                readonly property int expHdrLM4: 35
                 
                 function getPagedAudits() {
                     var list = root.domainData.exportAudits || []
@@ -3497,12 +3476,24 @@ Item {
                             
                             Row {
                                 anchors.fill: parent
-                                
-                                // Applicant column (leftmost)
+
                                 Item {
-                                    width: exportAuditCard.firstColumnWidth
+                                    width: exportAuditCard.colApplyCode
                                     height: parent.height
-                                    
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "申请编号"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
+                                Item {
+                                    width: exportAuditCard.colApplicant
+                                    height: parent.height
                                     SelectableText {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -3513,31 +3504,27 @@ Item {
                                         color: Theme.Colors.textLabel
                                     }
                                 }
-                                
-                                // Security instance name column
+
                                 Item {
-                                    width: exportAuditCard.middleColumnWidthByIndex(0)
+                                    width: exportAuditCard.colFileCount
                                     height: parent.height
-                                    
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: exportAuditCard.expHdrLM1
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "实例名称"
+                                        text: "文件数量"
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
                                     }
                                 }
-                                
-                                // File size column
+
                                 Item {
-                                    width: exportAuditCard.middleColumnWidthByIndex(1)
+                                    width: exportAuditCard.colFileSize
                                     height: parent.height
-                                    
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: exportAuditCard.expHdrLM2
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "文件大小"
                                         font.pixelSize: 14
@@ -3545,31 +3532,13 @@ Item {
                                         color: Theme.Colors.textLabel
                                     }
                                 }
-                                
-                                // Created time column
+
                                 Item {
-                                    width: exportAuditCard.middleColumnWidthByIndex(2)
+                                    width: exportAuditCard.colStatus
                                     height: parent.height
-                                    
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: exportAuditCard.expHdrLM3
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: "创建时间"
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
-                                    }
-                                }
-                                
-                                // Status column
-                                Item {
-                                    width: exportAuditCard.middleColumnWidthByIndex(3)
-                                    height: parent.height
-                                    
-                                    SelectableText {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: exportAuditCard.expHdrLM4
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: "状态"
                                         font.pixelSize: 14
@@ -3577,12 +3546,38 @@ Item {
                                         color: Theme.Colors.textLabel
                                     }
                                 }
-                                
-                                // Operation column (rightmost)
+
                                 Item {
-                                    width: exportAuditCard.lastColumnWidth
+                                    width: exportAuditCard.colTime
                                     height: parent.height
-                                    
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "申请时间"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
+                                Item {
+                                    width: exportAuditCard.colInstance
+                                    height: parent.height
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "实例名称"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
+                                Item {
+                                    width: exportAuditCard.colAction
+                                    height: parent.height
                                     SelectableText {
                                         anchors.right: parent.right
                                         anchors.rightMargin: root.actionRightMargin
@@ -3631,14 +3626,29 @@ Item {
                                 
                                 Row {
                                     anchors.fill: parent
-                                    
-                                    // Applicant cell (leftmost)
+
+                                    // 申请编号
                                     Item {
-                                        width: exportAuditCard.firstColumnWidth
+                                        width: exportAuditCard.colApplyCode
                                         height: parent.height
-                                        
                                         CenteredTooltipText {
-                                            id: expApplicantText
+                                            anchors.fill: parent
+                                            value: modelData.applyCode || modelData.id || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
+                                        }
+                                    }
+
+                                    // 申请方
+                                    Item {
+                                        width: exportAuditCard.colApplicant
+                                        height: parent.height
+                                        CenteredTooltipText {
                                             anchors.fill: parent
                                             value: modelData.applicant || ""
                                             textPixelSize: 14
@@ -3646,74 +3656,54 @@ Item {
                                             leftMargin: 6
                                             rightMargin: 6
                                             beforeChars: 6
-                                            afterChars: 6
+                                            afterChars: 4
                                             boundsItem: exportAuditCard
                                         }
                                     }
-                                    
-                                    // Security instance name cell
+
+                                    // 文件数量
                                     Item {
-                                        width: exportAuditCard.middleColumnWidthByIndex(0)
+                                        width: exportAuditCard.colFileCount
                                         height: parent.height
-                                        
-                                        CenteredTooltipText {
-                                            id: exportInstanceNameText
-                                            anchors.fill: parent
-                                            value: modelData.instanceName || ""
-                                            textPixelSize: 14
-                                            textColor: Theme.Colors.textLabel
-                                            leftMargin: 6
-                                            rightMargin: 6
-                                            beforeChars: 6
-                                            afterChars: 6
-                                            boundsItem: exportAuditCard
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 6
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: ((modelData.fileCount !== undefined && modelData.fileCount !== null)
+                                                   ? modelData.fileCount
+                                                   : ((modelData.files && modelData.files.length) ? modelData.files.length : 0)) + ""
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
                                         }
                                     }
-                                    
-                                    // File size cell
+
+                                    // 文件大小
                                     Item {
-                                        width: exportAuditCard.middleColumnWidthByIndex(1)
+                                        width: exportAuditCard.colFileSize
                                         height: parent.height
-                                        
                                         SelectableText {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: exportAuditCard.expHdrLM2
+                                            anchors.leftMargin: 6
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: Theme.Utils.truncateText(formatFileSizeLowercase(modelData.fileSize), 12, 6, 3)
                                             font.pixelSize: 14
                                             color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width - exportAuditCard.expHdrLM2 - 6)
+                                            width: Math.max(0, parent.width - 12)
                                             clip: true
                                         }
                                     }
-                                    
-                                    // Created time cell
+
+                                    // 状态
                                     Item {
-                                        width: exportAuditCard.middleColumnWidthByIndex(2)
+                                        width: exportAuditCard.colStatus
                                         height: parent.height
-                                        
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: exportAuditCard.expHdrLM3
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: Theme.Utils.formatDateTime(modelData.createdAt || modelData.applyTime)
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
-                                        }
-                                    }
-                                    
-                                    // Status cell
-                                    Item {
-                                        width: exportAuditCard.middleColumnWidthByIndex(3)
-                                        height: parent.height
-                                        
                                         Rectangle {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: exportAuditCard.expHdrLM4
+                                            anchors.leftMargin: 6
                                             anchors.verticalCenter: parent.verticalCenter
                                             width: {
                                                 var ideal = Math.max(60, (modelData.status || "").length * 12 + 18)
-                                                var maxAllowed = Math.max(0, parent.width - exportAuditCard.expHdrLM4 - 6)
+                                                var maxAllowed = Math.max(0, parent.width - 12)
                                                 return Math.min(ideal, maxAllowed)
                                             }
                                             height: 24
@@ -3722,7 +3712,6 @@ Item {
                                             color: auditStatusStyle.bg
                                             border.color: auditStatusStyle.border
                                             border.width: 1
-                                            
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: modelData.status || ""
@@ -3735,12 +3724,42 @@ Item {
                                             }
                                         }
                                     }
-                                    
-                                    // Operation cell (rightmost)
+
+                                    // 申请时间
                                     Item {
-                                        width: exportAuditCard.lastColumnWidth
+                                        width: exportAuditCard.colTime
                                         height: parent.height
-                                        
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 6
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
+                                        }
+                                    }
+
+                                    // 实例名称
+                                    Item {
+                                        width: exportAuditCard.colInstance
+                                        height: parent.height
+                                        CenteredTooltipText {
+                                            anchors.fill: parent
+                                            value: modelData.instanceName || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
+                                        }
+                                    }
+
+                                    // 操作
+                                    Item {
+                                        width: exportAuditCard.colAction
+                                        height: parent.height
                                         Text {
                                             id: exportOperationText
                                             anchors.right: parent.right
@@ -3752,7 +3771,6 @@ Item {
                                             property bool hovered: false
                                             font.underline: hovered
                                             color: Theme.Colors.primary
-                                            
                                             MouseArea {
                                                 anchors.fill: parent
                                                 hoverEnabled: true
@@ -3760,8 +3778,6 @@ Item {
                                                 onEntered: exportOperationText.hovered = true
                                                 onExited: exportOperationText.hovered = false
                                                 onClicked: {
-                                                    // modelData is already a per-file row with correct, isolated values —
-                                                    // use it directly to avoid cross-file size/status confusion.
                                                     exportDetailDialog.exportId = modelData.applyCode || modelData.id || ""
                                                     exportDetailDialog.applicant = modelData.applicant || ""
                                                     exportDetailDialog.fileSize = Number(modelData.fileSize) || 0
