@@ -257,6 +257,7 @@ Item {
         var instanceId = raw.id || raw.instanceCode || raw.instance_code || ""
         var instanceName = raw.name || raw.instanceName || raw.instance_name || ""
         var creatorUserId = raw.creatorUserId || raw.authUserId || raw.creator || raw.userId || ""
+        var creatorUserName = raw.creatorUserName || raw.creatorName || raw.authUserName || ""
         var statusValue = raw.status !== undefined ? raw.status : raw.instanceStatus
         var volumeSize = raw.size !== undefined ? raw.size : raw.volumnSize
 
@@ -268,9 +269,10 @@ Item {
         normalized.status = normalizeInstanceStatus(statusValue)
         normalized.size = volumeSize
         normalized.creatorUserId = creatorUserId
+        normalized.creatorUserName = creatorUserName
         normalized.authUserId = raw.authUserId || ""
-        normalized.applicantAccount = raw.applicantAccount || raw.account || raw.authUserName || ""
-        normalized.user = raw.user || normalized.applicantAccount || creatorUserId
+        normalized.applicantAccount = raw.applicantAccount || creatorUserName || raw.account || raw.authUserName || ""
+        normalized.user = raw.user || creatorUserName || normalized.applicantAccount || creatorUserId
         normalized.duration = raw.duration !== undefined ? raw.duration : raw.totalRunTime
         return normalized
     }
@@ -293,12 +295,17 @@ Item {
             visibleUser.authUserId,
             visibleUser.account,
             visibleUser.authUserName,
-            visibleUser.displayName
+            visibleUser.displayName,
+            visibleUser.user_id,
+            visibleUser.user_name
         ]
         var instanceKeys = [
             instance.creatorUserId,
+            instance.creatorUserName,
             instance.authUserId,
             instance.applicantAccount,
+            instance.applicantUserId,
+            instance.applicantUserName,
             instance.user
         ]
 
@@ -320,20 +327,12 @@ Item {
             return fallback || ""
         }
 
-        var displayName = (visibleUser.displayName || "").toString().trim()
-        var account = (visibleUser.account || "").toString().trim()
-        var authUserName = (visibleUser.authUserName || "").toString().trim()
-        var primary = account || displayName || authUserName
-        var secondary = displayName || authUserName
-
-        if (primary && secondary && primary !== secondary) {
-            return primary + " / " + secondary
-        }
-        return primary || fallback || ""
+        var authUserName = (visibleUser.authUserName || visibleUser.user_name || "").toString().trim()
+        return authUserName || fallback || ""
     }
 
     function resolveInstanceApplicantText(instance) {
-        var fallback = (instance && (instance.user || instance.applicantAccount || instance.creatorUserId || instance.authUserId)) ? (instance.user || instance.applicantAccount || instance.creatorUserId || instance.authUserId).toString().trim() : ""
+        var fallback = (instance && (instance.creatorUserName || instance.applicantUserName || instance.creatorUserId || instance.authUserId || instance.applicantUserId || instance.user)) ? (instance.creatorUserName || instance.applicantUserName || instance.creatorUserId || instance.authUserId || instance.applicantUserId || instance.user).toString().trim() : ""
         var visibleUsers = toJsArray(root.domainData ? root.domainData.visibleUsers : [])
         for (var i = 0; i < visibleUsers.length; i++) {
             var visibleUser = visibleUsers[i] || {}
@@ -3050,7 +3049,7 @@ Item {
                                             height: parent.height
                                             CenteredTooltipText {
                                                 anchors.fill: parent
-                                                value: modelData.applicant || ""
+                                                value: modelData.applicantUserName || modelData.applicant || ""
                                                 textPixelSize: 14
                                                 textColor: Theme.Colors.textLabel
                                                 leftMargin: 6
@@ -3162,7 +3161,7 @@ Item {
                                                         appWhitelistDetailDialog.instanceCode = modelData.applyCode || ""
                                                         appWhitelistDetailDialog.applyCode = modelData.applyCode || ""
                                                         appWhitelistDetailDialog.status = modelData.status || ""
-                                                        appWhitelistDetailDialog.creator = modelData.applicant || ""
+                                                        appWhitelistDetailDialog.creator = modelData.applicantUserName || modelData.applicant || ""
                                                         appWhitelistDetailDialog.instanceName = modelData.instanceName || ""
                                                         appWhitelistDetailDialog.appliedTime = Theme.Utils.formatDateTime(modelData.applyTime || "")
                                                         appWhitelistDetailDialog.duration = modelData.duration ? (modelData.duration + "个月") : "-"
@@ -3648,7 +3647,7 @@ Item {
                                         height: parent.height
                                         CenteredTooltipText {
                                             anchors.fill: parent
-                                            value: modelData.applicant || ""
+                                            value: modelData.applicantUserName || modelData.applicant || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 6
@@ -3778,7 +3777,7 @@ Item {
                                                 onExited: exportOperationText.hovered = false
                                                 onClicked: {
                                                     exportDetailDialog.exportId = modelData.applyCode || modelData.id || ""
-                                                    exportDetailDialog.applicant = modelData.applicant || ""
+                                                    exportDetailDialog.applicant = modelData.applicantUserName || modelData.applicant || ""
                                                     exportDetailDialog.fileSize = Number(modelData.fileSize) || 0
                                                     exportDetailDialog.status = modelData.status || "待审核"
                                                     exportDetailDialog.applyTime = modelData.applyTime || ""

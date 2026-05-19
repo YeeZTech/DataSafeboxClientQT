@@ -1335,7 +1335,7 @@ Item {
                                                     onExited: parent.hovered = false
                                                     onClicked: {
                                                         exportDetailDialog.exportId = modelData.applyCode || ""
-                                                        exportDetailDialog.applicant = modelData.applicant || root.instanceData.creator || "-"
+                                                        exportDetailDialog.applicant = modelData.applicantUserName || modelData.applicant || root.instanceData.creatorUserName || root.instanceData.creator || "-"
                                                         exportDetailDialog.fileSize = Number(modelData.fileSize) || 0
                                                         exportDetailDialog.status = modelData.status || "待审核"
                                                         exportDetailDialog.applyTime = modelData.applyTime || ""

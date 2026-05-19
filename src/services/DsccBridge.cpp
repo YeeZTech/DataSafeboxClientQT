@@ -117,6 +117,46 @@ QVariantList visibleUsersToVariantList(const QList<dscc::VisibleUserInfo> &visib
     return list;
 }
 
+void insertUserNameLookup(QHash<QString, QString> *lookup,
+                          const QString &userId,
+                          const QString &userName)
+{
+    if (!lookup) {
+        return;
+    }
+
+    const QString trimmedUserId = userId.trimmed();
+    const QString trimmedUserName = userName.trimmed();
+    if (!trimmedUserId.isEmpty() && !trimmedUserName.isEmpty()) {
+        lookup->insert(trimmedUserId, trimmedUserName);
+    }
+}
+
+QHash<QString, QString> buildUserNameLookup(const QList<dscc::VisibleUserInfo> &visibleUsers,
+                                            const QString &currentUserId,
+                                            const QString &currentUserName)
+{
+    QHash<QString, QString> lookup;
+    insertUserNameLookup(&lookup, currentUserId, currentUserName);
+    for (const dscc::VisibleUserInfo &visibleUser : visibleUsers) {
+        insertUserNameLookup(&lookup,
+                             visibleUser.auth_user_id,
+                             visibleUser.auth_user_name);
+    }
+    return lookup;
+}
+
+QString resolveUserName(const QHash<QString, QString> &lookup, const QString &userId)
+{
+    const QString trimmedUserId = userId.trimmed();
+    if (trimmedUserId.isEmpty()) {
+        return QString();
+    }
+
+    const QString userName = lookup.value(trimmedUserId).trimmed();
+    return userName.isEmpty() ? trimmedUserId : userName;
+}
+
 void logDomainInfoSummarySource(const QString &domainCode, const dscc::DomainInfo &info)
 {
     qInfo().noquote()
@@ -550,27 +590,39 @@ void DsccBridge::loadDomainList()
 
 void DsccBridge::loadInstances(const QString &domainCode)
 {
+    const QString trimmedDomainCode = domainCode.trimmed();
     if (!m_assets) {
-        emit instancesLoaded(domainCode, QVariantList());
+        emit instancesLoaded(trimmedDomainCode, QVariantList());
         return;
     }
 
-    QList<dscc::InstanceInfo> instances = m_assets->ListInstances(domainCode);
+    QList<dscc::InstanceInfo> instances = m_assets->ListInstances(trimmedDomainCode);
     std::sort(instances.begin(), instances.end(),
               [](const dscc::InstanceInfo &a, const dscc::InstanceInfo &b) {
                   return a.created_at > b.created_at;
               });
 
+    QList<dscc::VisibleUserInfo> visibleUsers;
+    const auto domainInfo = m_assets->DetailDomainInfo(trimmedDomainCode);
+    if (domainInfo.has_value()) {
+        visibleUsers = domainInfo->visible_users;
+    }
+    const QHash<QString, QString> userNameLookup =
+        buildUserNameLookup(visibleUsers, m_currentUserId, m_currentUserName);
+
     QVariantList list;
     list.reserve(instances.size());
     for (const dscc::InstanceInfo &inst : instances) {
-        list.append(instanceInfoToVariant(inst));
+        QVariantMap map = instanceInfoToVariant(inst);
+        const QString creatorUserName = resolveUserName(userNameLookup, inst.creator_user_id);
+        map.insert(QStringLiteral("creatorUserName"), creatorUserName);
+        list.append(map);
     }
     qInfo().noquote()
         << QStringLiteral("[DsccBridge] loadInstances domainCode=\"%1\" count=%2")
-               .arg(domainCode)
+               .arg(trimmedDomainCode)
                .arg(list.size());
-    emit instancesLoaded(domainCode, list);
+    emit instancesLoaded(trimmedDomainCode, list);
 }
 
 void DsccBridge::loadAudits(const QString &domainCode, int applyType)
@@ -591,6 +643,14 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
     }
 
     QHash<QString, QString> instanceNameMap;
+    QList<dscc::VisibleUserInfo> visibleUsers;
+    const auto domainInfo = m_assets->DetailDomainInfo(trimmedDomainCode);
+    if (domainInfo.has_value()) {
+        visibleUsers = domainInfo->visible_users;
+    }
+    const QHash<QString, QString> userNameLookup =
+        buildUserNameLookup(visibleUsers, m_currentUserId, m_currentUserName);
+
     const QList<dscc::InstanceInfo> instances = m_assets->ListInstances(trimmedDomainCode);
     for (const dscc::InstanceInfo &inst : instances) {
         if (!inst.instance_code.isEmpty() && !inst.instance_name.isEmpty()) {
@@ -612,8 +672,10 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         map.insert(QStringLiteral("applyCode"), audit.apply_code);
         map.insert(QStringLiteral("id"), audit.apply_code);
         map.insert(QStringLiteral("applyType"), applyType);
-        map.insert(QStringLiteral("applicant"), audit.applicant_user_id);
+        const QString applicantUserName = resolveUserName(userNameLookup, audit.applicant_user_id);
+        map.insert(QStringLiteral("applicant"), applicantUserName);
         map.insert(QStringLiteral("applicantUserId"), audit.applicant_user_id);
+        map.insert(QStringLiteral("applicantUserName"), applicantUserName);
         map.insert(QStringLiteral("instanceCode"), audit.instance_code);
         map.insert(QStringLiteral("fileCode"), audit.file_code);
         map.insert(QStringLiteral("fileHash"), audit.file_hash);
