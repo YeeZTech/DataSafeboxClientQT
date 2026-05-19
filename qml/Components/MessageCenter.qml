@@ -288,15 +288,16 @@ Item {
             id: markAllButton
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            width: 113
             height: 37
             radius: 10
             color: hovered ? Theme.Colors.secondary : "transparent"
             border.width: 1
             border.color: Theme.Colors.primary
             property bool hovered: false
+            implicitWidth: markAllText.implicitWidth + 40  // Auto-size to content with padding
 
             Row {
+                id: markAllContent
                 anchors.centerIn: parent
                 spacing: 8
 
@@ -308,6 +309,7 @@ Item {
                 }
 
                 Text {
+                    id: markAllText
                     text: qsTr("Mark All Read")
                     font.pixelSize: 14
                     color: Theme.Colors.primary

@@ -43,9 +43,26 @@ ApplicationWindow {
     property bool isAccountPaused: false
     readonly property string arrearsBillUrl: AppConfig ? AppConfig.apiBaseUrl().replace("api", "wallet") : "https://test-dsbox.dianshudata.com/wallet"
     readonly property string arrearsAlertMessage: {
-        if (window.isAccountPaused) { return "您的账号已暂停服务，相关功能不可用。为确保业务连续性，请尽快在 \"我的账单\" 中进行充值。" }
-        if (window.isAccountArrears) { return "您的账号已欠费，相关服务即将暂停。为确保业务连续性，请尽快在 \"我的账单\" 中进行充值。" }
+        if (window.isAccountPaused) { return qsTr("Your account has been suspended and the related functions are unavailable. Please recharge in \"My Bills\" as soon as possible to ensure business continuity.") }
+        if (window.isAccountArrears) { return qsTr("Your account is in arrears and related services will be suspended soon. Please recharge in \"My Bills\" as soon as possible to ensure business continuity.") }
         return ""
+    }
+
+    // Status translation map
+    function translateStatus(chineseStatus) {
+        var statusMap = {
+            "待审核": qsTr("Pending Review"),
+            "已授权": qsTr("Approved"),
+            "已拒绝": qsTr("Rejected"),
+            "创建失败": qsTr("Creation Failed"),
+            "运行中": qsTr("Running"),
+            "已结束": qsTr("Ended"),
+            "已关闭": qsTr("Closed"),
+            "停用": qsTr("Disabled"),
+            "已停用": qsTr("Disabled"),
+            "停用中": qsTr("Disabling")
+        }
+        return statusMap[chineseStatus] || chineseStatus
     }
 
     // prefix: 可选场景前缀，如 "安全域创建"；会自动拼成 "安全域创建：<原因>"
@@ -56,7 +73,7 @@ ApplicationWindow {
         if (idx !== -1) {
             msg = msg.substring(idx + 7).replace(/\.$/, "").trim()
         }
-        if (!msg) msg = "操作未完成，请稍后重试"
+        if (!msg) msg = qsTr("Operation incomplete, please try again later")
         if (prefix) msg = prefix + "：" + msg
         errorDialog.errorMessage = msg
         if (errorDialog.opened) {
@@ -458,11 +475,11 @@ ApplicationWindow {
                     
                     Rectangle {
                         id: createButton
-                        width: 183.341
                         height: 36
                         anchors.left: parent.left
                         anchors.leftMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
+                        implicitWidth: createButtonText.implicitWidth + 40
                         radius: 4
                         color: createButtonMouseArea.containsMouse
                             ? (createButtonMouseArea.pressed
@@ -472,6 +489,7 @@ ApplicationWindow {
                         Behavior on color { ColorAnimation { duration: 120 } }
 
                         Text {
+                            id: createButtonText
                             anchors.centerIn: parent
                             text: qsTr("Create Security Domain")
                             font.pixelSize: 14

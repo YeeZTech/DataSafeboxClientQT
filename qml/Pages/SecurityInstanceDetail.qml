@@ -490,7 +490,7 @@ Item {
                             
                             Text {
                                 anchors.centerIn: parent
-                                text: instanceData.status || "运行中"
+                                text: window.translateStatus(instanceData.status || "运行中")
                                 font.pixelSize: 12
                                 font.weight: Font.Medium
                                 color: parent.statusBadgeStyle.text
@@ -1277,7 +1277,7 @@ Item {
                                                     
                                                     SelectableText {
                                                         anchors.centerIn: parent
-                                                        text: modelData.status || "已授权"
+                                                        text: window.translateStatus(modelData.status || "已授权")
                                                         font.pixelSize: 12
                                                         font.weight: Font.Medium
                                                         color: parent.auditStatusStyle.text

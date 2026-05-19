@@ -154,7 +154,7 @@ Popup {
                             anchors.right:  parent.right
                             anchors.top:    parent.top
                             anchors.margins: 12
-                            text: "# 添加APT源\necho 'deb [trusted=yes] https://repo.yeez.tech stable main' | sudo tee /etc/apt/sources.list.d/yeez-tech.list >/dev/null\n\n# 更新软件索引\nsudo apt update\n\n# 安装客户端\nsudo apt install -y datasafebox-cmd-cli"
+                            text: "# Add APT source\necho 'deb [trusted=yes] https://repo.yeez.tech stable main' | sudo tee /etc/apt/sources.list.d/yeez-tech.list >/dev/null\n\n# Update package index\nsudo apt update\n\n# Install client\nsudo apt install -y datasafebox-cmd-cli"
                             font.family: "Consolas, Courier New, monospace"
                             font.pixelSize: 12
                             color: "#e8edf3"
@@ -183,7 +183,7 @@ Popup {
                             anchors.right:  parent.right
                             anchors.top:    parent.top
                             anchors.margins: 12
-                            text: "# 步骤1：登录\ndv auth login\n\n# 步骤2：列出可见安全域\ndv domain list\n\n# 步骤3：申请创建实例\ndv instance create \"trade-domain-001\" -n \"instance-wangfang-01\" --disk \"/data/safebox\"\n\n# 步骤4：启动已授权实例\ndv instance start instance-wangfang-01 --force"
+                            text: "# Step 1: Login\ndv auth login\n\n# Step 2: List visible security domains\ndv domain list\n\n# Step 3: Apply for instance creation\ndv instance create \"trade-domain-001\" -n \"instance-wangfang-01\" --disk \"/data/safebox\"\n\n# Step 4: Start authorized instance\ndv instance start instance-wangfang-01 --force"
                             font.family: "Consolas, Courier New, monospace"
                             font.pixelSize: 12
                             color: "#e8edf3"

@@ -555,10 +555,10 @@ Item {
             return "-"
         }
         if (payerValue === "创建方" || payerValue === "安全域创建方" || payerValue === "创建者") {
-            return "创建方"
+            return qsTr("Creator")
         }
         if (payerValue === "使用方" || payerValue === "安全域使用方" || payerValue === "使用者") {
-            return "使用方"
+            return qsTr("User")
         }
         return payerValue
     }
@@ -1177,7 +1177,7 @@ Item {
                                 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: root.domainData.status || ""
+                                    text: window.translateStatus(root.domainData.status || "") || ""
                                     font.pixelSize: 16
                                     font.weight: Font.Medium
                                     color: parent.domainStatusStyle.text
@@ -1390,7 +1390,7 @@ Item {
                                     // Text - positioned to match Figma design
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: root.isEditingDescription ? "保存" : "编辑"
+                                        text: root.isEditingDescription ? qsTr("Save") : qsTr("Edit")
                                         font.pixelSize: 16
                                         font.weight: Font.Medium
                                         color: Theme.Colors.primary
@@ -2891,7 +2891,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "申请编号"
+                                        text: qsTr("Application ID")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2947,7 +2947,7 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "申请时间"
+                                        text: qsTr("Application Time")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2961,7 +2961,7 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "实例名称"
+                                        text: qsTr("Instance Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3475,7 +3475,7 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "申请编号"
+                                        text: qsTr("Application ID")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3545,7 +3545,7 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "申请时间"
+                                        text: qsTr("Application Time")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3559,7 +3559,7 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "实例名称"
+                                        text: qsTr("Instance Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3706,7 +3706,7 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                             border.width: 1
                                             Text {
                                                 anchors.centerIn: parent
-                                                text: modelData.status || ""
+                                                text: window.translateStatus(modelData.status || "")
                                                 font.pixelSize: 14
                                                 font.weight: Font.Medium
                                                 color: parent.auditStatusStyle.text
@@ -3917,7 +3917,7 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
             
             // Disable button - only show when status is not "已关闭" and user is creator
         Rectangle {
-            width: 120
+            id: disableBtn
             height: 38
             anchors.horizontalCenter: parent.horizontalCenter
             radius: 8
@@ -3927,8 +3927,10 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
             border.width: 1
             border.color: pressed ? "#ff5050" : (hovered ? "#ff9090" : "#ffa2a2")
             visible: !root.isDomainReadOnly  // Show only when domain is active and current user is creator
+            implicitWidth: disableText.implicitWidth + 40  // Auto-size to content with padding
                 
                 Text {
+                    id: disableText
                     anchors.centerIn: parent
                     text: qsTr("Disable This Security Domain")
                     font.pixelSize: 14

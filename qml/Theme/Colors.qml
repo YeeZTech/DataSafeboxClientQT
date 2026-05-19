@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick 2.15
+import QtQml
 
 QtObject {
     // Theme colors
@@ -23,6 +24,16 @@ QtObject {
         border: "#e2e8f0",
         text: "#314158",
         dot: "#90A1B9"
+    })
+    
+    // Status translation mapping (Chinese -> English)
+    readonly property var statusTranslations: ({
+        "待审核": "Pending Review",
+        "已授权": "Approved",
+        "已拒绝": "Rejected",
+        "创建失败": "Creation Failed",
+        "运行中": "Running",
+        "已结束": "Ended"
     })
     
     // Neutral colors
@@ -56,6 +67,16 @@ QtObject {
             return defaultStatusColor
         }
         return statusColors[status] || defaultStatusColor
+    }
+    
+    // Translate status from Chinese to display text (respects current language)
+    function translateStatus(chineseStatus) {
+        if (!chineseStatus) return ""
+        // Map Chinese status to English translation key
+        var translationKey = statusTranslations[chineseStatus]
+        if (!translationKey) return chineseStatus
+        // Use qsTr to get translation
+        return qsTr(translationKey)
     }
 }
 

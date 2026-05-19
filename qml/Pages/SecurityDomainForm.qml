@@ -904,8 +904,8 @@ Item {
             Rectangle {
                 id: submitButton
                 anchors.centerIn: parent
-                width: 134
                 height: 44
+                implicitWidth: submitButtonText.implicitWidth + 40
                 radius: 6
                 antialiasing: true
                 smooth: true
@@ -939,6 +939,7 @@ Item {
                 }
                 
                 SelectableText {
+                    id: submitButtonText
                     anchors.centerIn: parent
                     text: root.isSubmitting ? qsTr("Creating...") : qsTr("Create Security Domain")
                     font.family: root.fontFamily
