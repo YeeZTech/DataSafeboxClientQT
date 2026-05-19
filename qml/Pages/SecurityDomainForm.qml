@@ -5,6 +5,7 @@ import "." as Theme
 
 Item {
     id: root
+    width: parent ? parent.width : 778
     height: parent ? parent.height : 801
     
     property string domainName: ""
@@ -34,10 +35,10 @@ Item {
     property var currentUser: null
     // Unified typography
     property string fontFamily: "Microsoft YaHei"
-    property int fontSizeTitle: 24
-    property int fontSizeLabel: 16
-    property int fontSizeBody: 14
-    property int fontSizeCaption: 12
+    property int fontSizeTitle: 28
+    property int fontSizeLabel: 18
+    property int fontSizeBody: 16
+    property int fontSizeCaption: 14
     
     signal submit()
     signal cancel()
@@ -114,11 +115,12 @@ Item {
                     
                 Item {
                     id: formContent
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.horizontalCenterOffset: -30
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.topMargin: 24
-                    width: Math.min(parent.width - 64, 714)  // 最大宽度714px（778-64），或窗口宽度-64
+                    anchors.leftMargin: 32
+                    anchors.rightMargin: 32
                     property int spacingRow: 40
                     property int labelWidth: 176  // 固定宽度，确保标签对齐
                     property int fieldWidth: Math.max(240, width - labelWidth - spacingRow)  // 根据formContent宽度计算

@@ -379,6 +379,41 @@ ApplicationWindow {
         }
     }
 
+    // Back button to return to username/password login page (only shown on QR code page)
+    Rectangle {
+        id: backLoginBtn
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.topMargin: 16
+        anchors.rightMargin: 16
+        width: 28
+        height: 28
+        radius: 6
+        color: backLoginArea.containsMouse ? "#f0f4f8" : "transparent"
+        border.color: backLoginArea.containsMouse ? "#cad5e2" : "transparent"
+        border.width: 1
+        visible: window.authPage === "login" && !window.showLoginError && casdoorLoginWebView.canGoBack
+        z: 202
+        Behavior on color { ColorAnimation { duration: 100 } }
+
+        Text {
+            anchors.centerIn: parent
+            text: "×"
+            font.pixelSize: 20
+            color: "#8a9bb0"
+        }
+
+        MouseArea {
+            id: backLoginArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+                casdoorLoginWebView.goBack()
+            }
+        }
+    }
+
     // Login error overlay
     Rectangle {
         anchors.fill: parent
@@ -492,9 +527,10 @@ ApplicationWindow {
                         id: createButton
                         height: 36
                         anchors.left: parent.left
+                        anchors.right: parent.right
                         anchors.leftMargin: 12
+                        anchors.rightMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
-                        implicitWidth: createButtonText.implicitWidth + 40
                         radius: 4
                         color: createButtonMouseArea.containsMouse
                             ? (createButtonMouseArea.pressed

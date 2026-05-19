@@ -119,7 +119,7 @@ Popup {
             spacing: 8
 
             SelectableText {
-                text: qsTr("Account:")
+                text: qsTr("Dianshu ID:")
                 font.pixelSize: 14
                 font.weight: Font.Medium
                 color: "#314158"
@@ -164,7 +164,7 @@ Popup {
                     Text {
                         anchors.fill: parent
                         verticalAlignment: Text.AlignVCenter
-                        text: qsTr("Please enter the Casdoor account name")
+                        text: qsTr("Please enter the Dianshu account")
                         font.pixelSize: 14
                         color: "#5a7c9b"
                         visible: !accountInput.text && !accountInput.activeFocus

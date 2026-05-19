@@ -273,7 +273,7 @@ Item {
         if (statusText === "0") return "待审核"
         if (statusText === "1") return "已授权"
         if (statusText === "2") return "已拒绝"
-        if (statusText === "3") return "运行中"
+        if (statusText === "3") return "正常"
         if (statusText === "4") return "已结束"
         return statusText
     }
@@ -2580,7 +2580,7 @@ Item {
                                             text: qsTr("View")
                                             font.pixelSize: root.actionTextPixelSize
                                             font.weight: root.actionTextWeight
-                                            font.underline: hovered
+                                            font.underline: false
                                             color: Theme.Colors.primary
 
                                             MouseArea {
@@ -3178,15 +3178,15 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                                 text: qsTr("View")
                                                 font.pixelSize: root.actionTextPixelSize
                                                 font.weight: root.actionTextWeight
-                                                font.underline: hovered
-                                                color: Theme.Colors.primary
+                                                font.underline: false
+                                            color: Theme.Colors.primary
 
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    cursorShape: Qt.PointingHandCursor
-                                                    hoverEnabled: true
-                                                    onEntered: appWhitelistOperationText.hovered = true
-                                                    onExited: appWhitelistOperationText.hovered = false
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                hoverEnabled: true
+                                                onEntered: appWhitelistOperationText.hovered = true
+                                                onExited: appWhitelistOperationText.hovered = false
                                                     onClicked: {
                                                         appWhitelistDetailDialog.instanceCode = modelData.applyCode || ""
                                                         appWhitelistDetailDialog.applyCode = modelData.applyCode || ""
@@ -3797,7 +3797,7 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                             font.pixelSize: root.actionTextPixelSize
                                             font.weight: root.actionTextWeight
                                             property bool hovered: false
-                                            font.underline: hovered
+                                            font.underline: false
                                             color: Theme.Colors.primary
                                             MouseArea {
                                                 anchors.fill: parent

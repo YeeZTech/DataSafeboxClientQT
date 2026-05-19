@@ -451,7 +451,7 @@ Popup {
     FileDialog {
         id: fileDialog
         title: qsTr("Select File")
-        fileMode: FileDialog.OpenFiles
+        fileMode: FileDialog.OpenFile
 
         onAccepted: {
             var paths = []
@@ -556,7 +556,7 @@ Popup {
                     SelectableText {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: qsTr("Encrypt Files to This Security Domain")
+                        text: qsTr("加密文件到此安全域")
                         font.pixelSize: 18
                         font.weight: Font.DemiBold
                         color: "#0f172b"
@@ -596,7 +596,7 @@ Popup {
                     Row {
                         spacing: 4
                         SelectableText {
-                            text: qsTr("Select files or folders")
+                            text: qsTr("加密文件")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: "#314158"
@@ -627,73 +627,57 @@ Popup {
                             anchors.top: parent.top
                             anchors.margins: 1
 
-                            // Button bar
+                            // File selector box
                             Rectangle {
                                 width: parent.width
                                 height: 36
-                                color: "transparent"
+                                radius: 8
+                                color: addFileBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
+                                border.color: addFileBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
+                                border.width: 1
+                                Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on border.color { ColorAnimation { duration: 150 } }
 
                                 Row {
                                     anchors.left: parent.left
-                                    anchors.leftMargin: 8
+                                    anchors.right: parent.right
+                                    anchors.leftMargin: 12
+                                    anchors.rightMargin: 4
                                     anchors.verticalCenter: parent.verticalCenter
-                                    spacing: 6
+                                    spacing: 12
 
-                                    // + 文件 button
-                                    Rectangle {
-                                        width: addFileRow.implicitWidth + 16
-                                        height: 26
-                                        radius: 6
-                                        color: addFileBtnArea.containsMouse ? "#e0f0ff" : "#eef2f7"
-                                        border.color: addFileBtnArea.containsMouse ? "#79aecd" : "transparent"
-                                        border.width: addFileBtnArea.containsMouse ? 1 : 0
-                                        Behavior on color { ColorAnimation { duration: 120 } }
-
-                                        Row {
-                                            id: addFileRow
-                                            anchors.centerIn: parent
-                                            spacing: 4
-                                            Text { text: "+"; font.pixelSize: 13; font.weight: Font.Bold; color: "#0f4c81"; anchors.verticalCenter: parent.verticalCenter }
-                                            Text { text: qsTr("File"); font.pixelSize: 13; color: "#314158"; anchors.verticalCenter: parent.verticalCenter }
-                                        }
-
-                                        MouseArea {
-                                            id: addFileBtnArea
-                                            anchors.fill: parent
-                                            enabled: !root._encrypting
-                                            hoverEnabled: true
-                                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                                            onClicked: fileDialog.open()
-                                        }
+                                    Image {
+                                        width: 16; height: 16
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        source: Qt.resolvedUrl("icons/icon-directory.svg")
+                                        fillMode: Image.PreserveAspectFit
                                     }
 
-                                    // + 文件夹 button
-                                    Rectangle {
-                                        visible: false
-                                        width: addFolderRow.implicitWidth + 16
-                                        height: 26
-                                        radius: 6
-                                        color: addFolderBtnArea.containsMouse ? "#e0f0ff" : "#eef2f7"
-                                        border.color: addFolderBtnArea.containsMouse ? "#79aecd" : "transparent"
-                                        border.width: addFolderBtnArea.containsMouse ? 1 : 0
-                                        Behavior on color { ColorAnimation { duration: 120 } }
+                                    Item {
+                                        width: parent.width - 16 - 12
+                                        height: parent.height
+                                        clip: true
 
-                                        Row {
-                                            id: addFolderRow
-                                            anchors.centerIn: parent
-                                            spacing: 4
-                                            Text { text: "+"; font.pixelSize: 13; font.weight: Font.Bold; color: "#0f4c81"; anchors.verticalCenter: parent.verticalCenter }
-                                            Text { text: qsTr("Folder"); font.pixelSize: 13; color: "#314158"; anchors.verticalCenter: parent.verticalCenter }
-                                        }
-
-                                        MouseArea {
-                                            id: addFolderBtnArea
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: folderSelectDialog.open()
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.right: parent.right
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: root.selectedFilePath ? root.selectedFilePath : qsTr("请选择需要加密的文件")
+                                            font.pixelSize: 14
+                                            font.weight: Font.Medium
+                                            color: root.selectedFilePath ? "#0f172b" : "#94a3b8"
+                                            elide: Text.ElideMiddle
                                         }
                                     }
+                                }
+
+                                MouseArea {
+                                    id: addFileBtnArea
+                                    anchors.fill: parent
+                                    enabled: !root._encrypting
+                                    hoverEnabled: true
+                                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                                    onClicked: fileDialog.open()
                                 }
                             }
 
@@ -853,7 +837,7 @@ Popup {
                     spacing: 8
 
                     SelectableText {
-                        text: qsTr("Output path for encrypted files")
+                        text: qsTr("加密文件输出路径")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "#314158"
@@ -893,7 +877,7 @@ Popup {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: root.selectedOutputPath ? root.selectedOutputPath : qsTr("Default: save to source file directory")
+                                    text: root.selectedOutputPath ? root.selectedOutputPath : qsTr("选择输出路径")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
                                     color: root.selectedOutputPath ? "#0f172b" : "#94a3b8"
@@ -1082,7 +1066,7 @@ Popup {
                     Text {
                         id: encryptBtnText
                         anchors.centerIn: parent
-                        text: root._pendingCount > 0 ? qsTr("Encrypt Files (") + root._pendingCount + ")" : qsTr("Encrypt Files")
+                        text: root._pendingCount > 0 ? qsTr("加密文件") : qsTr("加密文件")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "white"

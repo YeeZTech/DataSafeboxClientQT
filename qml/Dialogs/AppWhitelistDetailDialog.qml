@@ -351,7 +351,7 @@ Popup {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: qsTr("File Name")
+                                text: qsTr("Executable File Name")
                                 font.pixelSize: 14
                                 color: "#62748e"
                             }

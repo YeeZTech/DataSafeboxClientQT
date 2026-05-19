@@ -22,13 +22,13 @@
     </message>
     <message>
         <location filename="../qml/Dialogs/AddVisibleUserDialog.qml" line="122"/>
-        <source>Account:</source>
-        <translation>账号：</translation>
+        <source>Dianshu ID:</source>
+        <translation>典枢号：</translation>
     </message>
     <message>
         <location filename="../qml/Dialogs/AddVisibleUserDialog.qml" line="167"/>
-        <source>Please enter the Casdoor account name</source>
-        <translation>请输入 Casdoor 账号名</translation>
+        <source>Please enter the Dianshu account</source>
+        <translation>请输入典枢账号</translation>
     </message>
     <message>
         <location filename="../qml/Dialogs/AddVisibleUserDialog.qml" line="248"/>
@@ -105,8 +105,8 @@
     </message>
     <message>
         <location filename="../qml/Dialogs/AppWhitelistDetailDialog.qml" line="354"/>
-        <source>File Name</source>
-        <translation>文件名</translation>
+        <source>Executable File Name</source>
+        <translation>可执行文件名</translation>
     </message>
     <message>
         <location filename="../qml/Dialogs/AppWhitelistDetailDialog.qml" line="366"/>
@@ -234,6 +234,11 @@
         <translation>文件</translation>
     </message>
     <message>
+        <location filename="../qml/Dialogs/EncryptFileDialog.qml" line="665"/>
+        <source>请选择需要加密的文件</source>
+        <translation>请选择需要加密的文件</translation>
+    </message>
+    <message>
         <location filename="../qml/Dialogs/EncryptFileDialog.qml" line="499"/>
         <source>Folder</source>
         <translation>文件夹</translation>
@@ -264,6 +269,11 @@
         <location filename="../qml/Dialogs/EncryptFileDialog.qml" line="708"/>
         <source>Default: save to source file directory</source>
         <translation>默认：保存到源文件目录</translation>
+    </message>
+    <message>
+        <location filename="../qml/Dialogs/EncryptFileDialog.qml" line="896"/>
+        <source>选择输出路径</source>
+        <translation>选择输出路径</translation>
     </message>
     <message>
         <location filename="../qml/Dialogs/EncryptFileDialog.qml" line="769"/>
@@ -892,6 +902,16 @@
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1322"/>
         <source>Description</source>
         <translation>描述</translation>
+    </message>
+    <message>
+        <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1429"/>
+        <source>Edit</source>
+        <translation>编辑</translation>
+    </message>
+    <message>
+        <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1429"/>
+        <source>Save</source>
+        <translation>保存</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1703"/>

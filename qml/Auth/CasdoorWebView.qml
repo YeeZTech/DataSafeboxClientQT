@@ -32,6 +32,14 @@ Rectangle {
     property string lastNonBlankUrl: ""
     readonly property int maxRetries: 2
     readonly property int deferredHandoverProbeMs: 1200
+    readonly property bool canGoBack: webView && webView.canGoBack
+    property bool isQrCodePage: false
+    
+    function goBack() {
+        if (webView && webView.canGoBack) {
+            webView.goBack()
+        }
+    }
     
     Timer {
         id: codeExtractionTimer
