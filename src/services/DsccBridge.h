@@ -50,6 +50,9 @@ public:
     Q_INVOKABLE QString notificationMessage(const QVariant &notification,
                                             const QString &fallback) const;
     Q_INVOKABLE void loadMessageList();
+    Q_INVOKABLE void readMessage(const QString &messageCode);
+    Q_INVOKABLE void readAllMessages();
+    Q_INVOKABLE void deleteMessage(const QString &messageCode);
     Q_INVOKABLE void encryptFile(const QString &sourceFile,
                                  const QString &targetFile,
                                  const QString &publicKey);
@@ -58,6 +61,16 @@ public:
 
 signals:
     void messageListLoaded(QVariantList messages);
+    void messageRead(uint32_t operation_id, QString message_code);
+    void messageReadFailed(uint32_t operation_id,
+                           QString message_code,
+                           dscc::Notification notification);
+    void allMessagesRead(uint32_t operation_id);
+    void allMessagesReadFailed(uint32_t operation_id, dscc::Notification notification);
+    void messageDeleted(uint32_t operation_id, QString message_code);
+    void messageDeleteFailed(uint32_t operation_id,
+                             QString message_code,
+                             dscc::Notification notification);
     void encryptFileStarted(uint32_t operation_id, QString source_file, QString target_file);
     void encryptFileProgress(uint32_t operation_id,
                              QString source_file,

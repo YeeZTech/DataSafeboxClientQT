@@ -463,7 +463,7 @@ int main(int argc, char *argv[])
     // Notification::SetTranslator is installed before any notifications are created.
     LanguageManager *languageManager = new LanguageManager(&app);
     languageManager->applyInitialLanguage();
-    languageManager->switchLanguage("en");
+    languageManager->switchLanguage("zh_CN");
     engine.rootContext()->setContextProperty("LanguageManager", languageManager);
 
     // Register DsccBridge (business logic dynamic library)

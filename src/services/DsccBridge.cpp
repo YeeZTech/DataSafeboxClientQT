@@ -12,7 +12,7 @@
 
 #include "AppConfig.h"
 #include "dscc/core/common/logger.h"
-#include "dscc/core/db/domain_ops.h"
+#include "dscc/core/db/table/domain_ops.h"
 #include "dscc/core/interface/app_assets.h"
 
 namespace {
@@ -455,6 +455,61 @@ void DsccBridge::connectAssetSignals()
                 emit auditInstanceRequestFailed(operationId, instanceCode, notification);
             });
 
+    connect(m_assets.get(), &dscc::UserAssets::MessageRead,
+            this, [this](uint32_t operationId, QString messageCode) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib MessageRead operationId=%1 messageCode=\"%2\"")
+                           .arg(operationId)
+                           .arg(messageCode);
+                emit messageRead(operationId, messageCode);
+                loadMessageList();
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::MessageReadFailed,
+            this, [this](uint32_t operationId, QString messageCode, dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib MessageReadFailed operationId=%1 messageCode=\"%2\"")
+                                    .arg(operationId)
+                                    .arg(messageCode),
+                                notification);
+                emit messageReadFailed(operationId, messageCode, notification);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::AllMessagesRead,
+            this, [this](uint32_t operationId) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib AllMessagesRead operationId=%1")
+                           .arg(operationId);
+                emit allMessagesRead(operationId);
+                loadMessageList();
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::AllMessagesReadFailed,
+            this, [this](uint32_t operationId, dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib AllMessagesReadFailed operationId=%1")
+                                    .arg(operationId),
+                                notification);
+                emit allMessagesReadFailed(operationId, notification);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::MessageDeleted,
+            this, [this](uint32_t operationId, QString messageCode) {
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib MessageDeleted operationId=%1 messageCode=\"%2\"")
+                           .arg(operationId)
+                           .arg(messageCode);
+                emit messageDeleted(operationId, messageCode);
+                loadMessageList();
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::MessageDeleteFailed,
+            this, [this](uint32_t operationId, QString messageCode, dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib MessageDeleteFailed operationId=%1 messageCode=\"%2\"")
+                                    .arg(operationId)
+                                    .arg(messageCode),
+                                notification);
+                emit messageDeleteFailed(operationId, messageCode, notification);
+            });
+
     connect(m_assets.get(), &dscc::UserAssets::CryptoOperationStart,
             this, [this](uint32_t operationId) {
                 if (!m_encryptFileOperations.contains(operationId)) {
@@ -671,6 +726,85 @@ void DsccBridge::loadMessageList()
     qInfo().noquote()
         << QStringLiteral("[DsccBridge] loadMessageList count=%1").arg(list.size());
     emit messageListLoaded(list);
+}
+
+void DsccBridge::readMessage(const QString &messageCode)
+{
+    const QString trimmedCode = messageCode.trimmed();
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] readMessage rejected because UserAssets is not initialized messageCode=\"%1\"")
+                   .arg(trimmedCode);
+        emit messageReadFailed(0, trimmedCode, dscc::Notification());
+        return;
+    }
+
+    if (trimmedCode.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] readMessage rejected because messageCode is empty");
+        emit messageReadFailed(0, QString(), dscc::Notification());
+        return;
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] readMessage request messageCode=\"%1\"")
+               .arg(trimmedCode);
+
+    const dscc::Handle handle = m_assets->ReadMessage(trimmedCode);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] readMessage submitted operationId=%1 messageCode=\"%2\"")
+               .arg(handle.GetOperationId())
+               .arg(trimmedCode);
+    Q_UNUSED(handle);
+}
+
+void DsccBridge::readAllMessages()
+{
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] readAllMessages rejected because UserAssets is not initialized");
+        emit allMessagesReadFailed(0, dscc::Notification());
+        return;
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] readAllMessages request");
+
+    const dscc::Handle handle = m_assets->ReadAllMessages();
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] readAllMessages submitted operationId=%1")
+               .arg(handle.GetOperationId());
+    Q_UNUSED(handle);
+}
+
+void DsccBridge::deleteMessage(const QString &messageCode)
+{
+    const QString trimmedCode = messageCode.trimmed();
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] deleteMessage rejected because UserAssets is not initialized messageCode=\"%1\"")
+                   .arg(trimmedCode);
+        emit messageDeleteFailed(0, trimmedCode, dscc::Notification());
+        return;
+    }
+
+    if (trimmedCode.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] deleteMessage rejected because messageCode is empty");
+        emit messageDeleteFailed(0, QString(), dscc::Notification());
+        return;
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] deleteMessage request messageCode=\"%1\"")
+               .arg(trimmedCode);
+
+    const dscc::Handle handle = m_assets->DeleteMessage(trimmedCode);
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] deleteMessage submitted operationId=%1 messageCode=\"%2\"")
+               .arg(handle.GetOperationId())
+               .arg(trimmedCode);
+    Q_UNUSED(handle);
 }
 
 QString DsccBridge::encryptedTargetFilePath(const QString &sourceFile,

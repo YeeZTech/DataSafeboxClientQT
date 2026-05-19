@@ -124,6 +124,12 @@ Item {
             root._applyFilterAndPaginate()
             root.serverLoading = false
         }
+        function onMessageRead(operation_id, message_code) {
+            root.unreadMessageMarkedRead()
+        }
+        function onAllMessagesRead(operation_id) {
+            root.allMessagesMarkedRead()
+        }
     }
 
     // Background
@@ -290,7 +296,7 @@ Item {
                 hoverEnabled: true
                 onEntered: markAllButton.hovered = true
                 onExited: markAllButton.hovered = false
-                onClicked: root.markAllAsRead()
+                onClicked: DsccBridge.readAllMessages()
             }
         }
     }
@@ -370,6 +376,7 @@ Item {
                                 Layout.fillWidth: true
                             }
                         }
+
                     }
 
                     Rectangle {
@@ -439,10 +446,11 @@ Item {
                         }
                     }
 
-                    // Show tooltip on hover
+                    // Click to mark as read + tooltip on hover
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
+                        cursorShape: messageItem.messageData.isRead === 0 ? Qt.PointingHandCursor : Qt.ArrowCursor
                         onEntered: {
                             messageItem.hovered = true
                             if (messageText.implicitWidth > messageText.width) messageItem.showTooltip = true
@@ -450,6 +458,42 @@ Item {
                         onExited: {
                             messageItem.hovered = false
                             messageItem.showTooltip = false
+                        }
+                        onClicked: {
+                            if (messageItem.messageData.isRead === 0) {
+                                DsccBridge.readMessage(messageItem.messageData.messageCode)
+                            }
+                        }
+                    }
+
+                    // Delete button (visible on hover, above the main MouseArea)
+                    Rectangle {
+                        visible: messageItem.hovered
+                        width: 28
+                        height: 28
+                        radius: 6
+                        color: deleteArea.containsMouse ? "#fee2e2" : "transparent"
+                        anchors.right: parent.right
+                        anchors.rightMargin: 17
+                        anchors.verticalCenter: parent.verticalCenter
+                        z: 10
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "×"
+                            font.pixelSize: 18
+                            color: deleteArea.containsMouse ? "#dc2626" : "#90A1B9"
+                        }
+
+                        MouseArea {
+                            id: deleteArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                deleteConfirmDialog.targetMessageCode = messageItem.messageData.messageCode || ""
+                                deleteConfirmDialog.open()
+                            }
                         }
                     }
                 }
@@ -635,4 +679,158 @@ Item {
         }
     }
 
+    // Delete confirmation dialog
+    Popup {
+        id: deleteConfirmDialog
+        width: 360
+        implicitHeight: deleteDialogContent.implicitHeight + 48
+        height: implicitHeight
+        modal: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        x: (parent ? (parent.width - width) / 2 : 0)
+        y: (parent ? (parent.height - height) / 2 : 0)
+
+        property string targetMessageCode: ""
+
+        background: null
+        padding: 0
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 10
+            color: Theme.Colors.backgroundWhite
+            border.color: Qt.rgba(0, 0, 0, 0.1)
+            border.width: 1
+
+            Column {
+                id: deleteDialogContent
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.leftMargin: 24
+                anchors.rightMargin: 24
+                anchors.top: parent.top
+                anchors.topMargin: 24
+                spacing: 0
+
+                Item {
+                    width: parent.width
+                    height: 18
+
+                    Text {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: qsTr("Delete Message")
+                        font.pixelSize: 18
+                        font.weight: Font.DemiBold
+                        color: "#0f172b"
+                    }
+
+                    Rectangle {
+                        width: 24
+                        height: 24
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        radius: 12
+                        color: deleteCloseArea.containsMouse ? "#f0f4fa" : "transparent"
+
+                        MouseArea {
+                            id: deleteCloseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: deleteConfirmDialog.close()
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "×"
+                            font.pixelSize: 18
+                            color: deleteCloseArea.containsMouse ? "#0f4c81" : "#314158"
+                        }
+                    }
+                }
+
+                Item { width: parent.width; height: 24 }
+
+                Text {
+                    width: parent.width
+                    text: qsTr("Are you sure you want to delete this message?")
+                    font.pixelSize: 14
+                    color: "#314158"
+                    wrapMode: Text.WordWrap
+                }
+
+                Item { width: parent.width; height: 28 }
+
+                Row {
+                    anchors.right: parent.right
+                    spacing: 16
+                    height: 36
+
+                    Rectangle {
+                        width: 60
+                        height: 36
+                        radius: 8
+                        color: {
+                            if (deleteCancelArea.pressed) return "#bedbff"
+                            if (deleteCancelArea.containsMouse) return "#e8f8ff"
+                            return "white"
+                        }
+                        border.width: 1
+                        border.color: {
+                            if (deleteCancelArea.pressed) return "#add3e6"
+                            if (deleteCancelArea.containsMouse) return "#79aecd"
+                            return "#cad5e2"
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: qsTr("Cancel")
+                            font.pixelSize: 14
+                            font.weight: Font.Medium
+                            color: "#314158"
+                        }
+
+                        MouseArea {
+                            id: deleteCancelArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: deleteConfirmDialog.close()
+                        }
+                    }
+
+                    Rectangle {
+                        width: 88
+                        height: 36
+                        radius: 8
+                        color: {
+                            if (deleteConfirmArea.pressed) return "#fb2c36"
+                            if (deleteConfirmArea.containsMouse) return "#fe9a98"
+                            return "#fd7977"
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: qsTr("Delete")
+                            font.pixelSize: 14
+                            font.weight: Font.Medium
+                            color: "white"
+                        }
+
+                        MouseArea {
+                            id: deleteConfirmArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                DsccBridge.deleteMessage(deleteConfirmDialog.targetMessageCode)
+                                deleteConfirmDialog.close()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

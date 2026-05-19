@@ -334,6 +334,21 @@ ApplicationWindow {
             window.currentPage = "home"
             DsccBridge.loadDomainList()
         }
+
+        function onMessageReadFailed(operationId, messageCode, notification) {
+            var msg = DsccBridge.notificationMessage(notification, qsTr("Failed to mark message as read"))
+            window.showError(msg, qsTr("Message"))
+        }
+
+        function onAllMessagesReadFailed(operationId, notification) {
+            var msg = DsccBridge.notificationMessage(notification, qsTr("Failed to mark all messages as read"))
+            window.showError(msg, qsTr("Message"))
+        }
+
+        function onMessageDeleteFailed(operationId, messageCode, notification) {
+            var msg = DsccBridge.notificationMessage(notification, qsTr("Failed to delete message"))
+            window.showError(msg, qsTr("Message"))
+        }
     }
 
     function getInstanceStatusColor(status) {
