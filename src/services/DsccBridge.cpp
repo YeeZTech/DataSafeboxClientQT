@@ -187,6 +187,8 @@ void registerDsccBridgeMetaTypes()
     static const bool registered = [] {
         qRegisterMetaType<dscc::Notification>("dscc::Notification");
         qRegisterMetaType<dscc::Notification>("Notification");
+        qRegisterMetaType<quint64>("quint64");
+        qRegisterMetaType<uint64_t>("uint64_t");
         return true;
     }();
     Q_UNUSED(registered);
@@ -238,6 +240,7 @@ void DsccBridge::shutdown()
         m_assets.reset();
     }
     m_domainCreateFailureMessages.clear();
+    m_encryptFileOperations.clear();
     m_currentUserId.clear();
     m_currentUserName.clear();
 }
@@ -263,6 +266,7 @@ void DsccBridge::setCurrentUser(const QString &userId,
         m_assets.reset();
     }
     m_domainCreateFailureMessages.clear();
+    m_encryptFileOperations.clear();
 
     const QString domainDbPath = userDomainDbPath(trimmedUserId);
     QDir().mkpath(QFileInfo(domainDbPath).absolutePath());
@@ -288,6 +292,7 @@ void DsccBridge::clearCurrentUser()
         m_assets.reset();
     }
     m_domainCreateFailureMessages.clear();
+    m_encryptFileOperations.clear();
     m_currentUserId.clear();
     m_currentUserName.clear();
     emit domainListLoaded(QVariantList());
@@ -450,6 +455,73 @@ void DsccBridge::connectAssetSignals()
                 emit auditInstanceRequestFailed(operationId, instanceCode, notification);
             });
 
+    connect(m_assets.get(), &dscc::UserAssets::CryptoOperationStart,
+            this, [this](uint32_t operationId) {
+                if (!m_encryptFileOperations.contains(operationId)) {
+                    return;
+                }
+
+                const FileCryptoOperation op = m_encryptFileOperations.value(operationId);
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib CryptoOperationStart operationId=%1 source=\"%2\" target=\"%3\"")
+                           .arg(operationId)
+                           .arg(op.sourceFile, op.targetFile);
+                emit encryptFileStarted(operationId, op.sourceFile, op.targetFile);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::CryptoOperationProgress,
+            this, [this](uint32_t operationId, uint64_t processedBytes, uint64_t totalBytes) {
+                if (!m_encryptFileOperations.contains(operationId)) {
+                    return;
+                }
+
+                const FileCryptoOperation op = m_encryptFileOperations.value(operationId);
+                emit encryptFileProgress(operationId,
+                                         op.sourceFile,
+                                         op.targetFile,
+                                         quint64(processedBytes),
+                                         quint64(totalBytes));
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::CryptoOperationFinish,
+            this, [this](uint32_t operationId) {
+                if (!m_encryptFileOperations.contains(operationId)) {
+                    return;
+                }
+
+                const FileCryptoOperation op = m_encryptFileOperations.take(operationId);
+                if (QFileInfo(op.targetFile).isFile()) {
+                    qInfo().noquote()
+                        << QStringLiteral("[DsccBridge] corelib CryptoOperationFinish success operationId=%1 source=\"%2\" target=\"%3\"")
+                               .arg(operationId)
+                               .arg(op.sourceFile, op.targetFile);
+                    emit encryptFileSucceeded(operationId, op.sourceFile, op.targetFile);
+                } else {
+                    qWarning().noquote()
+                        << QStringLiteral("[DsccBridge] corelib CryptoOperationFinish without target file operationId=%1 source=\"%2\" target=\"%3\"")
+                               .arg(operationId)
+                               .arg(op.sourceFile, op.targetFile);
+                    emit encryptFileFailed(operationId,
+                                           op.sourceFile,
+                                           op.targetFile,
+                                           dscc::Notification());
+                }
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::CryptoOperationCanceled,
+            this, [this](uint32_t operationId) {
+                if (!m_encryptFileOperations.contains(operationId)) {
+                    return;
+                }
+
+                const FileCryptoOperation op = m_encryptFileOperations.take(operationId);
+                qInfo().noquote()
+                    << QStringLiteral("[DsccBridge] corelib CryptoOperationCanceled operationId=%1 source=\"%2\" target=\"%3\"")
+                           .arg(operationId)
+                           .arg(op.sourceFile, op.targetFile);
+                emit encryptFileCanceled(operationId, op.sourceFile, op.targetFile);
+            });
+
     connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
             &dscc::ActiveNotify::MessageReceived,
             this,
@@ -599,6 +671,147 @@ void DsccBridge::loadMessageList()
     qInfo().noquote()
         << QStringLiteral("[DsccBridge] loadMessageList count=%1").arg(list.size());
     emit messageListLoaded(list);
+}
+
+QString DsccBridge::encryptedTargetFilePath(const QString &sourceFile,
+                                            const QString &outputDir) const
+{
+    const QFileInfo sourceInfo(sourceFile.trimmed());
+    const QString sourceName = sourceInfo.fileName().trimmed();
+    if (sourceName.isEmpty()) {
+        return QString();
+    }
+
+    const QString trimmedOutputDir = outputDir.trimmed();
+    const QString targetDirPath = trimmedOutputDir.isEmpty()
+                                      ? sourceInfo.absolutePath()
+                                      : trimmedOutputDir;
+    if (targetDirPath.trimmed().isEmpty()) {
+        return QString();
+    }
+
+    QDir targetDir(targetDirPath);
+    const QString targetName = sourceName + QStringLiteral(".sealed");
+    QString candidate = QDir::cleanPath(targetDir.filePath(targetName));
+    if (!QFileInfo::exists(candidate)) {
+        return candidate;
+    }
+
+    for (int i = 1; i < 10000; ++i) {
+        const QString candidateName = sourceName
+                                      + QStringLiteral(" (")
+                                      + QString::number(i)
+                                      + QStringLiteral(").sealed");
+        candidate = QDir::cleanPath(targetDir.filePath(candidateName));
+        if (!QFileInfo::exists(candidate)) {
+            return candidate;
+        }
+    }
+
+    return QString();
+}
+
+void DsccBridge::encryptFile(const QString &sourceFile,
+                             const QString &targetFile,
+                             const QString &publicKey)
+{
+    const QString trimmedSourceFile = sourceFile.trimmed();
+    const QString trimmedTargetFile = targetFile.trimmed();
+    const QString trimmedPublicKey = publicKey.trimmed();
+
+    auto emitFailure = [this, trimmedSourceFile, trimmedTargetFile](
+                           const dscc::Notification &notification) {
+        emit encryptFileFailed(0, trimmedSourceFile, trimmedTargetFile, notification);
+    };
+
+    if (!m_assets) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] encryptFile rejected because UserAssets is not initialized source=\"%1\" target=\"%2\"")
+                   .arg(trimmedSourceFile, trimmedTargetFile);
+        emitFailure(dscc::Notification());
+        return;
+    }
+
+    if (trimmedSourceFile.isEmpty()) {
+        qWarning().noquote() << QStringLiteral("[DsccBridge] encryptFile rejected because source file is empty");
+        emitFailure(dscc::Notification(dscc::Notification::kCryptoEncryptSourceFileEmpty,
+                                       dscc::Notification::kError));
+        return;
+    }
+
+    QFileInfo sourceInfo(trimmedSourceFile);
+    if (!sourceInfo.isFile()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] encryptFile rejected because source file was not found source=\"%1\"")
+                   .arg(trimmedSourceFile);
+        emitFailure(dscc::Notification(dscc::Notification::kCryptoEncryptSourceFileNotFound,
+                                       dscc::Notification::kError,
+                                       {{QStringLiteral("path"), trimmedSourceFile}}));
+        return;
+    }
+
+    if (trimmedTargetFile.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] encryptFile rejected because target file is empty source=\"%1\"")
+                   .arg(trimmedSourceFile);
+        emitFailure(dscc::Notification(dscc::Notification::kCryptoEncryptDestinationFileEmpty,
+                                       dscc::Notification::kError));
+        return;
+    }
+
+    QFileInfo targetInfo(trimmedTargetFile);
+    if (targetInfo.fileName().trimmed().isEmpty() || targetInfo.isDir()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] encryptFile rejected because target path is not a file source=\"%1\" target=\"%2\"")
+                   .arg(trimmedSourceFile, trimmedTargetFile);
+        emitFailure(dscc::Notification());
+        return;
+    }
+
+    const QString sourceAbs = QDir::cleanPath(sourceInfo.absoluteFilePath());
+    const QString targetAbs = QDir::cleanPath(targetInfo.absoluteFilePath());
+#ifdef Q_OS_WIN
+    const bool samePath = sourceAbs.compare(targetAbs, Qt::CaseInsensitive) == 0;
+#else
+    const bool samePath = sourceAbs == targetAbs;
+#endif
+    if (samePath) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] encryptFile rejected because source and target are the same source=\"%1\"")
+                   .arg(trimmedSourceFile);
+        emitFailure(dscc::Notification());
+        return;
+    }
+
+    if (trimmedPublicKey.isEmpty()) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] encryptFile rejected because public key is empty source=\"%1\" target=\"%2\"")
+                   .arg(trimmedSourceFile, trimmedTargetFile);
+        emitFailure(dscc::Notification(dscc::Notification::kCryptoEncryptPublicKeyEmpty,
+                                       dscc::Notification::kError));
+        return;
+    }
+
+    QDir targetParent = targetInfo.absoluteDir();
+    if (!targetParent.exists() && !targetParent.mkpath(QStringLiteral("."))) {
+        qWarning().noquote()
+            << QStringLiteral("[DsccBridge] encryptFile rejected because target parent cannot be created source=\"%1\" target=\"%2\"")
+                   .arg(trimmedSourceFile, trimmedTargetFile);
+        emitFailure(dscc::Notification());
+        return;
+    }
+
+    const dscc::Handle handle =
+        m_assets->EncryptFile(trimmedSourceFile, trimmedTargetFile, trimmedPublicKey);
+    const uint32_t operationId = handle.GetOperationId();
+    m_encryptFileOperations.insert(operationId,
+                                   FileCryptoOperation{trimmedSourceFile,
+                                                       trimmedTargetFile});
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] encryptFile submitted operationId=%1 source=\"%2\" target=\"%3\"")
+               .arg(operationId)
+               .arg(trimmedSourceFile, trimmedTargetFile);
+    Q_UNUSED(handle);
 }
 
 QString DsccBridge::domainCreateFailureMessage(uint32_t operationId,

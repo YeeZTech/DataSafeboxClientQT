@@ -50,9 +50,26 @@ public:
     Q_INVOKABLE QString notificationMessage(const QVariant &notification,
                                             const QString &fallback) const;
     Q_INVOKABLE void loadMessageList();
+    Q_INVOKABLE void encryptFile(const QString &sourceFile,
+                                 const QString &targetFile,
+                                 const QString &publicKey);
+    Q_INVOKABLE QString encryptedTargetFilePath(const QString &sourceFile,
+                                                const QString &outputDir) const;
 
 signals:
     void messageListLoaded(QVariantList messages);
+    void encryptFileStarted(uint32_t operation_id, QString source_file, QString target_file);
+    void encryptFileProgress(uint32_t operation_id,
+                             QString source_file,
+                             QString target_file,
+                             quint64 processed_bytes,
+                             quint64 total_bytes);
+    void encryptFileSucceeded(uint32_t operation_id, QString source_file, QString target_file);
+    void encryptFileFailed(uint32_t operation_id,
+                           QString source_file,
+                           QString target_file,
+                           dscc::Notification notification);
+    void encryptFileCanceled(uint32_t operation_id, QString source_file, QString target_file);
     void domainListLoaded(QVariantList domains);
     void domainSummaryLoaded(QString domainCode, QVariantMap summary);
     void instancesLoaded(QString domainCode, QVariantList instances);
@@ -91,6 +108,11 @@ private:
     QVariantMap instanceInfoToVariant(const dscc::InstanceInfo &info) const;
     QVariantMap messageInfoToVariant(const dscc::MessageInfo &info) const;
 
+    struct FileCryptoOperation {
+        QString sourceFile;
+        QString targetFile;
+    };
+
     std::unique_ptr<dscc::UserAssets> m_assets;
     QString m_metaDbPath;
     QString m_dsccDataRoot;
@@ -99,6 +121,7 @@ private:
     QString m_currentUserId;
     QString m_currentUserName;
     QHash<uint32_t, QString> m_domainCreateFailureMessages;
+    QHash<uint32_t, FileCryptoOperation> m_encryptFileOperations;
 };
 
 #endif // DSCCBRIDGE_H

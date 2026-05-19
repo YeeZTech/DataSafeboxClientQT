@@ -1047,6 +1047,10 @@ Item {
                                 if (root.isDomainReadOnly) {
                                     return
                                 }
+                                if (!root.domainPubKey) {
+                                    window.showError("未找到安全域公钥", "加密文件")
+                                    return
+                                }
                                 encryptFileDialog.open()
                             }
                         }

@@ -9,7 +9,7 @@ Popup {
     width: 500
     height: Math.min(contentColumn.implicitHeight + 48 + 48 + 36, 560)
     modal: true
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    closePolicy: root._encrypting ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
     background: null
     padding: 0
 
@@ -23,11 +23,14 @@ Popup {
     property string domainPubKey: ""
 
     // Encryption queue state
-    property var _encryptQueue: []       // [{file, output, modelIndex}]
+    property var _encryptQueue: []       // [{file, modelIndex}]
     property int _encryptTotal: 0
     property int _encryptDone: 0
     property int _encryptFailed: 0
     property string _currentPubKey: ""
+    property int _currentOperationId: -1
+    property string _currentSourceFile: ""
+    property string _currentTargetFile: ""
     property int _currentModelIndex: -1  // model index of item being encrypted
     property bool _encrypting: false
     property int _encryptProgress: 0
@@ -64,6 +67,9 @@ Popup {
         _encryptProgressDismissed = true
         _resultMessage = ""
         _resultType = ""
+        _currentOperationId = -1
+        _currentSourceFile = ""
+        _currentTargetFile = ""
         _currentModelIndex = -1
         pathListModel.clear()
     }
@@ -155,6 +161,7 @@ Popup {
     property real _tooltipBoxW: 0
 
     function addPaths(paths) {
+        if (root._encrypting) return
         root._encryptProgressDismissed = true
         root._resultMessage = ""
         var duplicates = []
@@ -189,6 +196,7 @@ Popup {
     }
 
     function removePath(index) {
+        if (root._encrypting) return
         root._encryptProgressDismissed = true
         root._resultMessage = ""
         if (index < 0 || index >= pathListModel.count) return
@@ -196,7 +204,147 @@ Popup {
         root.selectedFilePath = pathListModel.count > 0 ? pathListModel.get(0).path : ""
     }
 
+    function _formatEncryptFailure(notification, fallback) {
+        if (typeof DsccBridge !== "undefined" && DsccBridge.notificationMessage) {
+            var message = DsccBridge.notificationMessage(notification, fallback)
+            if (message) return message
+        }
+        return fallback
+    }
+
+    function _operationMatches(operationId, sourceFile, targetFile) {
+        if (root._currentSourceFile !== sourceFile || root._currentTargetFile !== targetFile) {
+            return false
+        }
+        return root._currentOperationId < 0 || root._currentOperationId === operationId
+    }
+
+    function _finishEncryptionQueue() {
+        root._encrypting = false
+        root._currentOperationId = -1
+        root._currentSourceFile = ""
+        root._currentTargetFile = ""
+        root._currentModelIndex = -1
+        root._encryptProgress = 100
+        root._encryptProgressDismissed = false
+
+        if (root._encryptFailed === 0) {
+            root._resultMessage = root._encryptTotal > 1
+                ? "已完成 " + root._encryptTotal + " 个文件加密"
+                : "文件加密完成"
+            root._resultType = "success"
+        } else if (root._encryptFailed < root._encryptTotal) {
+            root._resultMessage = "部分完成：" + (root._encryptTotal - root._encryptFailed)
+                + " 个成功，" + root._encryptFailed + " 个失败"
+            root._resultType = "warning"
+        } else {
+            root._resultMessage = "加密失败"
+            root._resultType = "error"
+        }
+    }
+
+    function _beginNextEncryption() {
+        if (root._encryptQueue.length === 0) {
+            root._finishEncryptionQueue()
+            return
+        }
+
+        var queue = root._encryptQueue
+        var next = queue.shift()
+        root._encryptQueue = queue
+
+        var targetFile = DsccBridge.encryptedTargetFilePath(next.file, root.selectedOutputPath)
+        if (!targetFile) {
+            root._markModelItemStatus(next.modelIndex, "failed")
+            root._encryptDone++
+            root._encryptFailed++
+            root._resultMessage = "无法生成加密文件输出路径"
+            root._resultType = "error"
+            root._beginNextEncryption()
+            return
+        }
+
+        root._currentOperationId = -1
+        root._currentSourceFile = next.file
+        root._currentTargetFile = targetFile
+        root._currentModelIndex = next.modelIndex
+        root._encryptProgress = Math.round((root._encryptDone / Math.max(1, root._encryptTotal)) * 100)
+
+        DsccBridge.encryptFile(next.file, targetFile, root._currentPubKey)
+    }
+
+    function _completeCurrentEncryption(status, message) {
+        root._markModelItemStatus(root._currentModelIndex, status)
+        root._encryptDone++
+        if (status !== "encrypted") {
+            root._encryptFailed++
+            root._resultMessage = message || "加密失败"
+            root._resultType = "error"
+        }
+
+        root._currentOperationId = -1
+        root._currentSourceFile = ""
+        root._currentTargetFile = ""
+        root._currentModelIndex = -1
+        root._beginNextEncryption()
+    }
+
+    function _startEncryptionWithBridge() {
+        if (root._encrypting) return
+
+        for (var r = 0; r < pathListModel.count; r++) {
+            if (pathListModel.get(r).status === "failed") {
+                pathListModel.setProperty(r, "status", "pending")
+            }
+        }
+
+        var pubKey = root.domainPubKey || ""
+        if (!pubKey) {
+            root._resultMessage = "未找到安全域公钥"
+            root._resultType = "error"
+            root._encryptProgressDismissed = false
+            return
+        }
+
+        var queue = []
+        for (var i = 0; i < pathListModel.count; i++) {
+            var item = pathListModel.get(i)
+            if (item.status !== "pending") continue
+            if (item.isDir) {
+                pathListModel.setProperty(i, "status", "failed")
+                continue
+            }
+            queue.push({ file: item.path, modelIndex: i })
+        }
+
+        if (queue.length === 0) {
+            root._resultMessage = "没有待加密的文件"
+            root._resultType = "error"
+            root._encryptProgressDismissed = false
+            return
+        }
+
+        root._currentPubKey = pubKey
+        root._encryptQueue = queue
+        root._encryptTotal = queue.length
+        root._encryptDone = 0
+        root._encryptFailed = 0
+        root._encryptProgress = 0
+        root._encrypting = true
+        root._encryptProgressDismissed = false
+        root._resultMessage = ""
+        root._resultType = ""
+        root._currentOperationId = -1
+        root._currentSourceFile = ""
+        root._currentTargetFile = ""
+        root._currentModelIndex = -1
+
+        root._beginNextEncryption()
+    }
+
     function startEncryption() {
+        root._startEncryptionWithBridge()
+        return
         // Reset failed items to pending for re-encryption
         for (var r = 0; r < pathListModel.count; r++) {
             if (pathListModel.get(r).status === "failed") {
@@ -341,6 +489,42 @@ Popup {
         id: pathListModel
     }
 
+    Connections {
+        target: DsccBridge
+
+        function onEncryptFileStarted(operationId, sourceFile, targetFile) {
+            if (root._currentSourceFile === sourceFile && root._currentTargetFile === targetFile) {
+                root._currentOperationId = operationId
+            }
+        }
+
+        function onEncryptFileProgress(operationId, sourceFile, targetFile, processedBytes, totalBytes) {
+            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
+
+            var currentRatio = totalBytes > 0 ? (processedBytes / totalBytes) : 0
+            currentRatio = Math.max(0, Math.min(1, currentRatio))
+            var overallRatio = (root._encryptDone + currentRatio) / Math.max(1, root._encryptTotal)
+            root._encryptProgress = Math.round(Math.max(0, Math.min(1, overallRatio)) * 100)
+        }
+
+        function onEncryptFileSucceeded(operationId, sourceFile, targetFile) {
+            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
+            root._completeCurrentEncryption("encrypted", "")
+        }
+
+        function onEncryptFileFailed(operationId, sourceFile, targetFile, notification) {
+            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
+            root._completeCurrentEncryption(
+                "failed",
+                root._formatEncryptFailure(notification, "加密失败"))
+        }
+
+        function onEncryptFileCanceled(operationId, sourceFile, targetFile) {
+            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
+            root._completeCurrentEncryption("failed", "加密已取消")
+        }
+    }
+
     // ---- Main content ----
     Rectangle {
         id: mainRect
@@ -388,8 +572,9 @@ Popup {
                         MouseArea {
                             id: closeArea
                             anchors.fill: parent
+                            enabled: !root._encrypting
                             hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
+                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                             onClicked: { root.close(); root.cancelClicked() }
                         }
 
@@ -475,14 +660,16 @@ Popup {
                                         MouseArea {
                                             id: addFileBtnArea
                                             anchors.fill: parent
+                                            enabled: !root._encrypting
                                             hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
+                                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                                             onClicked: fileDialog.open()
                                         }
                                     }
 
                                     // + 文件夹 button
                                     Rectangle {
+                                        visible: false
                                         width: addFolderRow.implicitWidth + 16
                                         height: 26
                                         radius: 6
@@ -630,8 +817,9 @@ Popup {
                                             MouseArea {
                                                 id: removeBtnArea
                                                 anchors.fill: parent
+                                                enabled: !root._encrypting
                                                 hoverEnabled: true
-                                                cursorShape: Qt.PointingHandCursor
+                                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                                                 onClicked: root.removePath(index)
                                             }
                                         }
@@ -736,8 +924,9 @@ Popup {
                             MouseArea {
                                 id: outputClearArea
                                 anchors.fill: parent
+                                enabled: !root._encrypting
                                 hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
+                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                                 onClicked: root.selectedOutputPath = ""
                             }
                         }
@@ -748,8 +937,9 @@ Popup {
                             anchors.right: outputClearBtn.left
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
+                            enabled: !root._encrypting
                             hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
+                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                             onClicked: folderDialog.open()
                         }
                     }
@@ -869,8 +1059,9 @@ Popup {
                     MouseArea {
                         id: cancelArea
                         anchors.fill: parent
+                        enabled: !root._encrypting
                         hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
+                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                         onClicked: { root.close(); root.cancelClicked() }
                     }
                 }
@@ -884,7 +1075,7 @@ Popup {
                         if (encryptArea.containsMouse) return Qt.lighter("#0f4c81", 1.15)
                         return "#0f4c81"
                     }
-                    opacity: root._pendingCount > 0 ? 1.0 : 0.5
+                    opacity: root._pendingCount > 0 && !root._encrypting ? 1.0 : 0.5
                     Behavior on opacity { NumberAnimation { duration: 200 } }
                     Behavior on color { ColorAnimation { duration: 150 } }
 
@@ -901,7 +1092,7 @@ Popup {
                         id: encryptArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        enabled: root._pendingCount > 0
+                        enabled: root._pendingCount > 0 && !root._encrypting
                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                         onClicked: root.startEncryption()
                     }
