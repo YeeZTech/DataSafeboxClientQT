@@ -277,7 +277,7 @@ void DsccBridge::setCurrentUser(const QString &userId,
     connectAssetSignals();
     m_currentUserId = trimmedUserId;
     m_currentUserName = trimmedUserName;
-    m_assets->SetCurrentUser(trimmedUserId, m_serverUrl, accessToken, refreshToken);
+    m_assets->SetCurrentUser(trimmedUserId, trimmedUserName, m_serverUrl, accessToken, refreshToken);
     m_assets->Initialize();
 }
 
@@ -515,9 +515,23 @@ QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
     }
     summary.insert(QStringLiteral("status"), statusText);
     summary.insert(QStringLiteral("isInactive"), isDomainInactive(info));
-    summary.insert(QStringLiteral("creator"),
-                   info.creator_user_name.isEmpty() ? info.creator_user_id
-                                                    : info.creator_user_name);
+    const QString creatorUserId = info.creator_user_id.trimmed();
+    QString creatorUserName = info.creator_user_name.trimmed();
+    if (creatorUserName.isEmpty() && !creatorUserId.isEmpty()
+        && creatorUserId == m_currentUserId.trimmed()) {
+        creatorUserName = m_currentUserName.trimmed();
+    }
+    if (creatorUserName.isEmpty()) {
+        const QHash<QString, QString> userNameLookup =
+            buildUserNameLookup(info.visible_users, QString(), QString());
+        creatorUserName = userNameLookup.value(creatorUserId).trimmed();
+    }
+    if (creatorUserName.isEmpty()) {
+        creatorUserName = creatorUserId;
+    }
+    summary.insert(QStringLiteral("creator"), creatorUserName);
+    summary.insert(QStringLiteral("creatorUserId"), creatorUserId);
+    summary.insert(QStringLiteral("creatorUserName"), creatorUserName);
     summary.insert(QStringLiteral("createdAt"), timestampToIsoString(info.created_at));
     summary.insert(QStringLiteral("updatedAt"), timestampToIsoString(info.updated_at));
     return summary;

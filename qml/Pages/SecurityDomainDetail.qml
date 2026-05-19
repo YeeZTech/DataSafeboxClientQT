@@ -38,16 +38,42 @@ Item {
     // Description saving state
     property bool   isDescriptionSaving: false
 
+    function trimText(value) {
+        if (value === undefined || value === null) return ""
+        return ("" + value).trim()
+    }
+
+    function domainCreatorDisplayText(detail) {
+        var d = detail || root.domainData || {}
+        return trimText(d.creatorUserName)
+            || trimText(d.creator)
+            || trimText(d.creatorUserId || d.authUserId || d.userId)
+    }
+
     function isCurrentUserDomainCreator(detail) {
         if (!currentUser || !detail) return false
 
-        var creator = (detail.creator || "").trim()
-        if (!creator) return false
+        var userKeys = [
+            trimText(currentUser.userName),
+            trimText(currentUser.authUserId)
+        ]
+        var creatorKeys = [
+            trimText(detail.creatorUserId),
+            trimText(detail.authUserId),
+            trimText(detail.userId),
+            trimText(detail.creatorUserName),
+            trimText(detail.creator)
+        ]
 
-        // 本地新建缓存里 creator 存的是 authUserId，后端同步数据里是 userName
-        var userName = (currentUser.userName || "").trim()
-        var authUserId = (currentUser.authUserId || "").trim()
-        return (userName && userName === creator) || (authUserId && authUserId === creator)
+        for (var i = 0; i < userKeys.length; i++) {
+            if (!userKeys[i]) continue
+            for (var j = 0; j < creatorKeys.length; j++) {
+                if (creatorKeys[j] && userKeys[i] === creatorKeys[j]) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     function isDomainInactiveStatus(statusText) {
@@ -1151,7 +1177,7 @@ Item {
                             }
                             
                             SelectableText {
-                                text: root.domainData.creator || ""
+                                text: root.domainCreatorDisplayText(root.domainData)
                                 font.pixelSize: 16
                                 color: "#0f172b"
                             }
