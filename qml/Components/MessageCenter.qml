@@ -249,8 +249,6 @@ Item {
                 }
             }
         }
-<<<<<<< HEAD
-=======
 
         // "一键已读" button
         Rectangle {
@@ -295,7 +293,6 @@ Item {
                 onClicked: root.markAllAsRead()
             }
         }
->>>>>>> feature/multilang
     }
 
     // Message list
