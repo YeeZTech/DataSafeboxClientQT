@@ -1935,7 +1935,7 @@ Item {
                                         
                                         CenteredTooltipText {
                                             anchors.fill: parent
-                                            value: modelData.authUserName || modelData.account || ""
+                                            value: modelData.authUserName || modelData.user_name || modelData.account || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 6
