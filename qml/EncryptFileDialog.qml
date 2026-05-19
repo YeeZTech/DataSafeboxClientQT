@@ -164,9 +164,9 @@ Popup {
             if (existingIdx >= 0) {
                 var existingStatus = pathListModel.get(existingIdx).status
                 if (existingStatus === "encrypted") {
-                    duplicates.push(getFileName(p) + "（已加密）")
+                    duplicates.push(getFileName(p) + qsTr(" (encrypted)"))
                 } else {
-                    duplicates.push(getFileName(p) + "（已在列表中）")
+                    duplicates.push(getFileName(p) + qsTr(" (already in list)"))
                 }
                 continue
             }
@@ -212,7 +212,7 @@ Popup {
             }
         }
         if (pendingItems.length === 0) {
-            root._resultMessage = "没有待加密的文件"
+            root._resultMessage = qsTr("No files to encrypt")
             root._resultType = "error"
             root._encryptProgressDismissed = false
             return
@@ -221,14 +221,14 @@ Popup {
         // Resolve pubKey
         var pubKey = root.domainPubKey || ""
         if (!pubKey || pubKey === "") {
-            // 空实现：无法获取公钥时显示错误
-            root._resultMessage = "未找到安全域公钥"
+            // empty stub: show error when public key unavailable
+            root._resultMessage = qsTr("Security domain public key not found")
             root._resultType = "error"
             root._encryptProgressDismissed = false
             return
         }
         if (!pubKey || pubKey === "") {
-            root._resultMessage = "未找到安全域公钥"
+            root._resultMessage = qsTr("Security domain public key not found")
             root._resultType = "error"
             root._encryptProgressDismissed = false
             return
@@ -270,7 +270,7 @@ Popup {
         }
 
         if (queue.length === 0) {
-            root._resultMessage = "没有找到可加密的文件"
+            root._resultMessage = qsTr("No encryptable files found")
             root._resultType = "error"
             root._encryptProgressDismissed = false
             return
@@ -294,7 +294,7 @@ Popup {
         root._encryptDone = root._encryptTotal
         root._encryptProgress = 100
         root._encryptProgressDismissed = false
-        root._resultMessage = "功能已禁用"
+        root._resultMessage = qsTr("Function disabled")
         root._resultType = "error"
     }
 
@@ -303,7 +303,7 @@ Popup {
 
     FileDialog {
         id: fileDialog
-        title: "选择文件"
+        title: qsTr("Select File")
         fileMode: FileDialog.OpenFiles
 
         onAccepted: {
@@ -321,7 +321,7 @@ Popup {
 
     FolderDialog {
         id: folderSelectDialog
-        title: "选择文件夹"
+        title: qsTr("Select Folder")
 
         onAccepted: {
             var folderPath = root.urlToLocalPath(folderSelectDialog.folder)
@@ -331,7 +331,7 @@ Popup {
 
     FolderDialog {
         id: folderDialog
-        title: "选择输出路径"
+        title: qsTr("Select Output Path")
 
         onAccepted: {
             root.selectedOutputPath = root.urlToLocalPath(folderDialog.folder)
@@ -373,7 +373,7 @@ Popup {
                     SelectableText {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "加密文件至此安全域"
+                        text: qsTr("Encrypt Files to This Security Domain")
                         font.pixelSize: 18
                         font.weight: Font.DemiBold
                         color: "#0f172b"
@@ -412,7 +412,7 @@ Popup {
                     Row {
                         spacing: 4
                         SelectableText {
-                            text: "选择文件或文件夹"
+                            text: qsTr("Select files or folders")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: "#314158"
@@ -470,7 +470,7 @@ Popup {
                                             anchors.centerIn: parent
                                             spacing: 4
                                             Text { text: "+"; font.pixelSize: 13; font.weight: Font.Bold; color: "#0f4c81"; anchors.verticalCenter: parent.verticalCenter }
-                                            Text { text: "文件"; font.pixelSize: 13; color: "#314158"; anchors.verticalCenter: parent.verticalCenter }
+                                            Text { text: qsTr("File"); font.pixelSize: 13; color: "#314158"; anchors.verticalCenter: parent.verticalCenter }
                                         }
 
                                         MouseArea {
@@ -497,7 +497,7 @@ Popup {
                                             anchors.centerIn: parent
                                             spacing: 4
                                             Text { text: "+"; font.pixelSize: 13; font.weight: Font.Bold; color: "#0f4c81"; anchors.verticalCenter: parent.verticalCenter }
-                                            Text { text: "文件夹"; font.pixelSize: 13; color: "#314158"; anchors.verticalCenter: parent.verticalCenter }
+                                            Text { text: qsTr("Folder"); font.pixelSize: 13; color: "#314158"; anchors.verticalCenter: parent.verticalCenter }
                                         }
 
                                         MouseArea {
@@ -598,7 +598,7 @@ Popup {
                                                     if (containsMouse && pathText.truncated) {
                                                         var pos = itemHover.mapToItem(root.contentItem, itemHover.mouseX, itemHover.mouseY)
                                                         var boxPos = selectorBox.mapToItem(root.contentItem, 0, 0)
-                                                        root._tooltipText = model.path + (model.status === "encrypted" ? "  ·  已加密" : model.status === "failed" ? "  ·  失败" : "")
+                                                        root._tooltipText = model.path + (model.status === "encrypted" ? "  ·  " + qsTr("encrypted") : model.status === "failed" ? "  ·  " + qsTr("failed") : "")
                                                         root._tooltipMouseX = pos.x
                                                         root._tooltipMouseY = pos.y
                                                         root._tooltipBoxX = boxPos.x
@@ -646,13 +646,13 @@ Popup {
                     Text {
                         visible: pathListModel.count > 0
                         text: {
-                            var t = "已选择 " + pathListModel.count + " 项"
-                            if (root._encryptedCount > 0) t += "，" + root._encryptedCount + " 项已加密"
+                            var t = qsTr("%1 selected").arg(pathListModel.count)
+                            if (root._encryptedCount > 0) t += ", " + root._encryptedCount + " " + qsTr("encrypted")
                             var fc = 0
                             for (var i = 0; i < pathListModel.count; i++) {
                                 if (pathListModel.get(i).status === "failed") fc++
                             }
-                            if (fc > 0) t += "，" + fc + " 项失败"
+                            if (fc > 0) t += ", " + fc + " " + qsTr("failed")
                             return t
                         }
                         font.pixelSize: 12
@@ -666,7 +666,7 @@ Popup {
                     spacing: 8
 
                     SelectableText {
-                        text: "加密文件的输出路径"
+                        text: qsTr("Output path for encrypted files")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "#314158"
@@ -706,7 +706,7 @@ Popup {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: root.selectedOutputPath ? root.selectedOutputPath : "默认保存在源文件目录"
+                                    text: root.selectedOutputPath ? root.selectedOutputPath : qsTr("Default: save to source file directory")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
                                     color: root.selectedOutputPath ? "#0f172b" : "#94a3b8"
@@ -767,10 +767,10 @@ Popup {
                         Text {
                             text: root._encrypting
                                 ? (root._encryptTotal > 1
-                                    ? "正在加密 (" + (root._encryptDone + 1) + "/" + root._encryptTotal + ")"
-                                    : "正在加密...")
-                                : (root._resultType === "error" ? "加密失败"
-                                    : root._resultType === "warning" ? "部分完成" : "加密完成")
+                                    ? qsTr("Encrypting (") + (root._encryptDone + 1) + "/" + root._encryptTotal + ")"
+                                    : qsTr("Encrypting..."))
+                                : (root._resultType === "error" ? qsTr("Encryption failed")
+                                    : root._resultType === "warning" ? qsTr("Partially completed") : qsTr("Encryption completed"))
                             font.pixelSize: 12
                             font.weight: Font.Medium
                             color: root._encrypting ? "#314158"
@@ -861,7 +861,7 @@ Popup {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "取消"
+                        text: qsTr("Cancel")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "#314158"
@@ -892,7 +892,7 @@ Popup {
                     Text {
                         id: encryptBtnText
                         anchors.centerIn: parent
-                        text: root._pendingCount > 0 ? "加密文件 (" + root._pendingCount + ")" : "加密文件"
+                        text: root._pendingCount > 0 ? qsTr("Encrypt Files (") + root._pendingCount + ")" : qsTr("Encrypt Files")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "white"
@@ -938,7 +938,7 @@ Popup {
 
             SelectableText {
                 width: parent.width
-                text: "以下文件已在列表中"
+                text: qsTr("The following files are already in the list")
                 font.pixelSize: 16
                 font.weight: Font.Medium
                 color: "#0f172b"
@@ -961,7 +961,7 @@ Popup {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "知道了"
+                        text: qsTr("Got it")
                         font.pixelSize: 13
                         font.weight: Font.Medium
                         color: Theme.Colors.primaryText

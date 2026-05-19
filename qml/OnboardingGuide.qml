@@ -464,7 +464,7 @@ Item {
                         }
 
                         Text {
-                            text:           "不再提示"
+                            text:           qsTr("Don't show again")
                             font.pixelSize: 11
                             color:          cbMouseArea.containsMouse ? Qt.rgba(1, 1, 1, 0.9) : Qt.rgba(1, 1, 1, 0.65)
                             anchors.verticalCenter: parent.verticalCenter
@@ -500,7 +500,7 @@ Item {
                         Text {
                             id: prevBtnLabel
                             anchors.centerIn: parent
-                            text:           "上一个"
+                            text:           qsTr("Previous")
                             font.pixelSize: 11
                             font.weight:    Font.Medium
                             color:          prevBtnArea.containsMouse ? Qt.rgba(1, 1, 1, 1.0) : Qt.rgba(1, 1, 1, 0.75)
@@ -532,7 +532,7 @@ Item {
                         Text {
                             id:             nextBtnLabel
                             anchors.centerIn: parent
-                            text:           (root._neverShowAgain || root.currentStep === root.totalSteps - 1) ? "开始使用" : "下一个"
+                            text:           (root._neverShowAgain || root.currentStep === root.totalSteps - 1) ? qsTr("Get Started") : qsTr("Next")
                             font.pixelSize: 11
                             font.weight:    Font.Medium
                             color:          "#1a3d6e"

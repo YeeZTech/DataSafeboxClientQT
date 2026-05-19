@@ -184,7 +184,7 @@ Popup {
                 SelectableText {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: isApproverView ? "安全域实例申请详情" : "安全域实例详情"
+                    text: isApproverView ? qsTr("Security Domain Instance Application Details") : qsTr("Security Domain Instance Details")
                     font.pixelSize: 18
                     font.weight: Font.DemiBold
                     color: "#0f172b"
@@ -231,7 +231,7 @@ Popup {
                 visible: false
 
                 SelectableText {
-                    text: "实例费用"
+                    text: qsTr("Instance Cost")
                     font.pixelSize: 14
                     color: "#62748e"
                 }
@@ -247,7 +247,7 @@ Popup {
                     }
                     
                     SelectableText {
-                        text: " 元"
+                        text: qsTr(" CNY")
                         font.pixelSize: 14
                         font.weight: Font.DemiBold
                         color: "#ff5736"
@@ -282,7 +282,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "实例编号"
+                            text: qsTr("Instance No.")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -299,7 +299,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "状态"
+                            text: qsTr("Status")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -333,7 +333,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "创建方"
+                            text: qsTr("Creator")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -350,7 +350,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "安全域实例大小"
+                            text: qsTr("Security Domain Instance Size")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -373,7 +373,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "申请时间"
+                            text: qsTr("Application Time")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -399,7 +399,7 @@ Popup {
                 }
                 
                 SelectableText {
-                    text: "应用白名单"
+                    text: qsTr("App Whitelist")
                     font.pixelSize: 14
                     color: "#62748e"
                 }
@@ -445,7 +445,7 @@ Popup {
                                 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    text: "暂无数据"
+                                    text: qsTr("No data")
                                     font.pixelSize: 13
                                     color: "#90A1B9"
                                 }
@@ -483,7 +483,7 @@ Popup {
                                 Text {
                                     width: (parent.width - 8) / 2
                                     height: parent.height
-                                    text: "进程路径"
+                                    text: qsTr("Process Path")
                                     font.pixelSize: 14
                                     color: "#314158"
                                     verticalAlignment: Text.AlignVCenter
@@ -493,7 +493,7 @@ Popup {
                                 Text {
                                     width: (parent.width - 8) / 2
                                     height: parent.height
-                                    text: "哈希"
+                                    text: qsTr("Hash")
                                     font.pixelSize: 14
                                     color: "#314158"
                                     verticalAlignment: Text.AlignVCenter
@@ -798,7 +798,7 @@ Popup {
                     
                     SelectableText {
                         anchors.centerIn: parent
-                        text: "拒绝"
+                        text: qsTr("Reject")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: parent.pressed ? "#9f0006" : (parent.hovered ? "#c50009" : "#e7000b")
@@ -842,7 +842,7 @@ Popup {
 
                     SelectableText {
                         anchors.centerIn: parent
-                        text: "同意"
+                        text: qsTr("Approve")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "white"

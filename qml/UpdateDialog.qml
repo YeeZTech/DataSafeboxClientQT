@@ -69,7 +69,7 @@ Dialog {
             spacing: 0
 
             Text {
-                text: "更新提示"
+                text: qsTr("Update Available")
                 font.pixelSize: 16
                 font.weight: Font.Bold
                 color: "#0f172b"
@@ -111,9 +111,9 @@ Dialog {
 
             Text {
                 Layout.fillWidth: true
-                text: "您当前使用的客户端版本为 " + UpdateManager.currentVersion
-                    + "，已不是最新版本。建议更新至最新版本 " + root.versionStr
-                    + "，以获得更好的使用体验。"
+                text: qsTr("Your current client version is ") + UpdateManager.currentVersion
+                    + qsTr(", which is not the latest. We recommend updating to the latest version ") + root.versionStr
+                    + qsTr(" for a better experience.")
                 font.pixelSize: 14
                 color: "#374151"
                 wrapMode: Text.WordWrap
@@ -125,7 +125,7 @@ Dialog {
                 visible: root.fileSizeStr !== ""
 
                 Text {
-                    text: "更新大小："
+                    text: qsTr("Update Size:")
                     font.pixelSize: 13
                     color: "#6b7280"
                 }
@@ -142,7 +142,7 @@ Dialog {
                 visible: UpdateManager.isDownloading || root.startedDownloadFromDialog
 
                 Text {
-                    text: "正在下载更新包..."
+                    text: qsTr("Downloading update package...")
                     font.pixelSize: 13
                     color: "#374151"
                 }
@@ -234,7 +234,7 @@ Dialog {
 
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "以后再说"
+                        text: qsTr("Later")
                         font.pixelSize: 14
                         color: "#374151"
                     }
@@ -261,7 +261,7 @@ Dialog {
 
                 Text {
                     anchors.centerIn: parent
-                        text: UpdateManager.isDownloading ? "下载中..." : (UpdateManager.downloadProgress >= 1.0 ? "立即安装" : "立即更新")
+                        text: UpdateManager.isDownloading ? qsTr("Downloading...") : (UpdateManager.downloadProgress >= 1.0 ? qsTr("Install Now") : qsTr("Update Now"))
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: "white"

@@ -44,7 +44,7 @@ Dialog {
 
     FileDialog {
         id: fileDialog
-        title: "选择要导入的文件"
+        title: qsTr("Select file to import")
         fileMode: FileDialog.OpenFile
         onAccepted: {
             var url = selectedFile.toString()
@@ -75,7 +75,7 @@ Dialog {
                 SelectableText {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "导入文件"
+                    text: qsTr("Import File")
                     font.pixelSize: 18
                     font.weight: Font.DemiBold
                     color: "#0f172b"
@@ -124,7 +124,7 @@ Dialog {
 
                 SelectableText {
                     width: parent.width
-                    text: "选择文件："
+                    text: qsTr("Select file:")
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: "#314158"
@@ -149,7 +149,7 @@ Dialog {
                             x: 12
                             anchors.verticalCenter: parent.verticalCenter
                             width: parent.width - 24
-                            text: root.selectedFile || "未选择文件"
+                            text: root.selectedFile || qsTr("No file selected")
                             font.pixelSize: 14
                             color: root.selectedFile ? "#0f172b" : (fileInputArea.containsMouse ? "#0f4c81" : "#5a7c9b")
                             elide: Text.ElideMiddle
@@ -184,7 +184,7 @@ Dialog {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "浏览"
+                            text: qsTr("Browse")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: Theme.Colors.primaryText
@@ -226,7 +226,7 @@ Dialog {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "取消"
+                            text: qsTr("Cancel")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: "#314158"
@@ -258,7 +258,7 @@ Dialog {
                             cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                             onClicked: {
                                 if (root.selectedFile.length > 0) {
-                                    progressDialog.progressTitle = "正在导入..."
+                                    progressDialog.progressTitle = qsTr("Importing...")
                                     progressDialog.progress = 0
                                     progressDialog.open()
                                     root.importStarted(root.selectedFile)
@@ -268,7 +268,7 @@ Dialog {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "导入"
+                            text: qsTr("Import")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: Theme.Colors.primaryText
@@ -290,7 +290,7 @@ Dialog {
         y: (root.height - height) / 2
         
         property int progress: 0
-        property string progressTitle: "正在导入..."
+        property string progressTitle: qsTr("Importing...")
         
         Timer {
             id: progressPollTimer
@@ -303,7 +303,7 @@ Dialog {
                 } else {
                     progressPollTimer.stop()
                     progressDialog.close()
-                    successDialog.message = "导入成功"
+                    successDialog.message = qsTr("Import successful")
                     successDialog.open()
                 }
             }
@@ -387,7 +387,7 @@ Dialog {
             
             SelectableText {
                 width: parent.width
-                text: "导入成功"
+                text: qsTr("Import Successful")
                 font.pixelSize: 16
                 font.weight: Font.Medium
                 color: "#0f172b"
@@ -416,7 +416,7 @@ Dialog {
                     
                     Text {
                         anchors.centerIn: parent
-                        text: "确定"
+                        text: qsTr("OK")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "white"
@@ -464,7 +464,7 @@ Dialog {
             
             SelectableText {
                 width: parent.width
-                text: "错误"
+                text: qsTr("Error")
                 font.pixelSize: 16
                 font.weight: Font.Medium
                 color: "#0f172b"
@@ -490,7 +490,7 @@ Dialog {
                     
                     Text {
                         anchors.centerIn: parent
-                        text: "确定"
+                        text: qsTr("OK")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "white"

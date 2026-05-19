@@ -62,7 +62,7 @@ Item {
         }
         
         MenuItem {
-            text: "粘贴"
+            text: qsTr("Paste")
             enabled: root.target ? (!root.target.readOnly) : false
             onTriggered: {
                 if (root.target && root.target.paste) {
@@ -72,7 +72,7 @@ Item {
         }
 
         MenuItem {
-            text: "复制"
+            text: qsTr("Copy")
             enabled: root.target ? (root.target.selectedText ? root.target.selectedText.length > 0 : false) : false
             onTriggered: {
                 if (root.target) {
@@ -82,7 +82,7 @@ Item {
         }
         
         MenuItem {
-            text: "全选"
+            text: qsTr("Select All")
             onTriggered: {
                 if (root.target) {
                     root.target.selectAll()

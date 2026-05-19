@@ -50,7 +50,7 @@ Popup {
                     anchors.left: parent.left
                     anchors.leftMargin: 24
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "安全域实例化"
+                    text: qsTr("Security Domain Instantiation")
                     font.pixelSize: 16
                     font.weight: Font.Medium
                     color: "#1d293d"
@@ -126,7 +126,7 @@ Popup {
 
                             Text {
                                 width: parent.width - 28
-                                text: "安全域实例化功能已在Linux命令行客户端中实现。"
+                                text: qsTr("Security domain instantiation is implemented in the Linux CLI client.")
                                 font.pixelSize: 13
                                 color: "#1e4d8c"
                                 wrapMode: Text.WordWrap
@@ -136,7 +136,7 @@ Popup {
 
                     // ── Section 1 ─────────────────────────────────────────────
                     Text {
-                        text: "1. 安装命令行客户端"
+                        text: qsTr("1. Install the CLI client")
                         font.pixelSize: 13
                         font.weight: Font.Medium
                         color: "#1d293d"
@@ -165,7 +165,7 @@ Popup {
 
                     // ── Section 2 ─────────────────────────────────────────────
                     Text {
-                        text: "2. 安全域使用方法操作流程"
+                        text: qsTr("2. Security domain usage workflow")
                         font.pixelSize: 13
                         font.weight: Font.Medium
                         color: "#1d293d"
@@ -183,7 +183,7 @@ Popup {
                             anchors.right:  parent.right
                             anchors.top:    parent.top
                             anchors.margins: 12
-                            text: "# 步骤1: 登录\ndv auth login\n\n# 步骤2: 查看可见安全域\ndv domain list\n\n# 步骤3: 申请创建实例\ndv instance create \\\n  -d \"trade-domain-001\" \\\n  -n \"instance-wangfang-01\" \\\n  --disk \"/data/safebox\"\n\n# 步骤4: 启动已授权实例\ndv instance start instance-wangfang-01 --force"
+                            text: "# 步骤1：登录\ndv auth login\n\n# 步骤2：列出可见安全域\ndv domain list\n\n# 步骤3：申请创建实例\ndv instance create \"trade-domain-001\" -n \"instance-wangfang-01\" --disk \"/data/safebox\"\n\n# 步骤4：启动已授权实例\ndv instance start instance-wangfang-01 --force"
                             font.family: "Consolas, Courier New, monospace"
                             font.pixelSize: 12
                             color: "#e8edf3"
@@ -232,7 +232,7 @@ Popup {
                         Text {
                             id: docBtnLabel
                             anchors.centerIn: parent
-                            text: "查看完整文档"
+                            text: qsTr("View full documentation")
                             font.pixelSize: 13
                             color: docArea.containsMouse ? "#1e5a8e" : "#45556c"
                             Behavior on color { ColorAnimation { duration: 120 } }

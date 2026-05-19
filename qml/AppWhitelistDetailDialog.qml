@@ -118,7 +118,7 @@ Popup {
                 SelectableText {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.status === "待审核" ? "应用白名单申请" : "应用白名单详情"
+                    text: root.status === "待审核" ? qsTr("App Whitelist Application") : qsTr("App Whitelist Details")
                     font.pixelSize: 18
                     font.weight: Font.DemiBold
                     color: "#0f172b"
@@ -167,7 +167,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "申请编号"
+                            text: qsTr("Application No.")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -183,7 +183,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "状态"
+                            text: qsTr("Status")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -219,7 +219,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "申请方"
+                            text: qsTr("Applicant")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -235,7 +235,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "安全域实例名称"
+                            text: qsTr("Security Domain Instance Name")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -258,7 +258,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "申请时间"
+                            text: qsTr("Application Time")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -274,7 +274,7 @@ Popup {
                         spacing: 4
 
                         SelectableText {
-                            text: "应用名称"
+                            text: qsTr("Application Name")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -294,7 +294,7 @@ Popup {
             Item { width: parent.width; height: 4 }
 
             SelectableText {
-                text: "应用白名单依赖文件"
+                text: qsTr("App Whitelist Dependency Files")
                 font.pixelSize: 14
                 color: "#62748e"
             }
@@ -351,7 +351,7 @@ Popup {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "文件名"
+                                text: qsTr("File Name")
                                 font.pixelSize: 14
                                 color: "#62748e"
                             }
@@ -363,7 +363,7 @@ Popup {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "哈希值"
+                                text: qsTr("Hash Value")
                                 font.pixelSize: 14
                                 color: "#62748e"
                             }
@@ -421,7 +421,7 @@ Popup {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "暂无数据"
+                                text: qsTr("No data")
                                 font.pixelSize: 14
                                 color: "#90a1b9"
                             }
@@ -691,7 +691,7 @@ Popup {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "拒绝"
+                        text: qsTr("Reject")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: rejectBtn.pressed ? "#9f0006" : (rejectBtn.hovered ? "#c50009" : "#e7000b")
@@ -727,7 +727,7 @@ Popup {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "同意"
+                        text: qsTr("Approve")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "white"

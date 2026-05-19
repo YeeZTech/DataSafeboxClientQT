@@ -319,11 +319,7 @@ Item {
                 SelectableText {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: instanceData.name || "安全域实例"
-                    font.pixelSize: 24
-                    font.weight: Font.Medium
-                    color: "#0f172b"
-                }
+                    text: instanceData.name || qsTr("Security Domain Instance")
                 
                 // Import File Button（仅运行中实例显示）
                 Rectangle {
@@ -348,7 +344,7 @@ Item {
                         }
 
                         Text {
-                            text: "导入文件"
+                            text: qsTr("Import File")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: Theme.Colors.primaryText
@@ -397,7 +393,7 @@ Item {
                         // 文案
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "加密文件至此安全域"
+                            text: qsTr("Encrypt File to This Security Domain")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: Theme.Colors.primaryText   // 白色文字
@@ -420,10 +416,10 @@ Item {
                             instantiationPaymentDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes)
                             
                             // 显示的实例时长文案
-                            instantiationPaymentDialog.instanceFee = (durationText && durationText.length > 0 ? (durationText + "个月") : "-")
+                            instantiationPaymentDialog.instanceFee = (durationText && durationText.length > 0 ? (durationText + qsTr(" months")) : "-")
                             
                             // 当前计费规则
-                            instantiationPaymentDialog.billingRule = "30元/GB/月"
+                            instantiationPaymentDialog.billingRule = qsTr("30 CNY/GB/Month")
                             
                             // 计算预计费用
                             instantiationPaymentDialog.estimatedFee = calculateEstimatedFee(rawSize, durationText, instantiationPaymentDialog.billingRule)
@@ -461,8 +457,7 @@ Item {
                         spacing: 4
                         
                         SelectableText {
-                            text: "实例ID"
-                            font.pixelSize: 14
+                                text: qsTr("Instance ID")
                             color: "#62748e"
                         }
                         
@@ -480,8 +475,7 @@ Item {
                         spacing: 4
                         
                         SelectableText {
-                            text: "状态"
-                            font.pixelSize: 14
+                                text: qsTr("Status")
                             color: "#62748e"
                         }
                         
@@ -511,8 +505,7 @@ Item {
                         spacing: 4
                         
                         SelectableText {
-                            text: "名称"
-                            font.pixelSize: 14
+                                text: qsTr("Name")
                             color: "#62748e"
                         }
                         
@@ -531,8 +524,7 @@ Item {
                         spacing: 4
                         
                         SelectableText {
-                            text: "所属安全域"
-                            font.pixelSize: 14
+                                text: qsTr("Belongs To Security Domain")
                             color: "#62748e"
                         }
                         
@@ -550,8 +542,7 @@ Item {
                         spacing: 4
                         
                         SelectableText {
-                            text: "路径"
-                            font.pixelSize: 14
+                                text: qsTr("Path")
                             color: "#62748e"
                         }
                         
@@ -582,8 +573,7 @@ Item {
                         spacing: 4
                         
                         SelectableText {
-                            text: "创建时间"
-                            font.pixelSize: 14
+                                text: qsTr("Created At")
                             color: "#62748e"
                         }
                         
@@ -601,8 +591,7 @@ Item {
                         spacing: 4
                         
                         SelectableText {
-                            text: "到期时间"
-                            font.pixelSize: 14
+                                text: qsTr("Expires At")
                             color: "#62748e"
                         }
                         
@@ -648,7 +637,7 @@ Item {
                     // Notification text
                     SelectableText {
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "此安全域实例化申请已被授权通过，请点击\"启动安全域\"按钮进行实例化操作。"
+                        text: qsTr("Application approved. Click \"Start Domain\" to proceed.")
                         font.pixelSize: 16
                         font.weight: Font.Normal
                         color: "#314158"
@@ -689,7 +678,7 @@ Item {
                         id: whitelistTitle
                         anchors.left: parent.left
                         anchors.top: parent.top
-                        text: "应用白名单"
+                        text: qsTr("App Whitelist")
                         font.pixelSize: 14
                         color: "#62748e"
                     }
@@ -760,7 +749,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "程序文件名称"
+                                        text: qsTr("Program Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: "#0f172b"
@@ -786,7 +775,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "程序路径"
+                                        text: qsTr("Program Path")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: "#0f172b"
@@ -896,7 +885,7 @@ Item {
                         SelectableText {
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "文件导出申请"
+                            text: qsTr("Export Requests")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -923,7 +912,7 @@ Item {
                                 }
 
                                 Text {
-                                    text: "导出文件"
+                                    text: qsTr("Export File")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
                                     color: Theme.Colors.primaryText
@@ -1037,7 +1026,7 @@ Item {
                                             anchors.left: parent.left
                                             anchors.leftMargin: 8
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "申请编号"
+                                            text: qsTr("Request ID")
                                             font.pixelSize: 14
                                             font.weight: Font.Medium
                                             color: "#0f172b"
@@ -1061,7 +1050,7 @@ Item {
                                             anchors.left: parent.left
                                             anchors.leftMargin: 8
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "文件数量"
+                                            text: qsTr("File Count")
                                             font.pixelSize: 14
                                             font.weight: Font.Medium
                                             color: "#0f172b"
@@ -1085,7 +1074,7 @@ Item {
                                             anchors.left: parent.left
                                             anchors.leftMargin: 8
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "总文件大小"
+                                            text: qsTr("Total Size")
                                             font.pixelSize: 14
                                             font.weight: Font.Medium
                                             color: "#0f172b"
@@ -1109,7 +1098,7 @@ Item {
                                             anchors.left: parent.left
                                             anchors.leftMargin: 8
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "状态"
+                                            text: qsTr("Status")
                                             font.pixelSize: 14
                                             font.weight: Font.Medium
                                             color: "#0f172b"
@@ -1133,7 +1122,7 @@ Item {
                                             anchors.left: parent.left
                                             anchors.leftMargin: 8
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "申请时间"
+                                            text: qsTr("Request Time")
                                             font.pixelSize: 14
                                             font.weight: Font.Medium
                                             color: "#0f172b"
@@ -1157,7 +1146,7 @@ Item {
                                             anchors.left: parent.left
                                             anchors.leftMargin: 8
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "操作"
+                                            text: qsTr("Actions")
                                             font.pixelSize: 14
                                             font.weight: Font.Medium
                                             color: "#0f172b"
@@ -1321,7 +1310,7 @@ Item {
                                                     anchors.left: parent.left
                                                     anchors.leftMargin: 8
                                                     anchors.verticalCenter: parent.verticalCenter
-                                                    text: "查看"
+                                                    text: qsTr("View")
                                                     font.pixelSize: 14
                                                     color: "#0f4c81"
                                                     font.underline: parent.hovered
@@ -1380,7 +1369,7 @@ Item {
                     }
 
                     Text {
-                        text: "删除安全域实例"
+                        text: qsTr("Delete Instance")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: Theme.Colors.primaryText
@@ -1470,9 +1459,9 @@ Item {
     // 删除实例确认弹窗（复用关闭安全域弹窗）
     DeactivateConfirmDialog {
         id: deleteInstanceConfirmDialog
-        titleText: "删除安全域实例确认"
-        questionPrefix: "确定要删除安全域实例"
-        confirmButtonText: "确认删除"
+        titleText: qsTr("Confirm Delete Instance")
+        questionPrefix: qsTr("Are you sure you want to delete the instance")
+        confirmButtonText: qsTr("Confirm Delete")
         showDescription: false
         onConfirmClicked: {
             root.deleteRequested()
@@ -1506,4 +1495,5 @@ Item {
         }
     }
 
+}
 }

@@ -794,7 +794,7 @@ Item {
                         Text {
                             id: guideLinkText
                             anchors.centerIn: parent
-                            text: "查看功能介绍"
+                            text: qsTr("View Feature Guide")
                             font.pixelSize: 14
                             font.underline: true
                             color: guideArea.pressed ? Qt.darker(Theme.Colors.primary, 1.4)
@@ -845,7 +845,7 @@ Item {
                             // Text - positioned to match Figma design
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "加密文件至此安全域"
+                                text: qsTr("Encrypt Files to This Security Domain")
                                 font.pixelSize: 16
                                 font.weight: Font.Medium
                                 color: "white"
@@ -897,7 +897,7 @@ Item {
                             
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "创建安全域实例"
+                                text: qsTr("Create Security Domain Instance")
                                 font.pixelSize: 16
                                 font.weight: Font.Medium
                                 color: instantiateMouseArea.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.3) : Theme.Colors.primary
@@ -950,7 +950,7 @@ Item {
                             spacing: 4
                             
                             SelectableText {
-                                text: "名称"
+                                text: qsTr("Name")
                                 font.pixelSize: 16
                                 color: "#62748e"
                             }
@@ -980,7 +980,7 @@ Item {
                             spacing: 4
                             
                             SelectableText {
-                                text: "创建方"
+                                text: qsTr("Creator")
                                 font.pixelSize: 16
                                 color: "#62748e"
                             }
@@ -998,7 +998,7 @@ Item {
                             spacing: 4
                             
                             SelectableText {
-                                text: "状态"
+                                text: qsTr("Status")
                                 font.pixelSize: 16
                                 color: "#62748e"
                             }
@@ -1030,13 +1030,13 @@ Item {
                         Column {
                             width: (parent.width - 24) / 2
                             spacing: 4
-                            
+
                             SelectableText {
-                                text: "创建时间"
+                                text: qsTr("Creation Time")
                                 font.pixelSize: 16
                                 color: "#62748e"
                             }
-                            
+
                             SelectableText {
                                 text: Theme.Utils.formatDateTime(root.domainData.createdAt)
                                 font.pixelSize: 16
@@ -1053,7 +1053,7 @@ Item {
                                 spacing: 4
                                 
                                 SelectableText {
-                                    text: "费用承担方"
+                                    text: qsTr("Fee Payer")
                                     font.pixelSize: 16
                                     color: "#62748e"
                                     anchors.verticalCenter: parent.verticalCenter
@@ -1127,7 +1127,7 @@ Item {
                                             anchors.centerIn: parent
                                             anchors.margins: 8
                                             width: parent.width - 16
-                                            text: "安全域实例化后产生的费用由谁支付"
+                                            text: qsTr("Who pays the costs incurred after security domain instantiation?")
                                             font.pixelSize: 14
                                             color: "#ffffff"
                                             wrapMode: Text.WordWrap
@@ -1160,7 +1160,7 @@ Item {
                                 anchors.left: parent.left
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: 1
-                                text: "描述"
+                                text: qsTr("Description")
                                 font.pixelSize: 16
                                 color: "#62748e"
                             }
@@ -1538,7 +1538,7 @@ Item {
                             id: visibleUsersTitle
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "可见用户"
+                            text: qsTr("Visible Users")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -1582,7 +1582,7 @@ Item {
                                 // Text
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: "添加"
+                                    text: qsTr("Add")
                                     font.pixelSize: 16
                                     font.weight: Font.Medium
                                     color: Theme.Colors.primary
@@ -1635,7 +1635,7 @@ Item {
                                 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    text: "暂无数据"
+                                    text: qsTr("No Data")
                                     font.pixelSize: 11
                                     color: "#90A1B9"
                                 }
@@ -1675,7 +1675,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "账号"
+                                        text: qsTr("Account")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -1691,7 +1691,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "名称"
+                                        text: qsTr("Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -1704,12 +1704,12 @@ Item {
                                     width: visibleUsersCard.operationColumnWidth
                                     height: parent.height
                                     visible: true
-                                    
+
                                     SelectableText {
                                         anchors.right: parent.right
                                         anchors.rightMargin: root.actionRightMargin
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "操作"
+                                        text: qsTr("Actions")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -1802,7 +1802,7 @@ Item {
                                             anchors.right: parent.right
                                             anchors.rightMargin: root.actionRightMargin
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "移除"
+                                            text: qsTr("Remove")
                                             font.pixelSize: root.actionTextPixelSize
                                             font.weight: root.actionTextWeight
                                             property bool hovered: false
@@ -2094,7 +2094,7 @@ Item {
                         SelectableText {
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "相关安全域实例"
+                            text: qsTr("Related Security Domain Instances")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -2128,7 +2128,7 @@ Item {
                                 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    text: "暂无数据"
+                                    text: qsTr("No Data")
                                     font.pixelSize: 11
                                     color: "#90A1B9"
                                 }
@@ -2168,7 +2168,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "申请方"
+                                        text: qsTr("Applicant")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2184,7 +2184,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 26
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "实例名称"
+                                        text: qsTr("Instance Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2200,7 +2200,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: relatedInstancesCard.hdrLM2
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "创建时间"
+                                        text: qsTr("Creation Time")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2216,7 +2216,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: relatedInstancesCard.hdrLM3
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "状态"
+                                        text: qsTr("Status")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2232,7 +2232,7 @@ Item {
                                         anchors.right: parent.right
                                         anchors.rightMargin: root.actionRightMargin
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "操作"
+                                        text: qsTr("Actions")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2377,12 +2377,12 @@ Item {
                                             anchors.right: parent.right
                                             anchors.rightMargin: root.actionRightMargin
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "查看"
+                                            text: qsTr("View")
                                             font.pixelSize: root.actionTextPixelSize
                                             font.weight: root.actionTextWeight
                                             font.underline: hovered
                                             color: Theme.Colors.primary
-                                            
+
                                             MouseArea {
                                                 anchors.fill: parent
                                                 cursorShape: Qt.PointingHandCursor
@@ -2670,7 +2670,7 @@ Item {
                         SelectableText {
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "应用白名单审核"
+                            text: qsTr("App Whitelist Review")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -2704,7 +2704,7 @@ Item {
                                 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    text: "暂无数据"
+                                    text: qsTr("No Data")
                                     font.pixelSize: 11
                                     color: "#90A1B9"
                                 }
@@ -2743,7 +2743,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "申请方"
+                                        text: qsTr("Applicant")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2758,7 +2758,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: appWhitelistAuditCard.hdrLM1
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "实例名称"
+                                        text: qsTr("Instance Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2773,7 +2773,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: appWhitelistAuditCard.hdrLM2
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "应用名称"
+                                        text: qsTr("App Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2788,7 +2788,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: appWhitelistAuditCard.hdrLM3
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "数量"
+                                        text: qsTr("Count")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2803,7 +2803,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: appWhitelistAuditCard.hdrLM4
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "创建时间"
+                                        text: qsTr("Creation Time")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2818,7 +2818,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "状态"
+                                        text: qsTr("Status")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2833,7 +2833,7 @@ Item {
                                         anchors.right: parent.right
                                         anchors.rightMargin: root.actionRightMargin
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "操作"
+                                        text: qsTr("Actions")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -2999,7 +2999,7 @@ Item {
                                                 anchors.right: parent.right
                                                 anchors.rightMargin: root.actionRightMargin
                                                 anchors.verticalCenter: parent.verticalCenter
-                                                text: "查看"
+                                                text: qsTr("View")
                                                 font.pixelSize: root.actionTextPixelSize
                                                 font.weight: root.actionTextWeight
                                                 font.underline: hovered
@@ -3271,7 +3271,7 @@ Item {
                         SelectableText {
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "文件导出审核"
+                            text: qsTr("File Export Review")
                             font.pixelSize: 14
                             color: "#62748e"
                         }
@@ -3305,7 +3305,7 @@ Item {
                                 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    text: "暂无数据"
+                                    text: qsTr("No Data")
                                     font.pixelSize: 11
                                     color: "#90A1B9"
                                 }
@@ -3345,7 +3345,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "申请方"
+                                        text: qsTr("Applicant")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3361,7 +3361,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: exportAuditCard.expHdrLM1
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "实例名称"
+                                        text: qsTr("Instance Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3377,7 +3377,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: exportAuditCard.expHdrLM2
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "文件大小"
+                                        text: qsTr("File Size")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3393,7 +3393,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: exportAuditCard.expHdrLM3
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "创建时间"
+                                        text: qsTr("Creation Time")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3409,7 +3409,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: exportAuditCard.expHdrLM4
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "状态"
+                                        text: qsTr("Status")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3425,7 +3425,7 @@ Item {
                                         anchors.right: parent.right
                                         anchors.rightMargin: root.actionRightMargin
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "操作"
+                                        text: qsTr("Actions")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3584,7 +3584,7 @@ Item {
                                             anchors.right: parent.right
                                             anchors.rightMargin: root.actionRightMargin
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: "查看"
+                                            text: qsTr("View")
                                             font.pixelSize: root.actionTextPixelSize
                                             font.weight: root.actionTextWeight
                                             property bool hovered: false
@@ -3760,7 +3760,7 @@ Item {
                 
                 Text {
                     anchors.centerIn: parent
-                    text: "停用此安全域"
+                    text: qsTr("Disable This Security Domain")
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: parent.pressed ? "#900006" : (parent.hovered ? "#c50009" : "#e7000b")
@@ -4073,37 +4073,37 @@ Item {
 
         steps: [
             {
-                title: "加密文件至此安全域",
-                desc:  "将普通文件加密为安全域专属的加密文件，仅能在本安全域的实例内使用。加密后可直接传输给安全域使用方，保障文件在传输与使用过程中安全可控。",
+                title: qsTr("Encrypt Files to This Security Domain"),
+                desc:  qsTr("Encrypt files into security-domain-exclusive encrypted files usable only within this domain's instances. Ensures secure file transfer and usage."),
                 targetItem: encryptFileButton
             },
             {
-                title: "创建安全域实例",
-                desc:  "点击按钮创建安全域实例。实例是安全域在设备上的加密存储空间，创建后需由安全域创建者审核授权，审核通过即可挂载使用。",
+                title: qsTr("Create Security Domain Instance"),
+                desc:  qsTr("Create an encrypted storage instance on your device. Requires review and approval by the security domain creator before use."),
                 targetItem: createInstanceButton
             },
             {
-                title: "可见用户管理",
-                desc:  "管理可查看该安全域的用户。被添加用户可查看安全域并申请实例化，创建者可随时添加或移除可见用户。",
+                title: qsTr("Visible User Management"),
+                desc:  qsTr("Manage who can view this security domain and apply for instances. Creator can add or remove users anytime."),
                 targetItem: visibleUsersCard
             },
             {
-                title: "相关安全域实例",
-                desc:  "展示该安全域下所有由安全域使用方申请的实例，支持查看实例详情、运行状态、存储空间等信息，安全域创建者可在此对实例申请进行审核、管理实例全生命周期。\n\n实例状态说明：\n- 待审核：安全域使用方已提交实例申请，安全域创建方可进行审核\n- 已授权：实例申请已审核通过，可启动使用\n- 运行中：实例已启动并正常使用\n- 已拒绝：实例申请未审核通过\n- 已结束：实例已停止运行",
+                title: qsTr("Related Security Domain Instances"),
+                desc:  qsTr("View all instances under this security domain. Creator can review and manage the full lifecycle of instance applications.\n\nStatus:\n- Pending Review: Awaiting creator's approval\n- Authorized: Ready to start\n- Running: Instance is active\n- Rejected: Application denied\n- Ended: Instance stopped"),
                 targetItem: relatedInstancesCard
             },
             {
-                title: "应用白名单审核",
-                desc:  "查看安全域使用方提交的进程/应用白名单申请。审核通过后，该进程/应用可在安全域实例内正常运行、读写文件；未加入白名单的应用无法访问实例内加密数据。",
+                title: qsTr("App Whitelist Review"),
+                desc:  qsTr("Review process/app whitelist applications. Approved apps can read/write files in the instance. Unapproved apps cannot access encrypted data."),
                 targetItem: appWhitelistAuditCard
             },
             {
-                title: "文件导出审核",
-                desc:  "查看安全域使用方提交的文件导出申请，创建者可审批通过或拒绝。仅审核通过的文件可按授权策略导出至实例外部，保障数据安全可控。",
+                title: qsTr("File Export Review"),
+                desc:  qsTr("Review file export applications. Creator can approve or reject. Only approved files can be exported, ensuring data security."),
                 targetItem: exportAuditCard
             }
         ]
 
-        // Show the guide only when user clicks "查看功能介绍" button.
+        // Show the guide only when user clicks "View Feature Guide" button.
     }
 }

@@ -66,7 +66,7 @@ Popup {
                 SelectableText {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "导出文件"
+                    text: qsTr("Export Files")
                     font.pixelSize: 18
                     font.weight: Font.DemiBold
                     color: "#0F172B"
@@ -128,7 +128,7 @@ Popup {
                         }
 
                         SelectableText {
-                            text: "选择文件："
+                            text: qsTr("Select files:")
                             color: "#314158"
                             font.pixelSize: 14
                             font.weight: Font.Medium
@@ -153,7 +153,7 @@ Popup {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 12
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: root.fileDisplayText.length > 0 ? root.fileDisplayText : "请选择需要导出的文件"
+                                text: root.fileDisplayText.length > 0 ? root.fileDisplayText : qsTr("Please select files to export")
                                 color: root.fileDisplayText.length > 0 ? "#0F172B" : (fileFieldArea.containsMouse ? "#0F4C81" : "#5A7C9B")
                                 font.pixelSize: 14
                                 elide: Text.ElideRight
@@ -192,7 +192,7 @@ Popup {
                                 anchors.left: browseIcon.right
                                 anchors.leftMargin: 8
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "浏览"
+                                text: qsTr("Browse")
                                 color: Theme.Colors.primaryText
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
@@ -224,7 +224,7 @@ Popup {
                     spacing: 8
 
                     SelectableText {
-                        text: "导出原因："
+                        text: qsTr("Export Reason:")
                         color: "#314158"
                         font.pixelSize: 14
                         font.weight: Font.Medium
@@ -250,7 +250,7 @@ Popup {
                             id: reasonArea
                             anchors.fill: parent
                             wrapMode: TextEdit.Wrap
-                            placeholderText: "您可以在此填写导出原因，原因可能会被安全域创建者看到，也可能会作为原因报告留存。"
+                            placeholderText: qsTr("Enter export reason. Visible to the security domain creator and retained as audit record.")
                             text: root.reasonText
                             font.pixelSize: 14
                             color: "#0F172B"
@@ -296,7 +296,7 @@ Popup {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "确定"
+                    text: qsTr("Submit")
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: Theme.Colors.primaryText
@@ -320,7 +320,7 @@ Popup {
 
     FileDialog {
         id: fileDialog
-        title: "选择导出文件"
+        title: qsTr("Select export file")
         fileMode: FileDialog.OpenFiles
         Component.onCompleted: updateFileDialogFolder()
         onAccepted: {
@@ -331,8 +331,8 @@ Popup {
                     var normalized = normalizeFileUrl(url)
                     if (!isPathAllowed(normalized)) {
                         root.fileError = root.allowedDirectory && root.allowedDirectory.length > 0 ?
-                                         "只能选择路径 " + root.allowedDirectory + " 下的文件" :
-                                         "无法选择所选文件"
+                                         "Files can only be selected from " + root.allowedDirectory + qsTr(" directory") :
+                                         qsTr("Cannot select the specified file")
                         root.selectedFilePaths = []
                         root.fileDisplayText = ""
                         return
@@ -343,7 +343,7 @@ Popup {
                 root.selectedFilePaths = validPaths
                 root.fileDisplayText = validPaths.length === 1
                         ? extractFileName(validPaths[0])
-                        : (validPaths.length + " 个文件")
+                        : (validPaths.length + qsTr(" files"))
             }
         }
     }

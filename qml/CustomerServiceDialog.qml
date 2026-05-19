@@ -139,7 +139,7 @@ Popup {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "联系客服"
+                    text: qsTr("Contact Customer Service")
                     color: "#ffffff"
                     font.pixelSize: 14
                     font.weight: Font.Medium

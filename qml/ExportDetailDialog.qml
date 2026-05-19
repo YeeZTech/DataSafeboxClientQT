@@ -125,7 +125,7 @@ Popup {
                 SelectableText {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "文件导出详情"
+                    text: qsTr("File Export Details")
                     font.pixelSize: 18
                     font.weight: Font.DemiBold
                     color: "#0f172b"
@@ -177,7 +177,7 @@ Popup {
                         spacing: 4
                         
                         SelectableText {
-                            text: "申请编号"
+                            text: qsTr("Application No.")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
@@ -197,7 +197,7 @@ Popup {
                         spacing: 4
                         
                         SelectableText {
-                            text: "状态"
+                            text: qsTr("Status")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
@@ -230,7 +230,7 @@ Popup {
                         spacing: 4
                         
                         SelectableText {
-                            text: "申请方"
+                            text: qsTr("Applicant")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
@@ -250,7 +250,7 @@ Popup {
                         spacing: 4
                         
                         SelectableText {
-                            text: "申请时间"
+                            text: qsTr("Application Time")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
@@ -274,7 +274,7 @@ Popup {
                         spacing: 4
                         
                         SelectableText {
-                            text: "文件数量"
+                            text: qsTr("File Count")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
@@ -294,7 +294,7 @@ Popup {
                         spacing: 4
                         
                         SelectableText {
-                            text: "文件大小"
+                            text: qsTr("File Size")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
@@ -313,7 +313,7 @@ Popup {
                     spacing: 8
                     
                     SelectableText {
-                        text: "申请导出的文件"
+                        text: qsTr("Files Requested for Export")
                         font.pixelSize: 14
                         color: "#62748e"
                         font.letterSpacing: -0.15
@@ -389,7 +389,7 @@ Popup {
 
                 SelectableText {
                     id: reasonLabel
-                    text: "导出原因"
+                    text: qsTr("Export Reason")
                     font.pixelSize: 14
                     color: "#62748e"
                     font.letterSpacing: -0.15
@@ -466,7 +466,7 @@ Popup {
 
                         SelectableText {
                             anchors.centerIn: parent
-                            text: "拒绝"
+                            text: qsTr("Reject")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: parent.pressed ? "#9f0006" : (parent.hovered ? "#c50009" : "#e7000b")
@@ -503,7 +503,7 @@ Popup {
 
                         SelectableText {
                             anchors.centerIn: parent
-                            text: "同意"
+                            text: qsTr("Approve")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: "white"

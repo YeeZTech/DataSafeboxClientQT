@@ -46,6 +46,9 @@ Makefile*
 *.pro.user.*
 .qmake.stash
 
+# Qt translation binary files
+*.qm
+
 # Temporary files
 *~
 *.tmp

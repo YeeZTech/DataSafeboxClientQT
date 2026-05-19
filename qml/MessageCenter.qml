@@ -189,7 +189,7 @@ Item {
             anchors.left: parent.left
             anchors.leftMargin: 32
             anchors.verticalCenter: parent.verticalCenter
-            text: "消息"
+            text: qsTr("Messages")
             font.pixelSize: 24
             font.weight: Font.Medium
             color: "#030213"
@@ -225,7 +225,7 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "全部"
+                    text: qsTr("All")
                     font.pixelSize: 14
                     font.weight: (root.currentFilter === "all") ? Font.DemiBold : Font.Normal
                     color: (root.currentFilter === "all" || parent.hovered) ? Theme.Colors.primary : Theme.Colors.textSecondary
@@ -264,7 +264,7 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "未读"
+                    text: qsTr("Unread")
                     font.pixelSize: 14
                     font.weight: (root.currentFilter === "unread") ? Font.DemiBold : Font.Normal
                     color: (root.currentFilter === "unread" || unreadTab.hovered) ? Theme.Colors.primary : Theme.Colors.textSecondary
@@ -310,7 +310,7 @@ Item {
                 }
 
                 Text {
-                    text: "一键已读"
+                    text: qsTr("Mark All Read")
                     font.pixelSize: 14
                     color: Theme.Colors.primary
                     anchors.verticalCenter: parent.verticalCenter
