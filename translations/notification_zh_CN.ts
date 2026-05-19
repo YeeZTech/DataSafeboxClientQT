@@ -338,6 +338,36 @@
         <translation>导入文件失败：私钥不能为空</translation>
     </message>
 
+    <!-- ── 审核实例 ──────────────────────────────────────────────────── -->
+    <message>
+        <source>Audit instance request failed: instance code is empty.</source>
+        <translation>审核实例失败：实例编码不能为空</translation>
+    </message>
+    <message>
+        <source>Audit instance request failed: domain private key is empty.</source>
+        <translation>审核实例失败：域私钥不能为空</translation>
+    </message>
+    <message>
+        <source>Audit instance request failed: domain private key format is invalid.</source>
+        <translation>审核实例失败：域私钥格式无效</translation>
+    </message>
+    <message>
+        <source>Audit instance request failed: domain creator is empty.</source>
+        <translation>审核实例失败：域创建者不能为空</translation>
+    </message>
+    <message>
+        <source>Audit instance request failed: encrypt domain private key failed.</source>
+        <translation>审核实例失败：加密域私钥失败</translation>
+    </message>
+    <message>
+        <source>Audit instance request failed: load local domain failed: %1.</source>
+        <translation>审核实例失败：加载本地域数据失败：%1</translation>
+    </message>
+    <message>
+        <source>Audit instance request failed: load local instance failed: %1.</source>
+        <translation>审核实例失败：加载本地实例数据失败：%1</translation>
+    </message>
+
     <!-- ── 文件复制 ────────────────────────────────────────────────────── -->
     <message>
         <source>File copy %1 failed for %2: %3</source>

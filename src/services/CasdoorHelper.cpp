@@ -6,6 +6,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -324,18 +325,31 @@ void CasdoorHelper::searchUser(const QString &username)
     req.setRawHeader("Authorization", ("Bearer " + m_sessionToken).toUtf8());
 
     QNetworkReply *reply = m_network->get(req);
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+    const QString requestedUsername = username;
+    connect(reply, &QNetworkReply::finished, this, [this, reply, requestedUsername]() {
         reply->deleteLater();
         const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        if (reply->error() != QNetworkReply::NoError) {
+        const QNetworkReply::NetworkError networkError = reply->error();
+        const QString networkErrorText = reply->errorString();
+        const QByteArray body = reply->readAll();
+
+        qInfo().noquote()
+            << QStringLiteral("[CasdoorHelper] /api/get-user response username=\"%1\" httpStatus=%2 networkError=%3 networkErrorText=\"%4\" body=")
+                   .arg(requestedUsername,
+                        QString::number(httpStatus),
+                        QString::number(static_cast<int>(networkError)),
+                        networkErrorText)
+            << QString::fromUtf8(body);
+
+        if (networkError != QNetworkReply::NoError) {
             if (httpStatus == 404) {
                 emit userSearchFailed("查询用户不存在");
             } else {
-                emit userSearchFailed(friendlyError(reply->errorString()));
+                emit userSearchFailed(friendlyError(networkErrorText));
             }
             return;
         }
-        const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+        const QJsonDocument doc = QJsonDocument::fromJson(body);
         if (!doc.isObject()) { emit userSearchFailed("解析用户信息失败"); return; }
         const QJsonObject root = doc.object();
         if (root.value("status").toString().toLower() != "ok") {

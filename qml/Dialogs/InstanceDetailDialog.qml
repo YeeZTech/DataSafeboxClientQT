@@ -4,11 +4,11 @@ import "." as Theme
 
 Popup {
     id: root
-    
+
     // Use separate properties to trigger re-evaluation
     property real parentWidth: parent ? parent.width : 800
     property real parentHeight: parent ? parent.height : 600
-    
+
     width: {
         // Dynamic width based on parent size, with min/max constraints
         var preferredWidth = 400
@@ -31,12 +31,12 @@ Popup {
         var whitelistTableHeight = 0
         var buttonsSpace = shouldShowActionButtons ? 8 : 0
         var buttonsHeight = shouldShowActionButtons ? 36 : 0
-        
-        var totalHeight = topMargin + titleHeight + afterTitleSpace + costFieldHeight + 
-                         afterCostSpace + fieldsHeight + beforeWhitelistSpace + 
-                         whitelistLabelHeight + afterWhitelistLabelSpace + 
+
+        var totalHeight = topMargin + titleHeight + afterTitleSpace + costFieldHeight +
+                         afterCostSpace + fieldsHeight + beforeWhitelistSpace +
+                         whitelistLabelHeight + afterWhitelistLabelSpace +
                          whitelistTableHeight + buttonsSpace + buttonsHeight + bottomMargin
-        
+
         var maxHeight = parentHeight * 0.9
         return Math.min(totalHeight, maxHeight)
     }
@@ -60,7 +60,7 @@ Popup {
     property int currentPage: 1  // Current page for whitelist pagination
 
     readonly property var statusStyle: Theme.Colors.getStatusColor(status)
-    
+
     function getTotalPages() {
         return whitelistApps && whitelistApps.length > 0 ? Math.ceil(whitelistApps.length / 3) : 0
     }
@@ -85,7 +85,7 @@ Popup {
     }
 
     onWhitelistAppsChanged: normalizeCurrentPage()
-    
+
     function getPagedApps() {
         if (!whitelistApps || whitelistApps.length === 0) return []
         var startIdx = (currentPage - 1) * 3
@@ -96,7 +96,7 @@ Popup {
         }
         return result
     }
-    
+
     // Get page numbers to display (with ellipsis support)
     function getVisiblePages() {
         var total = getTotalPages()
@@ -108,7 +108,7 @@ Popup {
             }
             return pages
         }
-        
+
         // Show first, last, current and adjacent pages with ellipsis
         var pages = []
         if (currentPage <= 3) {
@@ -147,7 +147,7 @@ Popup {
     signal approveClicked()
     signal rejectClicked()
     signal cancelClicked()
-    
+
     // Monitor parent size changes
     Connections {
         target: root.parent
@@ -238,14 +238,14 @@ Popup {
 
                 Row {
                     spacing: 0
-                    
+
                     SelectableText {
                         text: root.instanceCost || "0"
                         font.pixelSize: 18
                         font.weight: Font.DemiBold
                         color: "#ff5736"
                     }
-                    
+
                     SelectableText {
                         text: qsTr(" CNY")
                         font.pixelSize: 14
@@ -386,29 +386,29 @@ Popup {
                     }
                 }
             }
-            
+
             // Application whitelist section hidden to keep all statuses' content consistent
             Column {
                 width: parent.width
                 spacing: 4
                 visible: false
-                
+
                 Item {
                     width: parent.width
                     height: 12
                 }
-                
+
                 SelectableText {
                     text: qsTr("App Whitelist")
                     font.pixelSize: 14
                     color: "#62748e"
                 }
-                
+
                 Item {
                     width: parent.width
                     height: 4
                 }
-                
+
                 // Whitelist table - dynamic height based on content
                 Rectangle {
                     width: parent.width
@@ -417,21 +417,21 @@ Popup {
                     color: "white"
                     border.color: "#cbd5e1"
                     border.width: 1
-                    
+
                     Column {
                         anchors.fill: parent
                         spacing: 0
-                        
+
                         // Empty state - show icon when whitelist is empty
                         Item {
                             width: parent.width
                             height: parent.height
                             visible: !root.whitelistApps || root.whitelistApps.length === 0
-                            
+
                             Column {
                                 anchors.centerIn: parent
                                 spacing: 6
-                                
+
                                 Image {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     width: 36
@@ -442,7 +442,7 @@ Popup {
                                     smooth: true
                                     antialiasing: true
                                 }
-                                
+
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: qsTr("No data")
@@ -451,14 +451,14 @@ Popup {
                                 }
                             }
                         }
-                        
+
                         // Table header - only show when whitelist is not empty
                         Item {
                             width: parent.width
                             height: 40
                             visible: root.whitelistApps && root.whitelistApps.length > 0
                             clip: true
-                            
+
                             Rectangle {
                                 width: parent.width
                                 height: parent.height + 8  // Extend below to hide bottom border
@@ -467,7 +467,7 @@ Popup {
                                 border.color: "#cbd5e1"
                                 border.width: 1
                             }
-                            
+
                             Rectangle {
                                 anchors.left: parent.left
                                 anchors.right: parent.right
@@ -475,11 +475,11 @@ Popup {
                                 height: 0
                                 color: "transparent"
                             }
-                            
+
                             Row {
                                 anchors.fill: parent
                                 anchors.leftMargin: 8
-                                
+
                                 Text {
                                     width: (parent.width - 8) / 2
                                     height: parent.height
@@ -489,7 +489,7 @@ Popup {
                                     verticalAlignment: Text.AlignVCenter
                                     horizontalAlignment: Text.AlignHCenter
                                 }
-                                
+
                                 Text {
                                     width: (parent.width - 8) / 2
                                     height: parent.height
@@ -501,23 +501,23 @@ Popup {
                                 }
                             }
                         }
-                        
+
                         // Table body - only show when whitelist is not empty
                         Column {
                             width: parent.width
                             height: Math.max(111, 37 * Math.min(3, root.getPagedApps().length))  // Minimum height for 3 rows
                             spacing: 0
                             visible: root.whitelistApps && root.whitelistApps.length > 0
-                            
+
                             Repeater {
                                 id: tableRepeater
                                 model: root.getPagedApps()
-                                
+
                                 Rectangle {
                                     width: parent.width
                                     height: 37
                                     color: "transparent"
-                                    
+
                                     Rectangle {
                                         anchors.left: parent.left
                                         anchors.right: parent.right
@@ -525,18 +525,18 @@ Popup {
                                         height: 1
                                         color: "#e5e7eb"
                                     }
-                                    
+
                                     Row {
                                         anchors.fill: parent
                                         anchors.leftMargin: 8
                                         anchors.rightMargin: 8
                                         spacing: 0
-                                        
+
                                         // Process path cell with tooltip
                                         Item {
                                             width: (parent.width - 8) / 2
                                             height: parent.height
-                                            
+
                                             Text {
                                                 id: pathText
                                                 anchors.fill: parent
@@ -548,7 +548,7 @@ Popup {
                                                 horizontalAlignment: Text.AlignLeft
                                                 elide: Text.ElideMiddle
                                             }
-                                            
+
                                             Rectangle {
                                                 id: pathTooltipItem
                                                 visible: false
@@ -562,7 +562,7 @@ Popup {
                                                 x: Math.max(0, Math.min(parent.width - width, 0))
                                                 border.color: "#cbd5e1"
                                                 border.width: 1
-                                                
+
                                                 Text {
                                                     id: pathTooltipItemText
                                                     anchors.centerIn: parent
@@ -572,7 +572,7 @@ Popup {
                                                     wrapMode: Text.NoWrap
                                                 }
                                             }
-                                            
+
                                             MouseArea {
                                                 anchors.fill: parent
                                                 hoverEnabled: true
@@ -584,12 +584,12 @@ Popup {
                                                 }
                                             }
                                         }
-                                        
+
                                         // Hash cell with tooltip
                                         Item {
                                             width: (parent.width - 8) / 2
                                             height: parent.height
-                                            
+
                                             Text {
                                                 id: hashText
                                                 anchors.fill: parent
@@ -601,7 +601,7 @@ Popup {
                                                 horizontalAlignment: Text.AlignLeft
                                                 elide: Text.ElideMiddle
                                             }
-                                            
+
                                             Rectangle {
                                                 id: hashTooltipItem
                                                 visible: false
@@ -615,7 +615,7 @@ Popup {
                                                 x: Math.max(0, Math.min(parent.width - width, 0))
                                                 border.color: "#cbd5e1"
                                                 border.width: 1
-                                                
+
                                                 Text {
                                                     id: hashTooltipItemText
                                                     anchors.centerIn: parent
@@ -625,7 +625,7 @@ Popup {
                                                     wrapMode: Text.NoWrap
                                                 }
                                             }
-                                            
+
                                             MouseArea {
                                                 anchors.fill: parent
                                                 hoverEnabled: true
@@ -641,143 +641,142 @@ Popup {
                                 }
                             }
                         }
-                        
+
                         Item {
                             width: parent.width
                             height: 5
                             visible: root.whitelistApps && root.whitelistApps.length > 0
                         }
-                        
+
                         // Pagination - only show when whitelist is not empty
                         Item {
                             width: parent.width
                             height: 32
                             visible: root.whitelistApps && root.whitelistApps.length > 0
-                            
+
                             Row {
                                 id: paginationRow
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 spacing: 6
-                            
-                            property int totalPages: root.getTotalPages()
-                            property var visiblePages: root.getVisiblePages()
-                            
-                            // Previous button
-                            Rectangle {
-                                width: 22
-                                height: 22
-                                radius: 3
-                                visible: parent.totalPages > 0
-                                color: "transparent"
-                                opacity: root.currentPage > 1 ? 1 : 0.6
-                                
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "<"
-                                    font.pixelSize: 11
-                                    font.weight: Font.Medium
-                                    color: root.currentPage > 1 ? "#212b36" : "#90a1b9"
-                                }
-                                
-                                MouseArea {
-                                    anchors.fill: parent
-                                    enabled: root.currentPage > 1
-                                    hoverEnabled: true
-                                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                    onClicked: {
-                                        if (root.currentPage > 1) {
-                                            root.currentPage--
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            // Dynamic page buttons with ellipsis support
-                            Repeater {
-                                model: parent.visiblePages
-                                
+                                property int totalPages: root.getTotalPages()
+                                property var visiblePages: root.getVisiblePages()
+
+                                // Previous button
                                 Rectangle {
                                     width: 22
                                     height: 22
                                     radius: 3
-                                    property int pageNum: modelData
-                                    property bool isEllipsis: pageNum < 0
-                                    property bool isCurrentPage: pageNum === root.currentPage
-                                    color: pageMouseArea.pressed ? "#1b5fa8" : (pageMouseArea.containsMouse && !isEllipsis ? "#e3f2fd" : (isCurrentPage ? "transparent" : "white"))
-                                    border.color: isCurrentPage ? "#2b7fff" : "#d5dce5"
-                                    border.width: 1
-                                    
+                                    visible: parent.totalPages > 0
+                                    color: "transparent"
+                                    opacity: root.currentPage > 1 ? 1 : 0.6
+
                                     Text {
                                         anchors.centerIn: parent
-                                        text: isEllipsis ? "..." : pageNum.toString()
+                                        text: "<"
                                         font.pixelSize: 11
                                         font.weight: Font.Medium
-                                        color: pageMouseArea.pressed ? "#ffffff" : (isCurrentPage ? "#2b7fff" : "#212b36")
+                                        color: root.currentPage > 1 ? "#212b36" : "#90a1b9"
                                     }
-                                    
+
                                     MouseArea {
-                                        id: pageMouseArea
                                         anchors.fill: parent
-                                        enabled: !isEllipsis
+                                        enabled: root.currentPage > 1
                                         hoverEnabled: true
-                                        cursorShape: isCurrentPage ? Qt.ArrowCursor : Qt.PointingHandCursor
+                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                                         onClicked: {
-                                            if (!isEllipsis && !isCurrentPage) {
-                                                root.currentPage = pageNum
+                                            if (root.currentPage > 1) {
+                                                root.currentPage--
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Dynamic page buttons with ellipsis support
+                                Repeater {
+                                    model: parent.visiblePages
+
+                                    Rectangle {
+                                        width: 22
+                                        height: 22
+                                        radius: 3
+                                        property int pageNum: modelData
+                                        property bool isEllipsis: pageNum < 0
+                                        property bool isCurrentPage: pageNum === root.currentPage
+                                        color: pageMouseArea.pressed ? "#1b5fa8" : (pageMouseArea.containsMouse && !isEllipsis ? "#e3f2fd" : (isCurrentPage ? "transparent" : "white"))
+                                        border.color: isCurrentPage ? "#2b7fff" : "#d5dce5"
+                                        border.width: 1
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: isEllipsis ? "..." : pageNum.toString()
+                                            font.pixelSize: 11
+                                            font.weight: Font.Medium
+                                            color: pageMouseArea.pressed ? "#ffffff" : (isCurrentPage ? "#2b7fff" : "#212b36")
+                                        }
+
+                                        MouseArea {
+                                            id: pageMouseArea
+                                            anchors.fill: parent
+                                            enabled: !isEllipsis
+                                            hoverEnabled: true
+                                            cursorShape: isCurrentPage ? Qt.ArrowCursor : Qt.PointingHandCursor
+                                            onClicked: {
+                                                if (!isEllipsis && !isCurrentPage) {
+                                                    root.currentPage = pageNum
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Next button
+                                Rectangle {
+                                    width: 22
+                                    height: 22
+                                    radius: 3
+                                    visible: parent.totalPages > 0
+                                    color: "transparent"
+                                    opacity: root.currentPage < paginationRow.totalPages ? 1 : 0.6
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: ">"
+                                        font.pixelSize: 11
+                                        font.weight: Font.Medium
+                                        color: root.currentPage < paginationRow.totalPages ? "#212b36" : "#90a1b9"
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        enabled: root.currentPage < paginationRow.totalPages
+                                        hoverEnabled: true
+                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                        onClicked: {
+                                            if (root.currentPage < paginationRow.totalPages) {
+                                                root.currentPage++
                                             }
                                         }
                                     }
                                 }
                             }
-                            
-                            // Next button
-                            Rectangle {
-                                width: 22
-                                height: 22
-                                radius: 3
-                                visible: parent.totalPages > 0
-                                color: "transparent"
-                                opacity: root.currentPage < paginationRow.totalPages ? 1 : 0.6
-                                
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: ">"
-                                    font.pixelSize: 11
-                                    font.weight: Font.Medium
-                                    color: root.currentPage < paginationRow.totalPages ? "#212b36" : "#90a1b9"
-                                }
-                                
-                                MouseArea {
-                                    anchors.fill: parent
-                                    enabled: root.currentPage < paginationRow.totalPages
-                                    hoverEnabled: true
-                                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                    onClicked: {
-                                        if (root.currentPage < paginationRow.totalPages) {
-                                            root.currentPage++
-                                        }
-                                    }
-                                }
-                            }
-                            }
                         }
                     }
                 }
             }
-            
+
             // Spacing between content and buttons (only when buttons are shown)
             Item {
                 width: parent.width
                 height: shouldShowActionButtons ? 12 : 0
                 visible: shouldShowActionButtons
             }
-            
+
             // Footer buttons - only visible for pending status with actions
             Item {
                 width: parent.width
                 height: 36
                 visible: shouldShowActionButtons
-                
+
                 // Reject button
                 Rectangle {
                     anchors.right: approveButton.left
@@ -795,7 +794,7 @@ Popup {
                     Behavior on color { ColorAnimation { duration: 150 } }
                     Behavior on border.color { ColorAnimation { duration: 150 } }
                     Behavior on opacity { NumberAnimation { duration: 150 } }
-                    
+
                     SelectableText {
                         anchors.centerIn: parent
                         text: qsTr("Reject")
@@ -803,7 +802,7 @@ Popup {
                         font.weight: Font.Medium
                         color: parent.pressed ? "#9f0006" : (parent.hovered ? "#c50009" : "#e7000b")
                     }
-                    
+
                     MouseArea {
                         id: rejectArea
                         anchors.fill: parent
@@ -821,7 +820,7 @@ Popup {
                         onCanceled: parent.pressed = false
                     }
                 }
-                
+
                 // Approve button
                 Rectangle {
                     id: approveButton
@@ -847,7 +846,7 @@ Popup {
                         font.weight: Font.Medium
                         color: "white"
                     }
-                    
+
                     MouseArea {
                         id: approveArea
                         anchors.fill: parent

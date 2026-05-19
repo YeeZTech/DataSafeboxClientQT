@@ -1,7 +1,9 @@
 #ifndef DSCCBRIDGE_H
 #define DSCCBRIDGE_H
 
+#include <QHash>
 #include <QObject>
+#include <QVariant>
 #include <QVariantList>
 #include <QVariantMap>
 #include <memory>
@@ -30,19 +32,61 @@ public:
     Q_INVOKABLE void clearCurrentUser();
 
     Q_INVOKABLE void loadDomainList();
+    Q_INVOKABLE void loadInstances(const QString &domainCode);
     Q_INVOKABLE void loadDomainSummary(const QString &domainCode);
+    Q_INVOKABLE void loadAudits(const QString &domainCode, int applyType);
     Q_INVOKABLE void createDomain(const QVariantMap &info);
+    Q_INVOKABLE void closeDomain(const QString &domainCode);
+    Q_INVOKABLE void updateDomainDesc(const QString &domainCode, const QString &desc);
+    Q_INVOKABLE void addUserToDomain(const QString &domainCode, const QString &userId);
+    Q_INVOKABLE void removeUserFromDomain(const QString &domainCode, const QString &userId);
+    Q_INVOKABLE QString domainCreateFailureMessage(uint32_t operation_id,
+                                                   const QString &fallback) const;
+    Q_INVOKABLE void auditInstanceRequest(const QString &instanceCode, bool approved);
+    Q_INVOKABLE void auditRequest(const QString &auditCode,
+                                  const QString &fileCode,
+                                  bool approved,
+                                  const QString &reason);
+    Q_INVOKABLE QString notificationMessage(const QVariant &notification,
+                                            const QString &fallback) const;
 
 signals:
     void domainListLoaded(QVariantList domains);
     void domainSummaryLoaded(QString domainCode, QVariantMap summary);
-    void DomainCreated(uint32_t operation_id, QString domain_code);
-    void DomainCreateFailed(uint32_t operation_id, dscc::Notification notification);
+    void instancesLoaded(QString domainCode, QVariantList instances);
+    void auditsLoaded(QString domainCode, int applyType, QVariantList audits);
+    void domainCreated(uint32_t operation_id, QString domain_code);
+    void domainCreateFailed(uint32_t operation_id, dscc::Notification notification);
+    void domainClosed(uint32_t operation_id, QString domain_code);
+    void domainCloseFailed(uint32_t operation_id, QString domain_code, dscc::Notification notification);
+    void domainDescUpdated(uint32_t operation_id, QString domain_code);
+    void domainDescUpdateFailed(uint32_t operation_id, QString domain_code, dscc::Notification notification);
+    void addUserToDomainSuccess(uint32_t operation_id, QString domain_code, QString user_id);
+    void addUserToDomainFailed(uint32_t operation_id,
+                               QString domain_code,
+                               QString user_id,
+                               dscc::Notification notification);
+    void removeUserFromDomainSuccess(uint32_t operation_id, QString domain_code, QString user_id);
+    void removeUserFromDomainFailed(uint32_t operation_id,
+                                    QString domain_code,
+                                    QString user_id,
+                                    dscc::Notification notification);
+    void auditRequestSuccess(uint32_t operation_id, QString audit_code, QString file_code);
+    void auditRequestFailed(uint32_t operation_id,
+                            QString audit_code,
+                            QString file_code,
+                            dscc::Notification notification);
+    void auditInstanceRequestSuccess(uint32_t operation_id, QString instance_code);
+    void auditInstanceRequestFailed(uint32_t operation_id,
+                                    QString instance_code,
+                                    dscc::Notification notification);
 
 private:
     void connectAssetSignals();
     QString userDomainDbPath(const QString &userId) const;
+    bool isDomainInactiveForOperation(const QString &domainCode) const;
     QVariantMap domainInfoToSummary(const dscc::DomainInfo &info) const;
+    QVariantMap instanceInfoToVariant(const dscc::InstanceInfo &info) const;
 
     std::unique_ptr<dscc::UserAssets> m_assets;
     QString m_metaDbPath;
@@ -50,6 +94,8 @@ private:
     QString m_serverUrl;
     QString m_credential;
     QString m_currentUserId;
+    QString m_currentUserName;
+    QHash<uint32_t, QString> m_domainCreateFailureMessages;
 };
 
 #endif // DSCCBRIDGE_H

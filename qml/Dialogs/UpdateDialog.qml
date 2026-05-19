@@ -261,7 +261,7 @@ Dialog {
 
                 Text {
                     anchors.centerIn: parent
-                        text: UpdateManager.isDownloading ? qsTr("Downloading...") : (UpdateManager.downloadProgress >= 1.0 ? qsTr("Install Now") : qsTr("Update Now"))
+text: UpdateManager.isDownloading ? qsTr("Downloading...") : (UpdateManager.downloadProgress >= 1.0 ? qsTr("Install Now") : qsTr("Update Now"))
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: "white"

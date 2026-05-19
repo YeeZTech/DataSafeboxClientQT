@@ -1015,7 +1015,7 @@ Item {
                 account: newAccount,
                 displayName: displayName,
                 authUserId: userInfo.authUserId || "",
-                authUserName: newAccount
+                authUserName: displayName || newAccount
             }
             
             // Add user to visibleUsers list

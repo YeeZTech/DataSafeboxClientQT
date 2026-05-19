@@ -14,6 +14,7 @@ QtObject {
         "待审核": { bg: "#fef3c6", border: "#fee685", text: "#bb4d00", dot: "#F0B100" },
         "已授权": { bg: "#dcfce7", border: "#b9f8cf", text: "#008236", dot: "#00C950" },
         "已拒绝": { bg: "#ffe2e2", border: "#ffc9c9", text: "#c10007", dot: "#D4183D" },
+        "创建失败": { bg: "#ffe2e2", border: "#ffc9c9", text: "#c10007", dot: "#D4183D" },
         "运行中": { bg: "#dcfce7", border: "#b9f8cf", text: "#008236", dot: "#00C950" },
         "已结束": { bg: "#f1f5f9", border: "#e2e8f0", text: "#314158", dot: "#90A1B9" }
     })

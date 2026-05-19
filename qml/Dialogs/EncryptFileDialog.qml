@@ -298,7 +298,6 @@ Popup {
         root._resultType = "error"
     }
 
-
     // ---- Dialogs ----
 
     FileDialog {
@@ -976,8 +975,6 @@ Popup {
             }
         }
     }
-
-
 
     // ---- Floating path tooltip (hash-style, above mouse) ----
     Popup {

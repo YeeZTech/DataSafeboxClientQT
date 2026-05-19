@@ -18,8 +18,6 @@ Item {
     property int serverTotalPages: 0
     property bool serverLoading: false
 
-
-
     // 通知父级更新计数器的三个信号
     signal unreadCountFetched(int count)    // 服务端总未读数
     signal unreadMessageMarkedRead()        // 单条消息被标已读
@@ -505,12 +503,12 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
                         onEntered: {
-                               messageItem.hovered = true
-                               if (messageText.implicitWidth > messageText.width) messageItem.showTooltip = true
+                            messageItem.hovered = true
+                            if (messageText.implicitWidth > messageText.width) messageItem.showTooltip = true
                         }
                         onExited: {
-                               messageItem.hovered = false
-                               messageItem.showTooltip = false
+                            messageItem.hovered = false
+                            messageItem.showTooltip = false
                         }
                         onClicked: {
                             if (messageItem.messageData.isRead === 0) {
@@ -537,7 +535,7 @@ Item {
                     anchors.centerIn: parent
                     anchors.verticalCenterOffset: -70
                     spacing: 8
-                    
+
                     Image {
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: 64
@@ -548,7 +546,7 @@ Item {
                         smooth: true
                         antialiasing: true
                     }
-                    
+
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: root.currentFilter === "unread" ? "暂无未读消息" : "暂无消息"

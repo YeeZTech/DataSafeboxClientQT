@@ -29,6 +29,12 @@ Item {
     // Pending state for adding visible user
     property var    pendingAddUserFullInfo: null
 
+    // Pending state for instance audit
+    property bool   instanceAuditPending: false
+
+    // Pending state for audit request (app whitelist / export)
+    property bool   auditRequestPending: false
+
     // Description saving state
     property bool   isDescriptionSaving: false
 
@@ -46,7 +52,7 @@ Item {
 
     function isDomainInactiveStatus(statusText) {
         var s = (statusText || "").trim()
-        return s === "已关闭" || s === "停用" || s === "已停用" || s === "停用中"
+        return s === "已关闭" || s === "创建失败" || s === "停用" || s === "已停用" || s === "停用中"
     }
     
     // Check if current user is the creator of this domain
@@ -54,7 +60,12 @@ Item {
         if (!currentUser || !domainData) return false
         return isCurrentUserDomainCreator(domainData)
     }
-    property bool isDomainInactive: isDomainInactiveStatus(root.domainData.status)
+    property bool isDomainInactive: {
+        if (root.domainData && root.domainData.isInactive !== undefined) {
+            return !!root.domainData.isInactive || isDomainInactiveStatus(root.domainData.status)
+        }
+        return isDomainInactiveStatus(root.domainData ? root.domainData.status : "")
+    }
     property bool isDomainReadOnly: root.isDomainInactive || (!root.isCreator)
     
     // Domain data - loaded from DataManager or provided by parent
@@ -152,8 +163,10 @@ Item {
             description: "",
             visibleUsers: [],
             instances: [],
+            appWhitelistAudits: [],
             exportAudits: [],
-            pubKey: domainPubKey || ""
+            pubKey: domainPubKey || "",
+            isInactive: false
         }
     }
 
@@ -198,11 +211,152 @@ Item {
         return normalized
     }
 
-    function sortByTimeDesc(list, primaryField, secondaryField) {
-        if (!list || !Array.isArray(list)) {
+    function toJsArray(value) {
+        if (!value) {
             return []
         }
-        list.sort(function(a, b) {
+        if (Array.isArray(value)) {
+            return value.slice()
+        }
+        if (typeof value === "string" || typeof value !== "object") {
+            return []
+        }
+
+        var length = Number(value.length)
+        if (isNaN(length) || length < 0) {
+            return []
+        }
+
+        var result = []
+        for (var i = 0; i < length; i++) {
+            result.push(value[i])
+        }
+        return result
+    }
+
+    function normalizeInstanceStatus(statusValue) {
+        if (statusValue === undefined || statusValue === null) {
+            return ""
+        }
+
+        var statusText = ("" + statusValue).trim()
+        if (!statusText) {
+            return ""
+        }
+
+        if (statusText === "0") return "待审核"
+        if (statusText === "1") return "已授权"
+        if (statusText === "2") return "已拒绝"
+        if (statusText === "3") return "运行中"
+        if (statusText === "4") return "已结束"
+        return statusText
+    }
+
+    function normalizeInstance(rawInstance) {
+        var raw = rawInstance || {}
+        var instanceId = raw.id || raw.instanceCode || raw.instance_code || ""
+        var instanceName = raw.name || raw.instanceName || raw.instance_name || ""
+        var creatorUserId = raw.creatorUserId || raw.authUserId || raw.creator || raw.userId || ""
+        var statusValue = raw.status !== undefined ? raw.status : raw.instanceStatus
+        var volumeSize = raw.size !== undefined ? raw.size : raw.volumnSize
+
+        var normalized = Object.assign({}, raw)
+        normalized.id = instanceId
+        normalized.instanceCode = raw.instanceCode || instanceId
+        normalized.name = instanceName
+        normalized.instanceName = raw.instanceName || instanceName
+        normalized.status = normalizeInstanceStatus(statusValue)
+        normalized.size = volumeSize
+        normalized.creatorUserId = creatorUserId
+        normalized.authUserId = raw.authUserId || ""
+        normalized.applicantAccount = raw.applicantAccount || raw.account || raw.authUserName || ""
+        normalized.user = raw.user || normalized.applicantAccount || creatorUserId
+        normalized.duration = raw.duration !== undefined ? raw.duration : raw.totalRunTime
+        return normalized
+    }
+
+    function normalizeInstances(instances) {
+        var source = toJsArray(instances)
+        var normalized = []
+        for (var i = 0; i < source.length; i++) {
+            normalized.push(normalizeInstance(source[i]))
+        }
+        return normalized
+    }
+
+    function visibleUserMatchesInstance(visibleUser, instance) {
+        if (!visibleUser || !instance) {
+            return false
+        }
+
+        var userKeys = [
+            visibleUser.authUserId,
+            visibleUser.account,
+            visibleUser.authUserName,
+            visibleUser.displayName
+        ]
+        var instanceKeys = [
+            instance.creatorUserId,
+            instance.authUserId,
+            instance.applicantAccount,
+            instance.user
+        ]
+
+        for (var i = 0; i < userKeys.length; i++) {
+            var userKey = (userKeys[i] || "").toString().trim()
+            if (!userKey) continue
+            for (var j = 0; j < instanceKeys.length; j++) {
+                var instanceKey = (instanceKeys[j] || "").toString().trim()
+                if (instanceKey && instanceKey === userKey) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    function visibleUserText(visibleUser, fallback) {
+        if (!visibleUser) {
+            return fallback || ""
+        }
+
+        var displayName = (visibleUser.displayName || "").toString().trim()
+        var account = (visibleUser.account || "").toString().trim()
+        var authUserName = (visibleUser.authUserName || "").toString().trim()
+        var primary = account || displayName || authUserName
+        var secondary = displayName || authUserName
+
+        if (primary && secondary && primary !== secondary) {
+            return primary + " / " + secondary
+        }
+        return primary || fallback || ""
+    }
+
+    function resolveInstanceApplicantText(instance) {
+        var fallback = (instance && (instance.user || instance.applicantAccount || instance.creatorUserId || instance.authUserId)) ? (instance.user || instance.applicantAccount || instance.creatorUserId || instance.authUserId).toString().trim() : ""
+        var visibleUsers = toJsArray(root.domainData ? root.domainData.visibleUsers : [])
+        for (var i = 0; i < visibleUsers.length; i++) {
+            var visibleUser = visibleUsers[i] || {}
+            if (visibleUserMatchesInstance(visibleUser, instance)) {
+                return visibleUserText(visibleUser, fallback)
+            }
+        }
+        return fallback
+    }
+
+    function isInstanceCreatorVisibleUser(instance) {
+        var visibleUsers = toJsArray(root.domainData ? root.domainData.visibleUsers : [])
+        for (var i = 0; i < visibleUsers.length; i++) {
+            if (visibleUserMatchesInstance(visibleUsers[i], instance)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    function sortByTimeDesc(list, primaryField, secondaryField) {
+        var source = toJsArray(list)
+        source.sort(function(a, b) {
             var ta = toSortableTime(a && a[primaryField] ? a[primaryField] : (secondaryField ? (a && a[secondaryField] ? a[secondaryField] : "") : ""))
             var tb = toSortableTime(b && b[primaryField] ? b[primaryField] : (secondaryField ? (b && b[secondaryField] ? b[secondaryField] : "") : ""))
             if (ta === tb) {
@@ -210,11 +364,11 @@ Item {
             }
             return tb - ta
         })
-        return list
+        return source
     }
 
     function dedupeWhitelistAudits(list) {
-        var source = Array.isArray(list) ? list : []
+        var source = toJsArray(list)
         var deduped = []
         var seen = {}
         for (var i = 0; i < source.length; i++) {
@@ -235,7 +389,7 @@ Item {
     }
 
     function dedupeExportAudits(list) {
-        var source = Array.isArray(list) ? list : []
+        var source = toJsArray(list)
         var deduped = []
         var seen = {}
         for (var i = 0; i < source.length; i++) {
@@ -391,10 +545,9 @@ Item {
         if (!root.currentDomainCode) return
         if (typeof DsccBridge === "undefined") return
         DsccBridge.loadDomainSummary(root.currentDomainCode)
-        DsccBridge.loadVisibleUsers(root.currentDomainCode)
         DsccBridge.loadInstances(root.currentDomainCode)
-        DsccBridge.loadAudits(root.currentDomainCode, 1)  // 1=白名单
-        DsccBridge.loadAudits(root.currentDomainCode, 2)  // 2=导出文件
+        DsccBridge.loadAudits(root.currentDomainCode, 1)
+        DsccBridge.loadAudits(root.currentDomainCode, 2)
     }
 
     function formatPayerText(payerValue) {
@@ -554,6 +707,10 @@ Item {
         property string pendingDomainCode: ""
         
         onAddClicked: function(account) {
+            if (root.isDomainReadOnly) {
+                return
+            }
+
             var trimmed = account ? account.trim() : ""
             if (!trimmed) {
                 return
@@ -639,20 +796,28 @@ Item {
     ExportDetailDialog {
         id: exportDetailDialog
         isCreator: root.isCreator
-        allowApproveReject: !root.isDomainReadOnly  // Disable approve/reject when domain is closed or current user isn't creator
-        
+        allowApproveReject: !root.isDomainReadOnly && !root.auditRequestPending
+
         onApproveClicked: {
+            if (root.auditRequestPending) return
             var _applyCode = exportDetailDialog.exportId || ""
             var _fileCode  = exportDetailDialog.fileCode || ""
-            if (!_applyCode || !_fileCode) return
-            exportDetailDialog.status = "已授权"
+            var _fileHash  = exportDetailDialog.fileHash || ""
+            if (!_applyCode) { window.showError("缺少申请编号", "文件导出审核"); return }
+            if (!_fileCode) { window.showError("缺少文件编号", "文件导出审核"); return }
+            if (!_fileHash) { window.showError("缺少文件哈希", "文件导出审核"); return }
+            root.auditRequestPending = true
+            DsccBridge.auditRequest(_applyCode, _fileCode, true, _fileHash)
         }
 
         onRejectClicked: {
+            if (root.auditRequestPending) return
             var _applyCode = exportDetailDialog.exportId || ""
             var _fileCode  = exportDetailDialog.fileCode || ""
-            if (!_applyCode || !_fileCode) return
-            exportDetailDialog.status = "已拒绝"
+            if (!_applyCode) { window.showError("缺少申请编号", "文件导出审核"); return }
+            if (!_fileCode) { window.showError("缺少文件编号", "文件导出审核"); return }
+            root.auditRequestPending = true
+            DsccBridge.auditRequest(_applyCode, _fileCode, false, "")
         }
     }
     
@@ -660,14 +825,22 @@ Item {
     InstanceDetailDialog {
         id: instanceDetailDialog
         parent: Overlay.overlay  // Use application overlay as parent for proper sizing
-        allowApproveReject: !root.isDomainReadOnly
+        allowApproveReject: !root.isDomainReadOnly && !root.instanceAuditPending
 
         onApproveClicked: {
-            instanceDetailDialog.status = "已授权"
+            if (root.instanceAuditPending) return
+            var code = instanceDetailDialog.instanceId || ""
+            if (!code) return
+            root.instanceAuditPending = true
+            DsccBridge.auditInstanceRequest(code, true)
         }
 
         onRejectClicked: {
-            instanceDetailDialog.status = "已拒绝"
+            if (root.instanceAuditPending) return
+            var code = instanceDetailDialog.instanceId || ""
+            if (!code) return
+            root.instanceAuditPending = true
+            DsccBridge.auditInstanceRequest(code, false)
         }
     }
 
@@ -675,48 +848,28 @@ Item {
     AppWhitelistDetailDialog {
         id: appWhitelistDetailDialog
         parent: Overlay.overlay
-        showActionButtons: !root.isDomainReadOnly
+        showActionButtons: !root.isDomainReadOnly && !root.auditRequestPending
 
         onApproveClicked: {
+            if (root.auditRequestPending) return
             var _applyCode = appWhitelistDetailDialog.applyCode || ""
-            var _processes = appWhitelistDetailDialog.processes || []
-            var _fileList  = []
-            for (var wi = 0; wi < _processes.length; wi++) {
-                var _item = _processes[wi] || {}
-                var _itemFileCode = _item.fileCode || ""
-                if (!_itemFileCode) continue
-                _fileList.push({ fileCode: _itemFileCode })
-            }
-            if (!_applyCode || _fileList.length === 0) return
-            var _wlFileCode1 = _fileList[0].fileCode
-            appWhitelistDetailDialog.status = "已授权"
-            var _updatedProcesses1 = []
-            var _ps1 = appWhitelistDetailDialog.processes || []
-            for (var pi1 = 0; pi1 < _ps1.length; pi1++) {
-                var _pitem1 = _ps1[pi1] || {}; _pitem1.status = "已授权"; _updatedProcesses1.push(_pitem1)
-            }
-            appWhitelistDetailDialog.processes = _updatedProcesses1
+            var _fileCode  = appWhitelistDetailDialog.fileCode || ""
+            var _fileHash  = appWhitelistDetailDialog.fileHash || ""
+            if (!_applyCode) { window.showError("缺少申请编号", "应用白名单审核"); return }
+            if (!_fileCode) { window.showError("缺少文件编号", "应用白名单审核"); return }
+            if (!_fileHash) { window.showError("缺少文件哈希", "应用白名单审核"); return }
+            root.auditRequestPending = true
+            DsccBridge.auditRequest(_applyCode, _fileCode, true, _fileHash)
         }
 
         onRejectClicked: {
+            if (root.auditRequestPending) return
             var _applyCode = appWhitelistDetailDialog.applyCode || ""
-            var _processes = appWhitelistDetailDialog.processes || []
-            var _fileList  = []
-            for (var wi = 0; wi < _processes.length; wi++) {
-                var _item = _processes[wi] || {}
-                var _itemFileCode = _item.fileCode || ""
-                if (!_itemFileCode) continue
-                _fileList.push({ fileCode: _itemFileCode })
-            }
-            if (!_applyCode || _fileList.length === 0) return
-            var _wlFileCode2 = _fileList[0].fileCode
-            appWhitelistDetailDialog.status = "已拒绝"
-            var _updatedProcesses2 = []
-            var _ps2 = appWhitelistDetailDialog.processes || []
-            for (var pi2 = 0; pi2 < _ps2.length; pi2++) {
-                var _pitem2 = _ps2[pi2] || {}; _pitem2.status = "已拒绝"; _updatedProcesses2.push(_pitem2)
-            }
-            appWhitelistDetailDialog.processes = _updatedProcesses2
+            var _fileCode  = appWhitelistDetailDialog.fileCode || ""
+            if (!_applyCode) { window.showError("缺少申请编号", "应用白名单审核"); return }
+            if (!_fileCode) { window.showError("缺少文件编号", "应用白名单审核"); return }
+            root.auditRequestPending = true
+            DsccBridge.auditRequest(_applyCode, _fileCode, false, "")
         }
     }
     
@@ -859,6 +1012,9 @@ Item {
                             hoverEnabled: true
                             cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                             onClicked: {
+                                if (root.isDomainReadOnly) {
+                                    return
+                                }
                                 encryptFileDialog.open()
                             }
                         }
@@ -912,6 +1068,9 @@ Item {
                             hoverEnabled: true
                             cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                             onClicked: {
+                                if (root.isDomainReadOnly) {
+                                    return
+                                }
                                 root.instantiateRequested()
                             }
                         }
@@ -1249,6 +1408,9 @@ Item {
                                     onReleased: parent.pressed = false
                                     onCanceled: parent.pressed = false
                                     onClicked: {
+                                        if (root.isDomainReadOnly || root.isDescriptionSaving) {
+                                            return
+                                        }
                                         if (root.isEditingDescription) {
                                             if ((root.editedDescription || "").length > root.descriptionMaxLength) {
                                                 root.descriptionErrorMessage = "描述最多可输入500个字符"
@@ -1600,6 +1762,9 @@ Item {
                                 onReleased: parent.pressed = false
                                 onCanceled: parent.pressed = false
                                 onClicked: {
+                                    if (root.isDomainReadOnly || root.visibleUserOperationState_busy) {
+                                        return
+                                    }
                                     addUserDialog.domainCreator = root.domainData.creator || ""
                                     addUserDialog.open()
                                 }
@@ -1779,7 +1944,7 @@ Item {
 
                                         CenteredTooltipText {
                                             anchors.fill: parent
-                                            value: modelData.displayName || modelData.account || ""
+                                            value: modelData.displayName || modelData.authUserName || modelData.account || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 6
@@ -1817,6 +1982,9 @@ Item {
                                                 onExited: removeText.hovered = false
                                                 onClicked: {
                                                 var _r = visibleUserDelegateRow._pageRoot
+                                                if (_r.isDomainReadOnly) {
+                                                    return
+                                                }
                                                 if (_r.isVisibleUserOperationInProgress()) {
                                                     return
                                                 }
@@ -1996,7 +2164,7 @@ Item {
                 property int rowHeight: 32  // Each instance row height
                 property int margins: 32  // Top and bottom margins (16px * 2)
                 property int spacing: 12  // Spacing between title and table
-                property int instanceCount: root.domainData.instances ? root.domainData.instances.length : 0
+                property int instanceCount: toJsArray(root.domainData.instances).length
 
                 // Pagination properties
                 property int currentPage: 1
@@ -2042,7 +2210,7 @@ Item {
                 readonly property int hdrLM3: 54
 
                 function getPagedInstances() {
-                    var list = root.domainData.instances || []
+                    var list = toJsArray(root.domainData.instances)
                     var start = (relatedInstancesCard.currentPage - 1) * relatedInstancesCard.itemsPerPage
                     return list.slice(start, Math.min(start + relatedInstancesCard.itemsPerPage, list.length))
                 }
@@ -2249,25 +2417,21 @@ Item {
                             visible: relatedInstancesCard.instanceCount > 0
                             
                             Repeater {
-                                model: {
-                                    var list = root.domainData.instances || []
-                                    var start = (relatedInstancesCard.currentPage - 1) * relatedInstancesCard.itemsPerPage
-                                    return list.slice(start, Math.min(start + relatedInstancesCard.itemsPerPage, list.length))
-                                }
+                                model: relatedInstancesCard.getPagedInstances()
                             
                                 Rectangle {
                                     width: parent.width
                                     height: 32
-                                property bool hovered: false
-                                color: hovered ? "#f2f7fd" : "transparent"
+                                    property bool hovered: false
+                                    color: hovered ? "#f2f7fd" : "transparent"
                                 
-                                Rectangle {
-                                    anchors.bottom: parent.bottom
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    height: index < root.domainData.instances.length - 1 ? 1 : 0
-                                    color: Theme.Colors.borderSlate
-                                }
+                                    Rectangle {
+                                        anchors.bottom: parent.bottom
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        height: index < relatedInstancesCard.getPagedInstances().length - 1 ? 1 : 0
+                                        color: Theme.Colors.borderSlate
+                                    }
 
                                 HoverHandler {
                                     id: relatedInstanceHoverHandler
@@ -2286,7 +2450,7 @@ Item {
                                         CenteredTooltipText {
                                             id: instanceApplicantText
                                             anchors.fill: parent
-                                            value: modelData.user || ""
+                                            value: resolveInstanceApplicantText(modelData)
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 6
@@ -2305,7 +2469,7 @@ Item {
                                         CenteredTooltipText {
                                             id: instanceNameText
                                             anchors.fill: parent
-                                            value: modelData.name || ""
+                                            value: modelData.instanceName || modelData.name || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 26
@@ -2391,10 +2555,10 @@ Item {
                                                 onExited: instanceOperationText.hovered = false
                                                 onClicked: {
                                                     // Populate instance dialog with data
-                                                    instanceDetailDialog.instanceId = modelData.id || ""
+                                                    instanceDetailDialog.instanceId = modelData.instanceCode || modelData.id || ""
                                                     instanceDetailDialog.status = modelData.status || ""
-                                                    instanceDetailDialog.creator = modelData.user || ""
-                                                    var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(modelData.size || modelData.volumnSize)
+                                                    instanceDetailDialog.creator = resolveInstanceApplicantText(modelData)
+                                                    var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(modelData.volumnSize !== undefined ? modelData.volumnSize : modelData.size)
                                                     instanceDetailDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes)
                                                     // Pass createdAt (updated to approval time) to details dialog
                                                     instanceDetailDialog.appliedTime = Theme.Utils.formatDateTime(modelData.createdAt || modelData.appliedTime)
@@ -2407,21 +2571,10 @@ Item {
                                                     // Determine if current user should see approver view
                                                     // Logic: Check if the instance creator is in current user's visible user list
                                                     var isApprover = false
-                                                    var instanceCreator = modelData.user || ""
-                                                    
-                                                    if (instanceCreator && root.currentUser) {
+                                                    if (root.currentUser && isInstanceCreatorVisibleUser(modelData)) {
                                                         // Check if current user is the domain creator (has all visible users)
                                                         if (root.isCurrentUserDomainCreator(root.domainData)) {
-                                                            // Current user is domain creator, check if instance creator is in domain's visible users
-                                                            if (root.domainData.visibleUsers) {
-                                                                for (var i = 0; i < root.domainData.visibleUsers.length; i++) {
-                                                                    var visibleUser = root.domainData.visibleUsers[i]
-                                                                    if (visibleUser && visibleUser.account === instanceCreator) {
-                                                                        isApprover = true
-                                                                        break
-                                                                    }
-                                                                }
-                                                            }
+                                                            isApprover = true
                                                         }
                                                     }
                                                     
@@ -2586,17 +2739,13 @@ Item {
                 property int currentPage: 1
                 property int itemsPerPage: 3
                 property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
-                readonly property int colApplicant: 120   // 申请方（固定）
-                readonly property int colAction: 52        // 操作（固定）
-                // 中间 5 列等宽：卡片行宽 746(778-32)，可用 574(746-120-52) / 5 ≈ 114
-                readonly property int innerColWidth: 114
-
-                // 各标题在其列 Item 内的 leftMargin（申请方固定 6，操作anchors.right）
-                readonly property int hdrLM1: 3    // 实例名称
-                readonly property int hdrLM2: 6    // 应用名称
-                readonly property int hdrLM3: 9    // 数量
-                readonly property int hdrLM4: 2    // 创建时间
-                readonly property int hdrLM5: 15   // 状态
+                readonly property int colApplyCode: 110    // 申请编号
+                readonly property int colApplicant: 100    // 申请方
+                readonly property int colAppName: 120      // 应用名称
+                readonly property int colStatus: 80        // 状态
+                readonly property int colTime: 120         // 申请时间
+                readonly property int colInstance: 160     // 实例名称
+                readonly property int colAction: 52        // 操作
 
                 function normalizeCurrentPage() {
                     var total = appWhitelistAuditCard.totalPages
@@ -2735,7 +2884,20 @@ Item {
                             Row {
                                 anchors.fill: parent
 
-                                // Applicant column
+                                Item {
+                                    width: appWhitelistAuditCard.colApplyCode
+                                    height: parent.height
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "申请编号"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
                                 Item {
                                     width: appWhitelistAuditCard.colApplicant
                                     height: parent.height
@@ -2750,28 +2912,12 @@ Item {
                                     }
                                 }
 
-                                // Security instance name column
                                 Item {
-                                    width: appWhitelistAuditCard.innerColWidth
+                                    width: appWhitelistAuditCard.colAppName
                                     height: parent.height
                                     SelectableText {
                                         anchors.left: parent.left
                                         anchors.leftMargin: appWhitelistAuditCard.hdrLM1
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Instance Name")
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
-                                    }
-                                }
-
-                                // Application name column
-                                Item {
-                                    width: appWhitelistAuditCard.innerColWidth
-                                    height: parent.height
-                                    SelectableText {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM2
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("App Name")
                                         font.pixelSize: 14
@@ -2780,43 +2926,12 @@ Item {
                                     }
                                 }
 
-                                // File count column
                                 Item {
-                                    width: appWhitelistAuditCard.innerColWidth
+                                    width: appWhitelistAuditCard.colStatus
                                     height: parent.height
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM3
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Count")
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
-                                    }
-                                }
-
-                                // Created time column
-                                Item {
-                                    width: appWhitelistAuditCard.innerColWidth
-                                    height: parent.height
-                                    SelectableText {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM4
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Creation Time")
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
-                                    }
-                                }
-
-                                // Status column
-                                Item {
-                                    width: appWhitelistAuditCard.innerColWidth
-                                    height: parent.height
-                                    SelectableText {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM5
+anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Status")
                                         font.pixelSize: 14
@@ -2825,7 +2940,34 @@ Item {
                                     }
                                 }
 
-                                // Operation column
+                                Item {
+                                    width: appWhitelistAuditCard.colTime
+                                    height: parent.height
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "申请时间"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
+                                Item {
+                                    width: appWhitelistAuditCard.colInstance
+                                    height: parent.height
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "实例名称"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
                                 Item {
                                     width: appWhitelistAuditCard.colAction
                                     height: parent.height
@@ -2878,12 +3020,28 @@ Item {
                                     Row {
                                         anchors.fill: parent
 
-                                        // Applicant cell
+                                        // 申请编号
+                                        Item {
+                                            width: appWhitelistAuditCard.colApplyCode
+                                            height: parent.height
+                                            CenteredTooltipText {
+                                                anchors.fill: parent
+                                                value: modelData.applyCode || modelData.id || ""
+                                                textPixelSize: 14
+                                                textColor: Theme.Colors.textLabel
+                                                leftMargin: 6
+                                                rightMargin: 6
+                                                beforeChars: 6
+                                                afterChars: 4
+                                                boundsItem: appWhitelistAuditCard
+                                            }
+                                        }
+
+                                        // 申请方
                                         Item {
                                             width: appWhitelistAuditCard.colApplicant
                                             height: parent.height
                                             CenteredTooltipText {
-                                                id: wlApplicantText
                                                 anchors.fill: parent
                                                 value: modelData.applicant || ""
                                                 textPixelSize: 14
@@ -2891,35 +3049,16 @@ Item {
                                                 leftMargin: 6
                                                 rightMargin: 6
                                                 beforeChars: 6
-                                                afterChars: 6
+                                                afterChars: 4
                                                 boundsItem: appWhitelistAuditCard
                                             }
                                         }
 
-                                        // Instance name cell
+                                        // 应用名称
                                         Item {
-                                            width: appWhitelistAuditCard.innerColWidth
+                                            width: appWhitelistAuditCard.colAppName
                                             height: parent.height
                                             CenteredTooltipText {
-                                                id: appInstanceNameText
-                                                anchors.fill: parent
-                                                value: modelData.instanceName || ""
-                                                textPixelSize: 14
-                                                textColor: Theme.Colors.textLabel
-                                                leftMargin: 6
-                                                rightMargin: 6
-                                                beforeChars: 6
-                                                afterChars: 6
-                                                boundsItem: appWhitelistAuditCard
-                                            }
-                                        }
-
-                                        // Application name cell
-                                        Item {
-                                            width: appWhitelistAuditCard.innerColWidth
-                                            height: parent.height
-                                            CenteredTooltipText {
-                                                id: appNameText
                                                 anchors.fill: parent
                                                 value: modelData.appName || ""
                                                 textPixelSize: 14
@@ -2927,48 +3066,18 @@ Item {
                                                 leftMargin: 6
                                                 rightMargin: 6
                                                 beforeChars: 6
-                                                afterChars: 6
+                                                afterChars: 4
                                                 boundsItem: appWhitelistAuditCard
                                             }
                                         }
 
-                                        // File count cell
+                                        // 状态
                                         Item {
-                                            width: appWhitelistAuditCard.innerColWidth
-                                            height: parent.height
-                                            Text {
-                                                anchors.left: parent.left
-                                                anchors.leftMargin: appWhitelistAuditCard.hdrLM3
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: ((modelData.fileCount !== undefined && modelData.fileCount !== null)
-                                                       ? modelData.fileCount
-                                                       : ((modelData.processes && modelData.processes.length) ? modelData.processes.length : 0)) + ""
-                                                font.pixelSize: 14
-                                                color: Theme.Colors.textLabel
-                                            }
-                                        }
-
-                                        // Created time cell
-                                        Item {
-                                            width: appWhitelistAuditCard.innerColWidth
-                                            height: parent.height
-                                            Text {
-                                                anchors.left: parent.left
-                                                anchors.leftMargin: appWhitelistAuditCard.hdrLM4
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: Theme.Utils.formatDateTime(modelData.createdAt || modelData.applyTime || "")
-                                                font.pixelSize: 14
-                                                color: Theme.Colors.textLabel
-                                            }
-                                        }
-
-                                        // Status cell
-                                        Item {
-                                            width: appWhitelistAuditCard.innerColWidth
+                                            width: appWhitelistAuditCard.colStatus
                                             height: parent.height
                                             Rectangle {
                                                 anchors.left: parent.left
-                                                anchors.leftMargin: appWhitelistAuditCard.hdrLM5
+                                                anchors.leftMargin: 6
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 width: 68
                                                 height: 24
@@ -2988,11 +3097,42 @@ Item {
                                             }
                                         }
 
-                                        // Operation cell
+                                        // 申请时间
+                                        Item {
+                                            width: appWhitelistAuditCard.colTime
+                                            height: parent.height
+                                            Text {
+                                                anchors.left: parent.left
+                                                anchors.leftMargin: 6
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
+                                                font.pixelSize: 14
+                                                color: Theme.Colors.textLabel
+                                            }
+                                        }
+
+                                        // 实例名称
+                                        Item {
+                                            width: appWhitelistAuditCard.colInstance
+                                            height: parent.height
+                                            CenteredTooltipText {
+                                                anchors.fill: parent
+                                                value: modelData.instanceName || ""
+                                                textPixelSize: 14
+                                                textColor: Theme.Colors.textLabel
+                                                leftMargin: 6
+                                                rightMargin: 6
+                                                beforeChars: 6
+                                                afterChars: 4
+                                                boundsItem: appWhitelistAuditCard
+                                            }
+                                        }
+
+                                        // 操作
                                         Item {
                                             width: appWhitelistAuditCard.colAction
                                             height: parent.height
-                                            
+
                                             Text {
                                                 id: appWhitelistOperationText
                                                 property bool hovered: false
@@ -3004,7 +3144,7 @@ Item {
                                                 font.weight: root.actionTextWeight
                                                 font.underline: hovered
                                                 color: Theme.Colors.primary
-                                                
+
                                                 MouseArea {
                                                     anchors.fill: parent
                                                     cursorShape: Qt.PointingHandCursor
@@ -3020,7 +3160,6 @@ Item {
                                                         appWhitelistDetailDialog.appliedTime = Theme.Utils.formatDateTime(modelData.applyTime || "")
                                                         appWhitelistDetailDialog.duration = modelData.duration ? (modelData.duration + "个月") : "-"
                                                         appWhitelistDetailDialog.cost = modelData.cost || ""
-                                                        // App name from processes[0].masterFileName.
                                                         var whlProcs = resolveWhitelistProcessesByRow(modelData)
                                                         appWhitelistDetailDialog.appName = (whlProcs.length > 0 ? (whlProcs[0].masterFileName || "") : "") || "应用名称"
                                                         appWhitelistDetailDialog.processes = whlProcs
@@ -3180,10 +3319,14 @@ Item {
                 property int itemsPerPage: 3
                 property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
 
-                readonly property int firstColumnWidth: 140
-                readonly property int lastColumnWidth: 78
-                // 卡片宽度固定）778；中间可用宽 = 528，均分 4 列每列132
-                readonly property int middleColumnBaseWidth: 132
+                readonly property int colApplyCode: 90     // 申请编号
+                readonly property int colApplicant: 86     // 申请方
+                readonly property int colFileName: 110     // 文件名称
+                readonly property int colFileSize: 80      // 文件大小
+                readonly property int colStatus: 80        // 状态
+                readonly property int colTime: 106         // 申请时间
+                readonly property int colInstance: 122     // 实例名称
+                readonly property int colAction: 72        // 操作
 
                 function normalizeCurrentPage() {
                     var total = exportAuditCard.totalPages
@@ -3206,17 +3349,6 @@ Item {
 
                 onAuditCountChanged: normalizeCurrentPage()
                 onTotalPagesChanged: normalizeCurrentPage()
-
-                function middleColumnWidthByIndex(index) {
-                    return middleColumnBaseWidth
-                }
-
-                // 中间 4 个标题列（实例名称/导出文件数/导出时间/状态）在各自列内的 leftMargin，
-                // 使 6 个标题首字等间距（卡片宽固定下的预计算值）
-                readonly property int expHdrLM1: 7
-                readonly property int expHdrLM2: 16
-                readonly property int expHdrLM3: 26
-                readonly property int expHdrLM4: 35
                 
                 function getPagedAudits() {
                     var list = root.domainData.exportAudits || []
@@ -3335,12 +3467,24 @@ Item {
                             
                             Row {
                                 anchors.fill: parent
-                                
-                                // Applicant column (leftmost)
+
                                 Item {
-                                    width: exportAuditCard.firstColumnWidth
+                                    width: exportAuditCard.colApplyCode
                                     height: parent.height
-                                    
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "申请编号"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
+                                Item {
+                                    width: exportAuditCard.colApplicant
+                                    height: parent.height
                                     SelectableText {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -3351,31 +3495,27 @@ Item {
                                         color: Theme.Colors.textLabel
                                     }
                                 }
-                                
-                                // Security instance name column
+
                                 Item {
-                                    width: exportAuditCard.middleColumnWidthByIndex(0)
+                                    width: exportAuditCard.colFileName
                                     height: parent.height
-                                    
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: exportAuditCard.expHdrLM1
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Instance Name")
+text: qsTr("Instance Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
                                     }
                                 }
-                                
-                                // File size column
+
                                 Item {
-                                    width: exportAuditCard.middleColumnWidthByIndex(1)
+                                    width: exportAuditCard.colFileSize
                                     height: parent.height
-                                    
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: exportAuditCard.expHdrLM2
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("File Size")
                                         font.pixelSize: 14
@@ -3383,31 +3523,13 @@ Item {
                                         color: Theme.Colors.textLabel
                                     }
                                 }
-                                
-                                // Created time column
+
                                 Item {
-                                    width: exportAuditCard.middleColumnWidthByIndex(2)
+                                    width: exportAuditCard.colStatus
                                     height: parent.height
-                                    
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: exportAuditCard.expHdrLM3
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Creation Time")
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
-                                    }
-                                }
-                                
-                                // Status column
-                                Item {
-                                    width: exportAuditCard.middleColumnWidthByIndex(3)
-                                    height: parent.height
-                                    
-                                    SelectableText {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: exportAuditCard.expHdrLM4
+anchors.leftMargin: exportAuditCard.expHdrLM4
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Status")
                                         font.pixelSize: 14
@@ -3415,12 +3537,38 @@ Item {
                                         color: Theme.Colors.textLabel
                                     }
                                 }
-                                
-                                // Operation column (rightmost)
+
                                 Item {
-                                    width: exportAuditCard.lastColumnWidth
+                                    width: exportAuditCard.colTime
                                     height: parent.height
-                                    
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "申请时间"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
+                                Item {
+                                    width: exportAuditCard.colInstance
+                                    height: parent.height
+                                    SelectableText {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "实例名称"
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                    }
+                                }
+
+                                Item {
+                                    width: exportAuditCard.colAction
+                                    height: parent.height
                                     SelectableText {
                                         anchors.right: parent.right
                                         anchors.rightMargin: root.actionRightMargin
@@ -3469,14 +3617,29 @@ Item {
                                 
                                 Row {
                                     anchors.fill: parent
-                                    
-                                    // Applicant cell (leftmost)
+
+                                    // 申请编号
                                     Item {
-                                        width: exportAuditCard.firstColumnWidth
+                                        width: exportAuditCard.colApplyCode
                                         height: parent.height
-                                        
                                         CenteredTooltipText {
-                                            id: expApplicantText
+                                            anchors.fill: parent
+                                            value: modelData.applyCode || modelData.id || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
+                                        }
+                                    }
+
+                                    // 申请方
+                                    Item {
+                                        width: exportAuditCard.colApplicant
+                                        height: parent.height
+                                        CenteredTooltipText {
                                             anchors.fill: parent
                                             value: modelData.applicant || ""
                                             textPixelSize: 14
@@ -3484,74 +3647,55 @@ Item {
                                             leftMargin: 6
                                             rightMargin: 6
                                             beforeChars: 6
-                                            afterChars: 6
+                                            afterChars: 4
                                             boundsItem: exportAuditCard
                                         }
                                     }
-                                    
-                                    // Security instance name cell
+
+                                    // 文件名称
                                     Item {
-                                        width: exportAuditCard.middleColumnWidthByIndex(0)
+                                        width: exportAuditCard.colFileName
                                         height: parent.height
-                                        
                                         CenteredTooltipText {
-                                            id: exportInstanceNameText
                                             anchors.fill: parent
-                                            value: modelData.instanceName || ""
+                                            value: modelData.fileName || modelData.file_name || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 6
                                             rightMargin: 6
                                             beforeChars: 6
-                                            afterChars: 6
+                                            afterChars: 4
                                             boundsItem: exportAuditCard
                                         }
                                     }
-                                    
-                                    // File size cell
+
+                                    // 文件大小
                                     Item {
-                                        width: exportAuditCard.middleColumnWidthByIndex(1)
+                                        width: exportAuditCard.colFileSize
                                         height: parent.height
-                                        
                                         SelectableText {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: exportAuditCard.expHdrLM2
+                                            anchors.leftMargin: 6
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: Theme.Utils.truncateText(formatFileSizeLowercase(modelData.fileSize), 12, 6, 3)
                                             font.pixelSize: 14
                                             color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width - exportAuditCard.expHdrLM2 - 6)
+                                            width: Math.max(0, parent.width - 12)
                                             clip: true
                                         }
                                     }
-                                    
-                                    // Created time cell
+
+                                    // 状态
                                     Item {
-                                        width: exportAuditCard.middleColumnWidthByIndex(2)
+                                        width: exportAuditCard.colStatus
                                         height: parent.height
-                                        
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: exportAuditCard.expHdrLM3
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: Theme.Utils.formatDateTime(modelData.createdAt || modelData.applyTime)
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
-                                        }
-                                    }
-                                    
-                                    // Status cell
-                                    Item {
-                                        width: exportAuditCard.middleColumnWidthByIndex(3)
-                                        height: parent.height
-                                        
                                         Rectangle {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: exportAuditCard.expHdrLM4
+                                            anchors.leftMargin: 6
                                             anchors.verticalCenter: parent.verticalCenter
                                             width: {
                                                 var ideal = Math.max(60, (modelData.status || "").length * 12 + 18)
-                                                var maxAllowed = Math.max(0, parent.width - exportAuditCard.expHdrLM4 - 6)
+                                                var maxAllowed = Math.max(0, parent.width - 12)
                                                 return Math.min(ideal, maxAllowed)
                                             }
                                             height: 24
@@ -3560,7 +3704,6 @@ Item {
                                             color: auditStatusStyle.bg
                                             border.color: auditStatusStyle.border
                                             border.width: 1
-                                            
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: modelData.status || ""
@@ -3573,12 +3716,42 @@ Item {
                                             }
                                         }
                                     }
-                                    
-                                    // Operation cell (rightmost)
+
+                                    // 申请时间
                                     Item {
-                                        width: exportAuditCard.lastColumnWidth
+                                        width: exportAuditCard.colTime
                                         height: parent.height
-                                        
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 6
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
+                                        }
+                                    }
+
+                                    // 实例名称
+                                    Item {
+                                        width: exportAuditCard.colInstance
+                                        height: parent.height
+                                        CenteredTooltipText {
+                                            anchors.fill: parent
+                                            value: modelData.instanceName || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
+                                        }
+                                    }
+
+                                    // 操作
+                                    Item {
+                                        width: exportAuditCard.colAction
+                                        height: parent.height
                                         Text {
                                             id: exportOperationText
                                             anchors.right: parent.right
@@ -3590,7 +3763,6 @@ Item {
                                             property bool hovered: false
                                             font.underline: hovered
                                             color: Theme.Colors.primary
-                                            
                                             MouseArea {
                                                 anchors.fill: parent
                                                 hoverEnabled: true
@@ -3598,8 +3770,6 @@ Item {
                                                 onEntered: exportOperationText.hovered = true
                                                 onExited: exportOperationText.hovered = false
                                                 onClicked: {
-                                                    // modelData is already a per-file row with correct, isolated values —
-                                                    // use it directly to avoid cross-file size/status confusion.
                                                     exportDetailDialog.exportId = modelData.applyCode || modelData.id || ""
                                                     exportDetailDialog.applicant = modelData.applicant || ""
                                                     exportDetailDialog.fileSize = Number(modelData.fileSize) || 0
@@ -3785,6 +3955,10 @@ Item {
 
     // Function to handle domain deactivation
     function handleDeactivateDomain() {
+        if (root.isDomainReadOnly) {
+            return
+        }
+
         // Prevent duplicate clicks - check if already pending
         if (deactivateDomainState.isPending) {
             return
@@ -3949,6 +4123,7 @@ Item {
     // ──────────────────────────────────────────────────────────────────────────
     Connections {
         target: DsccBridge
+        ignoreUnknownSignals: true
 
         function onDomainSummaryLoaded(domainCode, summary) {
             if (domainCode !== root.currentDomainCode) return
@@ -3956,7 +4131,7 @@ Item {
             var updated = Object.assign({}, root.domainData, summary)
             // 保持 visibleUsers / instances / appWhitelistAudits / exportAudits 不被覆盖
             if (root.domainData) {
-                if (root.domainData.visibleUsers !== undefined)
+                if (summary.visibleUsers === undefined && root.domainData.visibleUsers !== undefined)
                     updated.visibleUsers = root.domainData.visibleUsers
                 if (root.domainData.instances !== undefined)
                     updated.instances = root.domainData.instances
@@ -3970,17 +4145,10 @@ Item {
             if (summary.pubKey && summary.pubKey !== root.domainPubKey) root.domainPubKey = summary.pubKey
         }
 
-        function onVisibleUsersLoaded(domainCode, users) {
-            if (domainCode !== root.currentDomainCode) return
-            var updated = Object.assign({}, root.domainData)
-            updated.visibleUsers = users || []
-            root.domainData = updated
-        }
-
         function onInstancesLoaded(domainCode, instances) {
             if (domainCode !== root.currentDomainCode) return
             var updated = Object.assign({}, root.domainData)
-            updated.instances = sortByTimeDesc(instances || [], "createdAt", "appliedTime")
+            updated.instances = sortByTimeDesc(normalizeInstances(instances || []), "createdAt", "appliedTime")
             root.domainData = updated
         }
 
@@ -4009,13 +4177,14 @@ Item {
             if (domainCode !== root.currentDomainCode) return
             root.pendingAddUserFullInfo = null
             root.visibleUserOperationState_busy = false
-            DsccBridge.loadVisibleUsers(root.currentDomainCode)
+            DsccBridge.loadDomainSummary(root.currentDomainCode)
         }
 
-        function onAddUserToDomainFailed(operationId, domainCode, userId, errorMessage) {
+        function onAddUserToDomainFailed(operationId, domainCode, userId, notification) {
             if (domainCode !== root.currentDomainCode) return
             root.pendingAddUserFullInfo = null
             root.visibleUserOperationState_busy = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "添加用户失败")
             window.showError(errorMessage || "添加用户失败", "添加可见用户")
         }
 
@@ -4026,16 +4195,17 @@ Item {
             root.removeUserState_pendingDomainPubKey = ""
             root.removeUserState_pendingDomainCode = ""
             root.visibleUserOperationState_busy = false
-            DsccBridge.loadVisibleUsers(root.currentDomainCode)
+            DsccBridge.loadDomainSummary(root.currentDomainCode)
         }
 
-        function onRemoveUserFromDomainFailed(operationId, domainCode, userId, errorMessage) {
+        function onRemoveUserFromDomainFailed(operationId, domainCode, userId, notification) {
             if (domainCode !== root.currentDomainCode) return
             root.removeUserState_pendingRemovedAccount = ""
             root.removeUserState_pendingRemovedAuthUserId = ""
             root.removeUserState_pendingDomainPubKey = ""
             root.removeUserState_pendingDomainCode = ""
             root.visibleUserOperationState_busy = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "移除用户失败")
             window.showError(errorMessage || "移除用户失败", "移除可见用户")
         }
 
@@ -4046,20 +4216,48 @@ Item {
             DsccBridge.loadDomainSummary(root.currentDomainCode)
         }
 
-        function onDomainDescUpdateFailed(operationId, domainCode, errorMessage) {
+        function onDomainDescUpdateFailed(operationId, domainCode, notification) {
             if (domainCode !== root.currentDomainCode) return
             root.isDescriptionSaving = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "保存描述失败")
             window.showError(errorMessage || "保存描述失败", "修改描述")
         }
 
-        function onDomainCloseFailed(operationId, domainCode, errorMessage) {
+        function onDomainCloseFailed(operationId, domainCode, notification) {
             if (domainCode !== root.currentDomainCode) return
             deactivateDomainState.isPending = false
             deactivateDomainState.pendingDomainPubKey = ""
             deactivateDomainState.pendingDomainCode = ""
+            var errorMessage = DsccBridge.notificationMessage(notification, "停用安全域失败")
             window.showError(errorMessage || "停用安全域失败", "停用安全域")
         }
         // 注意：onDomainClosed 成功的导航/刷新由 main.qml 统一处理（切换至 home + 刷新列表）
+
+        function onAuditInstanceRequestSuccess(operationId, instanceCode) {
+            root.instanceAuditPending = false
+            DsccBridge.loadInstances(root.currentDomainCode)
+        }
+
+        function onAuditInstanceRequestFailed(operationId, instanceCode, notification) {
+            root.instanceAuditPending = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "实例审核失败")
+            window.showError(errorMessage || "实例审核失败", "实例审核")
+            DsccBridge.loadInstances(root.currentDomainCode)
+        }
+
+        function onAuditRequestSuccess(operationId, auditCode, fileCode) {
+            root.auditRequestPending = false
+            DsccBridge.loadAudits(root.currentDomainCode, 1)
+            DsccBridge.loadAudits(root.currentDomainCode, 2)
+        }
+
+        function onAuditRequestFailed(operationId, auditCode, fileCode, notification) {
+            root.auditRequestPending = false
+            var errorMessage = DsccBridge.notificationMessage(notification, "审核操作失败")
+            window.showError(errorMessage || "审核操作失败", "审核操作")
+            DsccBridge.loadAudits(root.currentDomainCode, 1)
+            DsccBridge.loadAudits(root.currentDomainCode, 2)
+        }
     }
 
     // ──────────────────────────────────────────────────────────────────────────
