@@ -49,8 +49,10 @@ public:
                                   const QString &reason);
     Q_INVOKABLE QString notificationMessage(const QVariant &notification,
                                             const QString &fallback) const;
+    Q_INVOKABLE void loadMessageList();
 
 signals:
+    void messageListLoaded(QVariantList messages);
     void domainListLoaded(QVariantList domains);
     void domainSummaryLoaded(QString domainCode, QVariantMap summary);
     void instancesLoaded(QString domainCode, QVariantList instances);
@@ -87,6 +89,7 @@ private:
     bool isDomainInactiveForOperation(const QString &domainCode) const;
     QVariantMap domainInfoToSummary(const dscc::DomainInfo &info) const;
     QVariantMap instanceInfoToVariant(const dscc::InstanceInfo &info) const;
+    QVariantMap messageInfoToVariant(const dscc::MessageInfo &info) const;
 
     std::unique_ptr<dscc::UserAssets> m_assets;
     QString m_metaDbPath;

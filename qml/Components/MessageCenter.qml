@@ -13,16 +13,18 @@ Item {
     property int currentPage: 1
     property int pageSize: AppConfig.messageCenterPageSize()
 
-    // Server-side pagination state
+    // All messages from core (unfiltered, sorted newest-first)
+    property var allMessages: []
+
+    // Current page slice after filtering
     property var serverMessages: []
     property int serverTotalPages: 0
     property bool serverLoading: false
 
-    // 通知父级更新计数器的三个信号
-    signal unreadCountFetched(int count)    // 服务端总未读数
-    signal unreadMessageMarkedRead()        // 单条消息被标已读
-    signal allMessagesMarkedRead()          // 一键已读
-    signal domainMessageClicked(string domainCode)  // 点击未读消息后触发域同步与跳转
+    signal unreadCountFetched(int count)
+    signal unreadMessageMarkedRead()
+    signal allMessagesMarkedRead()
+    signal domainMessageClicked(string domainCode)
 
     function getVisiblePages() {
         var total = root.serverTotalPages
@@ -53,51 +55,40 @@ Item {
     // Signals
     signal backRequested()
 
-    // Functions
-    function resolveMessageDomainCode(msg) {
-        if (!msg) return ""
-
-        var directCode = msg.domainCode || ""
-        if (directCode) return String(directCode).trim()
-
-        var extInfoRaw = (msg.extInfo !== undefined && msg.extInfo !== null) ? msg.extInfo : msg.ext_info
-        if (extInfoRaw === undefined || extInfoRaw === null || extInfoRaw === "") {
-            return ""
-        }
-
-        var extInfoObj = extInfoRaw
-        if (typeof extInfoObj === "string") {
-            try {
-                extInfoObj = JSON.parse(extInfoObj)
-            } catch (e) {
-                extInfoObj = null
+    function _applyFilterAndPaginate() {
+        var filtered = []
+        for (var i = 0; i < allMessages.length; i++) {
+            var m = allMessages[i]
+            if (root.currentFilter === "unread") {
+                if (m.isRead === 0) filtered.push(m)
+            } else {
+                filtered.push(m)
             }
         }
 
-        if (!extInfoObj || typeof extInfoObj !== "object") {
-            return ""
-        }
+        var total = Math.ceil(filtered.length / root.pageSize)
+        if (total < 1) total = 1
+        root.serverTotalPages = total
+        if (root.currentPage > total) root.currentPage = total
 
-        var nestedCode = extInfoObj.domainCode || ""
-        if (!nestedCode && extInfoObj.domain && typeof extInfoObj.domain === "object") {
-            nestedCode = extInfoObj.domain.domainCode || ""
+        var startIdx = (root.currentPage - 1) * root.pageSize
+        var endIdx = Math.min(startIdx + root.pageSize, filtered.length)
+        var page = []
+        for (var j = startIdx; j < endIdx; j++) {
+            page.push(filtered[j])
         }
-        if (!nestedCode && extInfoObj.data && typeof extInfoObj.data === "object") {
-            nestedCode = extInfoObj.data.domainCode || ""
+        root.serverMessages = page
+
+        var unreadCount = 0
+        for (var k = 0; k < allMessages.length; k++) {
+            if (allMessages[k].isRead === 0) unreadCount++
         }
-
-        return nestedCode ? String(nestedCode).trim() : ""
-    }
-
-    // 离线回退模式（消息数据由动态库提供，本地无缓存）
-    function _loadLocalMessages(pageNo) {
-        serverMessages = []
-        serverTotalPages = 1
-        serverLoading = false
+        root.unreadCountFetched(unreadCount)
     }
 
     function fetchMessages(pageNo) {
-        _loadLocalMessages(pageNo)
+        root.currentPage = pageNo
+        DsccBridge.loadMessageList()
     }
 
     // 将 createTime 转换为可读格式（支持时间戳毫秒数和字符串两种格式）
@@ -105,57 +96,33 @@ Item {
         if (!val) return ""
         var ts = parseInt(val)
         if (!isNaN(ts) && ts > 1000000000000) {
-            // 毫秒时间戳
             var d = new Date(ts)
             var year  = d.getFullYear()
             var month = ("0" + (d.getMonth() + 1)).slice(-2)
             var day   = ("0" + d.getDate()).slice(-2)
             return year + "-" + month + "-" + day
         }
-        // 字符串格式（如 "2023-01-01 00:00:00.000"），只取日期部分
         return String(val).substring(0, 10)
     }
 
     function fetchUnreadCount() {
-        root.unreadCountFetched(0)
-        _loadLocalMessages(1)
+        DsccBridge.loadMessageList()
     }
 
-    function markAllAsRead() {
-        root.allMessagesMarkedRead()  // 通知 window 计数器清零
-        _loadLocalMessages(currentPage)
-    }
-
-    function deleteMessage(messageCode) {
-        // 删前先查出 isRead 状态，若未读则通知计数器减一
-        for (var j = 0; j < serverMessages.length; j++) {
-            if (serverMessages[j].messageCode === messageCode) {
-                if (serverMessages[j].isRead === 0) root.unreadMessageMarkedRead()
-                break
-            }
-        }
-        _loadLocalMessages(currentPage)
-    }
-
-    function markMessageAsRead(messageCode) {
-        root.unreadMessageMarkedRead()  // 通知 window 计数器减一（调用方已确认 isRead===0）
-        var upd0 = []
-        for (var rj = 0; rj < serverMessages.length; rj++) {
-            var mc0 = serverMessages[rj]
-            if (mc0.messageCode === messageCode) {
-                var cp0 = {}; for (var rk in mc0) { if (mc0.hasOwnProperty(rk)) cp0[rk] = mc0[rk] }
-                cp0.isRead = 1; upd0.push(cp0)
-            } else { upd0.push(mc0) }
-        }
-        serverMessages = upd0
-    }
-
-    // 消息中心变为可见时：先获取总未读数，再加载列表（顺序执行避免信号混淆）
     onVisibleChanged: {
         if (visible) {
             currentFilter = "all"
             currentPage = 1
             fetchUnreadCount()
+        }
+    }
+
+    Connections {
+        target: DsccBridge
+        function onMessageListLoaded(messages) {
+            root.allMessages = messages
+            root._applyFilterAndPaginate()
+            root.serverLoading = false
         }
     }
 
@@ -194,7 +161,7 @@ Item {
         }
     }
 
-    // Filter tabs and Mark all read button
+    // Filter tabs
     Item {
         id: filterBar
         width: parent.width
@@ -238,7 +205,7 @@ Item {
                     onClicked: {
                         root.currentFilter = "all"
                         root.currentPage = 1
-                        root.fetchMessages(1)
+                        root._applyFilterAndPaginate()
                     }
                 }
             }
@@ -277,51 +244,9 @@ Item {
                     onClicked: {
                         root.currentFilter = "unread"
                         root.currentPage = 1
-                        root.fetchMessages(1)
+                        root._applyFilterAndPaginate()
                     }
                 }
-            }
-        }
-
-        // "一键已读" button
-        Rectangle {
-            id: markAllButton
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            width: 113
-            height: 37
-            radius: 10
-            color: hovered ? Theme.Colors.secondary : "transparent"
-            border.width: 1
-            border.color: Theme.Colors.primary
-            property bool hovered: false
-
-            Row {
-                anchors.centerIn: parent
-                spacing: 8
-
-                Image {
-                    width: 16
-                    height: 16
-                    source: Qt.resolvedUrl("icons/icon-check-double.svg")
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-
-                Text {
-                    text: "一键已读"
-                    font.pixelSize: 14
-                    color: Theme.Colors.primary
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                hoverEnabled: true
-                onEntered: markAllButton.hovered = true
-                onExited: markAllButton.hovered = false
-                onClicked: root.markAllAsRead()
             }
         }
     }
@@ -354,7 +279,6 @@ Item {
                     radius: 10
                     property bool hovered: false
                     property bool showTooltip: false
-                    property var messageCenterRoot: root
                     property var messageData: modelData
                     color: hovered ? Theme.Colors.secondary : Theme.Colors.backgroundGray
                     border.width: 1
@@ -400,31 +324,6 @@ Item {
                                 elide: Text.ElideRight
                                 maximumLineCount: 1
                                 Layout.fillWidth: true
-                            }
-                        }
-
-                        // Delete button
-                        Rectangle {
-                            id: deleteButton
-                            width: 24
-                            height: 24
-                            radius: 12
-                            color: deleteArea.containsMouse ? "#fdecee" : "transparent"
-                            Layout.alignment: Qt.AlignVCenter
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "×"
-                                font.pixelSize: 18
-                                color: deleteArea.containsMouse ? "#D4183D" : "#D4183D"
-                            }
-
-                            MouseArea {
-                                id: deleteArea
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                hoverEnabled: true
-                                onClicked: root.deleteMessage(messageItem.messageData.messageCode)
                             }
                         }
                     }
@@ -496,11 +395,9 @@ Item {
                         }
                     }
 
-                    // Click to mark as read / Show tooltip on hover
+                    // Show tooltip on hover
                     MouseArea {
                         anchors.fill: parent
-                        anchors.rightMargin: 50  // Don't overlap delete button
-                        cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
                         onEntered: {
                             messageItem.hovered = true
@@ -509,17 +406,6 @@ Item {
                         onExited: {
                             messageItem.hovered = false
                             messageItem.showTooltip = false
-                        }
-                        onClicked: {
-                            if (messageItem.messageData.isRead === 0) {
-                                messageItem.messageCenterRoot.markMessageAsRead(messageItem.messageData.messageCode)
-                                var targetDomainCode = messageItem.messageCenterRoot.resolveMessageDomainCode(messageItem.messageData)
-                                if (targetDomainCode) {
-                                    messageItem.messageCenterRoot.domainMessageClicked(targetDomainCode)
-                                } else {
-                                    console.warn("[MessageCenter] drop domain navigation: missing domainCode", JSON.stringify(messageItem.messageData || {}))
-                                }
-                            }
                         }
                     }
                 }
@@ -614,9 +500,8 @@ Item {
                     onPressed: parent.pressed = true
                     onReleased: parent.pressed = false
                     onClicked: {
-                        var newPage = root.currentPage - 1
-                        root.currentPage = newPage
-                        root.fetchMessages(newPage)
+                        root.currentPage = root.currentPage - 1
+                        root._applyFilterAndPaginate()
                     }
                 }
             }
@@ -658,7 +543,7 @@ Item {
                         onClicked: {
                             if (!parent.isCurrent) {
                                 root.currentPage = pageNum
-                                root.fetchMessages(pageNum)
+                                root._applyFilterAndPaginate()
                             }
                         }
                     }
@@ -698,9 +583,8 @@ Item {
                     onPressed: parent.pressed = true
                     onReleased: parent.pressed = false
                     onClicked: {
-                        var newPage = root.currentPage + 1
-                        root.currentPage = newPage
-                        root.fetchMessages(newPage)
+                        root.currentPage = root.currentPage + 1
+                        root._applyFilterAndPaginate()
                     }
                 }
             }

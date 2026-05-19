@@ -292,6 +292,7 @@ void DsccBridge::clearCurrentUser()
     m_currentUserName.clear();
     emit domainListLoaded(QVariantList());
     emit domainSummaryLoaded(QString(), QVariantMap());
+    emit messageListLoaded(QVariantList());
 }
 
 void DsccBridge::connectAssetSignals()
@@ -452,8 +453,9 @@ void DsccBridge::connectAssetSignals()
     connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
             &dscc::ActiveNotify::MessageReceived,
             this,
-            [](dscc::Notification notification) {
+            [this](dscc::Notification notification) {
                 logNotification(QStringLiteral("corelib MessageReceived"), notification);
+                loadMessageList();
             });
 
     connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
@@ -552,6 +554,51 @@ QVariantMap DsccBridge::instanceInfoToVariant(const dscc::InstanceInfo &info) co
     map.insert(QStringLiteral("syncStatus"), info.sync_status);
     map.insert(QStringLiteral("createdAt"), timestampToIsoString(info.created_at));
     return map;
+}
+
+QVariantMap DsccBridge::messageInfoToVariant(const dscc::MessageInfo &info) const
+{
+    QVariantMap map;
+    map.insert(QStringLiteral("messageCode"), info.message_code);
+    map.insert(QStringLiteral("message"), info.content);
+    map.insert(QStringLiteral("content"), info.content);
+    map.insert(QStringLiteral("recipient"), info.recipient);
+    map.insert(QStringLiteral("type"), info.type);
+    map.insert(QStringLiteral("isRead"), info.read_status);
+    map.insert(QStringLiteral("readStatus"), info.read_status);
+
+    const uint64_t ts = info.created_at > 0 ? info.created_at : info.time;
+    const QString isoTime = timestampToIsoString(ts);
+    map.insert(QStringLiteral("createTime"), isoTime);
+    map.insert(QStringLiteral("createdAt"), isoTime);
+    map.insert(QStringLiteral("rawTime"), quint64(ts));
+    return map;
+}
+
+void DsccBridge::loadMessageList()
+{
+    if (!m_assets) {
+        emit messageListLoaded(QVariantList());
+        return;
+    }
+
+    QList<dscc::MessageInfo> messages = m_assets->ListMessages();
+    std::sort(messages.begin(), messages.end(),
+              [](const dscc::MessageInfo &a, const dscc::MessageInfo &b) {
+                  const uint64_t tsA = a.created_at > 0 ? a.created_at : a.time;
+                  const uint64_t tsB = b.created_at > 0 ? b.created_at : b.time;
+                  return tsA > tsB;
+              });
+
+    QVariantList list;
+    list.reserve(messages.size());
+    for (const dscc::MessageInfo &msg : messages) {
+        list.append(messageInfoToVariant(msg));
+    }
+
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] loadMessageList count=%1").arg(list.size());
+    emit messageListLoaded(list);
 }
 
 QString DsccBridge::domainCreateFailureMessage(uint32_t operationId,
