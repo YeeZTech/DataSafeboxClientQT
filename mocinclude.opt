@@ -1,0 +1,41 @@
+-IC:/Qt/6.7.3/msvc2022_64/mkspecs/win32-msvc
+-ID:/trammel/DataSafeboxClientQT
+-ID:/trammel/DataSafeboxClientQT/src/app
+-ID:/trammel/DataSafeboxClientQT/src/config
+-ID:/trammel/DataSafeboxClientQT/src/core
+-ID:/trammel/DataSafeboxClientQT/src/services
+-ID:/trammel/vcpkg/installed/x64-windows/include
+-IC:/Program Files/DSCC/include
+-IC:/Program Files/DSCC/deps/boost/include
+-IC:/Program Files/DSCC/deps/wcdb/include
+-IC:/Program Files/DSCC/deps/ycrypto/include
+-IC:/Program Files/DSCC/deps/openssl/include
+-IC:/Program Files/DSCC/deps/secp256k1/include
+-IC:/Program Files/DSCC/deps/glog/include
+-IC:/Program Files/DSCC/deps/gflags/include
+-IC:/Program Files/DSCC/deps/fflib/include
+-IC:/Qt/6.7.3/msvc2022_64/include
+-IC:/Qt/6.7.3/msvc2022_64/include/QtQuickControls2
+-IC:/Qt/6.7.3/msvc2022_64/include/QtWebEngineQuick
+-IC:/Qt/6.7.3/msvc2022_64/include/QtWebEngineCore
+-IC:/Qt/6.7.3/msvc2022_64/include/QtQuick
+-IC:/Qt/6.7.3/msvc2022_64/include/QtOpenGL
+-IC:/Qt/6.7.3/msvc2022_64/include/QtSvg
+-IC:/Qt/6.7.3/msvc2022_64/include/QtWidgets
+-IC:/Qt/6.7.3/msvc2022_64/include/QtGui
+-IC:/Qt/6.7.3/msvc2022_64/include/QtQmlModels
+-IC:/Qt/6.7.3/msvc2022_64/include/QtWebChannel
+-IC:/Qt/6.7.3/msvc2022_64/include/QtQml
+-IC:/Qt/6.7.3/msvc2022_64/include/QtQmlIntegration
+-IC:/Qt/6.7.3/msvc2022_64/include/QtNetwork
+-IC:/Qt/6.7.3/msvc2022_64/include/QtPositioning
+-IC:/Qt/6.7.3/msvc2022_64/include/QtCore
+-IC:/Qt/6.7.3/msvc2022_64/include/QtWebChannelQuick
+-ID:\visual stuido\VC\Tools\MSVC\14.43.34808\include
+-ID:\visual stuido\VC\Tools\MSVC\14.43.34808\ATLMFC\include
+-ID:\visual stuido\VC\Auxiliary\VS\include
+-IC:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt
+-IC:\Program Files (x86)\Windows Kits\10\\include\10.0.26100.0\\um
+-IC:\Program Files (x86)\Windows Kits\10\\include\10.0.26100.0\\shared
+-IC:\Program Files (x86)\Windows Kits\10\\include\10.0.26100.0\\winrt
+-IC:\Program Files (x86)\Windows Kits\10\\include\10.0.26100.0\\cppwinrt
