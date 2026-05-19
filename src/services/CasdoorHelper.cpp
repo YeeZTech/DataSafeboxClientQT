@@ -357,14 +357,20 @@ void CasdoorHelper::searchUser(const QString &username)
             return;
         }
         const QJsonObject dataObj = root.value("data").toObject();
-        if (dataObj.isEmpty() || dataObj.value("name").toString().isEmpty()) {
-            emit userSearchFailed("查询用户不存在");
+        const QString userId = dataObj.value("id").toString().trimmed();
+        const QString userName = dataObj.value("name").toString().trimmed();
+        const QString account = dataObj.value("displayName").toString().trimmed();
+        if (dataObj.isEmpty() || userId.isEmpty() || userName.isEmpty() || account.isEmpty()) {
+            emit userSearchFailed("查询结果缺少必填字段，请联系管理员");
             return;
         }
         QVariantMap userInfo;
-        userInfo["account"]     = dataObj.value("name").toString();
-        userInfo["authUserId"]  = dataObj.value("id").toString();
-        userInfo["displayName"] = dataObj.value("displayName").toString();
+        userInfo["user_id"]      = userId;
+        userInfo["user_name"]    = userName;
+        userInfo["account"]      = account;
+        userInfo["authUserId"]   = userId;
+        userInfo["authUserName"] = userName;
+        userInfo["displayName"]  = account;
         emit userSearchCompleted(userInfo);
     });
 }

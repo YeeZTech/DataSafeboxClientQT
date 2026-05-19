@@ -830,6 +830,10 @@ void DsccBridge::updateDomainDesc(const QString &domainCode, const QString &desc
 
 void DsccBridge::addUserToDomain(const QString &domainCode, const QString &userId)
 {
+    qInfo().noquote()
+        << QStringLiteral("[DsccBridge] addUserToDomain called domainCode=\"%1\" userId=\"%2\"")
+               .arg(domainCode, userId);
+
     const QString trimmedDomainCode = domainCode.trimmed();
     const QString trimmedUserId = userId.trimmed();
     if (!m_assets) {

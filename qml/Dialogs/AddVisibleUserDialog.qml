@@ -317,20 +317,23 @@ Popup {
             verifyTimeoutTimer.stop()
             root.isVerifying = false
 
+            var userId = (user.user_id || user.authUserId || "").trim()
+            var userName = (user.user_name || user.authUserName || "").trim()
             var account = (user.account || "").trim()
-            var displayName = (user.displayName || "").trim()
-            var authUserId = (user.authUserId || "").trim()
-            if (!account || !authUserId) {
+            var displayName = (user.displayName || account).trim()
+            if (!userId || !userName || !account) {
                 root.hasError = true
                 root.errorMessage = "查询结果缺少必填字段，请联系管理员"
                 return
             }
 
             root.currentUserInfo = {
+                user_id: userId,
+                user_name: userName,
                 account: account,
-                authUserId: authUserId,
+                authUserId: userId,
                 displayName: displayName,
-                authUserName: account
+                authUserName: userName
             }
             root.addClicked(root.pendingAccount)
             root.pendingAccount = ""

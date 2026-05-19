@@ -725,9 +725,11 @@ Item {
             // Get current domain detail
             // 从 addUserDialog 获取用户详细信息
             var userInfo = addUserDialog.currentUserInfo || {}
+            var userId = (userInfo.user_id || userInfo.authUserId || "").trim()
+            var userName = (userInfo.user_name || userInfo.authUserName || "").trim()
             var newAccount = (userInfo.account || "").trim()
-            var displayName = (userInfo.displayName || "").trim()
-            if (!newAccount || !(userInfo.authUserId || "").trim()) {
+            var displayName = (userInfo.displayName || newAccount).trim()
+            if (!newAccount || !userId || !userName) {
                 root.visibleUserOperationState_busy = false
                 return
             }
@@ -748,8 +750,8 @@ Item {
                 var newUser = {
                     account: newAccount,
                     displayName: displayName,
-                    authUserId: userInfo.authUserId || "",
-                    authUserName: newAccount
+                    authUserId: userId,
+                    authUserName: userName
                 }
                 
                 // Create new array with all users (existing + new)
@@ -767,7 +769,12 @@ Item {
 
                 // 保存完整用户信息，供成功回调写入本地列表
                 root.pendingAddUserFullInfo = newUser
-                DsccBridge.addUserToDomain(domainCode, userInfo.authUserId || "")
+                var userJson = JSON.stringify({
+                    user_id: userId,
+                    user_name: userName,
+                    account: newAccount
+                })
+                DsccBridge.addUserToDomain(domainCode, userJson)
             } else {
                 root.visibleUserOperationState_busy = false
             }
@@ -1928,7 +1935,7 @@ Item {
                                         
                                         CenteredTooltipText {
                                             anchors.fill: parent
-                                            value: modelData.account || ""
+                                            value: modelData.authUserName || modelData.account || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 6
@@ -1944,7 +1951,7 @@ Item {
 
                                         CenteredTooltipText {
                                             anchors.fill: parent
-                                            value: modelData.displayName || modelData.authUserName || modelData.account || ""
+                                            value: modelData.displayName || modelData.account || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
                                             leftMargin: 6

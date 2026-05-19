@@ -997,9 +997,11 @@ Item {
 
             // 从 addUserDialog 获取用户详细信息
             var userInfo = addUserDialog.currentUserInfo || {}
+            var userId = (userInfo.user_id || userInfo.authUserId || "").trim()
+            var userName = (userInfo.user_name || userInfo.authUserName || "").trim()
             var newAccount = (userInfo.account || "").trim()
-            var displayName = (userInfo.displayName || "").trim()
-            if (!newAccount || !(userInfo.authUserId || "").trim()) {
+            var displayName = (userInfo.displayName || newAccount).trim()
+            if (!newAccount || !userId || !userName) {
                 return
             }
 
@@ -1014,8 +1016,8 @@ Item {
             var newUser = {
                 account: newAccount,
                 displayName: displayName,
-                authUserId: userInfo.authUserId || "",
-                authUserName: displayName || newAccount
+                authUserId: userId,
+                authUserName: userName
             }
             
             // Add user to visibleUsers list
