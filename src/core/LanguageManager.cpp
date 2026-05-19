@@ -40,6 +40,7 @@ void LanguageManager::loadLanguage(const QString &languageCode)
     // 移除旧的翻译器
     if (!m_currentLanguage.isEmpty()) {
         QCoreApplication::removeTranslator(&m_translator);
+        QCoreApplication::removeTranslator(&m_qmlTranslator);
     }
 
     // 英文使用内置英文模板，不需要加载翻译文件
@@ -51,6 +52,15 @@ void LanguageManager::loadLanguage(const QString &languageCode)
         } else {
             qWarning() << "[LanguageManager] Translation file not found:" << qmPath
                        << "- falling back to default text";
+        }
+
+        // 加载 QML UI 翻译文件（与 dscc 通知翻译互不干扰，上下文不同）
+        const QString qmlQmPath = QStringLiteral(":/translations/qml_%1.qm").arg(languageCode);
+        if (m_qmlTranslator.load(qmlQmPath)) {
+            QCoreApplication::installTranslator(&m_qmlTranslator);
+            qInfo() << "[LanguageManager] Loaded QML translation:" << qmlQmPath;
+        } else {
+            qWarning() << "[LanguageManager] QML translation file not found:" << qmlQmPath;
         }
     }
 

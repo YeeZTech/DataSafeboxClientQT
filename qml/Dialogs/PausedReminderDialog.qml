@@ -10,7 +10,7 @@ Popup {
     property string billUrl: "https://test-dsbox.dianshudata.com/wallet"
     property var dataManager: Theme.DataManager
 
-    readonly property string reminderMessage: "该账号已欠费，请前往数据安全柜官网 &quot;<a href=\"bill\"><u><b>我的账单</b></u></a>&quot; 页面充值，以便继续使用该安全域实例。"
+    readonly property string reminderMessage: qsTr("Account overdue. Please recharge on the <a href=\"bill\"><u><b>My Bills</b></u></a> page to continue.")
     readonly property string instanceNamesText: {
         var names = []
 
@@ -86,7 +86,7 @@ Popup {
             anchors.leftMargin: 24
             anchors.top: parent.top
             anchors.topMargin: 24
-            text: "余额提醒"
+            text: qsTr("Balance Reminder")
             font.pixelSize: 15
             font.weight: Font.DemiBold
             color: "#0f172b"
@@ -175,7 +175,7 @@ Popup {
                 anchors.verticalCenter: parent.verticalCenter
                 font.pixelSize: 14
                 color: "#314158"
-                text: "已欠费实例名称："
+                text: qsTr("Overdue Instance Names:")
             }
 
             Text {
@@ -213,7 +213,7 @@ Popup {
             font.pixelSize: 14
             color: "#314158"
             textFormat: Text.RichText
-            text: "欠费总金额：   <span style='color:#bb4d00;font-weight:600;'>" + root.balanceText + "</span> 元"
+            text: qsTr("Total Overdue:") + "   <span style='color:#bb4d00;font-weight:600;'>" + root.balanceText + "</span> " + qsTr("CNY")
         }
 
         Rectangle {

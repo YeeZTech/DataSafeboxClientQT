@@ -84,7 +84,7 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.leftMargin: 32
                 anchors.verticalCenter: parent.verticalCenter
-                text: "创建安全域实例"
+                text: qsTr("Create Security Domain Instance")
                 font.pixelSize: 24
                 font.weight: Font.Medium
                 color: "#1d293d"
@@ -125,7 +125,7 @@ Rectangle {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.rightMargin: 0
-                            text: "安全域："
+                            text: qsTr("Security Domain:")
                             font.pixelSize: 16
                             color: "#314158"
                         }
@@ -158,7 +158,7 @@ Rectangle {
                             id: instanceNameLabel
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "实例名称："
+                            text: qsTr("Instance Name:")
                             font.pixelSize: 16
                             color: "#314158"
                         }
@@ -207,7 +207,7 @@ Rectangle {
                             Text {
                                 anchors.fill: parent
                                 verticalAlignment: Text.AlignVCenter
-                                text: "请输入实例名称"
+                                text: qsTr("Please enter an instance name")
                                 font.pixelSize: 14
                                 color: "#5a7c9b"
                                 visible: !instanceNameInput.text && !instanceNameInput.activeFocus
@@ -243,7 +243,7 @@ Rectangle {
                             id: instanceDurationLabel
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "实例时长："
+                            text: qsTr("Instance Duration:")
                             font.pixelSize: 16
                             color: "#314158"
                         }
@@ -301,7 +301,7 @@ Rectangle {
                                 Text {
                                     anchors.fill: parent
                                     verticalAlignment: Text.AlignVCenter
-                                    text: "请输入实例时长"
+                                    text: qsTr("Please enter the instance duration")
                                     font.pixelSize: 14
                                     color: "#5a7c9b"
                                     visible: !instanceDurationInput.text && !instanceDurationInput.activeFocus
@@ -328,7 +328,7 @@ Rectangle {
                                 anchors.right: parent.right
                                 anchors.rightMargin: 16
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "月"
+                                text: qsTr("months")
                                 font.pixelSize: 16
                                 color: "#62748e"
                             }
@@ -352,7 +352,7 @@ Rectangle {
                             anchors.right: parent.right
                             anchors.rightMargin: 0
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "实例磁盘分区："
+                            text: qsTr("Instance Disk Partition:")
                             font.pixelSize: 16
                             color: "#314158"
                         }
@@ -397,7 +397,7 @@ Rectangle {
                                     anchors.verticalCenter: parent.verticalCenter
                                     anchors.right: parent.right
                                     anchors.rightMargin: 96
-                                    text: root.selectedDiskDisplay || "请选择磁盘分区"
+                                    text: root.selectedDiskDisplay || qsTr("Please select a disk partition")
                                     font.pixelSize: 14
                                     color: root.selectedDiskDisplay ? "#0f172b" : "#5a7c9b"
                                     elide: Text.ElideRight
@@ -431,7 +431,7 @@ Rectangle {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "选择磁盘"
+                                text: qsTr("Select Disk")
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: "white"
@@ -569,7 +569,7 @@ Rectangle {
                             SelectableText {
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "应用白名单："
+                                text: qsTr("App Whitelist:")
                                 font.pixelSize: 16
                                 color: "#314158"
                             }
@@ -599,7 +599,7 @@ Rectangle {
                                 Text {
                                     id: addProcessText
                                     anchors.centerIn: parent
-                                    text: "添加"
+                                    text: qsTr("Add")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
                                     color: "white"
@@ -782,7 +782,7 @@ Rectangle {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "提交申请"
+                        text: qsTr("Submit Application")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: root.isValid ? Theme.Colors.primaryText : Theme.Colors.textSecondary
@@ -811,7 +811,7 @@ Rectangle {
 
     FileDialog {
         id: processFileDialog
-        title: "选择要添加的程序"
+        title: qsTr("Select a program to add")
         fileMode: FileDialog.OpenFile
         onAccepted: {
             var url = processFileDialog.file.toString()

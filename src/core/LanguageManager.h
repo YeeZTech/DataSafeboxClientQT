@@ -42,7 +42,8 @@ private:
     void loadLanguage(const QString &languageCode);
     void installNotificationTranslator();
 
-    QTranslator m_translator;
+    QTranslator m_translator;         // dscc 通知消息翻译
+    QTranslator m_qmlTranslator;      // QML UI 翻译
     QString     m_currentLanguage;
 };
 

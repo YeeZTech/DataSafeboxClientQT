@@ -20,11 +20,11 @@ Item {
         }
 
         if (name.length < 2 || name.length > 32) {
-            return "名称需在2~32个字符之间"
+            return qsTr("Name must be between 2 and 32 characters")
         }
 
         if (!/^[A-Za-z0-9_\-\u4E00-\u9FFF]+$/.test(name)) {
-            return "名称包含非法字符，仅支持中文、英文、数字、_ 和 -"
+            return qsTr("Name contains illegal characters, only Chinese, English, numbers, _ and - are supported")
         }
 
         return ""
@@ -77,7 +77,7 @@ Item {
                 anchors.left: parent.left
                 anchors.leftMargin: 32
                 anchors.verticalCenter: parent.verticalCenter
-                text: "创建安全域"
+                text: qsTr("Create Security Domain")
                 font.family: root.fontFamily
                 font.pixelSize: root.fontSizeTitle
                 font.weight: Font.Medium
@@ -164,7 +164,7 @@ Item {
 
                                 SelectableText {
                                     id: nameLabel
-                                    text: "名称:"
+                                    text: qsTr("Name:")
                                     font.family: root.fontFamily
                                     font.pixelSize: root.fontSizeLabel
                                     color: "#314158"
@@ -221,7 +221,7 @@ Item {
                                         anchors.topMargin: 0
                                         anchors.bottomMargin: 0
                                         verticalAlignment: Text.AlignVCenter
-                                        text: "请输入名称"
+                                        text: qsTr("Please enter name")
                                         font.family: root.fontFamily
                                         font.pixelSize: root.fontSizeBody
                                         color: "#5a7c9b"
@@ -290,7 +290,7 @@ Item {
 
                                 SelectableText {
                                     id: payerLabelText
-                                    text: "费用承担方:"
+                                    text: qsTr("Cost Bearer:")
                                     font.family: root.fontFamily
                                     font.pixelSize: root.fontSizeLabel
                                     color: "#314158"
@@ -341,7 +341,7 @@ Item {
                                             id: tooltipText
                                             anchors.fill: parent
                                             anchors.margins: 8
-                                            text: "创建实例将产生费用（1元/GB/月），可指定由创建者承担，或由实例使用者自行承担。"
+                                            text: qsTr("Instances incur fees (1 CNY/GB/Month), borne by the creator or the instance user.")
                                             font.family: root.fontFamily
                                             font.pixelSize: 10
                                             lineHeight: 15
@@ -423,7 +423,7 @@ Item {
                                 }
                                 
                                 Text {
-                                    text: "创建者"
+                                    text: qsTr("Creator")
                                     font.family: root.fontFamily
                                     font.pixelSize: root.fontSizeBody
                                     font.weight: Font.Normal
@@ -480,7 +480,7 @@ Item {
                                 }
                                 
                                 Text {
-                                    text: "使用者"
+                                    text: qsTr("User")
                                     font.family: root.fontFamily
                                     font.pixelSize: root.fontSizeBody
                                     font.weight: Font.Normal
@@ -521,7 +521,7 @@ Item {
                                     id: usersLabel
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: "可见用户:"
+                                    text: qsTr("Visible Users:")
                                     font.family: root.fontFamily
                                     font.pixelSize: root.fontSizeLabel
                                     color: "#314158"
@@ -545,7 +545,7 @@ Item {
                                     
                                     SelectableText {
                                         anchors.centerIn: parent
-                                        text: "添加可见用户"
+                                        text: qsTr("Add Visible User")
                                         font.family: root.fontFamily
                                         font.pixelSize: root.fontSizeBody
                                         font.weight: Font.Medium
@@ -617,7 +617,7 @@ Item {
                                                         anchors.left: parent.left
                                                         anchors.leftMargin: 8
                                                         anchors.verticalCenter: parent.verticalCenter
-                                                        text: "账号"
+                                                        text: qsTr("Account")
                                                         font.family: root.fontFamily
                                                         font.pixelSize: root.fontSizeBody
                                                         font.weight: Font.Medium
@@ -634,7 +634,7 @@ Item {
                                                         anchors.left: parent.left
                                                         anchors.leftMargin: 48
                                                         anchors.verticalCenter: parent.verticalCenter
-                                                        text: "名称"
+                                                        text: qsTr("Name")
                                                         font.family: root.fontFamily
                                                         font.pixelSize: root.fontSizeBody
                                                         font.weight: Font.Medium
@@ -649,7 +649,7 @@ Item {
                                                         anchors.right: parent.right
                                                         anchors.rightMargin: 8
                                                         anchors.verticalCenter: parent.verticalCenter
-                                                        text: "操作"
+                                                        text: qsTr("Actions")
                                                         font.family: root.fontFamily
                                                         font.pixelSize: root.fontSizeBody
                                                         font.weight: Font.Medium
@@ -726,7 +726,7 @@ Item {
                                                             SelectableText {
                                                                 id: removeText
                                                                 anchors.centerIn: parent
-                                                                text: "移除"
+                                                                text: qsTr("Remove")
                                                                 font.family: root.fontFamily
                                                                 font.pixelSize: root.fontSizeBody
                                                                 color: removeMouseArea.containsMouse ? Qt.darker(Theme.Colors.requiredMarker, 1.2) : Theme.Colors.requiredMarker
@@ -776,7 +776,7 @@ Item {
                                 id: descLabel
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "描述:"
+                                text: qsTr("Description:")
                                 font.family: root.fontFamily
                                 font.pixelSize: root.fontSizeLabel
                                 color: "#314158"
@@ -849,7 +849,7 @@ Item {
                                             anchors.top: parent.top
                                             anchors.topMargin: 0  // Align with TextArea text position
                                             verticalAlignment: Text.AlignTop
-                                            text: "请输入描述"
+                                            text: qsTr("Please enter a description")
                                             font.family: root.fontFamily
                                             font.pixelSize: root.fontSizeBody
                                             color: "#5a7c9b"
@@ -904,8 +904,8 @@ Item {
             Rectangle {
                 id: submitButton
                 anchors.centerIn: parent
-                width: 134
                 height: 44
+                implicitWidth: submitButtonText.implicitWidth + 40
                 radius: 6
                 antialiasing: true
                 smooth: true
@@ -939,8 +939,9 @@ Item {
                 }
                 
                 SelectableText {
+                    id: submitButtonText
                     anchors.centerIn: parent
-                    text: root.isSubmitting ? "创建中..." : "创建安全域"
+                    text: root.isSubmitting ? qsTr("Creating...") : qsTr("Create Security Domain")
                     font.family: root.fontFamily
                     font.pixelSize: root.fontSizeBody
                     font.weight: Font.Medium

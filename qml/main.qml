@@ -20,7 +20,7 @@ ApplicationWindow {
     minimumHeight: 600
     maximumHeight: 10000
     visible: true
-    title: "数据安全柜"
+    title: qsTr("Data Safe Box")
     color: "#f8fafc"  // slate-50 background
     
     // Authentication state
@@ -43,9 +43,26 @@ ApplicationWindow {
     property bool isAccountPaused: false
     readonly property string arrearsBillUrl: AppConfig ? AppConfig.apiBaseUrl().replace("api", "wallet") : "https://test-dsbox.dianshudata.com/wallet"
     readonly property string arrearsAlertMessage: {
-        if (window.isAccountPaused) { return "您的账号已暂停服务，相关功能不可用。为确保业务连续性，请尽快在 \"我的账单\" 中进行充值。" }
-        if (window.isAccountArrears) { return "您的账号已欠费，相关服务即将暂停。为确保业务连续性，请尽快在 \"我的账单\" 中进行充值。" }
+        if (window.isAccountPaused) { return qsTr("Your account has been suspended and the related functions are unavailable. Please recharge in \"My Bills\" as soon as possible to ensure business continuity.") }
+        if (window.isAccountArrears) { return qsTr("Your account is in arrears and related services will be suspended soon. Please recharge in \"My Bills\" as soon as possible to ensure business continuity.") }
         return ""
+    }
+
+    // Status translation map
+    function translateStatus(chineseStatus) {
+        var statusMap = {
+            "待审核": qsTr("Pending Review"),
+            "已授权": qsTr("Approved"),
+            "已拒绝": qsTr("Rejected"),
+            "创建失败": qsTr("Creation Failed"),
+            "运行中": qsTr("Running"),
+            "已结束": qsTr("Ended"),
+            "已关闭": qsTr("Closed"),
+            "停用": qsTr("Disabled"),
+            "已停用": qsTr("Disabled"),
+            "停用中": qsTr("Disabling")
+        }
+        return statusMap[chineseStatus] || chineseStatus
     }
 
     // prefix: 可选场景前缀，如 "安全域创建"；会自动拼成 "安全域创建：<原因>"
@@ -56,7 +73,7 @@ ApplicationWindow {
         if (idx !== -1) {
             msg = msg.substring(idx + 7).replace(/\.$/, "").trim()
         }
-        if (!msg) msg = "操作未完成，请稍后重试"
+        if (!msg) msg = qsTr("Operation incomplete, please try again later")
         if (prefix) msg = prefix + "：" + msg
         errorDialog.errorMessage = msg
         if (errorDialog.opened) {
@@ -301,16 +318,8 @@ ApplicationWindow {
 
         function onDomainCreateFailed(operationId, notification) {
             createSecurityDomainForm.isSubmitting = false
-            var errorMessage = DsccBridge.domainCreateFailureMessage(operationId, "安全域创建失败")
-            errorDialog.errorMessage = errorMessage || "安全域创建失败"
-            if (errorDialog.opened) {
-                errorTimer.restart()
-            } else {
-                errorDialog.open()
-            }
-            Qt.callLater(function() {
-                DsccBridge.loadDomainList()
-            })
+            var errorMessage = notification && notification.Localized ? notification.Localized() : ""
+            window.showError(errorMessage || qsTr("Security domain creation failed"), qsTr("Security Domain Creation"))
         }
 
         function onDomainClosed(operationId, domainCode) {
@@ -369,7 +378,7 @@ ApplicationWindow {
 
             Text {
                 width: parent.width
-                text: "登录失败"
+                text: qsTr("Login Failed")
                 font.pixelSize: 18
                 font.weight: Font.Medium
                 color: "#0f172a"
@@ -394,7 +403,7 @@ ApplicationWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "重新登录"
+                    text: qsTr("Re-login")
                     font.pixelSize: 14
                     color: "#ffffff"
                 }
@@ -466,11 +475,11 @@ ApplicationWindow {
                     
                     Rectangle {
                         id: createButton
-                        width: 183.341
                         height: 36
                         anchors.left: parent.left
                         anchors.leftMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
+                        implicitWidth: createButtonText.implicitWidth + 40
                         radius: 4
                         color: createButtonMouseArea.containsMouse
                             ? (createButtonMouseArea.pressed
@@ -480,8 +489,9 @@ ApplicationWindow {
                         Behavior on color { ColorAnimation { duration: 120 } }
 
                         Text {
+                            id: createButtonText
                             anchors.centerIn: parent
-                            text: "创建安全域"
+                            text: qsTr("Create Security Domain")
                             font.pixelSize: 14
                             font.weight: Font.Normal
                             color: Theme.Colors.primaryText
@@ -631,7 +641,7 @@ ApplicationWindow {
                                     
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "安全域"
+                                        text: qsTr("Security Domain")
                                         font.pixelSize: 14
                                         font.weight: Font.Bold  // Bold font
                                         color: Theme.Colors.primary
@@ -957,7 +967,7 @@ ApplicationWindow {
                                     
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: "安全域实例"
+                                        text: qsTr("Security Domain Instance")
                                         font.pixelSize: 14
                                         font.weight: Font.Bold  // Bold font
                                         color: Theme.Colors.primary
@@ -1428,7 +1438,7 @@ ApplicationWindow {
                                     }
                                     
                                     Text {
-                                        text: "用户信息"
+                                        text: qsTr("User Info")
                                         font.pixelSize: 14
                                         color: "#334155"
                                         anchors.verticalCenter: parent.verticalCenter
@@ -1469,7 +1479,7 @@ ApplicationWindow {
                                     }
 
                                     Text {
-                                        text: "我的账单"
+                                        text: qsTr("My Bills")
                                         font.pixelSize: 14
                                         color: "#334155"
                                         anchors.verticalCenter: parent.verticalCenter
@@ -1513,7 +1523,7 @@ ApplicationWindow {
                                         spacing: 4
 
                                         Text {
-                                            text: "消息"
+                                            text: qsTr("Message")
                                             font.pixelSize: 14
                                             color: "#334155"
                                             anchors.verticalCenter: parent.verticalCenter
@@ -1559,7 +1569,7 @@ ApplicationWindow {
                                     }
                                     
                                     Text {
-                                        text: "设置"
+                                        text: qsTr("Settings")
                                         font.pixelSize: 14
                                         color: "#334155"
                                         anchors.verticalCenter: parent.verticalCenter
@@ -1606,7 +1616,7 @@ ApplicationWindow {
                                     }
 
                                     Text {
-                                        text: "帮助"
+                                        text: qsTr("Help")
                                         font.pixelSize: 14
                                         color: "#334155"
                                         anchors.verticalCenter: parent.verticalCenter
@@ -1648,7 +1658,7 @@ ApplicationWindow {
                                     }
                                     
                                     Text {
-                                        text: UpdateManager.isChecking ? "检查中..." : "检查更新"
+                                        text: UpdateManager.isChecking ? qsTr("Checking...") : qsTr("Check for Updates")
                                         font.pixelSize: 14
                                         color: "#334155"
                                         anchors.verticalCenter: parent.verticalCenter
@@ -1721,7 +1731,7 @@ ApplicationWindow {
                                     }
                                     
                                     Text {
-                                        text: "退出登录"
+                                        text: qsTr("Logout")
                                         font.pixelSize: 14
                                         color: "#334155"
                                         anchors.verticalCenter: parent.verticalCenter
@@ -1765,7 +1775,7 @@ ApplicationWindow {
                 
                 Text {
                     anchors.centerIn: parent
-                    text: "欢迎使用数据安全柜"
+                    text: qsTr("Welcome to Data Safe Box")
                     font.pixelSize: 24
                     color: Theme.Colors.textSecondary
                 }
@@ -1922,7 +1932,7 @@ ApplicationWindow {
                     spacing: 14
 
                     Text {
-                        text: "设置"
+                        text: qsTr("Settings")
                         font.pixelSize: 24
                         font.weight: Font.Bold
                         color: "#303542"
@@ -1933,7 +1943,7 @@ ApplicationWindow {
                         spacing: 10
 
                         Text {
-                            text: "默认缓存路径："
+                            text: qsTr("Default Cache Path:")
                             font.pixelSize: 16
                             color: "#7f8793"
                         }
@@ -1952,7 +1962,7 @@ ApplicationWindow {
                         spacing: 10
 
                         Text {
-                            text: "更改路径"
+                            text: qsTr("Change Path")
                             font.pixelSize: 16
                             color: settingsChangePathMouse.containsMouse ? "#4a59cf" : "#5b67d6"
                             MouseArea {
@@ -1967,7 +1977,7 @@ ApplicationWindow {
                         Text { text: "|"; font.pixelSize: 16; color: "#c6ccd4" }
 
                         Text {
-                            text: "打开路径"
+                            text: qsTr("Open Path")
                             font.pixelSize: 16
                             color: settingsOpenPathMouse.containsMouse ? "#4a59cf" : "#5b67d6"
                             MouseArea {
@@ -1989,7 +1999,7 @@ ApplicationWindow {
                         Text { text: "|"; font.pixelSize: 16; color: "#c6ccd4" }
 
                         Text {
-                            text: "清除缓存"
+                            text: qsTr("Clear Cache")
                             font.pixelSize: 16
                             color: settingsClearCacheMouse.containsMouse ? "#4a59cf" : "#5b67d6"
                             MouseArea {
@@ -2000,14 +2010,14 @@ ApplicationWindow {
                                 onClicked: {
                                     if (PathManager && PathManager.clearCache) {
                                         var cleaned = PathManager.clearCache()
-                                        window.settingsStatusText = "已清理缓存：" + window.formatByteSize(cleaned)
+                                        window.settingsStatusText = qsTr("Cache cleared:") + window.formatByteSize(cleaned)
                                     }
                                 }
                             }
                         }
 
                         Text {
-                            text: "（约" + window.formatByteSize(PathManager && PathManager.cacheSizeBytes ? PathManager.cacheSizeBytes : 0) + "）"
+                            text: "(" + qsTr("approx.") + " " + window.formatByteSize(PathManager && PathManager.cacheSizeBytes ? PathManager.cacheSizeBytes : 0) + ")"
                             font.pixelSize: 16
                             color: "#8f96a1"
                         }
@@ -2059,7 +2069,7 @@ ApplicationWindow {
                 }
                 
                 onImportFailed: function(filePath, reason) {
-                    window.showError(reason || "文件导入失败", "文件导入")
+                    window.showError(reason || qsTr("File import failed"), qsTr("File Import"))
                 }
             }
         }
@@ -2085,7 +2095,7 @@ ApplicationWindow {
 
         // 悬停提示
         ToolTip.visible: csiBtnArea.containsMouse
-        ToolTip.text: "帮助"
+        ToolTip.text: qsTr("Help")
         ToolTip.delay: 500
 
         Image {
@@ -2121,7 +2131,7 @@ ApplicationWindow {
 
     Platform.FolderDialog {
         id: tempFolderDialog
-        title: "选择缓存目录"
+        title: qsTr("Select Cache Directory")
         onAccepted: {
             var selectedPath = ""
             if (tempFolderDialog.folder) {
@@ -2257,7 +2267,7 @@ ApplicationWindow {
 
             Label {
                 id: noUpdateLabel
-                text: "当前已是最新版本"
+                text: qsTr("Already up to date")
                 font.pixelSize: 14
                 font.weight: Font.Medium
                 color: "#1e293b"
@@ -2318,7 +2328,7 @@ ApplicationWindow {
 
             Label {
                 id: msgLabel
-                text: "无法连接到服务器"
+                text: qsTr("Cannot connect to server")
                 font.pixelSize: 14
                 font.weight: Font.Medium
                 color: "#ef4444"
@@ -2374,14 +2384,14 @@ ApplicationWindow {
             spacing: 10
             
             Text {
-                text: "软件更新"
+                text: qsTr("Software Update")
                 font.pixelSize: 18
                 font.weight: Font.Medium
                 color: "#0f172b"
             }
             
             Text {
-                text: "新版本已下载完成，是否立即安装？"
+                text: qsTr("New version downloaded. Install now?")
                 font.pixelSize: 14
                 color: "#334155"
                 wrapMode: Text.WordWrap
@@ -2390,7 +2400,7 @@ ApplicationWindow {
             }
 
             Text {
-                text: "版本 v" + UpdateManager.latestVersion
+                text: qsTr("Version v") + UpdateManager.latestVersion
                 font.pixelSize: 12
                 color: "#64748b"
                 visible: UpdateManager.latestVersion !== ""
@@ -2415,7 +2425,7 @@ ApplicationWindow {
                     
                     Text {
                         anchors.centerIn: parent
-                        text: "以后再说"
+                        text: qsTr("Later")
                         font.pixelSize: 14
                         color: "#62748e"
                     }
@@ -2441,7 +2451,7 @@ ApplicationWindow {
                     
                     Text {
                         anchors.centerIn: parent
-                        text: "立即安装"
+                        text: qsTr("Install Now")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "white"

@@ -53,7 +53,7 @@ Popup {
                     SelectableText {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "运行时长设置"
+                        text: qsTr("Duration Settings")
                         font.pixelSize: 20
                         font.weight: Font.DemiBold
                         color: "#0f172b"
@@ -115,7 +115,7 @@ Popup {
                             SelectableText {
                                 anchors.left: parent.left
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "运行时长"
+                                text: qsTr("Duration")
                                 font.pixelSize: 15
                                 font.weight: Font.Medium
                                 color: "#314158"
@@ -140,7 +140,7 @@ Popup {
                                 id: unitLabel
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "个月"
+                                text: qsTr(" months")
                                 font.pixelSize: 16
                                 color: "#45556c"
                             }
@@ -178,7 +178,7 @@ Popup {
                                     selectedTextColor: "#0f172b"
                                     inputMethodHints: Qt.ImhDigitsOnly
                                     text: root.durationText
-                                    placeholderText: "请输入安全域实例运行时长"
+                                    placeholderText: qsTr("Enter instance run duration")
 
                                     // background customization removed to avoid native style warnings
 
@@ -196,7 +196,7 @@ Popup {
                     SelectableText {
                         width: parent.width
                         wrapMode: Text.Wrap
-                        text: "运行时长不可修改且不可续期，到期后安全域实例将被删除（该安全域对应的原文件无影响）"
+                        text: qsTr("Duration cannot be modified. The instance will be deleted upon expiration (original files unaffected).")
                         font.pixelSize: 14
                         color: "#62748e"
                     }
@@ -236,7 +236,7 @@ Popup {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "取消"
+                                text: qsTr("Cancel")
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: "#314158"
@@ -265,7 +265,7 @@ Popup {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "确定"
+                                text: qsTr("Confirm")
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: Theme.Colors.primaryText

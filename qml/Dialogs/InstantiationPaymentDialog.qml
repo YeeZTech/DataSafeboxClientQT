@@ -48,7 +48,7 @@ Popup {
                 SelectableText {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "安全域实例付款确认"
+                    text: qsTr("Security Domain Instance Payment Confirmation")
                     font.pixelSize: 18    // 与 Figma 一致
                     font.weight: Font.DemiBold
                     color: "#0f172b"
@@ -122,7 +122,7 @@ Popup {
                         id: warningText
                         width: 320
                         wrapMode: TextEdit.Wrap
-                        text: "此安全域的费用支付方为使用者，实例化此安全域需支付以下费用，具体扣费："
+                        text: qsTr("Instantiating this security domain requires payment of the following fees:")
                         font.pixelSize: 14
                         color: "#314158"
                     }
@@ -145,7 +145,7 @@ Popup {
                     SelectableText {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "存储空间："
+                        text: qsTr("Storage Space:")
                         font.pixelSize: 14
                         color: "#45556c"
                     }
@@ -167,7 +167,7 @@ Popup {
                     SelectableText {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "实例时长："
+                        text: qsTr("Instance Duration:")
                         font.pixelSize: 14
                         color: "#45556c"
                     }
@@ -189,7 +189,7 @@ Popup {
                     SelectableText {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "计费规则："
+                        text: qsTr("Billing Rule:")
                         font.pixelSize: 14
                         color: "#45556c"
                     }
@@ -218,7 +218,7 @@ Popup {
                     SelectableText {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "预计费用："
+                        text: qsTr("Estimated Fee:")
                         font.pixelSize: 14
                         color: "#45556c"
                     }
@@ -227,7 +227,7 @@ Popup {
                         anchors.right: parent.right
                         anchors.leftMargin: 8
                         anchors.verticalCenter: parent.verticalCenter
-                        text: root.estimatedFee + "元"
+                        text: root.estimatedFee + qsTr(" CNY")
                         font.pixelSize: 14
                         color: "#0f172b"
                     }
@@ -258,7 +258,7 @@ Popup {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "确认支付"
+                        text: qsTr("Confirm Payment")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "white"
@@ -297,7 +297,7 @@ Popup {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "取消"
+                        text: qsTr("Cancel")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "#314158"

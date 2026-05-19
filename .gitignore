@@ -46,6 +46,9 @@ Makefile*
 *.pro.user.*
 .qmake.stash
 
+# Qt translation binary files
+*.qm
+
 # Temporary files
 *~
 *.tmp
@@ -102,3 +105,6 @@ SafeLogo.icns
 icons/SafeLogo.icns
 icons/SafeLogo_256.png
 icons/SafeLogo.iconset/
+
+mocinclude.opt
+safebox_resource.rc

@@ -79,5 +79,6 @@
     </qresource>
     <qresource prefix="/translations">
         <file alias="notification_zh_CN.qm">../translations/notification_zh_CN.qm</file>
+        <file alias="qml_zh_CN.qm">../translations/qml_zh_CN.qm</file>
     </qresource>
 </RCC>

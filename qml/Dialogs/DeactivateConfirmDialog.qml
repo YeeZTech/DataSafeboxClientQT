@@ -13,12 +13,12 @@ Popup {
     y: (parent ? (parent.height - height) / 2 : 0)
     
     property string domainName: ""
-    property string titleText: "停用安全域确认"
-    property string questionPrefix: "确定要停用安全域"
-    property string questionSuffix: "吗？"
-    property string descriptionText: "停用后，您将无法编辑该安全域的任何信息，所有内容将变为只读状态。此操作不会影响现有的安全域实例。"
+    property string titleText: qsTr("Confirm Deactivate Security Domain")
+    property string questionPrefix: qsTr("Are you sure you want to deactivate security domain")
+    property string questionSuffix: qsTr("?")
+    property string descriptionText: qsTr("After deactivation this domain becomes read-only. Existing instances are not affected.")
     property bool showDescription: true
-    property string confirmButtonText: "确认停用"
+    property string confirmButtonText: qsTr("Confirm Deactivate")
     signal confirmClicked()
     signal cancelClicked()
     
@@ -181,7 +181,7 @@ Popup {
                     
                     SelectableText {
                         anchors.centerIn: parent
-                        text: "取消"
+                        text: qsTr("Cancel")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "#314158"

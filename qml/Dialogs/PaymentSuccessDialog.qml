@@ -40,7 +40,7 @@ Popup {
                 SelectableText {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "安全域实例付款确认"
+                    text: qsTr("Security Domain Instance Payment Confirmation")
                     font.pixelSize: 18
                     font.weight: Font.DemiBold
                     color: "#0F172B"
@@ -113,7 +113,7 @@ Popup {
                 SelectableText {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "支付成功"
+                    text: qsTr("Payment Successful")
                     font.pixelSize: 16
                     font.weight: Font.Medium
                     color: "#0F172B"
@@ -138,7 +138,7 @@ Popup {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "确定"
+                    text: qsTr("OK")
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: "white"

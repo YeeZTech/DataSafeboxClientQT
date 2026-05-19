@@ -154,7 +154,7 @@ Item {
             anchors.left: parent.left
             anchors.leftMargin: 32
             anchors.verticalCenter: parent.verticalCenter
-            text: "消息"
+            text: qsTr("Messages")
             font.pixelSize: 24
             font.weight: Font.Medium
             color: "#030213"
@@ -190,7 +190,7 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "全部"
+                    text: qsTr("All")
                     font.pixelSize: 14
                     font.weight: (root.currentFilter === "all") ? Font.DemiBold : Font.Normal
                     color: (root.currentFilter === "all" || parent.hovered) ? Theme.Colors.primary : Theme.Colors.textSecondary
@@ -229,7 +229,7 @@ Item {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "未读"
+                    text: qsTr("Unread")
                     font.pixelSize: 14
                     font.weight: (root.currentFilter === "unread") ? Font.DemiBold : Font.Normal
                     color: (root.currentFilter === "unread" || unreadTab.hovered) ? Theme.Colors.primary : Theme.Colors.textSecondary
@@ -249,6 +249,53 @@ Item {
                 }
             }
         }
+<<<<<<< HEAD
+=======
+
+        // "一键已读" button
+        Rectangle {
+            id: markAllButton
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            height: 37
+            radius: 10
+            color: hovered ? Theme.Colors.secondary : "transparent"
+            border.width: 1
+            border.color: Theme.Colors.primary
+            property bool hovered: false
+            implicitWidth: markAllText.implicitWidth + 40  // Auto-size to content with padding
+
+            Row {
+                id: markAllContent
+                anchors.centerIn: parent
+                spacing: 8
+
+                Image {
+                    width: 16
+                    height: 16
+                    source: Qt.resolvedUrl("icons/icon-check-double.svg")
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Text {
+                    id: markAllText
+                    text: qsTr("Mark All Read")
+                    font.pixelSize: 14
+                    color: Theme.Colors.primary
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onEntered: markAllButton.hovered = true
+                onExited: markAllButton.hovered = false
+                onClicked: root.markAllAsRead()
+            }
+        }
+>>>>>>> feature/multilang
     }
 
     // Message list

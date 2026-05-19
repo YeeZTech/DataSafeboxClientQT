@@ -67,7 +67,7 @@ TextEdit {
         }
         
         MenuItem {
-            text: "复制"
+            text: qsTr("Copy")
             enabled: root.selectedText.length > 0
             onTriggered: {
                 root.copy()
@@ -75,7 +75,7 @@ TextEdit {
         }
         
         MenuItem {
-            text: "全选"
+            text: qsTr("Select All")
             onTriggered: {
                 root.selectAll()
             }
