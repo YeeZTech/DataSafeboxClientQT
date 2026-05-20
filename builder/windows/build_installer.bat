@@ -42,7 +42,7 @@ set "INSTALLER_DIR=%PROJECT_ROOT%\installer"
 set "CONFIG_XML=%INSTALLER_DIR%\config\config.xml"
 set "PACKAGES_DIR=%INSTALLER_DIR%\packages"
 set "DATA_DIR=%PACKAGES_DIR%\com.datasafebox.client\data"
-set "PACKAGE_XML=%PACKAGES_DIR%\com.datasafebox.client\meta\package.xml"
+set "PACKAGE_XML=%INSTALLER_DIR%\packages\com.datasafebox.client\meta\package.xml"
 set "ICONS_SRC_DIR=%PROJECT_ROOT%\icons"
 set "ICON_SRC=%ICONS_SRC_DIR%\SafeLogo.svg"
 set "ICON_SRC_ICO=%ICONS_SRC_DIR%\SafeLogo_256.ico"
@@ -56,6 +56,8 @@ set "WINDEPLOYQT=%QT_BIN%\windeployqt.exe"
 set "QMAKE=%QT_BIN%\qmake.exe"
 
 if not defined SENTRY_ROOT_DIR if defined VCPKG_DIR set "SENTRY_ROOT_DIR=%VCPKG_DIR%\installed\%VCPKG_TRIPLET%"
+if not defined SENTRY_ROOT_DIR set "SENTRY_ROOT_DIR=D:\trammel\vcpkg\installed\%VCPKG_TRIPLET%"
+if not defined DSCC_DIR set "DSCC_DIR=C:\Program Files\DSCC"
 
 echo.
 echo ==================================================
@@ -90,8 +92,13 @@ goto :start_build
 :preflight_failed
 echo ==================================================
 echo   Environment check FAILED.
-echo   Please install the missing tools listed above,
-echo   then run this script again.
+echo   Missing components are listed above.
+echo.
+echo   Required environment variables (if not using defaults):
+echo     QT_BIN=C:\Qt\6.7.3\msvc2022_64\bin
+echo     IFW_BIN=C:\Qt\Tools\QtInstallerFramework\4.10\bin
+echo     SENTRY_ROOT_DIR=D:\vcpkg\installed\x64-windows
+echo     DSCC_DIR=D:\DSCC
 echo ==================================================
 echo.
 goto :fail_no_msg
@@ -443,15 +450,30 @@ if "%DSCC_OK%"=="1" (
 :check_dscc_vcredist
 if exist "%DATA_DIR%\..\vc_redist.x64.exe" (
     echo   [OK]      vc_redist.x64.exe found in installer data
-) else (
-    set "PREFLIGHT_FAIL=1"
-    echo   [MISSING] vc_redist.x64.exe in installer data dir
-    echo             Expected : %PACKAGES_DIR%\com.datasafebox.client\data\vc_redist.x64.exe
-    echo             Fix: Download VC++ 2015-2022 x64 Runtime and place it there:
-    echo               https://aka.ms/vs/17/release/vc_redist.x64.exe
-    echo             Without it, target machines lacking VC++ Runtime will fail to start.
-    echo.
+    exit /b 0
 )
+set "VC_REDIST_SRC=D:\visual stuido\VC\Redist\MSVC\14.42.34433\vc_redist.x64.exe"
+if exist "%VC_REDIST_SRC%" (
+    echo   [INFO]    Copying vc_redist.x64.exe from Visual Studio installation...
+    copy /Y "%VC_REDIST_SRC%" "%DATA_DIR%\..\" >nul
+    echo   [OK]      vc_redist.x64.exe copied
+    exit /b 0
+)
+set "VC_REDIST_SRC=D:\visual stuido\VC\Redist\MSVC\v143\vc_redist.x64.exe"
+if exist "%VC_REDIST_SRC%" (
+    echo   [INFO]    Copying vc_redist.x64.exe from Visual Studio installation...
+    copy /Y "%VC_REDIST_SRC%" "%DATA_DIR%\..\" >nul
+    echo   [OK]      vc_redist.x64.exe copied
+    exit /b 0
+)
+set "PREFLIGHT_FAIL=1"
+echo   [MISSING] vc_redist.x64.exe in installer data dir
+echo             Expected : %PACKAGES_DIR%\com.datasafebox.client\data\vc_redist.x64.exe
+echo             Fix: Download VC++ 2015-2022 x64 Runtime and place it there:
+echo               https://aka.ms/vs/17/release/vc_redist.x64.exe
+echo             Or ensure Visual Studio is installed at: D:\visual stuido
+echo             Without it, target machines lacking VC++ Runtime will fail to start.
+echo.
 exit /b 0
 
 :check_package_xml
@@ -463,5 +485,34 @@ if exist "%PACKAGE_XML%" (
     echo             This file is required for version and installer metadata.
     echo             Ensure you have the full project source checked out.
     echo.
+)
+exit /b 0
+
+:check_sentry_optional
+if not defined SENTRY_ROOT_DIR (
+    echo   [WARN]    SENTRY_ROOT_DIR not set - crash reporting disabled
+    echo             To enable: set SENTRY_ROOT_DIR=D:\vcpkg\installed\x64-windows
+    exit /b 0
+)
+set "SENTRY_H=%SENTRY_ROOT_DIR%\include\sentry.h"
+if exist "%SENTRY_H%" (
+    echo   [OK]      sentry-native found
+) else (
+    echo   [WARN]    sentry-native not found - crash reporting disabled
+)
+exit /b 0
+
+:check_dscc_optional
+if not defined DSCC_DIR (
+    echo   [WARN]    DSCC_DIR not set - some features may be disabled
+    echo             To enable: set DSCC_DIR=D:\DSCC
+    exit /b 0
+)
+set "DSCC_OK=0"
+if exist "%DSCC_DIR%\include\dscc\core\common\active_notify.h" if exist "%DSCC_DIR%\bin\dscc_core.dll" set "DSCC_OK=1"
+if "%DSCC_OK%"=="1" (
+    echo   [OK]      DSCC found at %DSCC_DIR%
+) else (
+    echo   [WARN]    DSCC not found - some features may be disabled
 )
 exit /b 0
