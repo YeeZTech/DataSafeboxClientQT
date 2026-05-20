@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package>
-    <DisplayName>数据安全柜</DisplayName>
+    <DisplayName>DataSafebox</DisplayName>
     <Description>数据安全柜桌面客户端。</Description>
     <Version>1.0.1</Version>
     <ReleaseDate>2026-01-20</ReleaseDate>

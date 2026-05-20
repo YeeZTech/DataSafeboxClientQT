@@ -23,7 +23,7 @@ function Controller() {
 function renameIfOverwrite(targetDir) {
     if (!targetDir) return "";
 
-    var markerExe = targetDir + "/safebox.exe";
+    var markerExe = targetDir + "/DataSafebox.exe";
     var hasMarker = installer.fileExists(markerExe);
     log("renameIfOverwrite targetDir=" + targetDir + " markerExists=" + hasMarker);
     if (!hasMarker) return "";

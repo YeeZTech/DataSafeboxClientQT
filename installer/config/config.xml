@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Installer>
-    <Name>数据安全柜</Name>
+    <Name>DataSafebox</Name>
     <Version>1.0.1</Version>
-    <Title>数据安全柜</Title>
+    <Title>DataSafebox</Title>
     <Publisher>北京熠智科技有限公司</Publisher>
-    <StartMenuDir>DatasafeBox Client</StartMenuDir>
-    <TargetDir>@ApplicationsDir@/DatasafeBoxClient</TargetDir>
+    <StartMenuDir>DataSafebox</StartMenuDir>
+    <TargetDir>@ApplicationsDir@/DataSafebox</TargetDir>
     <WizardStyle>Classic</WizardStyle>
     <ControlScript>controlscript.qs</ControlScript>
     <InstallerApplicationIcon>../../icons/SafeLogo_256</InstallerApplicationIcon>

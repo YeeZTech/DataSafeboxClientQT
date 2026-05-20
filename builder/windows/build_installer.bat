@@ -37,7 +37,7 @@ if not defined IFW_BIN set "IFW_BIN=C:\Qt\Tools\QtInstallerFramework\%IFW_VERSIO
 set "SCRIPT_DIR=%~dp0"
 for %%i in ("%SCRIPT_DIR%..\..") do set "PROJECT_ROOT=%%~fi"
 set "BUILD_DIR=%PROJECT_ROOT%\release"
-set "EXECUTABLE=%BUILD_DIR%\safebox.exe"
+set "EXECUTABLE=%BUILD_DIR%\DataSafebox.exe"
 set "INSTALLER_DIR=%PROJECT_ROOT%\installer"
 set "CONFIG_XML=%INSTALLER_DIR%\config\config.xml"
 set "PACKAGES_DIR=%INSTALLER_DIR%\packages"
@@ -111,7 +111,7 @@ rem ==================================================================
 rem --- read version ---
 for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "(Select-Xml -Path '%PACKAGE_XML%' -XPath '/Package/Version').Node.InnerText"`) do set "PACKAGE_VERSION=%%i"
 if not defined PACKAGE_VERSION (echo [Error] Failed to read version from package.xml & goto :fail)
-set "OUTPUT_INSTALLER=%SCRIPT_DIR%safebox_%PACKAGE_VERSION%.exe"
+set "OUTPUT_INSTALLER=%SCRIPT_DIR%DataSafebox_%PACKAGE_VERSION%.exe"
 echo [INFO] Version: %PACKAGE_VERSION%
 echo [INFO] Output : %OUTPUT_INSTALLER%
 echo.
@@ -217,8 +217,6 @@ if exist "%DATA_DIR%\qml\QtQuick\NativeStyle"        rd /s /q "%DATA_DIR%\qml\Qt
 rem Serial port -- no serial port code anywhere in the project.
 if exist "%DATA_DIR%\Qt6SerialPort.dll" del /Q "%DATA_DIR%\Qt6SerialPort.dll"
 
-rem Mimer SQL driver -- project only uses SQLite.
-if exist "%DATA_DIR%\sqldrivers\qsqlmimer.dll" del /Q "%DATA_DIR%\sqldrivers\qsqlmimer.dll"
 
 rem Obscure image format plugins not used by the app or WebEngine.
 if exist "%DATA_DIR%\imageformats\qicns.dll" del /Q "%DATA_DIR%\imageformats\qicns.dll"

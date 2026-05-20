@@ -23,7 +23,7 @@ error()   { echo -e "${RED}[ERR]${NC}  $*" >&2; exit 1; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # builder/linux/
 PROJECT_DIR="$(dirname "$(dirname "${SCRIPT_DIR}")")"        # 仓库根目录
 PARENT_DIR="$(dirname "${PROJECT_DIR}")"
-APP_NAME="datasafebox-qt-client"
+APP_NAME="DataSafebox"
 QT_VERSION="${QT_VERSION:-6.7.3}"
 BUILD_DIR="${PROJECT_DIR}/build/linux"
 DIST_DIR="${SCRIPT_DIR}"
@@ -214,7 +214,7 @@ HERE="$(dirname "$(readlink -f "${0}")")"
 export LD_LIBRARY_PATH="${HERE}/usr/lib:${HERE}/opt/datasafebox-client:${LD_LIBRARY_PATH:-}"
 export QT_PLUGIN_PATH="${HERE}/usr/plugins"
 export QML2_IMPORT_PATH="${HERE}/usr/qml"
-exec "${HERE}/opt/datasafebox-client/datasafebox-qt-client" "$@"
+exec "${HERE}/opt/datasafebox-client/DataSafebox" "$@"
 APPRUN
 chmod +x "${APPDIR}/AppRun"
 

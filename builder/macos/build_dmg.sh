@@ -27,7 +27,7 @@ error()   { printf "${RED}[ERR]${NC}  %s\n" "$*" >&2; exit 1; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"  # builder/macos/
 PROJECT_DIR="$(dirname "$(dirname "${SCRIPT_DIR}")")"        # 仓库根目录
 PARENT_DIR="$(dirname "${PROJECT_DIR}")"
-APP_NAME="safebox"
+APP_NAME="DataSafebox"
 PRO_NAME="datasafebox-qt-client"
 QT_VERSION="${QT_VERSION:-6.7.3}"
 BUILD_DIR="${PROJECT_DIR}/build/macos"
@@ -279,7 +279,7 @@ else
 fi
 
 # macdeployqt: bundle Qt frameworks into app (no -dmg; we build the DMG manually below)
-DMG_NAME="safebox_${VERSION}.dmg"
+DMG_NAME="DataSafebox_${VERSION}.dmg"
 
 # macOS 26+ removed otool-classic; macdeployqt 6.7.x requires it.
 # Create a local shim so macdeployqt can find it without sudo.

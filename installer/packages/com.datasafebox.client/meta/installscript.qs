@@ -69,7 +69,7 @@ Component.prototype.createOperations = function() {
         return;
     }
 
-    var target = "@TargetDir@/safebox.exe";
+    var target = "@TargetDir@/DataSafebox.exe";
     var iconPath = "@TargetDir@/icons/SafeLogo_256.ico";
     component.addOperation("CreateShortcut", target, "@StartMenuDir@/" + appDisplayName + ".lnk", "workingDirectory=@TargetDir@", "iconPath=" + iconPath);
     component.addOperation("CreateShortcut", target, "@DesktopDir@/" + appDisplayName + ".lnk", "workingDirectory=@TargetDir@", "iconPath=" + iconPath);
@@ -96,7 +96,7 @@ Component.prototype.createOperations = function() {
 
     var protocolRegScript =
         "$targetDir = " + psLiteral(toWindowsPath(targetDir)) + "; " +
-        "$exePath = Join-Path $targetDir 'safebox.exe'; " +
+        "$exePath = Join-Path $targetDir 'DataSafebox.exe'; " +
         "New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT -ErrorAction SilentlyContinue | Out-Null; " +
         "if (-not (Test-Path 'HKCR:\\dianshu')) { New-Item -Path 'HKCR:\\dianshu' -Force | Out-Null }; " +
         "Set-ItemProperty -Path 'HKCR:\\dianshu' -Name '(default)' -Value 'URL:Dianshu Protocol'; " +

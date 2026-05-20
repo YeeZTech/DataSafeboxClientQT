@@ -6,7 +6,7 @@ CONFIG -= qtquickcompiler
 win32:CONFIG -= depend_includepath
 
 # Application name
-TARGET = safebox
+TARGET = DataSafebox
 
 # Version automation: Read version from package.xml as the Single Source of Truth
 # Trying to detect OS and use appropriate command
