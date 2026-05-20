@@ -774,6 +774,26 @@
         <source>Mark All Read</source>
         <translation>全部标记已读</translation>
     </message>
+    <message>
+        <location filename="../qml/Components/MessageCenter.qml" line="722"/>
+        <source>Delete Message</source>
+        <translation>删除消息</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MessageCenter.qml" line="757"/>
+        <source>Are you sure you want to delete this message?</source>
+        <translation>确定要删除此消息吗？</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MessageCenter.qml" line="788"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/Components/MessageCenter.qml" line="815"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
 </context>
 <context>
     <name>OnboardingGuide</name>

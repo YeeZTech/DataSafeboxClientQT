@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Installer>
     <Name>数据安全柜</Name>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Title>数据安全柜</Title>
     <Publisher>北京熠智科技有限公司</Publisher>
     <StartMenuDir>DatasafeBox Client</StartMenuDir>

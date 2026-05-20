@@ -1,4 +1,5 @@
 #include "UpdateManager.h"
+#include "AppConfig.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QStandardPaths>
@@ -34,6 +35,7 @@ UpdateManager::UpdateManager(QObject *parent)
     , m_clientType(1)  // Default to Windows
     , m_hasPendingInstall(false)
 {
+    m_networkManager = new QNetworkAccessManager(this);
     m_speedTimer = new QTimer(this);
     m_speedTimer->setInterval(1000); // 1 second
     connect(m_speedTimer, &QTimer::timeout, this, &UpdateManager::updateSpeed);
@@ -117,10 +119,101 @@ void UpdateManager::checkUpdate(bool manual)
     m_isChecking = true;
     emit checkStatusChanged();
 
-    // 版本检查请求由后续接入的动态库提供，当前UI仅作为界面展示。
-    m_isChecking = false;
-    emit checkStatusChanged();
-    emit checkUpdateFailed(QStringLiteral("版本检查服务未接入"));
+    QNetworkRequest request;
+    QString updateUrl = QLatin1String(AppCfg::API_BASE_URL) + QLatin1String("/api/client/update/check");
+    request.setUrl(QUrl(updateUrl));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Accept", "application/json");
+    request.setTransferTimeout(15000);
+    
+#if QT_CONFIG(ssl)
+    QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+    sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+    request.setSslConfiguration(sslConfig);
+#endif
+    
+    QJsonObject payload;
+    payload["version"] = currentVersion();
+    payload["clientType"] = m_clientType;
+    
+    QJsonDocument doc(payload);
+    
+    QNetworkReply *reply = m_networkManager->post(request, doc.toJson());
+    
+    connect(reply, &QNetworkReply::finished, this, [this, reply, manual]() {
+        m_isChecking = false;
+        emit checkStatusChanged();
+        
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray response = reply->readAll();
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
+            
+            if (jsonDoc.isObject()) {
+                QJsonObject obj = jsonDoc.object();
+                int code = obj["code"].toInt();
+                
+                if (code == 0) {
+                    QJsonObject data = obj["data"].toObject();
+                    QString latestVersion = data["version"].toString();
+                    QString description = data["description"].toString();
+                    QString downloadUrl = data["downloadUrl"].toString();
+                    qint64 clientSize = data["size"].toVariant().toLongLong();
+                    bool forceUpdate = data["forceUpdate"].toBool();
+                    
+                    if (isNewerVersion(latestVersion)) {
+                        m_latestVersion = latestVersion;
+                        m_updateDescription = description;
+                        m_downloadUrl = downloadUrl;
+                        m_clientSize = clientSize;
+                        m_forceUpdate = forceUpdate;
+                        
+                        emit updateAvailable(latestVersion, description, forceUpdate);
+                    } else {
+                        if (manual) {
+                            emit noUpdateAvailable();
+                        }
+                    }
+                } else {
+                    QString message = obj["message"].toString();
+                    if (manual || !message.isEmpty()) {
+                        emit checkUpdateFailed(message.isEmpty() ? "检查更新失败" : message);
+                    }
+                }
+            } else {
+                if (manual) {
+                    emit checkUpdateFailed("服务器响应格式错误");
+                }
+            }
+        } else {
+            int httpCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            QString errorMsg = reply->errorString();
+            
+            if (manual) {
+                QString lower = errorMsg.toLower();
+                QString friendlyMsg = errorMsg;
+                
+                if (httpCode == 404) {
+                    emit noUpdateAvailable();
+                    return;
+                }
+                
+                if (lower.contains("host not found") || lower.contains("unable to resolve"))
+                    friendlyMsg = "无法解析服务器地址，请检查网络连接";
+                else if (lower.contains("timed out") || lower.contains("timeout"))
+                    friendlyMsg = "连接超时，请检查网络后重试";
+                else if (lower.contains("ssl") || lower.contains("certificate"))
+                    friendlyMsg = "SSL 安全验证失败，请检查网络环境";
+                else if (errorMsg.trimmed().isEmpty())
+                    friendlyMsg = "网络错误，请检查网络后重试";
+                else if (httpCode > 0)
+                    friendlyMsg = QString("服务器返回错误: HTTP %1").arg(httpCode);
+                
+                emit checkUpdateFailed(friendlyMsg);
+            }
+        }
+        
+        reply->deleteLater();
+    });
 }
 
 void UpdateManager::checkRemoteFileStatus()
