@@ -1194,7 +1194,7 @@ void DsccBridge::createDomain(const QVariantMap &info)
     domainInfo.creator_display_name = creatorDisplay;
 
     const QString remarks = info.value("remarks").toString().trimmed();
-    domainInfo.remarks = remarks.isEmpty() ? domainInfo.domain_name : remarks;
+    domainInfo.remarks = remarks;
 
     const QString payer = info.value("payer").toString().trimmed();
     domainInfo.pay_type = (payer == QStringLiteral("使用者")) ? 2 : 1;

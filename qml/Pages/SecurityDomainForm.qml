@@ -223,7 +223,7 @@ Item {
                                         anchors.topMargin: 0
                                         anchors.bottomMargin: 0
                                         verticalAlignment: Text.AlignVCenter
-                                        text: qsTr("Please enter name")
+                                        text: qsTr("Please enter security domain name")
                                         font.family: root.fontFamily
                                         font.pixelSize: root.fontSizeBody
                                         color: "#5a7c9b"
@@ -343,7 +343,7 @@ Item {
                                             id: tooltipText
                                             anchors.fill: parent
                                             anchors.margins: 8
-                                            text: qsTr("Instances incur fees (1 CNY/GB/Month), borne by the creator or the instance user.")
+                                            text: qsTr("Creating a security domain instance will incur fees (1 CNY/GB/Month). The fees can be borne by the security domain creator or the instance user.")
                                             font.family: root.fontFamily
                                             font.pixelSize: 10
                                             lineHeight: 15
@@ -851,7 +851,7 @@ Item {
                                             anchors.top: parent.top
                                             anchors.topMargin: 0  // Align with TextArea text position
                                             verticalAlignment: Text.AlignTop
-                                            text: qsTr("Please enter a description")
+                                            text: qsTr("Please enter security domain description")
                                             font.family: root.fontFamily
                                             font.pixelSize: root.fontSizeBody
                                             color: "#5a7c9b"

@@ -126,7 +126,7 @@
     <message>
         <location filename="../qml/Dialogs/AppWhitelistDetailDialog.qml" line="730"/>
         <source>Approve</source>
-        <translation>批准</translation>
+        <translation>同意</translation>
     </message>
 </context>
 <context>
@@ -381,7 +381,7 @@
     <message>
         <location filename="../qml/Dialogs/ExportDetailDialog.qml" line="506"/>
         <source>Approve</source>
-        <translation>批准</translation>
+        <translation>同意</translation>
     </message>
 </context>
 <context>
@@ -600,7 +600,7 @@
     <message>
         <location filename="../qml/Dialogs/InstanceDetailDialog.qml" line="844"/>
         <source>Approve</source>
-        <translation>批准</translation>
+        <translation>同意</translation>
     </message>
 </context>
 <context>
@@ -869,7 +869,7 @@
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="950"/>
         <source>View Feature Guide</source>
-        <translation>查看功能指南</translation>
+        <translation>查看功能介绍</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1001"/>
@@ -892,7 +892,7 @@
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1142"/>
         <source>Creator</source>
-        <translation>创建者</translation>
+        <translation>创建方</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1160"/>
@@ -911,12 +911,12 @@
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1215"/>
         <source>Fee Payer</source>
-        <translation>费用承担者</translation>
+        <translation>费用承担方</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1289"/>
         <source>Who pays the costs incurred after security domain instantiation?</source>
-        <translation>安全域实例化后产生的费用由谁承担？</translation>
+        <translation>安全域实例化后产生的费用由谁承担</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1322"/>
@@ -1114,9 +1114,9 @@ Status:
         <translation>名称：</translation>
     </message>
     <message>
-        <location filename="../qml/Pages/SecurityDomainForm.qml" line="224"/>
-        <source>Please enter name</source>
-        <translation>请输入名称</translation>
+        <location filename="../qml/Pages/SecurityDomainForm.qml" line="226"/>
+        <source>Please enter security domain name</source>
+        <translation>请输入安全域名称</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="293"/>
@@ -1124,9 +1124,9 @@ Status:
         <translation>费用承担者：</translation>
     </message>
     <message>
-        <location filename="../qml/Pages/SecurityDomainForm.qml" line="344"/>
-        <source>Instances incur fees (1 CNY/GB/Month), borne by the creator or the instance user.</source>
-        <translation>实例产生费用(1元/GB/月)，由创建者或实例用户承担</translation>
+        <location filename="../qml/Pages/SecurityDomainForm.qml" line="346"/>
+        <source>Creating a security domain instance will incur fees (1 CNY/GB/Month). The fees can be borne by the security domain creator or the instance user.</source>
+        <translation>创建安全域实例将产生费用(1元/GB/月)，可指定由安全域创建者承担，或由实例使用者自行承担。</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="426"/>
@@ -1136,7 +1136,7 @@ Status:
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="483"/>
         <source>User</source>
-        <translation>用户</translation>
+        <translation>使用者</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="524"/>
@@ -1174,9 +1174,9 @@ Status:
         <translation>描述：</translation>
     </message>
     <message>
-        <location filename="../qml/Pages/SecurityDomainForm.qml" line="852"/>
-        <source>Please enter a description</source>
-        <translation>请输入描述</translation>
+        <location filename="../qml/Pages/SecurityDomainForm.qml" line="854"/>
+        <source>Please enter security domain description</source>
+        <translation>请输入安全域描述</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="944"/>
@@ -1250,7 +1250,7 @@ Status:
     <message>
         <location filename="../qml/Pages/SecurityInstanceDetail.qml" line="640"/>
         <source>Application approved. Click &quot;Start Domain&quot; to proceed.</source>
-        <translation>申请已批准。点击&quot;启动域&quot;以继续</translation>
+        <translation>申请已同意。点击&quot;启动域&quot;以继续</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityInstanceDetail.qml" line="681"/>
@@ -1457,7 +1457,7 @@ Status:
     <message>
         <location filename="../qml/main.qml" line="55"/>
         <source>Approved</source>
-        <translation>已批准</translation>
+        <translation>已同意</translation>
     </message>
     <message>
         <location filename="../qml/main.qml" line="56"/>

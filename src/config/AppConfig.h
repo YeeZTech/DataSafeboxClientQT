@@ -79,7 +79,7 @@ namespace AppCfg {
 
     // 厂商官网 & 帮助文档
     inline constexpr const char* VENDOR_URL             = "https://yeez.tech/";
-    inline constexpr const char* VENDOR_COMPANY_NAME    = "北京添可熠智科技有限公司";
+    inline constexpr const char* VENDOR_COMPANY_NAME    = "北京熠智科技有限公司";
     inline constexpr const char* HELP_DOCS_URL          = "https://help.yeez.tech/docs/dsbox";
 
     // 客服聊天（Chatwoot）

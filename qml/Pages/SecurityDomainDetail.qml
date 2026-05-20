@@ -1287,23 +1287,23 @@ Item {
                                     Rectangle {
                                         id: payerTooltip
                                         visible: false
-                                        width: 240
-                                        height: 22
+                                        width: 220
+                                        height: 40
                                         color: "#1e5a8e"
                                         radius: 4
                                         anchors.bottom: parent.top
                                         anchors.bottomMargin: 3
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        anchors.horizontalCenterOffset: 10
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: -100
                                         z: 100
                                         
-                                        // Tooltip arrow (pointing down)
+                                        // Tooltip arrow (pointing down, aligned to help button)
                                         Canvas {
                                             width: 12
                                             height: 6
                                             anchors.top: parent.bottom
-                                            anchors.horizontalCenter: parent.horizontalCenter
-                                            anchors.horizontalCenterOffset: -10
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 100
                                             
                                             onPaint: {
                                                 var ctx = getContext("2d")
@@ -1319,11 +1319,10 @@ Item {
                                         }
                                         
                                         Text {
-                                            anchors.centerIn: parent
+                                            anchors.fill: parent
                                             anchors.margins: 8
-                                            width: parent.width - 16
                                             text: qsTr("Who pays the costs incurred after security domain instantiation?")
-                                            font.pixelSize: 14
+                                            font.pixelSize: 12
                                             color: "#ffffff"
                                             wrapMode: Text.WordWrap
                                             horizontalAlignment: Text.AlignHCenter
@@ -1941,14 +1940,6 @@ Item {
                                     color: hovered ? "#f2f7fd" : "transparent"
                                     property var _pageRoot: root
                                 
-                                Rectangle {
-                                    anchors.bottom: parent.bottom
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    height: index < root.domainData.visibleUsers.length - 1 ? 1 : 0
-                                    color: Theme.Colors.borderSlate
-                                }
-                                
                                 HoverHandler {
                                     acceptedDevices: PointerDevice.Mouse
                                     onHoveredChanged: parent.hovered = hovered
@@ -2395,7 +2386,7 @@ Item {
                                     }
                                 }
                                 
-                                // Created time column
+                                // Created time column (3rd column)
                                 Item {
                                     width: relatedInstancesCard.middleColumnWidthByIndex(1)
                                     height: parent.height
@@ -2411,7 +2402,7 @@ Item {
                                     }
                                 }
                                 
-                                // Status column
+                                // Status column (2nd from last)
                                 Item {
                                     width: relatedInstancesCard.middleColumnWidthByIndex(2)
                                     height: parent.height
@@ -2461,15 +2452,7 @@ Item {
                                     property bool hovered: false
                                     color: hovered ? "#f2f7fd" : "transparent"
                                 
-                                    Rectangle {
-                                        anchors.bottom: parent.bottom
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        height: index < relatedInstancesCard.getPagedInstances().length - 1 ? 1 : 0
-                                        color: Theme.Colors.borderSlate
-                                    }
-
-                                HoverHandler {
+                                    HoverHandler {
                                     id: relatedInstanceHoverHandler
                                     acceptedDevices: PointerDevice.Mouse
                                     onHoveredChanged: parent.hovered = hovered
@@ -2963,19 +2946,20 @@ Item {
                                 }
 
                                 Item {
-                                    width: appWhitelistAuditCard.colStatus
+                                    width: appWhitelistAuditCard.colInstance
                                     height: parent.height
                                     SelectableText {
                                         anchors.left: parent.left
-anchors.leftMargin: appWhitelistAuditCard.hdrLM5
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Status")
+                                        text: qsTr("Instance Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
                                     }
                                 }
 
+                                // Application Time column (3rd from last)
                                 Item {
                                     width: appWhitelistAuditCard.colTime
                                     height: parent.height
@@ -2990,14 +2974,15 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                     }
                                 }
 
+                                // Status column (2nd from last)
                                 Item {
-                                    width: appWhitelistAuditCard.colInstance
+                                    width: appWhitelistAuditCard.colStatus
                                     height: parent.height
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 6
+                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Instance Name")
+                                        text: qsTr("Status")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3040,14 +3025,6 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                     property bool hovered: false
                                     color: hovered ? "#f2f7fd" : "transparent"
                                 
-                                    Rectangle {
-                                        anchors.bottom: parent.bottom
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        height: 1
-                                        color: Theme.Colors.borderSlate
-                                    }
-
                                     HoverHandler {
                                         acceptedDevices: PointerDevice.Mouse
                                         onHoveredChanged: parent.hovered = hovered
@@ -3107,7 +3084,38 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                             }
                                         }
 
-                                        // 状态
+                                        // 实例名称
+                                        Item {
+                                            width: appWhitelistAuditCard.colInstance
+                                            height: parent.height
+                                            CenteredTooltipText {
+                                                anchors.fill: parent
+                                                value: modelData.instanceName || ""
+                                                textPixelSize: 14
+                                                textColor: Theme.Colors.textLabel
+                                                leftMargin: 6
+                                                rightMargin: 6
+                                                beforeChars: 6
+                                                afterChars: 4
+                                                boundsItem: appWhitelistAuditCard
+                                            }
+                                        }
+
+                                        // 申请时间 (倒数第三列)
+                                        Item {
+                                            width: appWhitelistAuditCard.colTime
+                                            height: parent.height
+                                            Text {
+                                                anchors.left: parent.left
+                                                anchors.leftMargin: 6
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
+                                                font.pixelSize: 14
+                                                color: Theme.Colors.textLabel
+                                            }
+                                        }
+
+                                        // 状态 (倒数第二列)
                                         Item {
                                             width: appWhitelistAuditCard.colStatus
                                             height: parent.height
@@ -3130,37 +3138,6 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                                     color: parent.auditStatusStyle.text
                                                     horizontalAlignment: Text.AlignHCenter
                                                 }
-                                            }
-                                        }
-
-                                        // 申请时间
-                                        Item {
-                                            width: appWhitelistAuditCard.colTime
-                                            height: parent.height
-                                            Text {
-                                                anchors.left: parent.left
-                                                anchors.leftMargin: 6
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
-                                                font.pixelSize: 14
-                                                color: Theme.Colors.textLabel
-                                            }
-                                        }
-
-                                        // 实例名称
-                                        Item {
-                                            width: appWhitelistAuditCard.colInstance
-                                            height: parent.height
-                                            CenteredTooltipText {
-                                                anchors.fill: parent
-                                                value: modelData.instanceName || ""
-                                                textPixelSize: 14
-                                                textColor: Theme.Colors.textLabel
-                                                leftMargin: 6
-                                                rightMargin: 6
-                                                beforeChars: 6
-                                                afterChars: 4
-                                                boundsItem: appWhitelistAuditCard
                                             }
                                         }
 
@@ -3355,14 +3332,14 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                 property int itemsPerPage: 3
                 property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
 
-                readonly property int colApplyCode: 90     // 申请编号
-                readonly property int colApplicant: 86     // 申请方
-                readonly property int colFileName: 110     // 文件名称
-                readonly property int colFileSize: 80      // 文件大小
-                readonly property int colStatus: 80        // 状态
-                readonly property int colTime: 106         // 申请时间
-                readonly property int colInstance: 122     // 实例名称
-                readonly property int colAction: 72        // 操作
+                readonly property int colApplyCode: 95       // 申请编号
+                readonly property int colApplicant: 91      // 申请方
+                readonly property int colFileName: 115      // 文件名称
+                readonly property int colFileSize: 75       // 文件大小
+                readonly property int colStatus: 72         // 状态
+                readonly property int colTime: 111          // 申请时间
+                readonly property int colInstance: 127      // 实例名称
+                readonly property int colAction: 56         // 操作
 
                 function normalizeCurrentPage() {
                     var total = exportAuditCard.totalPages
@@ -3507,95 +3484,109 @@ anchors.leftMargin: appWhitelistAuditCard.hdrLM5
                                 Item {
                                     width: exportAuditCard.colApplyCode
                                     height: parent.height
-                                    SelectableText {
+                                    Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 6
+                                        anchors.leftMargin: 12
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Application ID")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
+                                        width: Math.max(0, parent.width - 12)
+                                        elide: Text.ElideRight
                                     }
                                 }
 
                                 Item {
                                     width: exportAuditCard.colApplicant
                                     height: parent.height
-                                    SelectableText {
+                                    Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 6
+                                        anchors.leftMargin: 12
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Applicant")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
+                                        width: Math.max(0, parent.width - 12)
+                                        elide: Text.ElideRight
                                     }
                                 }
 
                                 Item {
                                     width: exportAuditCard.colFileName
                                     height: parent.height
-                                    SelectableText {
+                                    Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 6
+                                        anchors.leftMargin: 12
                                         anchors.verticalCenter: parent.verticalCenter
-text: qsTr("Instance Name")
+                                        text: qsTr("文件名称")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
+                                        width: Math.max(0, parent.width - 12)
+                                        elide: Text.ElideRight
                                     }
                                 }
 
                                 Item {
                                     width: exportAuditCard.colFileSize
                                     height: parent.height
-                                    SelectableText {
+                                    Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 6
+                                        anchors.leftMargin: 12
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("File Size")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
-                                    }
-                                }
-
-                                Item {
-                                    width: exportAuditCard.colStatus
-                                    height: parent.height
-                                    SelectableText {
-                                        anchors.left: parent.left
-anchors.leftMargin: exportAuditCard.expHdrLM4
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Status")
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
-                                    }
-                                }
-
-                                Item {
-                                    width: exportAuditCard.colTime
-                                    height: parent.height
-                                    SelectableText {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: 6
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Application Time")
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.textLabel
+                                        width: Math.max(0, parent.width - 12)
+                                        elide: Text.ElideRight
                                     }
                                 }
 
                                 Item {
                                     width: exportAuditCard.colInstance
                                     height: parent.height
-                                    SelectableText {
+                                    Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 6
+                                        anchors.leftMargin: 12
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Instance Name")
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                        width: Math.max(0, parent.width - 12)
+                                        elide: Text.ElideRight
+                                    }
+                                }
+
+                                // Application Time column (3rd from last)
+                                Item {
+                                    width: exportAuditCard.colTime
+                                    height: parent.height
+                                    Text {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 12
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: qsTr("Application Time")
+                                        font.pixelSize: 14
+                                        font.weight: Font.Medium
+                                        color: Theme.Colors.textLabel
+                                        width: Math.max(0, parent.width - 12)
+                                        elide: Text.ElideRight
+                                    }
+                                }
+
+                                // Status column (2nd from last)
+                                Item {
+                                    width: exportAuditCard.colStatus
+                                    height: parent.height
+                                    Text {
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 12
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: qsTr("状态")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3605,11 +3596,11 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                 Item {
                                     width: exportAuditCard.colAction
                                     height: parent.height
-                                    SelectableText {
+                                    Text {
                                         anchors.right: parent.right
                                         anchors.rightMargin: root.actionRightMargin
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Actions")
+                                        text: qsTr("操作")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3638,14 +3629,6 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                 property bool hovered: false
                                 color: hovered ? "#f2f7fd" : "transparent"
                                 
-                                Rectangle {
-                                    anchors.bottom: parent.bottom
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    height: index < root.domainData.exportAudits.length - 1 ? 1 : 0
-                                    color: Theme.Colors.borderSlate
-                                }
-
                                 HoverHandler {
                                     acceptedDevices: PointerDevice.Mouse
                                     onHoveredChanged: parent.hovered = hovered
@@ -3658,16 +3641,15 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                     Item {
                                         width: exportAuditCard.colApplyCode
                                         height: parent.height
-                                        CenteredTooltipText {
-                                            anchors.fill: parent
-                                            value: modelData.applyCode || modelData.id || ""
-                                            textPixelSize: 14
-                                            textColor: Theme.Colors.textLabel
-                                            leftMargin: 6
-                                            rightMargin: 6
-                                            beforeChars: 6
-                                            afterChars: 4
-                                            boundsItem: exportAuditCard
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 12
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: modelData.applyCode || modelData.id || ""
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
+                                            width: Math.max(0, parent.width - 12)
+                                            elide: Text.ElideRight
                                         }
                                     }
 
@@ -3675,16 +3657,15 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                     Item {
                                         width: exportAuditCard.colApplicant
                                         height: parent.height
-                                        CenteredTooltipText {
-                                            anchors.fill: parent
-                                            value: modelData.applicantUserName || modelData.applicant || ""
-                                            textPixelSize: 14
-                                            textColor: Theme.Colors.textLabel
-                                            leftMargin: 6
-                                            rightMargin: 6
-                                            beforeChars: 6
-                                            afterChars: 4
-                                            boundsItem: exportAuditCard
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 12
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: modelData.applicantUserName || modelData.applicant || ""
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
+                                            width: Math.max(0, parent.width - 12)
+                                            elide: Text.ElideRight
                                         }
                                     }
 
@@ -3692,16 +3673,15 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                     Item {
                                         width: exportAuditCard.colFileName
                                         height: parent.height
-                                        CenteredTooltipText {
-                                            anchors.fill: parent
-                                            value: modelData.fileName || modelData.file_name || ""
-                                            textPixelSize: 14
-                                            textColor: Theme.Colors.textLabel
-                                            leftMargin: 6
-                                            rightMargin: 6
-                                            beforeChars: 6
-                                            afterChars: 4
-                                            boundsItem: exportAuditCard
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 12
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: modelData.fileName || modelData.file_name || ""
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
+                                            width: Math.max(0, parent.width - 12)
+                                            elide: Text.ElideRight
                                         }
                                     }
 
@@ -3709,19 +3689,51 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                     Item {
                                         width: exportAuditCard.colFileSize
                                         height: parent.height
-                                        SelectableText {
+                                        Text {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: 6
+                                            anchors.leftMargin: 12
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: Theme.Utils.truncateText(formatFileSizeLowercase(modelData.fileSize), 12, 6, 3)
                                             font.pixelSize: 14
                                             color: Theme.Colors.textLabel
                                             width: Math.max(0, parent.width - 12)
-                                            clip: true
+                                            elide: Text.ElideRight
                                         }
                                     }
 
-                                    // 状态
+                                    // 实例名称
+                                    Item {
+                                        width: exportAuditCard.colInstance
+                                        height: parent.height
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 12
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: modelData.instanceName || ""
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
+                                            width: Math.max(0, parent.width - 12)
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+
+                                    // 申请时间 (倒数第三列)
+                                    Item {
+                                        width: exportAuditCard.colTime
+                                        height: parent.height
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 12
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
+                                            width: Math.max(0, parent.width - 12)
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+
+                                    // 状态 (倒数第二列)
                                     Item {
                                         width: exportAuditCard.colStatus
                                         height: parent.height
@@ -3729,11 +3741,7 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                             anchors.left: parent.left
                                             anchors.leftMargin: 6
                                             anchors.verticalCenter: parent.verticalCenter
-                                            width: {
-                                                var ideal = Math.max(60, (modelData.status || "").length * 12 + 18)
-                                                var maxAllowed = Math.max(0, parent.width - 12)
-                                                return Math.min(ideal, maxAllowed)
-                                            }
+                                            width: Math.max(68, parent.width - 12)
                                             height: 24
                                             radius: 6
                                             property var auditStatusStyle: Theme.Colors.getStatusColor(modelData.status || "待审核")
@@ -3746,41 +3754,8 @@ anchors.leftMargin: exportAuditCard.expHdrLM4
                                                 font.pixelSize: 14
                                                 font.weight: Font.Medium
                                                 color: parent.auditStatusStyle.text
-                                                width: Math.max(0, parent.width - 12)
-                                                elide: Text.ElideRight
                                                 horizontalAlignment: Text.AlignHCenter
                                             }
-                                        }
-                                    }
-
-                                    // 申请时间
-                                    Item {
-                                        width: exportAuditCard.colTime
-                                        height: parent.height
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 6
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
-                                        }
-                                    }
-
-                                    // 实例名称
-                                    Item {
-                                        width: exportAuditCard.colInstance
-                                        height: parent.height
-                                        CenteredTooltipText {
-                                            anchors.fill: parent
-                                            value: modelData.instanceName || ""
-                                            textPixelSize: 14
-                                            textColor: Theme.Colors.textLabel
-                                            leftMargin: 6
-                                            rightMargin: 6
-                                            beforeChars: 6
-                                            afterChars: 4
-                                            boundsItem: exportAuditCard
                                         }
                                     }
 

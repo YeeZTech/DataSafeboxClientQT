@@ -609,225 +609,58 @@ Popup {
                         }
                     }
 
-                    // Combined selector box: buttons + list in one bordered container
+                    // File selector box
                     Rectangle {
-                        id: selectorBox
                         width: parent.width
-                        height: selectorColumn.implicitHeight + 2
+                        height: 36
                         radius: 8
-                        color: "#f8fafc"
-                        border.color: "#94a3b8"
+                        color: addFileBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
+                        border.color: addFileBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
                         border.width: 1
-                        clip: true
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                        Column {
-                            id: selectorColumn
+                        Row {
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.margins: 1
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 4
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 12
 
-                            // File selector box
-                            Rectangle {
-                                width: parent.width
-                                height: 36
-                                radius: 8
-                                color: addFileBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
-                                border.color: addFileBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
-                                border.width: 1
-                                Behavior on color { ColorAnimation { duration: 150 } }
-                                Behavior on border.color { ColorAnimation { duration: 150 } }
+                            Image {
+                                width: 16; height: 16
+                                anchors.verticalCenter: parent.verticalCenter
+                                source: Qt.resolvedUrl("icons/icon-directory.svg")
+                                fillMode: Image.PreserveAspectFit
+                            }
 
-                                Row {
+                            Item {
+                                width: parent.width - 16 - 12
+                                height: parent.height
+                                clip: true
+
+                                Text {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
-                                    anchors.leftMargin: 12
-                                    anchors.rightMargin: 4
                                     anchors.verticalCenter: parent.verticalCenter
-                                    spacing: 12
-
-                                    Image {
-                                        width: 16; height: 16
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        source: Qt.resolvedUrl("icons/icon-directory.svg")
-                                        fillMode: Image.PreserveAspectFit
-                                    }
-
-                                    Item {
-                                        width: parent.width - 16 - 12
-                                        height: parent.height
-                                        clip: true
-
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: root.selectedFilePath ? root.selectedFilePath : qsTr("请选择需要加密的文件")
-                                            font.pixelSize: 14
-                                            font.weight: Font.Medium
-                                            color: root.selectedFilePath ? "#0f172b" : "#94a3b8"
-                                            elide: Text.ElideMiddle
-                                        }
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: addFileBtnArea
-                                    anchors.fill: parent
-                                    enabled: !root._encrypting
-                                    hoverEnabled: true
-                                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                                    onClicked: fileDialog.open()
-                                }
-                            }
-
-                            // Separator line
-                            Rectangle {
-                                width: parent.width
-                                height: 1
-                                color: "#e2e8f0"
-                                visible: pathListModel.count > 0
-                            }
-
-                            // File list inside the same box
-                            Item {
-                                width: parent.width
-                                height: pathListModel.count > 0 ? Math.min(pathListView.contentHeight, 160) : 0
-                                visible: pathListModel.count > 0
-
-                                Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutQuad } }
-
-                                ListView {
-                                    id: pathListView
-                                    anchors.fill: parent
-                                    model: pathListModel
-                                    clip: true
-                                    spacing: 0
-
-                                    ScrollBar.vertical: ScrollBar {
-                                        policy: pathListView.contentHeight > pathListView.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
-                                    }
-
-                                    delegate: Rectangle {
-                                        width: pathListView.width
-                                        height: 33
-                                        color: delegateMouseArea.containsMouse ? "#eef2f7" : "transparent"
-
-                                        // Bottom separator line
-                                        Rectangle {
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.bottom: parent.bottom
-                                            height: 1
-                                            color: "#e2e8f0"
-                                            visible: index < pathListModel.count - 1
-                                        }
-
-                                        MouseArea {
-                                            id: delegateMouseArea
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            acceptedButtons: Qt.NoButton
-                                        }
-
-                                        // Status icon (left)
-                                        Text {
-                                            id: statusIcon
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 10
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            font.pixelSize: 13
-                                            text: {
-                                                if (model.status === "encrypted") return "🔒"
-                                                if (model.status === "failed") return "🔓"
-                                                if (model.status === "pending") return model.isDir ? "📁" : "🔓"
-                                                return model.isDir ? "📁" : "🔓"
-                                            }
-                                            color: model.status === "failed" ? "#ef4444" : "#314158"
-                                        }
-
-                                        // File path display
-                                        Text {
-                                            id: pathText
-                                            anchors.left: statusIcon.right
-                                            anchors.leftMargin: 6
-                                            anchors.right: removeBtn.left
-                                            anchors.rightMargin: 4
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: model.path
-                                            font.pixelSize: 13
-                                            color: model.status === "encrypted" ? "#22c55e" : model.status === "failed" ? "#ef4444" : "#314158"
-                                            elide: Text.ElideMiddle
-
-                                            MouseArea {
-                                                id: itemHover
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-                                                acceptedButtons: Qt.NoButton
-                                                onContainsMouseChanged: {
-                                                    if (containsMouse && pathText.truncated) {
-                                                        var pos = itemHover.mapToItem(root.contentItem, itemHover.mouseX, itemHover.mouseY)
-                                                        var boxPos = selectorBox.mapToItem(root.contentItem, 0, 0)
-                                                        root._tooltipText = model.path + (model.status === "encrypted" ? "  ·  " + qsTr("encrypted") : model.status === "failed" ? "  ·  " + qsTr("failed") : "")
-                                                        root._tooltipMouseX = pos.x
-                                                        root._tooltipMouseY = pos.y
-                                                        root._tooltipBoxX = boxPos.x
-                                                        root._tooltipBoxW = selectorBox.width
-                                                        root._tooltipVisible = true
-                                                    } else {
-                                                        root._tooltipVisible = false
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        // Remove button
-                                        Rectangle {
-                                            id: removeBtn
-                                            width: 20; height: 20
-                                            anchors.right: parent.right
-                                            anchors.rightMargin: 8
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            radius: 10
-                                            color: removeBtnArea.containsMouse ? "#fee2e2" : "transparent"
-
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: "×"
-                                                font.pixelSize: 14
-                                                color: removeBtnArea.containsMouse ? "#ef4444" : "#94a3b8"
-                                            }
-
-                                            MouseArea {
-                                                id: removeBtnArea
-                                                anchors.fill: parent
-                                                enabled: !root._encrypting
-                                                hoverEnabled: true
-                                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                                                onClicked: root.removePath(index)
-                                            }
-                                        }
-                                    }
+                                    text: root.selectedFilePath ? root.selectedFilePath : qsTr("请选择需要加密的文件")
+                                    font.pixelSize: 14
+                                    font.weight: Font.Medium
+                                    color: root.selectedFilePath ? "#0f172b" : "#94a3b8"
+                                    elide: Text.ElideMiddle
                                 }
                             }
                         }
-                    }
 
-                    // Count summary
-                    Text {
-                        visible: pathListModel.count > 0
-                        text: {
-                            var t = qsTr("%1 selected").arg(pathListModel.count)
-                            if (root._encryptedCount > 0) t += ", " + root._encryptedCount + " " + qsTr("encrypted")
-                            var fc = 0
-                            for (var i = 0; i < pathListModel.count; i++) {
-                                if (pathListModel.get(i).status === "failed") fc++
-                            }
-                            if (fc > 0) t += ", " + fc + " " + qsTr("failed")
-                            return t
+                        MouseArea {
+                            id: addFileBtnArea
+                            anchors.fill: parent
+                            enabled: !root._encrypting
+                            hoverEnabled: true
+                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                            onClicked: fileDialog.open()
                         }
-                        font.pixelSize: 12
-                        color: "#94a3b8"
                     }
                 }
 
