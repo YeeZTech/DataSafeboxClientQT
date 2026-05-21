@@ -5,6 +5,16 @@ CONFIG += c++17
 CONFIG -= qtquickcompiler
 win32:CONFIG -= depend_includepath
 
+# ── USE_TEST_ENV 编译期校验（0 = 正式环境，1 = 测试环境）──
+isEmpty(USE_TEST_ENV) {
+    error("USE_TEST_ENV is not set. Pass USE_TEST_ENV=0 (production) or USE_TEST_ENV=1 (test) on the qmake command line.")
+}
+!equals(USE_TEST_ENV, 0):!equals(USE_TEST_ENV, 1) {
+    error("USE_TEST_ENV=$$USE_TEST_ENV is invalid. Only 0 (production) or 1 (test) is accepted.")
+}
+DEFINES += USE_TEST_ENV=$$USE_TEST_ENV
+message("USE_TEST_ENV=$$USE_TEST_ENV")
+
 # Application name
 TARGET = DataSafebox
 

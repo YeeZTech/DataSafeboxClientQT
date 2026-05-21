@@ -71,6 +71,22 @@ echo ==================================================
 echo.
 
 rem ==================================================================
+rem USE_TEST_ENV VALIDATION
+rem ==================================================================
+if not defined USE_TEST_ENV (
+    echo [Error] USE_TEST_ENV is not set.
+    echo         Set USE_TEST_ENV=0 ^(production^) or USE_TEST_ENV=1 ^(test^) before running this script.
+    echo         Example: set USE_TEST_ENV=0
+    goto :fail_no_msg
+)
+if "%USE_TEST_ENV%"=="0" goto :env_ok
+if "%USE_TEST_ENV%"=="1" goto :env_ok
+echo [Error] USE_TEST_ENV=%USE_TEST_ENV% is invalid. Only 0 or 1 is accepted.
+goto :fail_no_msg
+:env_ok
+echo [INFO] USE_TEST_ENV=%USE_TEST_ENV%
+
+rem ==================================================================
 rem PRE-FLIGHT CHECK
 rem ==================================================================
 set "PREFLIGHT_FAIL=0"
@@ -133,7 +149,7 @@ cd /d "%PROJECT_ROOT%"
 if exist "%BUILD_DIR%" rd /s /q "%BUILD_DIR%"
 if exist "%PROJECT_ROOT%\resources_qmlcache.qrc" del /Q "%PROJECT_ROOT%\resources_qmlcache.qrc"
 
-"%QMAKE%" datasafebox-qt-client.pro CONFIG+=release CONFIG-=qtquickcompiler SENTRY_ROOT_DIR="%SENTRY_ROOT_DIR:\=/%" DSCC_DIR="%DSCC_DIR%"
+"%QMAKE%" datasafebox-qt-client.pro CONFIG+=release CONFIG-=qtquickcompiler USE_TEST_ENV=%USE_TEST_ENV% SENTRY_ROOT_DIR="%SENTRY_ROOT_DIR:\=/%" DSCC_DIR="%DSCC_DIR%"
 if errorlevel 1 goto :fail
 nmake release
 if errorlevel 1 goto :fail

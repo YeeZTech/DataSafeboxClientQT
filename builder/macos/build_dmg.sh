@@ -67,6 +67,16 @@ VERSION="${VERSION:-1.0.0}"
 
 DMG_NAME="DataSafebox_${VERSION}.dmg"
 
+# ===========================================================================
+# USE_TEST_ENV validation
+# ===========================================================================
+if [[ -z "${USE_TEST_ENV:-}" ]]; then
+    die "USE_TEST_ENV is not set. Export USE_TEST_ENV=0 (production) or USE_TEST_ENV=1 (test) before running this script."
+fi
+if [[ "${USE_TEST_ENV}" != "0" && "${USE_TEST_ENV}" != "1" ]]; then
+    die "USE_TEST_ENV=${USE_TEST_ENV} is invalid. Only 0 or 1 is accepted."
+fi
+
 printf "\n"
 printf "==================================================\n"
 printf "  DatasafeBox %-8s  macOS Build + Package\n" "${VERSION}"
@@ -75,6 +85,7 @@ printf "  Qt      : %s\n"       "${QT_DIR}"
 printf "  Sentry  : %s\n"       "${SENTRY_ROOT}"
 printf "  DSCC    : %s\n"       "${DSCC_DIR:-<not set>}"
 printf "  Sign    : %s\n"       "${SIGN_IDENTITY:-<ad-hoc>}"
+printf "  Env     : %s\n"       "$([[ "${USE_TEST_ENV}" == "1" ]] && echo 'TEST' || echo 'PRODUCTION')"
 printf "==================================================\n\n"
 
 # ===========================================================================
@@ -341,6 +352,7 @@ qmake "${PRO_FILE}" \
     QMAKE_MAC_SDK="${QMAKE_SDK}" \
     "QMAKE_CXXFLAGS+=-isystem ${SDKROOT}/usr/include/c++/v1" \
     "QMAKE_LIBS_OPENGL=-framework OpenGL" \
+    USE_TEST_ENV="${USE_TEST_ENV}" \
     SENTRY_ROOT_DIR="${SENTRY_ROOT}" \
     DSCC_DIR="${DSCC_DIR}"
 

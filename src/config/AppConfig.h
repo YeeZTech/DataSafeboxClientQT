@@ -3,20 +3,11 @@
 
 #include <QObject>
 
-// ============================================================
-// 环境切换开关
-//   0 = 正式环境（默认）
-//   1 = 测试环境
-// ============================================================
-#define USE_TEST_ENV 0
-
-// ============================================================
-// 应用服务地址集中配置
-// 切换运行环境时只需修改上方 USE_TEST_ENV 的值，或在 qmake
-// 命令行传入：  qmake "DEFINES+=USE_TEST_ENV=1"
-// C++ 代码直接引用 AppCfg:: 命名空间常量；
-// QML 代码通过 context property "AppConfig" 调用对应方法。
-// ============================================================
+#ifndef USE_TEST_ENV
+#error "USE_TEST_ENV is not defined. Pass USE_TEST_ENV=0 or USE_TEST_ENV=1 on the qmake command line."
+#endif
+static_assert(USE_TEST_ENV == 0 || USE_TEST_ENV == 1,
+              "USE_TEST_ENV must be 0 (production) or 1 (test).");
 namespace AppCfg {
 
 #if USE_TEST_ENV

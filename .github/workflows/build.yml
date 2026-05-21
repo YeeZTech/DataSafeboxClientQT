@@ -54,6 +54,7 @@ jobs:
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           qmake datasafebox-qt-client.pro CONFIG+=release ^
+                USE_TEST_ENV=0 ^
                 SENTRY_ROOT_DIR=C:/vcpkg/installed/x64-windows
           nmake release
 
@@ -68,6 +69,8 @@ jobs:
       - name: Package installer
         shell: cmd
         run: builder\windows\build_installer.bat
+        env:
+          USE_TEST_ENV: '0'
 
       # 上传产物（.exe 安装包）
       - name: Upload artifact
@@ -125,7 +128,7 @@ jobs:
       - name: Build & Package dmg
         run: |
           chmod +x builder/macos/build_dmg.sh
-          SENTRY_ROOT_DIR=~/vcpkg/installed/x64-osx ./builder/macos/build_dmg.sh
+          USE_TEST_ENV=0 SENTRY_ROOT_DIR=~/vcpkg/installed/x64-osx ./builder/macos/build_dmg.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -199,7 +202,7 @@ jobs:
       - name: Build & Package AppImage
         run: |
           chmod +x builder/linux/build_appimage.sh
-          SENTRY_ROOT_DIR=~/vcpkg/installed/x64-linux ./builder/linux/build_appimage.sh
+          USE_TEST_ENV=0 SENTRY_ROOT_DIR=~/vcpkg/installed/x64-linux ./builder/linux/build_appimage.sh
         env:
           QMAKE: qmake
           DISPLAY: ''
