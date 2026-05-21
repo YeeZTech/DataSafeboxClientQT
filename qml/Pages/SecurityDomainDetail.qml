@@ -35,6 +35,9 @@ Item {
     // Pending state for audit request (app whitelist / export)
     property bool   auditRequestPending: false
 
+    // Encrypt action state for header button
+    property bool   encryptButtonBusy: false
+
     // Description saving state
     property bool   isDescriptionSaving: false
 
@@ -809,6 +812,22 @@ Item {
         id: encryptFileDialog
         domainName: root.domainName
         domainPubKey: root.domainPubKey
+
+        onOpened: {
+            root.encryptButtonBusy = true
+        }
+
+        onClosed: {
+            if (!encryptFileDialog._encrypting) {
+                root.encryptButtonBusy = false
+            }
+        }
+
+        onEncryptionStateChanged: function(encrypting) {
+            if (!encrypting) {
+                root.encryptButtonBusy = false
+            }
+        }
     }
     
     // Deactivate Confirm Dialog
@@ -997,16 +1016,18 @@ Item {
                     // Only visible to creator and when domain is active
                     Rectangle {
                         id: encryptFileButton
+                        readonly property bool disabled: root.isDomainReadOnly || root.encryptButtonBusy
                         width: encryptRow.width + 24  // Dynamic width
                         height: 36
                         radius: 8
                         color: {
+                            if (encryptFileButton.disabled) return "#9fb0c3"
                             if (encryptMouseArea.pressed) return Qt.darker("#0f4c81", 1.2)
                             if (encryptMouseArea.containsMouse) return Qt.lighter("#0f4c81", 1.15)
                             return "#0f4c81"
                         }
                         visible: true
-                        opacity: !root.isDomainReadOnly ? 1.0 : 0.5
+                        opacity: encryptFileButton.disabled ? 0.55 : 1.0
                         Behavior on color { ColorAnimation { duration: 150 } }
                         Behavior on opacity { NumberAnimation { duration: 150 } }
                         
@@ -1037,17 +1058,18 @@ Item {
                         MouseArea {
                             id: encryptMouseArea
                             anchors.fill: parent
-                            enabled: !root.isDomainReadOnly
+                            enabled: !encryptFileButton.disabled
                             hoverEnabled: true
-                            cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                             onClicked: {
-                                if (root.isDomainReadOnly) {
+                                if (encryptFileButton.disabled) {
                                     return
                                 }
                                 if (!root.domainPubKey) {
                                     window.showError("未找到安全域公钥", "加密文件")
                                     return
                                 }
+                                root.encryptButtonBusy = true
                                 encryptFileDialog.open()
                             }
                         }
@@ -3364,16 +3386,8 @@ Item {
                 property int itemsPerPage: 3
                 property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
 
-                readonly property int colApplyCode: 95        // 申请编号
-                readonly property int colApplicant: 80       // 申请人
-                readonly property int colFileName: 80       // 文件名称
-                readonly property int colFileSize: 70       // 文件大小
-                readonly property int colInstance: 80       // 实例名称
-                readonly property int colTime: 85           // 申请时间
-                readonly property int colStatus: 70         // 状态
-                readonly property int colAction: 82         // 操作 (确保显示)
-                
-                // 总宽度 = 95 + 80×4 + 85 + 70 + 82 = 632px (确保所有8列都能显示)
+                readonly property int colApplyCode: 100      // 申请编号 (固定)
+                readonly property int colAction: 82          // 操作 (固定)
 
                 function normalizeCurrentPage() {
                     var total = exportAuditCard.totalPages
@@ -3512,12 +3526,13 @@ Item {
                                 onHoveredChanged: parent.hovered = hovered
                             }
                             
-                            Row {
+                            RowLayout {
                                 anchors.fill: parent
+                                spacing: 0
 
                                 Item {
-                                    width: exportAuditCard.colApplyCode
-                                    height: parent.height
+                                    Layout.preferredWidth: exportAuditCard.colApplyCode
+                                    Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -3530,8 +3545,8 @@ Item {
                                 }
 
                                 Item {
-                                    width: exportAuditCard.colApplicant
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -3544,8 +3559,8 @@ Item {
                                 }
 
                                 Item {
-                                    width: exportAuditCard.colFileName
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -3558,8 +3573,8 @@ Item {
                                 }
 
                                 Item {
-                                    width: exportAuditCard.colFileSize
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -3572,8 +3587,8 @@ Item {
                                 }
 
                                 Item {
-                                    width: exportAuditCard.colInstance
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -3587,8 +3602,8 @@ Item {
 
                                 // Application Time column (3rd from last)
                                 Item {
-                                    width: exportAuditCard.colTime
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -3604,11 +3619,11 @@ Item {
 
                                 // Status column (2nd from last)
                                 Item {
-                                    width: exportAuditCard.colStatus
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 6
+                                        anchors.leftMargin: 30
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("状态")
                                         font.pixelSize: 14
@@ -3618,11 +3633,11 @@ Item {
                                 }
 
                                 Item {
-                                    width: exportAuditCard.colAction
-                                    height: parent.height
+                                    Layout.preferredWidth: exportAuditCard.colAction
+                                    Layout.fillHeight: true
                                     Text {
                                         anchors.right: parent.right
-                                        anchors.rightMargin: 0  // 向右移动，设置右边距为0
+                                        anchors.rightMargin: root.actionRightMargin
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("操作")
                                         font.pixelSize: 14
@@ -3658,13 +3673,14 @@ Item {
                                     onHoveredChanged: parent.hovered = hovered
                                 }
                                 
-                                Row {
+                                RowLayout {
                                     anchors.fill: parent
+                                    spacing: 0
 
                                     // 申请编号
                                     Item {
-                                        width: exportAuditCard.colApplyCode
-                                        height: parent.height
+                                        Layout.preferredWidth: exportAuditCard.colApplyCode
+                                        Layout.fillHeight: true
                                         CenteredTooltipText {
                                             anchors.fill: parent
                                             value: modelData.applyCode || modelData.id || ""
@@ -3680,8 +3696,8 @@ Item {
 
                                     // 申请方
                                     Item {
-                                        width: exportAuditCard.colApplicant
-                                        height: parent.height
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
                                         CenteredTooltipText {
                                             anchors.fill: parent
                                             value: modelData.applicantUserName || modelData.applicant || ""
@@ -3697,8 +3713,8 @@ Item {
 
                                     // 文件名称
                                     Item {
-                                        width: exportAuditCard.colFileName
-                                        height: parent.height
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
                                         CenteredTooltipText {
                                             anchors.fill: parent
                                             value: modelData.fileName || modelData.file_name || ""
@@ -3714,8 +3730,8 @@ Item {
 
                                     // 文件大小
                                     Item {
-                                        width: exportAuditCard.colFileSize
-                                        height: parent.height
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
                                         CenteredTooltipText {
                                             anchors.fill: parent
                                             value: formatFileSizeLowercase(modelData.fileSize) || ""
@@ -3731,8 +3747,8 @@ Item {
 
                                     // 实例名称
                                     Item {
-                                        width: exportAuditCard.colInstance
-                                        height: parent.height
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
                                         CenteredTooltipText {
                                             anchors.fill: parent
                                             value: modelData.instanceName || ""
@@ -3748,25 +3764,27 @@ Item {
 
                                     // 申请时间 (倒数第三列)
                                     Item {
-                                        width: exportAuditCard.colTime
-                                        height: parent.height
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
                                         Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 6
+                                            anchors.horizontalCenter: parent.horizontalCenter
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
                                             font.pixelSize: 14
                                             color: Theme.Colors.textLabel
+                                            width: Math.max(0, parent.width - 12)
+                                            horizontalAlignment: Text.AlignHCenter
+                                            elide: Text.ElideMiddle
                                         }
                                     }
 
                                     // 状态 (倒数第二列)
                                     Item {
-                                        width: exportAuditCard.colStatus
-                                        height: parent.height
+                                        Layout.fillWidth: true
+                                        Layout.fillHeight: true
                                         Rectangle {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: 6
+                                            anchors.leftMargin: 30
                                             anchors.verticalCenter: parent.verticalCenter
                                             implicitWidth: exportStatusText.implicitWidth + 12
                                             implicitHeight: 24
@@ -3789,8 +3807,8 @@ Item {
 
                                     // 操作
                                     Item {
-                                        width: exportAuditCard.colAction
-                                        height: parent.height
+                                        Layout.preferredWidth: exportAuditCard.colAction
+                                        Layout.fillHeight: true
                                         Text {
                                             id: exportOperationText
                                             anchors.right: parent.right

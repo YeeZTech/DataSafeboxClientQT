@@ -6,6 +6,8 @@ import "." as Theme
 Popup {
     id: root
 
+    signal encryptionStateChanged(bool encrypting)
+
     width: 500
     height: Math.min(contentColumn.implicitHeight + 48 + 48 + 36, 560)
     modal: true
@@ -72,6 +74,7 @@ Popup {
         _currentTargetFile = ""
         _currentModelIndex = -1
         pathListModel.clear()
+        encryptionStateChanged(false)
     }
 
     // ---- Helper functions ----
@@ -221,6 +224,7 @@ Popup {
 
     function _finishEncryptionQueue() {
         root._encrypting = false
+        root.encryptionStateChanged(false)
         root._currentOperationId = -1
         root._currentSourceFile = ""
         root._currentTargetFile = ""
@@ -329,6 +333,7 @@ Popup {
         root._encryptFailed = 0
         root._encryptProgress = 0
         root._encrypting = true
+        root.encryptionStateChanged(true)
         root._encryptProgressDismissed = false
         root._resultMessage = ""
         root._resultType = ""
