@@ -794,12 +794,7 @@ Item {
 
                 // 保存完整用户信息，供成功回调写入本地列表
                 root.pendingAddUserFullInfo = newUser
-                var userJson = JSON.stringify({
-                    user_id: userId,
-                    user_name: userName,
-                    account: newAccount
-                })
-                DsccBridge.addUserToDomain(domainCode, userJson)
+                DsccBridge.addUserToDomain(domainCode, userId)
             } else {
                 root.visibleUserOperationState_busy = false
             }
