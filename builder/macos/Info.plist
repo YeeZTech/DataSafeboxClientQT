@@ -5,7 +5,7 @@
     <key>CFBundleName</key>
     <string>DatasafeBox</string>
     <key>CFBundleDisplayName</key>
-    <string>数据安全柜</string>
+    <string>数据安全柜控制台</string>
     <key>CFBundleExecutable</key>
     <string>${EXECUTABLE_NAME}</string>
     <key>CFBundleIdentifier</key>

@@ -729,13 +729,11 @@ ApplicationWindow {
                                     }
 
                                     // 刷新按钮 — 放在“安全域”右侧，避免窄侧栏被裁剪
-                                    Rectangle {
+                                    Item {
                                         id: domainRefreshBtn
-                                        width: 24
-                                        height: 24
-                                        radius: 4
+                                        width: 20
+                                        height: 20
                                         anchors.verticalCenter: parent.verticalCenter
-                                        color: domainRefreshArea.containsMouse ? "#dce6f0" : "transparent"
 
                                         Image {
                                             id: domainRefreshIcon
@@ -744,7 +742,10 @@ ApplicationWindow {
                                             anchors.centerIn: parent
                                             source: Qt.resolvedUrl("icons/icon-update-refresh.svg")
                                             fillMode: Image.PreserveAspectFit
-                                            opacity: domainRefreshArea.containsMouse ? 1.0 : 0.85
+                                            opacity: domainRefreshArea.pressed ? 0.5 : (domainRefreshArea.containsMouse ? 1.0 : 0.7)
+                                            scale:   domainRefreshArea.pressed ? 0.85 : 1.0
+                                            Behavior on opacity { NumberAnimation { duration: 100 } }
+                                            Behavior on scale   { NumberAnimation { duration: 80  } }
                                         }
 
                                         RotationAnimator {
@@ -761,6 +762,8 @@ ApplicationWindow {
                                             anchors.fill: parent
                                             cursorShape: Qt.PointingHandCursor
                                             hoverEnabled: true
+                                            onEntered: securityDomainHeader.hovered = false
+                                            onExited:  securityDomainHeader.hovered = false
                                             onClicked: {
                                                 domainRefreshAnim.running = true
                                                 DsccBridge.loadDomainList()

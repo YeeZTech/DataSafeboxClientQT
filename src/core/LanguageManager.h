@@ -15,7 +15,7 @@
  *   3. 暴露 Q_INVOKABLE switchLanguage(code) 供 QML 在设置页切换语言。
  *
  * 支持的语言代码：
- *   "zh_CN"  简体中文（默认）
+ *   "zh_cn"  简体中文（默认）
  *   "en"     英文（使用核心库内置英文模板，不加载翻译文件）
  */
 class LanguageManager : public QObject

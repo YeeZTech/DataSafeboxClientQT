@@ -154,7 +154,9 @@ Popup {
                             anchors.right:  parent.right
                             anchors.top:    parent.top
                             anchors.margins: 12
-                            text: "# Add APT source\necho 'deb [trusted=yes] https://repo.yeez.tech stable main' | sudo tee /etc/apt/sources.list.d/yeez-tech.list >/dev/null\n\n# Update package index\nsudo apt update\n\n# Install client\nsudo apt install -y datasafebox-cmd-cli"
+                            text: qsTr("# Add APT source") + "\necho 'deb [trusted=yes] https://repo.yeez.tech stable main' | sudo tee /etc/apt/sources.list.d/yeez-tech.list >/dev/null\n\n" +
+                                  qsTr("# Update package index") + "\nsudo apt update\n\n" +
+                                  qsTr("# Install client") + "\nsudo apt install -y datasafebox-cmd-cli"
                             font.family: "Consolas, Courier New, monospace"
                             font.pixelSize: 12
                             color: "#e8edf3"
@@ -183,7 +185,10 @@ Popup {
                             anchors.right:  parent.right
                             anchors.top:    parent.top
                             anchors.margins: 12
-                            text: "# Step 1: Login\ndv auth login\n\n# Step 2: List visible security domains\ndv domain list\n\n# Step 3: Apply for instance creation\ndv instance create \"trade-domain-001\" -n \"instance-wangfang-01\" --disk \"/data/safebox\"\n\n# Step 4: Start authorized instance\ndv instance start instance-wangfang-01 --force"
+                            text: qsTr("# Step 1: Login") + "\ndv auth login\n\n" +
+                                  qsTr("# Step 2: List visible security domains") + "\ndv domain list\n\n" +
+                                  qsTr("# Step 3: Apply for instance creation") + "\ndv instance create \"trade-domain-001\" -n \"instance-wangfang-01\" --disk \"/data/safebox\"\n\n" +
+                                  qsTr("# Step 4: Start authorized instance") + "\ndv instance start instance-wangfang-01 --force"
                             font.family: "Consolas, Courier New, monospace"
                             font.pixelSize: 12
                             color: "#e8edf3"

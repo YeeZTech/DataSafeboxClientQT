@@ -229,16 +229,14 @@ Popup {
         root._encryptProgressDismissed = false
 
         if (root._encryptFailed === 0) {
-            root._resultMessage = root._encryptTotal > 1
-                ? "已完成 " + root._encryptTotal + " 个文件加密"
-                : "文件加密完成"
+            root._resultMessage = ""
             root._resultType = "success"
         } else if (root._encryptFailed < root._encryptTotal) {
             root._resultMessage = "部分完成：" + (root._encryptTotal - root._encryptFailed)
                 + " 个成功，" + root._encryptFailed + " 个失败"
             root._resultType = "warning"
         } else {
-            root._resultMessage = "加密失败"
+            root._resultMessage = ""
             root._resultType = "error"
         }
     }
@@ -563,10 +561,10 @@ Popup {
                     }
 
                     Rectangle {
-                        width: 16; height: 16
+                        width: 24; height: 24
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        radius: 2
+                        radius: 4
                         color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
 
                         MouseArea {
@@ -581,7 +579,7 @@ Popup {
                         Text {
                             anchors.centerIn: parent
                             text: "×"
-                            font.pixelSize: 16
+                            font.pixelSize: 20
                             color: "#314158"
                             opacity: 0.7
                         }
@@ -623,9 +621,10 @@ Popup {
                         Row {
                             anchors.left: parent.left
                             anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
                             anchors.leftMargin: 12
-                            anchors.rightMargin: 4
-                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.rightMargin: 12
                             spacing: 12
 
                             Image {
@@ -643,6 +642,8 @@ Popup {
                                 Text {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
+                                    anchors.leftMargin: 2
+                                    anchors.rightMargin: 2
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.selectedFilePath ? root.selectedFilePath : qsTr("请选择需要加密的文件")
                                     font.pixelSize: 14
@@ -689,9 +690,10 @@ Popup {
                         Row {
                             anchors.left: parent.left
                             anchors.right: outputClearBtn.left
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
                             anchors.leftMargin: 12
-                            anchors.rightMargin: 4
-                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.rightMargin: 12
                             spacing: 12
 
                             Image {
@@ -709,11 +711,15 @@ Popup {
                                 Text {
                                     anchors.left: parent.left
                                     anchors.right: parent.right
+                                    anchors.leftMargin: 2
+                                    anchors.rightMargin: 2
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: root.selectedOutputPath ? root.selectedOutputPath : qsTr("选择输出路径")
+                                    text: root.selectedOutputPath
+                                          ? root.selectedOutputPath
+                                          : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("选择输出路径"))
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
-                                    color: root.selectedOutputPath ? "#0f172b" : "#94a3b8"
+                                    color: (root.selectedOutputPath || root.selectedFilePath) ? "#0f172b" : "#94a3b8"
                                     elide: Text.ElideMiddle
                                 }
                             }

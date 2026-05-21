@@ -74,8 +74,8 @@ CONFIG += automoc
 # Adding lrelease to CONFIG makes qmake invoke lrelease as a build step.
 CONFIG += lrelease
 TRANSLATIONS += \
-    translations/notification_zh_CN.ts \
-    translations/qml_zh_CN.ts
+    translations/notification_zh_cn.ts \
+    translations/qml_zh_cn.ts
 
 RESOURCES += resources/resources.qrc
 
