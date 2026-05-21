@@ -7,7 +7,7 @@
 #include <QDebug>
 
 static const QString kSettingsKeyLanguage = QStringLiteral("app/language");
-static const QString kDefaultLanguage     = QStringLiteral("zh_CN");
+static const QString kDefaultLanguage     = QStringLiteral("zh_cn");
 
 LanguageManager::LanguageManager(QObject *parent)
     : QObject(parent)

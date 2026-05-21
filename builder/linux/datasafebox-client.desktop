@@ -2,7 +2,7 @@
 Type=Application
 Version=1.0
 Name=DatasafeBox
-Name[zh_CN]=数据安全柜
+Name[zh_CN]=数据安全柜控制台
 GenericName=Data Security Client
 GenericName[zh_CN]=数据安全客户端
 Comment=Secure data vault client

@@ -703,6 +703,41 @@
         <source>View full documentation</source>
         <translation>查看完整文档</translation>
     </message>
+    <message>
+        <location filename="../qml/Dialogs/InstantiationHelpDialog.qml" line="155"/>
+        <source># Add APT source</source>
+        <translation># 添加 APT 源</translation>
+    </message>
+    <message>
+        <location filename="../qml/Dialogs/InstantiationHelpDialog.qml" line="156"/>
+        <source># Update package index</source>
+        <translation># 更新软件包索引</translation>
+    </message>
+    <message>
+        <location filename="../qml/Dialogs/InstantiationHelpDialog.qml" line="157"/>
+        <source># Install client</source>
+        <translation># 安装客户端</translation>
+    </message>
+    <message>
+        <location filename="../qml/Dialogs/InstantiationHelpDialog.qml" line="186"/>
+        <source># Step 1: Login</source>
+        <translation># 步骤 1：登录</translation>
+    </message>
+    <message>
+        <location filename="../qml/Dialogs/InstantiationHelpDialog.qml" line="187"/>
+        <source># Step 2: List visible security domains</source>
+        <translation># 步骤 2：列出可见安全域</translation>
+    </message>
+    <message>
+        <location filename="../qml/Dialogs/InstantiationHelpDialog.qml" line="188"/>
+        <source># Step 3: Apply for instance creation</source>
+        <translation># 步骤 3：申请创建实例</translation>
+    </message>
+    <message>
+        <location filename="../qml/Dialogs/InstantiationHelpDialog.qml" line="189"/>
+        <source># Step 4: Start authorized instance</source>
+        <translation># 步骤 4：启动已授权实例</translation>
+    </message>
 </context>
 <context>
     <name>InstantiationPaymentDialog</name>
@@ -893,6 +928,11 @@
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1142"/>
         <source>Creator</source>
         <translation>创建方</translation>
+    </message>
+    <message>
+        <location filename="../qml/Pages/SecurityDomainDetail.qml" line="590"/>
+        <source>User</source>
+        <translation>使用方</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1160"/>
@@ -1437,7 +1477,7 @@ Status:
     <message>
         <location filename="../qml/main.qml" line="23"/>
         <source>Data Safe Box</source>
-        <translation>数据安全柜</translation>
+        <translation>数据安全柜控制台</translation>
     </message>
     <message>
         <location filename="../qml/main.qml" line="46"/>
@@ -1580,7 +1620,7 @@ Status:
     <message>
         <location filename="../qml/main.qml" line="1778"/>
         <source>Welcome to Data Safe Box</source>
-        <translation>欢迎使用数据安全柜</translation>
+        <translation>欢迎使用数据安全柜控制台</translation>
     </message>
     <message>
         <location filename="../qml/main.qml" line="1946"/>

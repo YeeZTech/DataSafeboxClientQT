@@ -117,6 +117,8 @@ Item {
     // Description editing state
     property bool isEditingDescription: false
     property string editedDescription: ""
+    property string _originalDescription: ""
+    property bool _savingFromButton: false
     readonly property int descriptionMaxLength: 500
     property string descriptionErrorMessage: ""
     // Shared right alignment baseline for 添加/操作/查看/移除
@@ -273,7 +275,7 @@ Item {
         if (statusText === "0") return "待审核"
         if (statusText === "1") return "已授权"
         if (statusText === "2") return "已拒绝"
-        if (statusText === "3") return "正常"
+        if (statusText === "3") return "运行中"
         if (statusText === "4") return "已结束"
         return statusText
     }
@@ -1213,7 +1215,9 @@ Item {
                                 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: window.translateStatus(root.domainData.status || "") || ""
+                                    text: (root.domainData.status || "") === "运行中"
+                                        ? "正常"
+                                        : (window.translateStatus(root.domainData.status || "") || "")
                                     font.pixelSize: 16
                                     font.weight: Font.Medium
                                     color: parent.domainStatusStyle.text
@@ -1287,23 +1291,21 @@ Item {
                                     Rectangle {
                                         id: payerTooltip
                                         visible: false
-                                        width: 220
-                                        height: 40
+                                        width: tooltipLabel.implicitWidth + 16
+                                        height: tooltipLabel.implicitHeight + 10
                                         color: "#1e5a8e"
                                         radius: 4
                                         anchors.bottom: parent.top
-                                        anchors.bottomMargin: 3
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: -100
+                                        anchors.bottomMargin: 5
+                                        anchors.horizontalCenter: parent.horizontalCenter
                                         z: 100
                                         
-                                        // Tooltip arrow (pointing down, aligned to help button)
+                                        // Tooltip arrow (pointing down, centered)
                                         Canvas {
                                             width: 12
                                             height: 6
                                             anchors.top: parent.bottom
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 100
+                                            anchors.horizontalCenter: parent.horizontalCenter
                                             
                                             onPaint: {
                                                 var ctx = getContext("2d")
@@ -1319,13 +1321,12 @@ Item {
                                         }
                                         
                                         Text {
-                                            anchors.fill: parent
-                                            anchors.margins: 8
+                                            id: tooltipLabel
+                                            anchors.centerIn: parent
                                             text: qsTr("Who pays the costs incurred after security domain instantiation?")
                                             font.pixelSize: 12
                                             color: "#ffffff"
-                                            wrapMode: Text.WordWrap
-                                            horizontalAlignment: Text.AlignHCenter
+                                            wrapMode: Text.NoWrap
                                         }
                                     }
                                 }
@@ -1439,9 +1440,9 @@ Item {
                                     cursorShape: (!root.isDomainReadOnly && !root.isDescriptionSaving) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                                     onEntered: parent.hovered = true
                                     onExited: parent.hovered = false
-                                    onPressed: parent.pressed = true
-                                    onReleased: parent.pressed = false
-                                    onCanceled: parent.pressed = false
+                                    onPressed: { parent.pressed = true; if (root.isEditingDescription) root._savingFromButton = true }
+                                    onReleased: { parent.pressed = false; root._savingFromButton = false }
+                                    onCanceled: { parent.pressed = false; root._savingFromButton = false }
                                     onClicked: {
                                         if (root.isDomainReadOnly || root.isDescriptionSaving) {
                                             return
@@ -1462,7 +1463,8 @@ Item {
                                             DsccBridge.updateDomainDesc(domainCode, root.editedDescription)
                                         } else {
                                             // Enter edit mode
-                                            root.editedDescription = root.domainData.description || ""
+                                            root._originalDescription = root.domainData.description || ""
+                                            root.editedDescription = root._originalDescription
                                             root.descriptionErrorMessage = ""
                                             root.isEditingDescription = true
                                         }
@@ -1474,6 +1476,7 @@ Item {
                         Rectangle {
                             id: descriptionBox
                             width: parent.width
+                            visible: root.isEditingDescription || (root.domainData.description && root.domainData.description.length > 0)
                             // Dynamic height: minimum 57px, or based on content
                             property int minHeight: 57
                             property int padding: 32  // Top and bottom padding (16px * 2)
@@ -1509,9 +1512,9 @@ Item {
                                 anchors.top: parent.top
                                 anchors.topMargin: 16
                                 width: parent.width - 34
-                                text: (root.domainData.description && root.domainData.description.length > 0) ? root.domainData.description : "暂无描述"
+                                text: (root.domainData.description && root.domainData.description.length > 0) ? root.domainData.description : ""
                                 font.pixelSize: 14
-                                color: (root.domainData.description && root.domainData.description.length > 0) ? "#0f172b" : "#94a3b8"  // 空时显示灰色
+                                color: "#0f172b"
                                 wrapMode: TextEdit.Wrap
                                 visible: !root.isEditingDescription
                             }
@@ -1549,6 +1552,20 @@ Item {
                                         root.descriptionErrorMessage = "描述最多可输入500个字符"
                                     } else {
                                         root.descriptionErrorMessage = ""
+                                    }
+                                }
+
+                                Keys.onEscapePressed: {
+                                    root.editedDescription = root._originalDescription
+                                    root.descriptionErrorMessage = ""
+                                    root.isEditingDescription = false
+                                }
+
+                                onActiveFocusChanged: {
+                                    if (!activeFocus && root.isEditingDescription && !root._savingFromButton) {
+                                        root.editedDescription = root._originalDescription
+                                        root.descriptionErrorMessage = ""
+                                        root.isEditingDescription = false
                                     }
                                 }
                                 
@@ -2351,13 +2368,16 @@ Item {
                                 onHoveredChanged: parent.hovered = hovered
                             }
 
-                            Row {
+                            RowLayout {
                                 anchors.fill: parent
+                                spacing: 0
                                 
                                 // Applicant column
                                 Item {
-                                    width: relatedInstancesCard.firstColumnWidth
-                                    height: parent.height
+                                    Layout.preferredWidth: relatedInstancesCard.firstColumnWidth
+                                    Layout.minimumWidth: relatedInstancesCard.firstColumnWidth
+                                    Layout.maximumWidth: relatedInstancesCard.firstColumnWidth
+                                    Layout.fillHeight: true
                                     
                                     SelectableText {
                                         anchors.left: parent.left
@@ -2372,12 +2392,14 @@ Item {
                                 
                                 // Instance name column
                                 Item {
-                                    width: relatedInstancesCard.middleColumnWidthByIndex(0)
-                                    height: parent.height
+                                    Layout.preferredWidth: relatedInstancesCard.middleColumnWidth
+                                    Layout.minimumWidth: relatedInstancesCard.middleColumnWidth
+                                    Layout.maximumWidth: relatedInstancesCard.middleColumnWidth
+                                    Layout.fillHeight: true
                                     
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 26
+                                        anchors.leftMargin: 11
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Instance Name")
                                         font.pixelSize: 14
@@ -2388,12 +2410,14 @@ Item {
                                 
                                 // Created time column (3rd column)
                                 Item {
-                                    width: relatedInstancesCard.middleColumnWidthByIndex(1)
-                                    height: parent.height
+                                    Layout.preferredWidth: relatedInstancesCard.middleColumnWidth
+                                    Layout.minimumWidth: relatedInstancesCard.middleColumnWidth
+                                    Layout.maximumWidth: relatedInstancesCard.middleColumnWidth
+                                    Layout.fillHeight: true
                                     
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: relatedInstancesCard.hdrLM2
+                                        anchors.leftMargin: 11
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Creation Time")
                                         font.pixelSize: 14
@@ -2404,12 +2428,14 @@ Item {
                                 
                                 // Status column (2nd from last)
                                 Item {
-                                    width: relatedInstancesCard.middleColumnWidthByIndex(2)
-                                    height: parent.height
+                                    Layout.preferredWidth: relatedInstancesCard.middleColumnWidth
+                                    Layout.minimumWidth: relatedInstancesCard.middleColumnWidth
+                                    Layout.maximumWidth: relatedInstancesCard.middleColumnWidth
+                                    Layout.fillHeight: true
                                     
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: relatedInstancesCard.hdrLM3
+                                        anchors.leftMargin: 31
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Status")
                                         font.pixelSize: 14
@@ -2420,8 +2446,10 @@ Item {
                                 
                                 // Operation column (fixed at right)
                                 Item {
-                                    width: relatedInstancesCard.lastColumnWidth
-                                    height: parent.height
+                                    Layout.preferredWidth: relatedInstancesCard.lastColumnWidth
+                                    Layout.minimumWidth: relatedInstancesCard.lastColumnWidth
+                                    Layout.maximumWidth: relatedInstancesCard.lastColumnWidth
+                                    Layout.fillHeight: true
                                     
                                     SelectableText {
                                         anchors.right: parent.right
@@ -2458,13 +2486,14 @@ Item {
                                     onHoveredChanged: parent.hovered = hovered
                                 }
                                 
-                                Row {
+                                RowLayout {
                                     anchors.fill: parent
+                                    spacing: 0
                                     
                                     // Applicant cell
                                     Item {
-                                        width: relatedInstancesCard.firstColumnWidth
-                                        height: parent.height
+                                        Layout.preferredWidth: relatedInstancesCard.firstColumnWidth
+                                        Layout.fillHeight: true
                                         
                                         CenteredTooltipText {
                                             id: instanceApplicantText
@@ -2482,8 +2511,10 @@ Item {
                                     
                                     // Instance name cell
                                     Item {
-                                        width: relatedInstancesCard.middleColumnWidthByIndex(0)
-                                        height: parent.height
+                                        Layout.preferredWidth: relatedInstancesCard.middleColumnWidth
+                                        Layout.minimumWidth: relatedInstancesCard.middleColumnWidth
+                                        Layout.maximumWidth: relatedInstancesCard.middleColumnWidth
+                                        Layout.fillHeight: true
                                         
                                         CenteredTooltipText {
                                             id: instanceNameText
@@ -2491,7 +2522,7 @@ Item {
                                             value: modelData.instanceName || modelData.name || ""
                                             textPixelSize: 14
                                             textColor: Theme.Colors.textLabel
-                                            leftMargin: 26
+                                            leftMargin: 6
                                             rightMargin: 6
                                             beforeChars: 6
                                             afterChars: 6
@@ -2501,12 +2532,14 @@ Item {
                                     
                                     // Applied time cell
                                     Item {
-                                        width: relatedInstancesCard.middleColumnWidthByIndex(1)
-                                        height: parent.height
+                                        Layout.preferredWidth: relatedInstancesCard.middleColumnWidth
+                                        Layout.minimumWidth: relatedInstancesCard.middleColumnWidth
+                                        Layout.maximumWidth: relatedInstancesCard.middleColumnWidth
+                                        Layout.fillHeight: true
 
                                         Text {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: relatedInstancesCard.hdrLM2
+                                            anchors.leftMargin: 6
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: Theme.Utils.formatDateTime(modelData.createdAt || modelData.appliedTime)
                                             font.pixelSize: 14
@@ -2516,20 +2549,17 @@ Item {
                                     
                                     // Status cell
                                     Item {
-                                        width: relatedInstancesCard.middleColumnWidthByIndex(2)
-                                        height: parent.height
+                                        Layout.preferredWidth: relatedInstancesCard.middleColumnWidth
+                                        Layout.minimumWidth: relatedInstancesCard.middleColumnWidth
+                                        Layout.maximumWidth: relatedInstancesCard.middleColumnWidth
+                                        Layout.fillHeight: true
                                         
                                         Rectangle {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: relatedInstancesCard.hdrLM3
+                                            anchors.leftMargin: 31
                                             anchors.verticalCenter: parent.verticalCenter
-                                            width: {
-                                                var statusText = getStatusText(modelData.status)
-                                                var ideal = Math.max(60, statusText.length * 12 + 18)
-                                                var maxAllowed = Math.max(0, parent.width - relatedInstancesCard.hdrLM3 - 6)
-                                                return Math.min(ideal, maxAllowed)
-                                            }
-                                            height: 24
+                                            implicitWidth: instanceStatusText.implicitWidth + 12
+                                            implicitHeight: 24
                                             radius: 6
                                             property var instanceStatusStyle: Theme.Colors.getStatusColor(modelData.status || "")
                                             color: instanceStatusStyle.bg
@@ -2537,13 +2567,12 @@ Item {
                                             border.width: 1
                                             
                                             Text {
+                                                id: instanceStatusText
                                                 anchors.centerIn: parent
                                                 text: getStatusText(modelData.status)
                                                 font.pixelSize: 14
                                                 font.weight: Font.Medium
                                                 color: parent.instanceStatusStyle.text
-                                                width: Math.max(0, parent.width - 12)
-                                                elide: Text.ElideRight
                                                 horizontalAlignment: Text.AlignHCenter
                                             }
                                         }
@@ -2551,8 +2580,10 @@ Item {
                                     
                                     // Operation cell (fixed at right)
                                     Item {
-                                        width: relatedInstancesCard.lastColumnWidth
-                                        height: parent.height
+                                        Layout.preferredWidth: relatedInstancesCard.lastColumnWidth
+                                        Layout.minimumWidth: relatedInstancesCard.lastColumnWidth
+                                        Layout.maximumWidth: relatedInstancesCard.lastColumnWidth
+                                        Layout.fillHeight: true
                                         
                                         Text {
                                             id: instanceOperationText
@@ -2758,13 +2789,13 @@ Item {
                 property int currentPage: 1
                 property int itemsPerPage: 3
                 property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
-                readonly property int colApplyCode: 110    // 申请编号
-                readonly property int colApplicant: 100    // 申请方
-                readonly property int colAppName: 120      // 应用名称
-                readonly property int colStatus: 80        // 状态
-                readonly property int colTime: 120         // 申请时间
-                readonly property int colInstance: 160     // 实例名称
-                readonly property int colAction: 52        // 操作
+                readonly property int colApplyCode: 100    // 申请编号 (固定)
+                readonly property int colApplicant: 106     // 申请方 (均匀分布)
+                readonly property int colAppName: 106      // 应用名称 (均匀分布)
+                readonly property int colStatus: 106       // 状态 (均匀分布)
+                readonly property int colTime: 106         // 申请时间 (均匀分布)
+                readonly property int colInstance: 106     // 实例名称 (均匀分布)
+                readonly property int colAction: 82        // 操作 (固定)
 
                 function normalizeCurrentPage() {
                     var total = appWhitelistAuditCard.totalPages
@@ -2900,13 +2931,17 @@ Item {
                                 onHoveredChanged: parent.hovered = hovered
                             }
                             
-                            Row {
+                            RowLayout {
+                                id: appWhitelistHeaderRow
                                 anchors.fill: parent
+                                spacing: 0
+                                property int titleGap: Math.max(6, appWhitelistAuditCard.colApplyCode - applicationIdText.implicitWidth)
 
                                 Item {
-                                    width: appWhitelistAuditCard.colApplyCode
-                                    height: parent.height
+                                    Layout.preferredWidth: appWhitelistAuditCard.colApplyCode
+                                    Layout.fillHeight: true
                                     SelectableText {
+                                        id: applicationIdText
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
@@ -2918,8 +2953,8 @@ Item {
                                 }
 
                                 Item {
-                                    width: appWhitelistAuditCard.colApplicant
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     SelectableText {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -2932,11 +2967,11 @@ Item {
                                 }
 
                                 Item {
-                                    width: appWhitelistAuditCard.colAppName
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM1
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("App Name")
                                         font.pixelSize: 14
@@ -2946,8 +2981,8 @@ Item {
                                 }
 
                                 Item {
-                                    width: appWhitelistAuditCard.colInstance
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     SelectableText {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -2959,10 +2994,10 @@ Item {
                                     }
                                 }
 
-                                // Application Time column (3rd from last)
+                                // Application Time column
                                 Item {
-                                    width: appWhitelistAuditCard.colTime
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     SelectableText {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
@@ -2974,13 +3009,13 @@ Item {
                                     }
                                 }
 
-                                // Status column (2nd from last)
+                                // Status column
                                 Item {
-                                    width: appWhitelistAuditCard.colStatus
-                                    height: parent.height
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
                                     SelectableText {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: appWhitelistAuditCard.hdrLM5
+                                        anchors.leftMargin: 54  // 向右移动1厘米 (约37.8像素)
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Status")
                                         font.pixelSize: 14
@@ -2990,8 +3025,8 @@ Item {
                                 }
 
                                 Item {
-                                    width: appWhitelistAuditCard.colAction
-                                    height: parent.height
+                                    Layout.preferredWidth: appWhitelistAuditCard.colAction
+                                    Layout.fillHeight: true
                                     SelectableText {
                                         anchors.right: parent.right
                                         anchors.rightMargin: root.actionRightMargin
@@ -3030,13 +3065,14 @@ Item {
                                         onHoveredChanged: parent.hovered = hovered
                                     }
                                     
-                                    Row {
+                                    RowLayout {
                                         anchors.fill: parent
+                                        spacing: 0
 
                                         // 申请编号
                                         Item {
-                                            width: appWhitelistAuditCard.colApplyCode
-                                            height: parent.height
+                                            Layout.preferredWidth: appWhitelistAuditCard.colApplyCode
+                                            Layout.fillHeight: true
                                             CenteredTooltipText {
                                                 anchors.fill: parent
                                                 value: modelData.applyCode || modelData.id || ""
@@ -3052,8 +3088,8 @@ Item {
 
                                         // 申请方
                                         Item {
-                                            width: appWhitelistAuditCard.colApplicant
-                                            height: parent.height
+                                            Layout.fillWidth: true
+                                            Layout.fillHeight: true
                                             CenteredTooltipText {
                                                 anchors.fill: parent
                                                 value: modelData.applicantUserName || modelData.applicant || ""
@@ -3069,8 +3105,8 @@ Item {
 
                                         // 应用名称
                                         Item {
-                                            width: appWhitelistAuditCard.colAppName
-                                            height: parent.height
+                                            Layout.fillWidth: true
+                                            Layout.fillHeight: true
                                             CenteredTooltipText {
                                                 anchors.fill: parent
                                                 value: modelData.appName || ""
@@ -3086,8 +3122,8 @@ Item {
 
                                         // 实例名称
                                         Item {
-                                            width: appWhitelistAuditCard.colInstance
-                                            height: parent.height
+                                            Layout.fillWidth: true
+                                            Layout.fillHeight: true
                                             CenteredTooltipText {
                                                 anchors.fill: parent
                                                 value: modelData.instanceName || ""
@@ -3101,10 +3137,10 @@ Item {
                                             }
                                         }
 
-                                        // 申请时间 (倒数第三列)
+                                        // 申请时间
                                         Item {
-                                            width: appWhitelistAuditCard.colTime
-                                            height: parent.height
+                                            Layout.fillWidth: true
+                                            Layout.fillHeight: true
                                             Text {
                                                 anchors.left: parent.left
                                                 anchors.leftMargin: 6
@@ -3115,22 +3151,23 @@ Item {
                                             }
                                         }
 
-                                        // 状态 (倒数第二列)
+                                        // 状态
                                         Item {
-                                            width: appWhitelistAuditCard.colStatus
-                                            height: parent.height
+                                            Layout.fillWidth: true
+                                            Layout.fillHeight: true
                                             Rectangle {
                                                 anchors.left: parent.left
-                                                anchors.leftMargin: 6
+                                                anchors.leftMargin: 54
                                                 anchors.verticalCenter: parent.verticalCenter
-                                                width: 68
-                                                height: 24
+                                                implicitWidth: statusText.implicitWidth + 12
+                                                implicitHeight: 24
                                                 radius: 6
                                                 property var auditStatusStyle: Theme.Colors.getStatusColor(modelData.status || "")
                                                 color: auditStatusStyle.bg
                                                 border.color: auditStatusStyle.border
                                                 border.width: 1
                                                 Text {
+                                                    id: statusText
                                                     anchors.centerIn: parent
                                                     text: getStatusText(modelData.status)
                                                     font.pixelSize: 14
@@ -3143,8 +3180,8 @@ Item {
 
                                         // 操作
                                         Item {
-                                            width: appWhitelistAuditCard.colAction
-                                            height: parent.height
+                                            Layout.preferredWidth: appWhitelistAuditCard.colAction
+                                            Layout.fillHeight: true
 
                                             Text {
                                                 id: appWhitelistOperationText
@@ -3332,14 +3369,16 @@ Item {
                 property int itemsPerPage: 3
                 property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
 
-                readonly property int colApplyCode: 95       // 申请编号
-                readonly property int colApplicant: 91      // 申请方
-                readonly property int colFileName: 115      // 文件名称
-                readonly property int colFileSize: 75       // 文件大小
-                readonly property int colStatus: 72         // 状态
-                readonly property int colTime: 111          // 申请时间
-                readonly property int colInstance: 127      // 实例名称
-                readonly property int colAction: 56         // 操作
+                readonly property int colApplyCode: 95        // 申请编号
+                readonly property int colApplicant: 80       // 申请人
+                readonly property int colFileName: 80       // 文件名称
+                readonly property int colFileSize: 70       // 文件大小
+                readonly property int colInstance: 80       // 实例名称
+                readonly property int colTime: 85           // 申请时间
+                readonly property int colStatus: 70         // 状态
+                readonly property int colAction: 82         // 操作 (确保显示)
+                
+                // 总宽度 = 95 + 80×4 + 85 + 70 + 82 = 632px (确保所有8列都能显示)
 
                 function normalizeCurrentPage() {
                     var total = exportAuditCard.totalPages
@@ -3486,14 +3525,12 @@ Item {
                                     height: parent.height
                                     Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 12
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Application ID")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
-                                        width: Math.max(0, parent.width - 12)
-                                        elide: Text.ElideRight
                                     }
                                 }
 
@@ -3502,14 +3539,12 @@ Item {
                                     height: parent.height
                                     Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 12
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Applicant")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
-                                        width: Math.max(0, parent.width - 12)
-                                        elide: Text.ElideRight
                                     }
                                 }
 
@@ -3518,14 +3553,12 @@ Item {
                                     height: parent.height
                                     Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 12
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("文件名称")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
-                                        width: Math.max(0, parent.width - 12)
-                                        elide: Text.ElideRight
                                     }
                                 }
 
@@ -3534,14 +3567,12 @@ Item {
                                     height: parent.height
                                     Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 12
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("File Size")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
-                                        width: Math.max(0, parent.width - 12)
-                                        elide: Text.ElideRight
                                     }
                                 }
 
@@ -3550,14 +3581,12 @@ Item {
                                     height: parent.height
                                     Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 12
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Instance Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
-                                        width: Math.max(0, parent.width - 12)
-                                        elide: Text.ElideRight
                                     }
                                 }
 
@@ -3567,7 +3596,7 @@ Item {
                                     height: parent.height
                                     Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 12
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Application Time")
                                         font.pixelSize: 14
@@ -3584,7 +3613,7 @@ Item {
                                     height: parent.height
                                     Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 12
+                                        anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("状态")
                                         font.pixelSize: 14
@@ -3598,7 +3627,7 @@ Item {
                                     height: parent.height
                                     Text {
                                         anchors.right: parent.right
-                                        anchors.rightMargin: root.actionRightMargin
+                                        anchors.rightMargin: 0  // 向右移动，设置右边距为0
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("操作")
                                         font.pixelSize: 14
@@ -3641,15 +3670,16 @@ Item {
                                     Item {
                                         width: exportAuditCard.colApplyCode
                                         height: parent.height
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 12
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: modelData.applyCode || modelData.id || ""
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width - 12)
-                                            elide: Text.ElideRight
+                                        CenteredTooltipText {
+                                            anchors.fill: parent
+                                            value: modelData.applyCode || modelData.id || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
                                         }
                                     }
 
@@ -3657,15 +3687,16 @@ Item {
                                     Item {
                                         width: exportAuditCard.colApplicant
                                         height: parent.height
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 12
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: modelData.applicantUserName || modelData.applicant || ""
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width - 12)
-                                            elide: Text.ElideRight
+                                        CenteredTooltipText {
+                                            anchors.fill: parent
+                                            value: modelData.applicantUserName || modelData.applicant || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
                                         }
                                     }
 
@@ -3673,15 +3704,16 @@ Item {
                                     Item {
                                         width: exportAuditCard.colFileName
                                         height: parent.height
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 12
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: modelData.fileName || modelData.file_name || ""
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width - 12)
-                                            elide: Text.ElideRight
+                                        CenteredTooltipText {
+                                            anchors.fill: parent
+                                            value: modelData.fileName || modelData.file_name || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
                                         }
                                     }
 
@@ -3689,15 +3721,16 @@ Item {
                                     Item {
                                         width: exportAuditCard.colFileSize
                                         height: parent.height
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 12
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: Theme.Utils.truncateText(formatFileSizeLowercase(modelData.fileSize), 12, 6, 3)
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width - 12)
-                                            elide: Text.ElideRight
+                                        CenteredTooltipText {
+                                            anchors.fill: parent
+                                            value: formatFileSizeLowercase(modelData.fileSize) || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 3
+                                            boundsItem: exportAuditCard
                                         }
                                     }
 
@@ -3705,15 +3738,16 @@ Item {
                                     Item {
                                         width: exportAuditCard.colInstance
                                         height: parent.height
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 12
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: modelData.instanceName || ""
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width - 12)
-                                            elide: Text.ElideRight
+                                        CenteredTooltipText {
+                                            anchors.fill: parent
+                                            value: modelData.instanceName || ""
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 6
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
                                         }
                                     }
 
@@ -3723,13 +3757,11 @@ Item {
                                         height: parent.height
                                         Text {
                                             anchors.left: parent.left
-                                            anchors.leftMargin: 12
+                                            anchors.leftMargin: 6
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
                                             font.pixelSize: 14
                                             color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width - 12)
-                                            elide: Text.ElideRight
                                         }
                                     }
 
@@ -3741,14 +3773,15 @@ Item {
                                             anchors.left: parent.left
                                             anchors.leftMargin: 6
                                             anchors.verticalCenter: parent.verticalCenter
-                                            width: Math.max(68, parent.width - 12)
-                                            height: 24
+                                            implicitWidth: exportStatusText.implicitWidth + 12
+                                            implicitHeight: 24
                                             radius: 6
                                             property var auditStatusStyle: Theme.Colors.getStatusColor(modelData.status || "待审核")
                                             color: auditStatusStyle.bg
                                             border.color: auditStatusStyle.border
                                             border.width: 1
                                             Text {
+                                                id: exportStatusText
                                                 anchors.centerIn: parent
                                                 text: window.translateStatus(modelData.status || "")
                                                 font.pixelSize: 14
