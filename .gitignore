@@ -76,6 +76,7 @@ resources_qmlcache.qrc
 
 # Logs
 *.log
+logs/
 
 # Windows specific
 *.user
