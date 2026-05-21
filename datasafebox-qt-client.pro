@@ -190,6 +190,34 @@ win32 {
     QMAKE_CXXFLAGS += /wd4068
 }
 
+macx {
+    DSCC_DIR = $$clean_path($$DSCC_DIR)
+    !exists("$$DSCC_DIR/include/dscc/core/common/active_notify.h") {
+        error("DSCC SDK not found. Set DSCC_DIR to a DSCC package root that contains include/dscc/core/common/active_notify.h")
+    }
+    message("DSCC root dir: $$DSCC_DIR")
+
+    INCLUDEPATH += "$$DSCC_DIR/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/boost/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/wcdb/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/ycrypto/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/openssl/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/secp256k1/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/glog/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/gflags/include"
+    INCLUDEPATH += "$$DSCC_DIR/deps/fflib/include"
+
+    LIBS += -L"$$DSCC_DIR/lib" -ldscc_common -ldscc_core
+    LIBS += -F"$$DSCC_DIR/deps/wcdb/lib" -framework WCDB
+    LIBS += -L"$$DSCC_DIR/deps/ycrypto/lib" -lycrypto_stdeth
+
+    # RPATH: allow the linker to resolve dylibs at compile time;
+    # build_dmg.sh copies them into the bundle so macdeployqt can fix install names.
+    QMAKE_RPATHDIR += "$$DSCC_DIR/lib"
+    QMAKE_RPATHDIR += "$$DSCC_DIR/deps/wcdb/lib"
+    QMAKE_RPATHDIR += "$$DSCC_DIR/deps/ycrypto/lib"
+}
+
 # Windows 打包：将 DSCC 运行时 DLL 复制到输出目录
 # Qt6Core.dll / Qt6Network.dll 与客户端版本完全相同（MD5 一致），
 # 由 windeployqt 统一处理，此处跳过，避免重复复制。
