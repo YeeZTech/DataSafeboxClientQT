@@ -27,6 +27,7 @@ ApplicationWindow {
     property string authPage: "login"
     property var currentUser: null
     property bool isLoggedIn: currentUser !== null
+    property bool logoutInProgress: false
     
     // State to control which page is shown (within main app)
     property string currentPage: "home"  // "home", "createSecurityDomain", "securityDomainDetail", "instantiateForm", or "securityInstanceDetail"
@@ -191,26 +192,36 @@ ApplicationWindow {
         ArrearsManager.getArrearsOverview(user.token || "")
     }
     
-    // Handle logout
+    // Handle logout — starts async server-side logout, then transitions to login page
     function handleLogout() {
-        casdoorRetryTimer.stop()      // discard any pending login retry before clearing state
+        if (window.logoutInProgress) return
+
+        casdoorRetryTimer.stop()
         window.loginRetryCount = 0
         window.showLoginError = false
         window.loginErrorMessage = ""
+        window.logoutInProgress = true
 
         if (customerServiceDialog.opened)
             customerServiceDialog.close()
 
-        // Invalidate Casdoor server session (uses m_sessionToken to call /api/signout)
-        CasdoorHelper.logout()
-
+        // Stop WebView timers/state but do NOT clear cookies yet —
+        // CasdoorHelper needs casdoor_session_id for the server logout request.
         if (casdoorLoginWebView && casdoorLoginWebView.clearState) {
             casdoorLoginWebView.clearState()
         }
 
+        // Trigger async logout: POST /api/logout with cached casdoor_session_id.
+        // logoutCompleted / logoutFailed signals will call finishLogout().
+        CasdoorHelper.logout()
+    }
+
+    function finishLogout() {
+        window.logoutInProgress = false
+
         DsccBridge.clearCurrentUser()
         window.resetDsccUserState()
-        
+
         window.currentUser = null
         if (dataManager) {
             dataManager.currentUser = null
@@ -218,12 +229,10 @@ ApplicationWindow {
         }
         window.isAccountArrears = false
         window.isAccountPaused = false
-        window.authPage = "login"     // triggers onAuthPageChanged → Qt.callLater(startCasdoorLoginFlow)
         window.currentPage = "home"
-        window.unreadMessageCount = 0  // 退出登录时清零未读计数
+        window.unreadMessageCount = 0
         window.hasUpdateNotification = false
-
-        // NOTE: startCasdoorLoginFlow() is triggered via onAuthPageChanged above — no extra Qt.callLater needed here.
+        window.authPage = "login"     // triggers onAuthPageChanged → Qt.callLater(startCasdoorLoginFlow)
     }
 
     onAuthPageChanged: {
@@ -267,6 +276,17 @@ ApplicationWindow {
                 window.loginErrorMessage = message || "登录失败，请检查网络后重试"
                 window.showLoginError = true
             }
+        }
+
+        function onLogoutCompleted() {
+            if (window.logoutInProgress) {
+                window.finishLogout()
+            }
+        }
+
+        function onLogoutFailed(errorMessage) {
+            console.warn("[main] Casdoor server logout failed:", errorMessage)
+            // finishLogout is called by logoutCompleted which fires after logoutFailed
         }
     }
 

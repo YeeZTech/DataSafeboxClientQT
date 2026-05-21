@@ -112,12 +112,9 @@ Rectangle {
         lastNonBlankUrl = ""
         webView.stop()
         webView.url = ""
-        // Clear legacy on-disk Casdoor data (if any)
-        CasdoorHelper.clearCasdoorCookies()
-        // Clear in-memory cookies so Casdoor won't show "使用以下账号继续" on next login
-        if (casdoorProfile && casdoorProfile.cookieStore) {
-            casdoorProfile.cookieStore.deleteAllCookies()
-        }
+        // Cookie cleanup is now handled by CasdoorHelper.logout() → performLocalCleanup()
+        // after the server-side logout request completes. Do NOT delete cookies here,
+        // because the C++ side needs casdoor_session_id to call POST /api/logout.
     }
 
     function extractAuthCode(urlStr) {
@@ -581,7 +578,10 @@ Rectangle {
             id: casdoorProfile
             offTheRecord: true
             httpUserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            Component.onCompleted: {
+                CasdoorHelper.setCasdoorWebProfile(casdoorProfile)
+            }
         }
     }
-    
+
 }

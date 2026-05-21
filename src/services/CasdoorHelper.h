@@ -5,9 +5,11 @@
 #include <QString>
 #include <QVariantMap>
 #include <QTimer>
+#include <QNetworkCookie>
 #include "AppConfig.h"
 
 class QNetworkAccessManager;
+class QWebEngineCookieStore;
 
 class CasdoorHelper : public QObject
 {
@@ -28,6 +30,7 @@ public:
     Q_INVOKABLE void searchUser(const QString &username);
     Q_INVOKABLE void logout();
     Q_INVOKABLE void clearCasdoorCookies();
+    Q_INVOKABLE void setCasdoorWebProfile(QObject *profile);
 
 signals:
     void loginSuccess(const QVariantMap &user);
@@ -39,6 +42,8 @@ signals:
 
 private slots:
     void onLoginWatchdogTimeout();
+    void onCookieAdded(const QNetworkCookie &cookie);
+    void onCookieRemoved(const QNetworkCookie &cookie);
 
 private:
     const QString redirectUri = QLatin1String(AppCfg::CASDOOR_REDIRECT_URI);
@@ -53,11 +58,15 @@ private:
     QTimer   m_loginWatchdog;
 
     QNetworkAccessManager *m_network;
+    QWebEngineCookieStore *m_cookieStore = nullptr;
+    QString m_casdoorSessionId;
 
     void clearAuthExchangeState();
     void callBackendLogin(const QString &code, const QString &state);
     void onBackendLoginFinished(const QByteArray &body, const QString &netError);
     void fetchCasdoorUserInfo(const QString &accessToken);
+    void performLocalCleanup();
+    void sendCasdoorLogoutRequest();
 };
 
 #endif // CASDOORHELPER_H
