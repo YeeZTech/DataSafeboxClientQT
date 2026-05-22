@@ -1,4 +1,4 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "." as Theme
 
@@ -12,8 +12,8 @@ Popup {
     y: (parent ? (parent.height - height) / 2 : 0)
 
     property string instanceSize: "250 GB"
-    property string instanceFee: "2个月"
-    property string billingRule: "30元/GB/月"
+    property string instanceFee: "2 months"
+    property string billingRule: "30 CNY/GB/Month"
     // 仅存数值部分，文案中统一追加“元”单位
     property string estimatedFee: "350.00"
     property string durationText: ""

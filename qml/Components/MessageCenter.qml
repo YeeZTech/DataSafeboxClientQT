@@ -1,4 +1,4 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import "." as Theme
@@ -523,7 +523,7 @@ Item {
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: root.currentFilter === "unread" ? "暂无未读消息" : "暂无消息"
+                        text: root.currentFilter === "unread" ? qsTr("No unread messages") : qsTr("No messages")
                         font.pixelSize: 14
                         color: "#90A1B9"
                     }

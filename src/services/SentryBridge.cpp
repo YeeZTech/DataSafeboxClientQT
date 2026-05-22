@@ -1,4 +1,4 @@
-#include "SentryBridge.h"
+﻿#include "SentryBridge.h"
 #include "sentry.h"
 #include <QDebug>
 

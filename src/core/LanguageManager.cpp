@@ -1,4 +1,4 @@
-#include "LanguageManager.h"
+﻿#include "LanguageManager.h"
 
 #include "dscc/common/notification.h"
 

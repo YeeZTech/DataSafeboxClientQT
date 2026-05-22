@@ -35,6 +35,7 @@ PROJECT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"              # repo root
 PARENT_DIR="$(dirname "${PROJECT_DIR}")"
 
 APP_NAME="DataSafebox"
+DMG_APP_NAME="${DMG_APP_NAME:-数据安全柜控制台}"
 PRO_FILE="${PROJECT_DIR}/datasafebox-qt-client.pro"
 QT_VERSION="${QT_VERSION:-6.7.3}"
 DEPLOY_TARGET="12.0"
@@ -345,6 +346,13 @@ rm -rf "${BUILD_DIR}"
 mkdir -p "${BUILD_DIR}" "${DIST_DIR}"
 cd "${BUILD_DIR}"
 
+# Refresh source translation binaries so qrc always embeds latest texts.
+"${QT_DIR}/bin/lrelease" "${PROJECT_DIR}/translations/notification_zh_cn.ts" \
+    -qm "${PROJECT_DIR}/translations/notification_zh_cn.qm" >/dev/null
+"${QT_DIR}/bin/lrelease" "${PROJECT_DIR}/translations/qml_zh_cn.ts" \
+    -qm "${PROJECT_DIR}/translations/qml_zh_cn.qm" >/dev/null
+ok "Translations refreshed (.ts -> .qm)"
+
 qmake "${PRO_FILE}" \
     CONFIG+=release \
     CONFIG+=sdk_no_version_check \
@@ -582,7 +590,7 @@ rm -rf "${DMG_STAGING}"; mkdir -p "${DMG_STAGING}"
 
 # Use ditto (not cp -r) to preserve symlinks inside Qt .framework bundles.
 # cp -r dereferences them, doubling framework binary storage (~3x size).
-ditto "${APP_BUNDLE}" "${DMG_STAGING}/$(basename "${APP_BUNDLE}")"
+ditto "${APP_BUNDLE}" "${DMG_STAGING}/${DMG_APP_NAME}.app"
 ln -s /Applications "${DMG_STAGING}/Applications"
 
 rm -f "${DMG_TMP}" "${DIST_DIR}/${DMG_NAME}"

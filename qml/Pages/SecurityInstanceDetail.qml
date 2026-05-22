@@ -1,4 +1,4 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import "." as Theme
@@ -61,7 +61,7 @@ Item {
         if (!text.length) {
             return "-"
         }
-        return text.indexOf("月") !== -1 ? text : text + "个月"
+        return text.indexOf(qsTr(" months")) !== -1 ? text : text + qsTr(" months")
     }
 
     // Parse date/time string safely
@@ -491,7 +491,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: (instanceData.status || "运行中") === "运行中"
-                                    ? "正常"
+                                    ? qsTr("Normal")
                                     : window.translateStatus(instanceData.status || "运行中")
                                 font.pixelSize: 12
                                 font.weight: Font.Medium
@@ -1407,10 +1407,10 @@ Item {
             instantiationPaymentDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes)
 
             // 显示的实例时长文案
-            instantiationPaymentDialog.instanceFee = (durationText && durationText.length > 0 ? (durationText + "个月") : "-")
+            instantiationPaymentDialog.instanceFee = (durationText && durationText.length > 0 ? (durationText + qsTr(" months")) : "-")
 
             // 当前计费规则（可根据实际配置调整）
-            instantiationPaymentDialog.billingRule = "30元/GB/月"
+            instantiationPaymentDialog.billingRule = qsTr("30 CNY/GB/Month")
 
             // 按照：实例大小(GB) × 实例时长(月) × 计费单价(元/GB/月) 计算预计费用
             instantiationPaymentDialog.estimatedFee = calculateEstimatedFee(rawSize, durationText, instantiationPaymentDialog.billingRule)

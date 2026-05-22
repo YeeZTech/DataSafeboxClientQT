@@ -1,4 +1,4 @@
-#include "SingleApplication.h"
+﻿#include "SingleApplication.h"
 #include <QFileInfo>
 #include <QDebug>
 

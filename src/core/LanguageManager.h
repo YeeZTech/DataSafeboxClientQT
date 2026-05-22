@@ -1,4 +1,4 @@
-#ifndef LANGUAGEMANAGER_H
+﻿#ifndef LANGUAGEMANAGER_H
 #define LANGUAGEMANAGER_H
 
 #include <QObject>

@@ -1,4 +1,4 @@
-#ifndef CASDOORHELPER_H
+﻿#ifndef CASDOORHELPER_H
 #define CASDOORHELPER_H
 
 #include <QObject>

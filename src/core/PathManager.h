@@ -1,4 +1,4 @@
-#ifndef PATHMANAGER_H
+﻿#ifndef PATHMANAGER_H
 #define PATHMANAGER_H
 
 #include <QObject>
