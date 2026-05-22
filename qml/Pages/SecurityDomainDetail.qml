@@ -1065,7 +1065,11 @@ Item {
                                 if (encryptFileButton.disabled) {
                                     return
                                 }
-                                if (!root.domainPubKey) {
+                                var pubKey = root.domainPubKey || (root.domainData && root.domainData.pubKey ? root.domainData.pubKey : "")
+                                if (pubKey && pubKey !== root.domainPubKey) {
+                                    root.domainPubKey = pubKey
+                                }
+                                if (!pubKey) {
                                     window.showError("未找到安全域公钥", "加密文件")
                                     return
                                 }

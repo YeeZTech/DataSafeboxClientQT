@@ -143,9 +143,10 @@ ApplicationWindow {
 
     function switchToSecurityDomain(domainCode, pubKey, domainName) {
         if (securityDomainDetail) {
-            securityDomainDetail.currentDomainCode = domainCode || ""
-            securityDomainDetail.domainPubKey = pubKey || ""
             securityDomainDetail.domainName = domainName || ""
+            securityDomainDetail.domainPubKey = pubKey || ""
+            securityDomainDetail.domainDetailLoading = false
+            securityDomainDetail.currentDomainCode = domainCode || ""
         }
         window.selectedDomainCode = domainCode || ""
         window.selectedDomainPubKey = pubKey || ""
@@ -317,14 +318,7 @@ ApplicationWindow {
 
         function onDomainCreated(operationId, domainCode) {
             createSecurityDomainForm.resetForm()
-            if (securityDomainDetail) {
-                securityDomainDetail.currentDomainCode = domainCode
-                securityDomainDetail.domainName = ""
-                securityDomainDetail.domainPubKey = ""
-                securityDomainDetail.domainDetailLoading = false
-            }
-            window.selectedDomainCode = domainCode || ""
-            window.currentPage = "securityDomainDetail"
+            window.switchToSecurityDomain(domainCode || "", "", "")
             if (securityDomainDetail) securityDomainDetail.showGuide()
             // 创建成功后刷新侧边栏列表
             DsccBridge.loadDomainList()
