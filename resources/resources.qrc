@@ -77,8 +77,4 @@
         <file alias="icons/icon-file-generic.svg">../icons/icon-file-generic.svg</file>
         <file alias="icons/icon-empty-state.svg">../icons/icon-empty-state.svg</file>
     </qresource>
-    <qresource prefix="/translations">
-        <file alias="notification_zh_cn.qm">../translations/notification_zh_cn.qm</file>
-        <file alias="qml_zh_cn.qm">../translations/qml_zh_cn.qm</file>
-    </qresource>
 </RCC>

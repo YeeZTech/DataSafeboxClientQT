@@ -70,9 +70,10 @@ INCLUDEPATH += \
 # Enable MOC for source files and headers that contain Q_OBJECT classes
 CONFIG += automoc
 
-# Qt Linguist — automatically compile .ts → .qm during the build.
-# Adding lrelease to CONFIG makes qmake invoke lrelease as a build step.
-CONFIG += lrelease
+# Qt Linguist — automatically compile .ts → .qm during the build
+# and embed them into the Qt resource system under :/translations/.
+CONFIG += lrelease embed_translations
+QM_FILES_RESOURCE_PREFIX = translations
 TRANSLATIONS += \
     translations/qml_zh_cn.ts \
     translations/notification_zh_cn.ts
