@@ -1,4 +1,4 @@
-#ifndef UPDATEMANAGER_H
+﻿#ifndef UPDATEMANAGER_H
 #define UPDATEMANAGER_H
 
 #include <QObject>

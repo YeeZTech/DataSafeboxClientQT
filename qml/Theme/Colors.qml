@@ -1,4 +1,4 @@
-pragma Singleton
+﻿pragma Singleton
 import QtQuick 2.15
 import QtQml
 
@@ -69,14 +69,11 @@ QtObject {
         return statusColors[status] || defaultStatusColor
     }
     
-    // Translate status from Chinese to display text (respects current language)
-    function translateStatus(chineseStatus) {
-        if (!chineseStatus) return ""
-        // Map Chinese status to English translation key
-        var translationKey = statusTranslations[chineseStatus]
-        if (!translationKey) return chineseStatus
-        // Use qsTr to get translation
-        return qsTr(translationKey)
+    // Translate status from Chinese to display text
+    // 后端返回的状态文本直接显示，不进行翻译
+    // 如果需要支持多语言，后端应返回状态代码（如 "0", "1"）而非文本
+    function translateStatus(status) {
+        return status || ""
     }
 }
 

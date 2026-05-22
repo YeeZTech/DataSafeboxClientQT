@@ -22,7 +22,7 @@ rem Configurable paths (env vars take priority over defaults below)
 rem ------------------------------------------------------------------
 if not defined QT_VERSION  set "QT_VERSION=6.7.3"
 if not defined IFW_VERSION set "IFW_VERSION=4.10"
-if not defined USE_TEST_ENV set "USE_TEST_ENV=1"
+if not defined USE_TEST_ENV set "USE_TEST_ENV=0"
 
 if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
     if not defined QT_ARCH       set "QT_ARCH=msvc2022_arm64"
@@ -99,6 +99,7 @@ call :check_ifw
 call :check_msvc
 call :check_sentry
 call :check_dscc
+call :check_config_xml
 call :check_package_xml
 
 if "%PREFLIGHT_FAIL%"=="1" goto :preflight_failed
@@ -125,9 +126,9 @@ rem BUILD STEPS
 rem ==================================================================
 :start_build
 
-rem --- read version ---
-for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "(Select-Xml -Path '%PACKAGE_XML%' -XPath '/Package/Version').Node.InnerText"`) do set "PACKAGE_VERSION=%%i"
-if not defined PACKAGE_VERSION (echo [Error] Failed to read version from package.xml & goto :fail)
+rem --- read version (single source: installer/config/config.xml) ---
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "(Select-Xml -Path '%CONFIG_XML%' -XPath '/Installer/Version').Node.InnerText"`) do set "PACKAGE_VERSION=%%i"
+if not defined PACKAGE_VERSION (echo [Error] Failed to read version from config.xml & goto :fail)
 set "OUTPUT_INSTALLER=%SCRIPT_DIR%DataSafebox_%PACKAGE_VERSION%.exe"
 echo [INFO] Version: %PACKAGE_VERSION%
 echo [INFO] Output : %OUTPUT_INSTALLER%
@@ -491,13 +492,25 @@ echo             Without it, target machines lacking VC++ Runtime will fail to s
 echo.
 exit /b 0
 
+:check_config_xml
+if exist "%CONFIG_XML%" (
+    echo   [OK]      config.xml found
+) else (
+    set "PREFLIGHT_FAIL=1"
+    echo   [MISSING] %CONFIG_XML%
+    echo             This file is required for installer version source.
+    echo             Ensure you have the full project source checked out.
+    echo.
+)
+exit /b 0
+
 :check_package_xml
 if exist "%PACKAGE_XML%" (
     echo   [OK]      package.xml found
 ) else (
     set "PREFLIGHT_FAIL=1"
     echo   [MISSING] %PACKAGE_XML%
-    echo             This file is required for version and installer metadata.
+    echo             This file is required for installer package metadata.
     echo             Ensure you have the full project source checked out.
     echo.
 )

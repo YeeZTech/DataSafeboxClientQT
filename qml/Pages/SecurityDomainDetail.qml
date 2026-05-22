@@ -1,4 +1,4 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import "." as Theme
@@ -851,9 +851,9 @@ Item {
             var _applyCode = exportDetailDialog.exportId || ""
             var _fileCode  = exportDetailDialog.fileCode || ""
             var _fileHash  = exportDetailDialog.fileHash || ""
-            if (!_applyCode) { window.showError("缺少申请编号", "文件导出审核"); return }
-            if (!_fileCode) { window.showError("缺少文件编号", "文件导出审核"); return }
-            if (!_fileHash) { window.showError("缺少文件哈希", "文件导出审核"); return }
+            if (!_applyCode) { window.showError(qsTr("Application ID is required"), qsTr("File Export Review")); return }
+            if (!_fileCode) { window.showError(qsTr("File code is required"), qsTr("File Export Review")); return }
+            if (!_fileHash) { window.showError(qsTr("File hash is required"), qsTr("File Export Review")); return }
             root.auditRequestPending = true
             DsccBridge.auditRequest(_applyCode, _fileCode, true, _fileHash)
         }
@@ -862,8 +862,8 @@ Item {
             if (root.auditRequestPending) return
             var _applyCode = exportDetailDialog.exportId || ""
             var _fileCode  = exportDetailDialog.fileCode || ""
-            if (!_applyCode) { window.showError("缺少申请编号", "文件导出审核"); return }
-            if (!_fileCode) { window.showError("缺少文件编号", "文件导出审核"); return }
+            if (!_applyCode) { window.showError(qsTr("Application ID is required"), qsTr("File Export Review")); return }
+            if (!_fileCode) { window.showError(qsTr("File code is required"), qsTr("File Export Review")); return }
             root.auditRequestPending = true
             DsccBridge.auditRequest(_applyCode, _fileCode, false, "")
         }
@@ -903,9 +903,9 @@ Item {
             var _applyCode = appWhitelistDetailDialog.applyCode || ""
             var _fileCode  = appWhitelistDetailDialog.fileCode || ""
             var _fileHash  = appWhitelistDetailDialog.fileHash || ""
-            if (!_applyCode) { window.showError("缺少申请编号", "应用白名单审核"); return }
-            if (!_fileCode) { window.showError("缺少文件编号", "应用白名单审核"); return }
-            if (!_fileHash) { window.showError("缺少文件哈希", "应用白名单审核"); return }
+            if (!_applyCode) { window.showError(qsTr("Application ID is required"), qsTr("App Whitelist Review")); return }
+            if (!_fileCode) { window.showError(qsTr("File code is required"), qsTr("App Whitelist Review")); return }
+            if (!_fileHash) { window.showError(qsTr("File hash is required"), qsTr("App Whitelist Review")); return }
             root.auditRequestPending = true
             DsccBridge.auditRequest(_applyCode, _fileCode, true, _fileHash)
         }
@@ -914,8 +914,8 @@ Item {
             if (root.auditRequestPending) return
             var _applyCode = appWhitelistDetailDialog.applyCode || ""
             var _fileCode  = appWhitelistDetailDialog.fileCode || ""
-            if (!_applyCode) { window.showError("缺少申请编号", "应用白名单审核"); return }
-            if (!_fileCode) { window.showError("缺少文件编号", "应用白名单审核"); return }
+            if (!_applyCode) { window.showError(qsTr("Application ID is required"), qsTr("App Whitelist Review")); return }
+            if (!_fileCode) { window.showError(qsTr("File code is required"), qsTr("App Whitelist Review")); return }
             root.auditRequestPending = true
             DsccBridge.auditRequest(_applyCode, _fileCode, false, "")
         }
@@ -1066,7 +1066,7 @@ Item {
                                     return
                                 }
                                 if (!root.domainPubKey) {
-                                    window.showError("未找到安全域公钥", "加密文件")
+                                    window.showError(qsTr("Security domain public key not found"), qsTr("File Encryption"))
                                     return
                                 }
                                 root.encryptButtonBusy = true
@@ -1233,7 +1233,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: (root.domainData.status || "") === "运行中"
-                                        ? "正常"
+                                        ? qsTr("Normal")
                                         : (window.translateStatus(root.domainData.status || "") || "")
                                     font.pixelSize: 16
                                     font.weight: Font.Medium
@@ -3225,10 +3225,10 @@ Item {
                                                         appWhitelistDetailDialog.creator = modelData.applicantUserName || modelData.applicant || ""
                                                         appWhitelistDetailDialog.instanceName = modelData.instanceName || ""
                                                         appWhitelistDetailDialog.appliedTime = Theme.Utils.formatDateTime(modelData.applyTime || "")
-                                                        appWhitelistDetailDialog.duration = modelData.duration ? (modelData.duration + "个月") : "-"
+                                                        appWhitelistDetailDialog.duration = modelData.duration ? (modelData.duration + qsTr(" months")) : "-"
                                                         appWhitelistDetailDialog.cost = modelData.cost || ""
                                                         var whlProcs = resolveWhitelistProcessesByRow(modelData)
-                                                        appWhitelistDetailDialog.appName = (whlProcs.length > 0 ? (whlProcs[0].masterFileName || "") : "") || "应用名称"
+                                                        appWhitelistDetailDialog.appName = (whlProcs.length > 0 ? (whlProcs[0].masterFileName || "") : "") || qsTr("App Name")
                                                         appWhitelistDetailDialog.processes = whlProcs
                                                         appWhitelistDetailDialog.selectedProcessIndex = 0
                                                         appWhitelistDetailDialog.fileCode = (whlProcs.length > 0 && whlProcs[0]) ? (whlProcs[0].fileCode || "") : ""
@@ -3565,7 +3565,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 6
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("文件名称")
+                                        text: qsTr("File Name")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3625,7 +3625,7 @@ Item {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 30
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("状态")
+                                        text: qsTr("Status")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -3639,7 +3639,7 @@ Item {
                                         anchors.right: parent.right
                                         anchors.rightMargin: root.actionRightMargin
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("操作")
+                                        text: qsTr("Actions")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
@@ -4150,11 +4150,11 @@ Item {
         var now = new Date()
         var diff = expiryDate.getTime() - now.getTime()
         if (diff <= 0) {
-            return "0天"
+            return "0" + qsTr(" days")
         }
         var msPerDay = 24 * 60 * 60 * 1000
         var remainingDays = Math.ceil(diff / msPerDay)
-        return remainingDays + "天"
+        return remainingDays + qsTr(" days")
     }
 
     function formatFileSizeLowercase(sizeInBytes) {
@@ -4243,8 +4243,8 @@ Item {
             if (domainCode !== root.currentDomainCode) return
             root.pendingAddUserFullInfo = null
             root.visibleUserOperationState_busy = false
-            var errorMessage = DsccBridge.notificationMessage(notification, "添加用户失败")
-            window.showError(errorMessage || "添加用户失败", "添加可见用户")
+            var errorMessage = DsccBridge.notificationMessage(notification, qsTr("Failed to add user"))
+            window.showError(errorMessage || qsTr("Failed to add user"), qsTr("Add Visible User"))
         }
 
         function onRemoveUserFromDomainSuccess(operationId, domainCode, userId) {
@@ -4264,8 +4264,8 @@ Item {
             root.removeUserState_pendingDomainPubKey = ""
             root.removeUserState_pendingDomainCode = ""
             root.visibleUserOperationState_busy = false
-            var errorMessage = DsccBridge.notificationMessage(notification, "移除用户失败")
-            window.showError(errorMessage || "移除用户失败", "移除可见用户")
+            var errorMessage = DsccBridge.notificationMessage(notification, qsTr("Failed to remove user"))
+            window.showError(errorMessage || qsTr("Failed to remove user"), qsTr("Remove Visible User"))
         }
 
         function onDomainDescUpdated(operationId, domainCode) {
@@ -4278,8 +4278,8 @@ Item {
         function onDomainDescUpdateFailed(operationId, domainCode, notification) {
             if (domainCode !== root.currentDomainCode) return
             root.isDescriptionSaving = false
-            var errorMessage = DsccBridge.notificationMessage(notification, "保存描述失败")
-            window.showError(errorMessage || "保存描述失败", "修改描述")
+            var errorMessage = DsccBridge.notificationMessage(notification, qsTr("Failed to save description"))
+            window.showError(errorMessage || qsTr("Failed to save description"), qsTr("Edit Description"))
         }
 
         function onDomainCloseFailed(operationId, domainCode, notification) {
@@ -4287,8 +4287,8 @@ Item {
             deactivateDomainState.isPending = false
             deactivateDomainState.pendingDomainPubKey = ""
             deactivateDomainState.pendingDomainCode = ""
-            var errorMessage = DsccBridge.notificationMessage(notification, "停用安全域失败")
-            window.showError(errorMessage || "停用安全域失败", "停用安全域")
+            var errorMessage = DsccBridge.notificationMessage(notification, qsTr("Failed to disable security domain"))
+            window.showError(errorMessage || qsTr("Failed to disable security domain"), qsTr("Disable Security Domain"))
         }
         // 注意：onDomainClosed 成功的导航/刷新由 main.qml 统一处理（切换至 home + 刷新列表）
 
@@ -4299,8 +4299,8 @@ Item {
 
         function onAuditInstanceRequestFailed(operationId, instanceCode, notification) {
             root.instanceAuditPending = false
-            var errorMessage = DsccBridge.notificationMessage(notification, "实例审核失败")
-            window.showError(errorMessage || "实例审核失败", "实例审核")
+            var errorMessage = DsccBridge.notificationMessage(notification, qsTr("Failed to audit instance"))
+            window.showError(errorMessage || qsTr("Failed to audit instance"), qsTr("Instance Audit"))
             DsccBridge.loadInstances(root.currentDomainCode)
         }
 
@@ -4312,8 +4312,8 @@ Item {
 
         function onAuditRequestFailed(operationId, auditCode, fileCode, notification) {
             root.auditRequestPending = false
-            var errorMessage = DsccBridge.notificationMessage(notification, "审核操作失败")
-            window.showError(errorMessage || "审核操作失败", "审核操作")
+            var errorMessage = DsccBridge.notificationMessage(notification, qsTr("Failed to audit request"))
+            window.showError(errorMessage || qsTr("Failed to audit request"), qsTr("Audit Request"))
             DsccBridge.loadAudits(root.currentDomainCode, 1)
             DsccBridge.loadAudits(root.currentDomainCode, 2)
         }

@@ -1,4 +1,4 @@
-#ifndef SENTRYBRIDGE_H
+﻿#ifndef SENTRYBRIDGE_H
 #define SENTRYBRIDGE_H
 
 #include <QObject>

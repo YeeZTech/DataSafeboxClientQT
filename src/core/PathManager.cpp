@@ -1,4 +1,4 @@
-#include "PathManager.h"
+﻿#include "PathManager.h"
 
 #include <QCoreApplication>
 #include <QDesktopServices>

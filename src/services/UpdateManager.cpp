@@ -1,4 +1,4 @@
-#include "UpdateManager.h"
+﻿#include "UpdateManager.h"
 #include "AppConfig.h"
 #include <QJsonDocument>
 #include <QJsonObject>

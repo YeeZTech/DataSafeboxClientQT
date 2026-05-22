@@ -1,4 +1,4 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
 import QtQuick.Layouts 1.15
@@ -20,7 +20,7 @@ ApplicationWindow {
     minimumHeight: 600
     maximumHeight: 10000
     visible: true
-    title: qsTr("Data Safe Box")
+    title: qsTr("Data SafeBox Console")
     color: "#f8fafc"  // slate-50 background
     
     // Authentication state
@@ -49,21 +49,12 @@ ApplicationWindow {
         return ""
     }
 
-    // Status translation map
+    // Status translation map - 后端返回中文状态时直接显示，不翻译
+    // 注意：如果后端返回的是中文状态，应直接显示，不需要翻译
+    // 如果需要支持多语言，后端应返回代码（如 "0", "1"）或英文状态
     function translateStatus(chineseStatus) {
-        var statusMap = {
-            "待审核": qsTr("Pending Review"),
-            "已授权": qsTr("Approved"),
-            "已拒绝": qsTr("Rejected"),
-            "创建失败": qsTr("Creation Failed"),
-            "运行中": qsTr("Running"),
-            "已结束": qsTr("Ended"),
-            "已关闭": qsTr("Closed"),
-            "停用": qsTr("Disabled"),
-            "已停用": qsTr("Disabled"),
-            "停用中": qsTr("Disabling")
-        }
-        return statusMap[chineseStatus] || chineseStatus
+        // 后端返回的中文状态直接返回，不进行翻译
+        return chineseStatus || ""
     }
 
     // prefix: 可选场景前缀，如 "安全域创建"；会自动拼成 "安全域创建：<原因>"
@@ -75,7 +66,7 @@ ApplicationWindow {
             msg = msg.substring(idx + 7).replace(/\.$/, "").trim()
         }
         if (!msg) msg = qsTr("Operation incomplete, please try again later")
-        if (prefix) msg = prefix + "：" + msg
+        if (prefix) msg = prefix + ": " + msg
         errorDialog.errorMessage = msg
         if (errorDialog.opened) {
             errorTimer.restart()
@@ -273,7 +264,7 @@ ApplicationWindow {
             if (window.loginRetryCount < window.maxLoginRetries) {
                 casdoorRetryTimer.restart()
             } else {
-                window.loginErrorMessage = message || "登录失败，请检查网络后重试"
+                window.loginErrorMessage = message || qsTr("Login failed, please check network and retry")
                 window.showLoginError = true
             }
         }
@@ -393,7 +384,7 @@ ApplicationWindow {
             if (window.loginRetryCount < window.maxLoginRetries) {
                 casdoorRetryTimer.restart()
             } else {
-                window.loginErrorMessage = "无法加载登录页，请检查网络连接"
+                window.loginErrorMessage = qsTr("Cannot load login page, please check network connection")
                 window.showLoginError = true
             }
         }
@@ -457,7 +448,7 @@ ApplicationWindow {
 
             Text {
                 width: parent.width
-                text: window.loginErrorMessage || "网络错误，请检查网络后重试"
+                text: window.loginErrorMessage || qsTr("Network error, please check network and retry")
                 font.pixelSize: 13
                 color: "#64748b"
                 horizontalAlignment: Text.AlignHCenter
@@ -1753,7 +1744,7 @@ ApplicationWindow {
                                     cursorShape: UpdateManager.isChecking ? Qt.ArrowCursor : Qt.PointingHandCursor
                                     onClicked: {
                                         if (UpdateManager.isChecking) {
-                                            checkFailedDialog.text = "正在检查更新，请稍候"
+                                            checkFailedDialog.text = qsTr("Checking update, please wait")
                                             checkFailedDialog.open()
                                             return
                                         }
@@ -1765,7 +1756,7 @@ ApplicationWindow {
                                         }
 
                                         if (UpdateManager.isDownloading) {
-                                            checkFailedDialog.text = "更新正在下载中，请稍后安装"
+                                            checkFailedDialog.text = qsTr("Update is downloading, please install later")
                                             checkFailedDialog.open()
                                             return
                                         }
@@ -1849,7 +1840,7 @@ ApplicationWindow {
                 
                 Text {
                     anchors.centerIn: parent
-                    text: qsTr("Welcome to Data Safe Box")
+                    text: qsTr("Welcome to DataSafeBox Console")
                     font.pixelSize: 24
                     color: Theme.Colors.textSecondary
                 }
@@ -2063,7 +2054,7 @@ ApplicationWindow {
                                     if (PathManager && PathManager.openTempDir) {
                                         var opened = PathManager.openTempDir()
                                         if (!opened) {
-                                            window.settingsStatusText = "打开目录失败，请检查路径是否可访问"
+                                            window.settingsStatusText = qsTr("Failed to open directory, please check if path is accessible")
                                         }
                                     }
                                 }
@@ -2227,8 +2218,8 @@ ApplicationWindow {
             if (selectedPath && PathManager && PathManager.setTempDir) {
                 var ok = PathManager.setTempDir(selectedPath)
                 window.settingsStatusText = ok
-                    ? "缓存目录已更新，新任务立即生效"
-                    : "路径设置失败，请检查目录权限"
+                    ? qsTr("Cache directory updated, new tasks will use it immediately")
+                    : qsTr("Failed to set path, please check directory permissions")
             }
         }
     }
@@ -2554,7 +2545,7 @@ ApplicationWindow {
 
         function onNoUpdateAvailable() {
             window.hasUpdateNotification = false
-            noUpdateLabel.text = "当前已是最新版本 v" + UpdateManager.currentVersion
+            noUpdateLabel.text = qsTr("Already up to date, current version is v") + UpdateManager.currentVersion
             noUpdateDialog.open()
         }
         

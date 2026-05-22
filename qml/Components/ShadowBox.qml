@@ -1,4 +1,4 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 
 // 简易投影：通过偏移矩形近似实现，无外部依赖
 // 使用：在带 radius 的容器内放置 ShadowBox { cornerRadius: 30 }

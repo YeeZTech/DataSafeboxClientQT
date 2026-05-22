@@ -1,4 +1,4 @@
-#ifndef SINGLEAPPLICATION_H
+﻿#ifndef SINGLEAPPLICATION_H
 #define SINGLEAPPLICATION_H
 
 #include <QApplication>

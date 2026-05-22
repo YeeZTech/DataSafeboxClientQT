@@ -18,19 +18,19 @@ message("USE_TEST_ENV=$$USE_TEST_ENV")
 # Application name
 TARGET = DataSafebox
 
-# Version automation: Read version from package.xml as the Single Source of Truth
+# Version automation: Read version from installer/config/config.xml as the Single Source of Truth
 # Trying to detect OS and use appropriate command
 win32 {
     # Windows: Use PowerShell to extract version
-    VERSION_FROM_XML = $$system("powershell -NoProfile -Command \"(Select-Xml -Path '$$PWD/installer/packages/com.datasafebox.client/meta/package.xml' -XPath '/Package/Version').Node.InnerText\"")
+    VERSION_FROM_XML = $$system("powershell -NoProfile -Command \"(Select-Xml -Path '$$PWD/installer/config/config.xml' -XPath '/Installer/Version').Node.InnerText\"")
 } else {
     # macOS/Linux: Use sed/grep to extract version
-    VERSION_FROM_XML = $$system("grep -oPm1 '(?<=<Version>)[^<]+' $$PWD/installer/packages/com.datasafebox.client/meta/package.xml 2>/dev/null || sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' $$PWD/installer/packages/com.datasafebox.client/meta/package.xml")
+    VERSION_FROM_XML = $$system("grep -oPm1 '(?<=<Version>)[^<]+' $$PWD/installer/config/config.xml 2>/dev/null || sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' $$PWD/installer/config/config.xml")
 }
 
 # Fallback if detection fails
 isEmpty(VERSION_FROM_XML) {
-    message("Warning: Could not read version from package.xml, falling back to 1.0.0")
+    message("Warning: Could not read version from installer/config/config.xml, falling back to 1.0.0")
     VERSION_FROM_XML = "1.0.0"
 }
 
@@ -74,8 +74,8 @@ CONFIG += automoc
 # Adding lrelease to CONFIG makes qmake invoke lrelease as a build step.
 CONFIG += lrelease
 TRANSLATIONS += \
-    translations/notification_zh_cn.ts \
-    translations/qml_zh_cn.ts
+    translations/qml_zh_cn.ts \
+    translations/notification_zh_cn.ts
 
 RESOURCES += resources/resources.qrc
 

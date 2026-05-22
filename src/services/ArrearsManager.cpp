@@ -1,4 +1,4 @@
-#include "ArrearsManager.h"
+﻿#include "ArrearsManager.h"
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>

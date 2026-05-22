@@ -1,4 +1,4 @@
-import QtQuick 2.15
+﻿import QtQuick 2.15
 import QtQuick.Controls 2.15
 import Qt.labs.platform 1.1
 import "." as Theme
@@ -236,8 +236,9 @@ Popup {
             root._resultMessage = ""
             root._resultType = "success"
         } else if (root._encryptFailed < root._encryptTotal) {
-            root._resultMessage = "部分完成：" + (root._encryptTotal - root._encryptFailed)
-                + " 个成功，" + root._encryptFailed + " 个失败"
+            root._resultMessage = qsTr("Partially completed: %1 succeeded, %2 failed")
+                .arg(root._encryptTotal - root._encryptFailed)
+                .arg(root._encryptFailed)
             root._resultType = "warning"
         } else {
             root._resultMessage = ""
@@ -260,7 +261,7 @@ Popup {
             root._markModelItemStatus(next.modelIndex, "failed")
             root._encryptDone++
             root._encryptFailed++
-            root._resultMessage = "无法生成加密文件输出路径"
+            root._resultMessage = qsTr("Failed to generate encrypted file output path")
             root._resultType = "error"
             root._beginNextEncryption()
             return
@@ -280,7 +281,7 @@ Popup {
         root._encryptDone++
         if (status !== "encrypted") {
             root._encryptFailed++
-            root._resultMessage = message || "加密失败"
+            root._resultMessage = message || qsTr("Encryption failed")
             root._resultType = "error"
         }
 
@@ -302,7 +303,7 @@ Popup {
 
         var pubKey = root.domainPubKey || ""
         if (!pubKey) {
-            root._resultMessage = "未找到安全域公钥"
+            root._resultMessage = qsTr("Security domain public key not found")
             root._resultType = "error"
             root._encryptProgressDismissed = false
             return
@@ -320,7 +321,7 @@ Popup {
         }
 
         if (queue.length === 0) {
-            root._resultMessage = "没有待加密的文件"
+            root._resultMessage = qsTr("No files to encrypt")
             root._resultType = "error"
             root._encryptProgressDismissed = false
             return
@@ -519,12 +520,12 @@ Popup {
             if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
             root._completeCurrentEncryption(
                 "failed",
-                root._formatEncryptFailure(notification, "加密失败"))
+                root._formatEncryptFailure(notification, qsTr("Encryption failed")))
         }
 
         function onEncryptFileCanceled(operationId, sourceFile, targetFile) {
             if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
-            root._completeCurrentEncryption("failed", "加密已取消")
+            root._completeCurrentEncryption("failed", qsTr("Encryption cancelled"))
         }
     }
 
@@ -559,7 +560,7 @@ Popup {
                     SelectableText {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: qsTr("加密文件到此安全域")
+                        text: qsTr("Encrypt Files to This Security Domain")
                         font.pixelSize: 18
                         font.weight: Font.DemiBold
                         color: "#0f172b"
@@ -599,7 +600,7 @@ Popup {
                     Row {
                         spacing: 4
                         SelectableText {
-                            text: qsTr("加密文件")
+                            text: qsTr("Files to Encrypt")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: "#314158"
@@ -650,7 +651,7 @@ Popup {
                                     anchors.leftMargin: 2
                                     anchors.rightMargin: 2
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: root.selectedFilePath ? root.selectedFilePath : qsTr("请选择需要加密的文件")
+                                    text: root.selectedFilePath ? root.selectedFilePath : qsTr("Please select files to encrypt")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
                                     color: root.selectedFilePath ? "#0f172b" : "#94a3b8"
@@ -676,7 +677,7 @@ Popup {
                     spacing: 8
 
                     SelectableText {
-                        text: qsTr("加密文件输出路径")
+                        text: qsTr("Output Path for Encrypted Files")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "#314158"
@@ -721,7 +722,7 @@ Popup {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: root.selectedOutputPath
                                           ? root.selectedOutputPath
-                                          : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("选择输出路径"))
+                                          : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("Select output path"))
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
                                     color: (root.selectedOutputPath || root.selectedFilePath) ? "#0f172b" : "#94a3b8"
@@ -910,7 +911,7 @@ Popup {
                     Text {
                         id: encryptBtnText
                         anchors.centerIn: parent
-                        text: root._pendingCount > 0 ? qsTr("加密文件") : qsTr("加密文件")
+                        text: qsTr("Encrypt Files")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "white"

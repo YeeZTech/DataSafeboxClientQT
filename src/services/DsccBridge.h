@@ -1,4 +1,4 @@
-#ifndef DSCCBRIDGE_H
+﻿#ifndef DSCCBRIDGE_H
 #define DSCCBRIDGE_H
 
 #include <QHash>

@@ -1,4 +1,4 @@
-#ifndef ARREARSMANAGER_H
+﻿#ifndef ARREARSMANAGER_H
 #define ARREARSMANAGER_H
 
 #include <QObject>

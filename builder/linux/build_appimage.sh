@@ -30,7 +30,7 @@ DIST_DIR="${SCRIPT_DIR}"
 APPDIR="${BUILD_DIR}/AppDir"
 
 VERSION="$(grep -oE '<Version>[^<]+' \
-    "${PROJECT_DIR}/installer/packages/com.datasafebox.client/meta/package.xml" \
+    "${PROJECT_DIR}/installer/config/config.xml" \
     | head -1 | sed 's|<Version>||')"
 [[ -z "${VERSION}" ]] && VERSION="1.0.0"
 
