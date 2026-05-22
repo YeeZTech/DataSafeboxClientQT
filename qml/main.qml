@@ -150,7 +150,6 @@ ApplicationWindow {
         window.selectedDomainCode = domainCode || ""
         window.selectedDomainPubKey = pubKey || ""
         window.currentPage = "securityDomainDetail"
-        window.dataVersion++
         return true
     }
 

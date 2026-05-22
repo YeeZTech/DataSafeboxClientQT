@@ -241,6 +241,7 @@ void DsccBridge::shutdown()
     }
     m_domainCreateFailureMessages.clear();
     m_encryptFileOperations.clear();
+    m_domainVisibleUsersCache.clear();
     m_currentUserId.clear();
     m_currentUserName.clear();
 }
@@ -267,6 +268,7 @@ void DsccBridge::setCurrentUser(const QString &userId,
     }
     m_domainCreateFailureMessages.clear();
     m_encryptFileOperations.clear();
+    m_domainVisibleUsersCache.clear();
 
     const QString domainDbPath = userDomainDbPath(trimmedUserId);
     QDir().mkpath(QFileInfo(domainDbPath).absolutePath());
@@ -293,6 +295,7 @@ void DsccBridge::clearCurrentUser()
     }
     m_domainCreateFailureMessages.clear();
     m_encryptFileOperations.clear();
+    m_domainVisibleUsersCache.clear();
     m_currentUserId.clear();
     m_currentUserName.clear();
     emit domainListLoaded(QVariantList());
@@ -1010,11 +1013,8 @@ void DsccBridge::loadInstances(const QString &domainCode)
                   return a.created_at > b.created_at;
               });
 
-    QList<dscc::VisibleUserInfo> visibleUsers;
-    const auto domainInfo = m_assets->DetailDomainInfo(trimmedDomainCode);
-    if (domainInfo.has_value()) {
-        visibleUsers = domainInfo->visible_users;
-    }
+    const QList<dscc::VisibleUserInfo> visibleUsers =
+        m_domainVisibleUsersCache.value(trimmedDomainCode);
     const QHash<QString, QString> userNameLookup =
         buildUserNameLookup(visibleUsers, m_currentUserId, m_currentUserName);
 
@@ -1051,11 +1051,8 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
     }
 
     QHash<QString, QString> instanceNameMap;
-    QList<dscc::VisibleUserInfo> visibleUsers;
-    const auto domainInfo = m_assets->DetailDomainInfo(trimmedDomainCode);
-    if (domainInfo.has_value()) {
-        visibleUsers = domainInfo->visible_users;
-    }
+    const QList<dscc::VisibleUserInfo> visibleUsers =
+        m_domainVisibleUsersCache.value(trimmedDomainCode);
     const QHash<QString, QString> userNameLookup =
         buildUserNameLookup(visibleUsers, m_currentUserId, m_currentUserName);
 
@@ -1153,10 +1150,12 @@ void DsccBridge::loadDomainSummary(const QString &domainCode)
         const auto info = m_assets->DetailDomainInfo(trimmedDomainCode);
         if (info.has_value()) {
             logDomainInfoSummarySource(trimmedDomainCode, *info);
+            m_domainVisibleUsersCache.insert(trimmedDomainCode, info->visible_users);
             summary = domainInfoToSummary(*info);
             summary.insert(QStringLiteral("visibleUsers"),
                            visibleUsersToVariantList(info->visible_users));
         } else {
+            m_domainVisibleUsersCache.remove(trimmedDomainCode);
             qWarning().noquote()
                 << QStringLiteral("[DsccBridge] loadDomainSummary DetailDomainInfo returned empty for domainCode=\"%1\"")
                        .arg(trimmedDomainCode);

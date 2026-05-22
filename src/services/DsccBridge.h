@@ -133,6 +133,7 @@ private:
     QString m_credential;
     QString m_currentUserId;
     QString m_currentUserName;
+    QHash<QString, QList<dscc::VisibleUserInfo>> m_domainVisibleUsersCache;
     QHash<uint32_t, QString> m_domainCreateFailureMessages;
     QHash<uint32_t, FileCryptoOperation> m_encryptFileOperations;
 };

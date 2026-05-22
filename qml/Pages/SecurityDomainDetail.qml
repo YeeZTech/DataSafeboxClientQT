@@ -680,7 +680,7 @@ Item {
 
     onDataVersionChanged: {
         // dataVersion 用于外部触发刷新，调用 reloadAllData
-        if (!domainDetailLoading) {
+        if (root.currentDomainCode && !domainDetailLoading) {
             reloadAllData()
         }
     }
