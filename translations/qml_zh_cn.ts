@@ -23,7 +23,7 @@
     <message>
         <location filename="../qml/Dialogs/AddVisibleUserDialog.qml" line="122"/>
         <source>Dianshu ID:</source>
-        <translation>典枢ID：</translation>
+        <translation>典枢号：</translation>
     </message>
     <message>
         <location filename="../qml/Dialogs/AddVisibleUserDialog.qml" line="167"/>
@@ -902,7 +902,7 @@
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="591"/>
         <source>User</source>
-        <translation>用户</translation>
+        <translation>使用方</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="854"/>
@@ -1294,7 +1294,7 @@ Status:
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="485"/>
         <source>User</source>
-        <translation>用户</translation>
+        <translation>使用者</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="526"/>
