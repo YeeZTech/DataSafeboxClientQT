@@ -440,10 +440,6 @@ Item {
         return deduped
     }
 
-    function getInstanceDetailFromCache(instanceId, instanceName) {
-        return null
-    }
-
     function resolveWhitelistProcessesByRow(row) {
         // Helper: normalize process entries so dialog can show fileName/fileHash
         function normProcs(src) {
@@ -469,106 +465,9 @@ Item {
             return out
         }
 
-        // First try: look up from instance detail cache
-        var instDetail = getInstanceDetailFromCache(row.instanceId || "", row.instanceName || "")
-        if (instDetail) {
-            var applyCode = (row.applyCode || "").toString().trim()
-            if (applyCode) {
-                var audits = instDetail.appWhitelistAudits || []
-                for (var i = 0; i < audits.length; i++) {
-                    var audit = audits[i] || {}
-                    if ((audit.applyCode || "").toString().trim() !== applyCode) continue
-                    var src = audit.processes || audit.rawFiles || audit.filePaths || []
-                    if (src.length > 0) return normProcs(src)
-                }
-            }
-        }
-
-        // Fallback: use processes/rawFiles stored directly on the row
+        // Use processes/rawFiles stored directly on the row
         var rowSrc = row.processes || row.rawFiles || row.filePaths || []
         return normProcs(rowSrc)
-    }
-
-    function resolveExportDialogDataByRow(row) {
-        var fallback = {
-            fileCount: Number(row.fileCount) || 0,
-            fileSize: Number(row.fileSize) || 0,
-            status: row.status || "待审核",
-            applyTime: row.applyTime || "",
-            reason: row.reason || "",
-            files: row.files || [],
-            fileCode: row.fileCode || "",
-            fileHash: row.fileHash || ""
-        }
-        var instDetail = getInstanceDetailFromCache(row.instanceId || "", row.instanceName || "")
-        if (!instDetail) {
-            return fallback
-        }
-        var applyCode = (row.applyCode || "").toString().trim()
-        if (!applyCode) {
-            return fallback
-        }
-        var reqs = instDetail.exportRequests || []
-        for (var i = 0; i < reqs.length; i++) {
-            var req = reqs[i] || {}
-            if ((req.applyCode || "").toString().trim() !== applyCode) {
-                continue
-            }
-
-            var reqFiles = req.rawFiles || req.filePaths || []
-            var target = null
-            var rowFileCode = (row.fileCode || "").toString().trim()
-            if (rowFileCode && reqFiles && reqFiles.length > 0) {
-                for (var rf = 0; rf < reqFiles.length; rf++) {
-                    var raw = reqFiles[rf] || {}
-                    if ((raw.fileCode || "").toString().trim() === rowFileCode) {
-                        target = raw
-                        break
-                    }
-                }
-            }
-            if (!target && reqFiles && reqFiles.length > 0) {
-                target = reqFiles[0] || null
-            }
-
-            var totalSize = Number(req.fileSize)
-            if (isNaN(totalSize) || totalSize < 0) {
-                totalSize = Number(req.totalFileSize)
-            }
-            if (isNaN(totalSize) || totalSize < 0) {
-                totalSize = Number(req.file_size)
-            }
-            if (isNaN(totalSize) || totalSize < 0) {
-                totalSize = 0
-            }
-
-            var targetSize = Number(target && target.fileSize !== undefined ? target.fileSize : (target ? target.file_size : 0))
-            if (isNaN(targetSize) || targetSize < 0) {
-                targetSize = 0
-            }
-            if (targetSize <= 0 && totalSize > 0) {
-                targetSize = totalSize
-            }
-
-            var targetPath = (target && (target.filePath || target.fileName)) ? (target.filePath || target.fileName) : ""
-            return {
-                fileCount: Number(req.fileCount) || (reqFiles ? reqFiles.length : 0),
-                fileSize: targetSize,
-                status: (target && target.status) || req.status || fallback.status,
-                applyTime: req.applyTime || fallback.applyTime,
-                reason: req.reason || fallback.reason,
-                files: targetPath ? [targetPath] : (fallback.files || []),
-                fileCode: (target && target.fileCode) || req.fileCode || fallback.fileCode,
-                fileHash: (target && target.fileHash) || req.fileHash || fallback.fileHash
-            }
-        }
-        return fallback
-    }
-    
-    function getDomainData() {
-        // 数据源为 Loaded 信号填充的 root.domainData，此函数仅作保护返回
-        if (domainDetailLoading) return emptyDomainDetail()
-        return root.domainData || emptyDomainDetail()
     }
 
     function reloadAllData() {
@@ -938,7 +837,23 @@ Item {
         ScrollBar.vertical: ScrollBar {
             policy: ScrollBar.AsNeeded
         }
-        
+
+        // Transparent MouseArea to detect clicks outside descriptionBox for cancel editing
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            enabled: root.isEditingDescription
+            z: -1  // Below content
+
+            onPressed: {
+                if (root.isEditingDescription) {
+                    root.editedDescription = root._originalDescription
+                    root.descriptionErrorMessage = ""
+                    root.isEditingDescription = false
+                }
+            }
+        }
+
         Column {
             id: contentColumn
             anchors.left: parent.left
@@ -948,7 +863,7 @@ Item {
             anchors.top: parent.top
             anchors.topMargin: 8
             spacing: 16  // reduce gap to tighten title上下留白
-            
+
             // Header with title and buttons
             Item {
                 width: parent.width
@@ -1558,13 +1473,11 @@ Item {
                                 selectionColor: "#d4e4f1"  // 使用浅灰蓝色作为选中背景色
                                 wrapMode: TextArea.Wrap
                                 selectByMouse: true
-                                readOnly: root.isDomainReadOnly  // Read-only when domain is closed or current user isn't creator
-                                // Remove default padding to ensure accurate height calculation
+                                readOnly: root.isDomainReadOnly
                                 leftPadding: 0
                                 rightPadding: 0
                                 topPadding: 0
                                 bottomPadding: 0
-                                // background customization removed to avoid native style warnings
                                 visible: root.isEditingDescription
                                 
                                 onTextChanged: {
