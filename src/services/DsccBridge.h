@@ -112,6 +112,7 @@ signals:
     void auditInstanceRequestFailed(uint32_t operation_id,
                                     QString instance_code,
                                     dscc::Notification notification);
+    void coreErrorOccurred(dscc::Notification notification);
 
 private:
     void connectAssetSignals();
@@ -133,6 +134,8 @@ private:
     QString m_credential;
     QString m_currentUserId;
     QString m_currentUserName;
+    bool m_initializingUserAssets = false;
+    dscc::Notification m_userAssetsInitializationError;
     QHash<QString, QList<dscc::VisibleUserInfo>> m_domainVisibleUsersCache;
     QHash<uint32_t, QString> m_domainCreateFailureMessages;
     QHash<uint32_t, FileCryptoOperation> m_encryptFileOperations;

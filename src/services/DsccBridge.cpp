@@ -239,6 +239,8 @@ void DsccBridge::shutdown()
         m_assets->Shutdown();
         m_assets.reset();
     }
+    m_initializingUserAssets = false;
+    m_userAssetsInitializationError = dscc::Notification();
     m_domainCreateFailureMessages.clear();
     m_encryptFileOperations.clear();
     m_domainVisibleUsersCache.clear();
@@ -266,6 +268,8 @@ void DsccBridge::setCurrentUser(const QString &userId,
         m_assets->Shutdown();
         m_assets.reset();
     }
+    m_initializingUserAssets = false;
+    m_userAssetsInitializationError = dscc::Notification();
     m_domainCreateFailureMessages.clear();
     m_encryptFileOperations.clear();
     m_domainVisibleUsersCache.clear();
@@ -281,10 +285,42 @@ void DsccBridge::setCurrentUser(const QString &userId,
 
     m_assets = std::make_unique<dscc::UserAssets>(domainDbPath, m_credential);
     connectAssetSignals();
+    m_assets->SetMetaDbPath(m_metaDbPath);
     m_currentUserId = trimmedUserId;
     m_currentUserName = trimmedUserName;
     m_assets->SetCurrentUser(trimmedUserId, trimmedUserName, m_serverUrl, accessToken, refreshToken);
+    m_initializingUserAssets = true;
+    m_userAssetsInitializationError = dscc::Notification();
+    const bool domainDbExistedBeforeInitialize = QFileInfo::exists(domainDbPath);
     m_assets->Initialize();
+    m_initializingUserAssets = false;
+
+    if (m_userAssetsInitializationError.IsEmpty()
+        && !domainDbExistedBeforeInitialize
+        && !QFileInfo::exists(domainDbPath)) {
+        m_userAssetsInitializationError =
+            dscc::Notification(dscc::Notification::kDbNotInitialized,
+                               dscc::Notification::kError);
+    }
+
+    if (!m_userAssetsInitializationError.IsEmpty()) {
+        const dscc::Notification notification = m_userAssetsInitializationError;
+        logNotification(QStringLiteral("corelib UserAssets initialization failed"),
+                        notification);
+        if (m_assets) {
+            m_assets->Shutdown();
+            m_assets.reset();
+        }
+        m_currentUserId.clear();
+        m_currentUserName.clear();
+        m_domainCreateFailureMessages.clear();
+        m_encryptFileOperations.clear();
+        m_domainVisibleUsersCache.clear();
+        emit coreErrorOccurred(notification);
+        emit domainListLoaded(QVariantList());
+        emit domainSummaryLoaded(QString(), QVariantMap());
+        emit messageListLoaded(QVariantList());
+    }
 }
 
 void DsccBridge::clearCurrentUser()
@@ -293,6 +329,8 @@ void DsccBridge::clearCurrentUser()
         m_assets->Shutdown();
         m_assets.reset();
     }
+    m_initializingUserAssets = false;
+    m_userAssetsInitializationError = dscc::Notification();
     m_domainCreateFailureMessages.clear();
     m_encryptFileOperations.clear();
     m_domainVisibleUsersCache.clear();
@@ -598,8 +636,12 @@ void DsccBridge::connectAssetSignals()
     connect(static_cast<dscc::ActiveNotify *>(m_assets.get()),
             &dscc::ActiveNotify::ErrorOccurred,
             this,
-            [](dscc::Notification notification) {
+            [this](dscc::Notification notification) {
                 logNotification(QStringLiteral("corelib ErrorOccurred"), notification);
+                if (m_initializingUserAssets
+                    && m_userAssetsInitializationError.IsEmpty()) {
+                    m_userAssetsInitializationError = notification;
+                }
             });
 }
 

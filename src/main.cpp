@@ -473,7 +473,7 @@ int main(int argc, char *argv[])
         QDir(dsccDbPath).filePath("meta.db"),
         dsccDbPath,
         QString::fromLatin1(AppCfg::API_BASE_URL),
-        "",
+        QString(),
         &app);
     dsccBridge->initialize();
     engine.rootContext()->setContextProperty("DsccBridge", static_cast<QObject *>(dsccBridge));

@@ -1636,6 +1636,16 @@ Status:
         <translation>安全域创建</translation>
     </message>
     <message>
+        <location filename="../qml/main.qml" line="330"/>
+        <source>Database encryption initialization failed</source>
+        <translation>数据库加密初始化失败</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="331"/>
+        <source>Database Encryption</source>
+        <translation>数据库加密</translation>
+    </message>
+    <message>
         <location filename="../qml/main.qml" line="350"/>
         <source>Failed to mark message as read</source>
         <translation>标记消息已读失败</translation>

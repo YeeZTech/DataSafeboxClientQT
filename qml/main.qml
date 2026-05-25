@@ -326,6 +326,11 @@ ApplicationWindow {
             window.showError(errorMessage || qsTr("Security domain creation failed"), qsTr("Security Domain Creation"))
         }
 
+        function onCoreErrorOccurred(notification) {
+            var msg = DsccBridge.notificationMessage(notification, qsTr("Database encryption initialization failed"))
+            window.showError(msg, qsTr("Database Encryption"))
+        }
+
         function onDomainClosed(operationId, domainCode) {
             // 安全域关闭成功：返回首页并刷新侧边栏列表
             if (securityDomainDetail) {
