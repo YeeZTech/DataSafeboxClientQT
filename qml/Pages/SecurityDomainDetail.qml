@@ -3793,15 +3793,16 @@ Item {
                                         Layout.fillWidth: true
                                         Layout.minimumWidth: 28
                                         Layout.fillHeight: true
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
-                                            font.pixelSize: 14
-                                            color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width)
-                                            horizontalAlignment: Text.AlignLeft
-                                            elide: Text.ElideMiddle
+                                        CenteredTooltipText {
+                                            anchors.fill: parent
+                                            value: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
+                                            textPixelSize: 14
+                                            textColor: Theme.Colors.textLabel
+                                            leftMargin: 0
+                                            rightMargin: 6
+                                            beforeChars: 6
+                                            afterChars: 4
+                                            boundsItem: exportAuditCard
                                         }
                                     }
 
@@ -4153,9 +4154,6 @@ Item {
     }
     
     function getStatusText(status) {
-        // Instance status "运行中" (code 3) means the instance is actively running,
-        // which maps to "Running". Only the security domain itself uses "Normal".
-        if ((status || "").trim() === "运行中") return qsTr("Running")
         return window.translateStatus(status || "")
     }
 
