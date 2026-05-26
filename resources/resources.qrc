@@ -41,6 +41,21 @@
         <file alias="OnboardingGuide.qml">../qml/Components/OnboardingGuide.qml</file>
         <file alias="SelectableText.qml">../qml/Components/SelectableText.qml</file>
         <file alias="ShadowBox.qml">../qml/Components/ShadowBox.qml</file>
+        <file alias="Sidebar.qml">../qml/Components/Sidebar.qml</file>
+        <file alias="PaginationControl.qml">../qml/Components/PaginationControl.qml</file>
+        <file alias="EmptyState.qml">../qml/Components/EmptyState.qml</file>
+        <file alias="StatusBadge.qml">../qml/Components/StatusBadge.qml</file>
+
+        <!-- Cards (sub-components of SecurityDomainDetail) -->
+        <file alias="DomainBasicInfoCard.qml">../qml/Cards/DomainBasicInfoCard.qml</file>
+        <file alias="DomainVisibleUsersCard.qml">../qml/Cards/DomainVisibleUsersCard.qml</file>
+        <file alias="DomainInstancesCard.qml">../qml/Cards/DomainInstancesCard.qml</file>
+        <file alias="DomainWhitelistAuditCard.qml">../qml/Cards/DomainWhitelistAuditCard.qml</file>
+        <file alias="DomainExportAuditCard.qml">../qml/Cards/DomainExportAuditCard.qml</file>
+
+        <!-- Logic (JS modules) -->
+        <file alias="DomainUtils.js">../qml/Logic/DomainUtils.js</file>
+        <file alias="DateTimeUtils.js">../qml/Logic/DateTimeUtils.js</file>
 
         <!-- Auth -->
         <file alias="CasdoorWebView.qml">../qml/Auth/CasdoorWebView.qml</file>

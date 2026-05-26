@@ -2,6 +2,7 @@
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import "." as Theme
+import "DateTimeUtils.js" as DateTimeUtils
 
 Item {
     id: root
@@ -54,166 +55,30 @@ Item {
     }
 
     function formatDurationLabel(durationText) {
-        if (durationText === undefined || durationText === null) {
-            return "-"
-        }
+        if (durationText === undefined || durationText === null) return "-"
         var text = durationText.toString().trim()
-        if (!text.length) {
-            return "-"
-        }
+        if (!text.length) return "-"
         return text.indexOf(qsTr(" months")) !== -1 ? text : text + qsTr(" months")
     }
 
-    // Parse date/time string safely
-    function parseDateTime(value) {
-        if (!value) {
-            return null
-        }
-        if (value instanceof Date) {
-            return value
-        }
-        var parsed = null
-        if (typeof value === "string") {
-            var trimmed = value.trim()
-            parsed = new Date(trimmed.replace(" ", "T"))
-            if (isNaN(parsed.getTime())) {
-                parsed = new Date(trimmed.replace(/-/g, "/"))
-            }
-        } else {
-            parsed = new Date(value)
-        }
-        return isNaN(parsed.getTime()) ? null : parsed
-    }
-
-    // Calculate expiry date object based on creation time and duration (自然月)
-    function calculateExpiryDateValue(createdAt, durationMonths) {
-        if (!createdAt || !durationMonths) {
-            return null
-        }
-        
-        // Parse duration months
-        var months = 0
-        if (typeof durationMonths === "string") {
-            var match = durationMonths.match(/(\d+)/)
-            if (match) {
-                months = parseInt(match[1])
-            }
-        } else {
-            months = parseInt(durationMonths)
-        }
-        
-        if (!months || months <= 0) {
-            return null
-        }
-        
-        var createdDate = parseDateTime(createdAt)
-        if (!createdDate) {
-            return null
-        }
-        
-        // 按自然月计算到期时间，确保不出现2月30日等错误
-        // 1月7日 + 1个月 = 2月7日（自然月）
-        var expiryDate = new Date(createdDate.getTime())
-        var targetMonth = expiryDate.getMonth() + months
-        var yearsToAdd = Math.floor(targetMonth / 12)
-        var newMonth = targetMonth % 12
-        
-        expiryDate.setFullYear(expiryDate.getFullYear() + yearsToAdd)
-        
-        // 处理月末溢出（如1月31日 + 1个月 = 2月28/29日）
-        var originalDay = createdDate.getDate()
-        expiryDate.setMonth(newMonth, 1) // 先设为目标月的1号
-        
-        // 获取目标月的最后一天
-        var lastDayOfNewMonth = new Date(expiryDate.getFullYear(), newMonth + 1, 0).getDate()
-        
-        // 设为原日期或月末最后一天（取较小值）
-        expiryDate.setDate(Math.min(originalDay, lastDayOfNewMonth))
-        
-        // 保留时间部分
-        expiryDate.setHours(createdDate.getHours())
-        expiryDate.setMinutes(createdDate.getMinutes())
-        expiryDate.setSeconds(createdDate.getSeconds())
-        
-        return isNaN(expiryDate.getTime()) ? null : expiryDate
-    }
-
-    // Calculate expiry date string using natural months
-    function calculateExpiryDate(createdAt, durationMonths) {
-        var expiryDate = calculateExpiryDateValue(createdAt, durationMonths)
-        if (!expiryDate) {
-            return "-"
-        }
-        if (Theme.Utils && Theme.Utils.formatDateTime) {
-            return Theme.Utils.formatDateTime(expiryDate)
-        }
-        function pad(num) {
-            return num < 10 ? "0" + num : "" + num
-        }
-        return expiryDate.getFullYear() + "-" + pad(expiryDate.getMonth() + 1) + "-" + pad(expiryDate.getDate()) + " " + pad(expiryDate.getHours()) + ":" + pad(expiryDate.getMinutes()) + ":" + pad(expiryDate.getSeconds())
-    }
-
     function displayExpiredTime(instance) {
-        if (!instance) {
-            return "-"
-        }
+        if (!instance) return "-"
         var status = instance.status || ""
-        if (status === "待审核" || status === "已拒绝") {
-            return "-"
-        }
-        // duration stores duration in months, calculate expiry date from createdAt (updated at approval)
-        var durationMonths = instance.duration
-        var startTime = instance.createdAt
-
-        // Prefer persisted expiry time when available to keep UI consistent
-        var expiryDate = null
-        if (instance.expiresAt) {
-            expiryDate = parseDateTime(instance.expiresAt)
-        }
-        if (!expiryDate) {
-            expiryDate = calculateExpiryDateValue(startTime, durationMonths)
-        }
-        if (!expiryDate) {
-            return "-"
-        }
-        if (Theme.Utils && Theme.Utils.formatDateTime) {
-            return Theme.Utils.formatDateTime(expiryDate)
-        }
-        function pad(num) { return num < 10 ? "0" + num : "" + num }
-        return expiryDate.getFullYear() + "-" + pad(expiryDate.getMonth() + 1) + "-" + pad(expiryDate.getDate()) + " " + pad(expiryDate.getHours()) + ":" + pad(expiryDate.getMinutes()) + ":" + pad(expiryDate.getSeconds())
+        if (status === "待审核" || status === "已拒绝") return "-"
+        var expiryDate = DateTimeUtils.resolveExpiryDate(instance)
+        if (!expiryDate) return "-"
+        return Theme.Utils.formatDateTime(expiryDate)
     }
 
     // Check if instance has expired and update status if needed
     function checkAndUpdateExpiration() {
         var instance = root.instanceData
-        if (!instance || !instance.id) {
-            return
-        }
-        
-        // Only check running instances
-        if (instance.status !== "运行中") {
-            return
-        }
-        
-        if (!instance.createdAt && !instance.expiresAt) {
-            return
-        }
-        var expiryDate = null
-        if (instance.expiresAt) {
-            expiryDate = parseDateTime(instance.expiresAt)
-        }
-        if (!expiryDate) {
-            expiryDate = calculateExpiryDateValue(instance.createdAt, instance.duration)
-        }
-        if (!expiryDate) {
-            return
-        }
-
-        var now = new Date()
-        
-        if (now > expiryDate) {
-            root.instanceData = _emptyInstanceData()
-        }
+        if (!instance || !instance.id) return
+        if (instance.status !== "运行中") return
+        if (!instance.createdAt && !instance.expiresAt) return
+        var expiryDate = DateTimeUtils.resolveExpiryDate(instance)
+        if (!expiryDate) return
+        if (new Date() > expiryDate) root.instanceData = _emptyInstanceData()
     }
 
     function applyPaymentSuccess(durationText) {
@@ -490,7 +355,7 @@ Item {
                             
                             Text {
                                 anchors.centerIn: parent
-                                text: window.translateStatus(instanceData.status || "运行中")
+                                text: Theme.Colors.translateStatus(instanceData.status || "运行中")
                                 font.pixelSize: 12
                                 font.weight: Font.Medium
                                 color: parent.statusBadgeStyle.text
@@ -1277,7 +1142,7 @@ Item {
                                                     
                                                     SelectableText {
                                                         anchors.centerIn: parent
-                                                        text: window.translateStatus(modelData.status || "已授权")
+                                                        text: Theme.Colors.translateStatus(modelData.status || "已授权")
                                                         font.pixelSize: 12
                                                         font.weight: Font.Medium
                                                         color: parent.auditStatusStyle.text

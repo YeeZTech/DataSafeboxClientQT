@@ -20,6 +20,7 @@ MessageCenter 1.0 MessageCenter.qml
 CustomerServiceDialog 1.0 CustomerServiceDialog.qml
 BadgeIndicator 1.0 BadgeIndicator.qml
 ShadowBox 1.0 ShadowBox.qml
+Sidebar 1.0 Sidebar.qml
 CasdoorWebView 1.0 CasdoorWebView.qml
 CenteredTooltipText 1.0 CenteredTooltipText.qml
 ExportDetailDialog 1.0 ExportDetailDialog.qml
@@ -29,3 +30,11 @@ SecurityInstanceDetail 1.0 SecurityInstanceDetail.qml
 UpdateDialog 1.0 UpdateDialog.qml
 PausedReminderDialog 1.0 PausedReminderDialog.qml
 OnboardingGuide 1.0 OnboardingGuide.qml
+PaginationControl 1.0 PaginationControl.qml
+EmptyState 1.0 EmptyState.qml
+StatusBadge 1.0 StatusBadge.qml
+DomainBasicInfoCard 1.0 DomainBasicInfoCard.qml
+DomainVisibleUsersCard 1.0 DomainVisibleUsersCard.qml
+DomainInstancesCard 1.0 DomainInstancesCard.qml
+DomainWhitelistAuditCard 1.0 DomainWhitelistAuditCard.qml
+DomainExportAuditCard 1.0 DomainExportAuditCard.qml
