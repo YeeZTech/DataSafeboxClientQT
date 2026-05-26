@@ -333,6 +333,7 @@ ApplicationWindow {
             createSecurityDomainForm.isSubmitting = false
             var msg = DsccBridge.notificationMessage(notification, qsTr("Security domain creation failed"))
             window.showError(msg, qsTr("Security Domain Creation"))
+            DsccBridge.loadDomainList()
         }
 
         function onCoreErrorOccurred(notification) {

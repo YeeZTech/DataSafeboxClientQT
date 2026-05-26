@@ -1,14 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.1" language="zh_CN">
 <context>
     <name>Notification</name>
     <message>
-        <source>HTTP repsonse get error code {status_code}</source>
+        <source>HTTP repsonse get error code %1</source>
         <translation>HTTP 响应返回错误码 %1</translation>
     </message>
     <message>
-        <source>Network error: {error_string}</source>
+        <source>Network error: %1</source>
         <translation>网络错误：%1</translation>
     </message>
     <message>
@@ -20,7 +20,7 @@
         <translation>网络错误：无效的服务器地址。</translation>
     </message>
     <message>
-        <source>Network error: invalid server URL: {reason}.</source>
+        <source>Network error: invalid server URL: %1.</source>
         <translation>网络错误：无效的服务器地址：%1。</translation>
     </message>
     <message>
@@ -28,7 +28,7 @@
         <translation>网络错误：无效的服务器地址：缺少协议。</translation>
     </message>
     <message>
-        <source>Network error: invalid server URL: unsupported scheme {scheme}.</source>
+        <source>Network error: invalid server URL: unsupported scheme %1.</source>
         <translation>网络错误：无效的服务器地址：不支持的协议 %1。</translation>
     </message>
     <message>
@@ -40,27 +40,27 @@
         <translation>网络错误：响应数据过大。</translation>
     </message>
     <message>
-        <source>Parse JSON got error: {error}, offset is {offset}.</source>
+        <source>Parse JSON got error: %1, offset is %2.</source>
         <translation>JSON 解析错误：%1，位置为 %2。</translation>
     </message>
     <message>
-        <source>API {api} return should contains resultCode</source>
+        <source>API %1 return should contains resultCode</source>
         <translation>API %1 返回缺少 resultCode 字段</translation>
     </message>
     <message>
-        <source>API {api} resultCode is {result_code}, due to {reason}.</source>
+        <source>API %1 resultCode is %2, due to %3.</source>
         <translation>API %1 返回错误码 %2，原因：%3。</translation>
     </message>
     <message>
-        <source>API {api} resultCode is {result_code}, due to unknown reason.</source>
+        <source>API %1 resultCode is %2, due to unknown reason.</source>
         <translation>API %1 返回错误码 %2，原因未知。</translation>
     </message>
     <message>
-        <source>API {api} return has no serverTime</source>
+        <source>API %1 return has no serverTime</source>
         <translation>API %1 返回缺少 serverTime 字段</translation>
     </message>
     <message>
-        <source>Soketi error: {error}</source>
+        <source>Soketi error: %1</source>
         <translation>Soketi 错误：%1</translation>
     </message>
     <message>
@@ -148,15 +148,15 @@
         <translation>OpenBao 响应数据过大。</translation>
     </message>
     <message>
-        <source>OpenBao request failed with HTTP status {status_code}.</source>
+        <source>OpenBao request failed with HTTP status %1.</source>
         <translation>OpenBao 请求失败，HTTP 状态码 %1。</translation>
     </message>
     <message>
-        <source>OpenBao request failed with HTTP status {status_code}: {reason}.</source>
+        <source>OpenBao request failed with HTTP status %1: %2.</source>
         <translation>OpenBao 请求失败，HTTP 状态码 %1：%2。</translation>
     </message>
     <message>
-        <source>OpenBao network error: {reason}.</source>
+        <source>OpenBao network error: %1.</source>
         <translation>OpenBao 网络错误：%1。</translation>
     </message>
     <message>
@@ -200,27 +200,27 @@
         <translation>解密失败：私钥为空。</translation>
     </message>
     <message>
-        <source>Crypto encrypt failed: source file does not exist: {path}.</source>
+        <source>Crypto encrypt failed: source file does not exist: %1.</source>
         <translation>加密失败：源文件不存在：%1。</translation>
     </message>
     <message>
-        <source>Crypto decrypt failed: source file does not exist: {path}.</source>
+        <source>Crypto decrypt failed: source file does not exist: %1.</source>
         <translation>解密失败：源文件不存在：%1。</translation>
     </message>
     <message>
-        <source>Crypto encrypt failed for {path}: ycrypto returned {ret}.</source>
+        <source>Crypto encrypt failed for %1: ycrypto returned %2.</source>
         <translation>加密失败 %1：ycrypto 返回 %2。</translation>
     </message>
     <message>
-        <source>Crypto decrypt failed for {path}: ycrypto returned {ret}.</source>
+        <source>Crypto decrypt failed for %1: ycrypto returned %2.</source>
         <translation>解密失败 %1：ycrypto 返回 %2。</translation>
     </message>
     <message>
-        <source>Crypto encrypt failed for {path}: {reason}.</source>
+        <source>Crypto encrypt failed for %1: %2.</source>
         <translation>加密失败 %1：%2。</translation>
     </message>
     <message>
-        <source>Crypto decrypt failed for {path}: {reason}.</source>
+        <source>Crypto decrypt failed for %1: %2.</source>
         <translation>解密失败 %1：%2。</translation>
     </message>
     <message>
@@ -228,11 +228,11 @@
         <translation>文件复制失败：源文件路径为空。</translation>
     </message>
     <message>
-        <source>File copy failed: source file does not exist: {path}.</source>
+        <source>File copy failed: source file does not exist: %1.</source>
         <translation>文件复制失败：源文件不存在：%1。</translation>
     </message>
     <message>
-        <source>File copy failed: cannot open source file: {path}.</source>
+        <source>File copy failed: cannot open source file: %1.</source>
         <translation>文件复制失败：无法打开源文件：%1。</translation>
     </message>
     <message>
@@ -240,31 +240,31 @@
         <translation>文件复制失败：目标文件路径为空。</translation>
     </message>
     <message>
-        <source>File copy failed: cannot open destination file: {path}.</source>
+        <source>File copy failed: cannot open destination file: %1.</source>
         <translation>文件复制失败：无法打开目标文件：%1。</translation>
     </message>
     <message>
-        <source>File copy failed: read error: {path}.</source>
+        <source>File copy failed: read error: %1.</source>
         <translation>文件复制失败：读取错误：%1。</translation>
     </message>
     <message>
-        <source>File copy failed: write error: {path}.</source>
+        <source>File copy failed: write error: %1.</source>
         <translation>文件复制失败：写入错误：%1。</translation>
     </message>
     <message>
-        <source>File copy failed for {path}: {reason}.</source>
+        <source>File copy failed for %1: %2.</source>
         <translation>文件复制失败 %1：%2。</translation>
     </message>
     <message>
-        <source>Create directory {dir} for database {db} failed due to {reason}.</source>
+        <source>Create directory %1 for database %2 failed due to %3.</source>
         <translation>创建数据库目录 %1 失败：%2，原因：%3。</translation>
     </message>
     <message>
-        <source>Create schema for database {db} failed due to {reason}.</source>
+        <source>Create schema for database %1 failed due to %2.</source>
         <translation>创建数据库 %1 表结构失败：%2。</translation>
     </message>
     <message>
-        <source>Open database {db} failed due to {reason}</source>
+        <source>Open database %1 failed due to %2</source>
         <translation>打开数据库 %1 失败：%2</translation>
     </message>
     <message>
@@ -372,7 +372,7 @@
         <translation>创建安全域失败：无效的可见用户。</translation>
     </message>
     <message>
-        <source>Create domain failed: duplicate local domain {domain_name}.</source>
+        <source>Create domain failed: duplicate local domain %1.</source>
         <translation>创建安全域失败：本地已存在同名安全域 %1。</translation>
     </message>
     <message>
@@ -460,11 +460,11 @@
         <translation>创建实例申请失败：文件路径为空。</translation>
     </message>
     <message>
-        <source>Create instance apply failed: invalid file: {path}.</source>
+        <source>Create instance apply failed: invalid file: %1.</source>
         <translation>创建实例申请失败：无效的文件：%1。</translation>
     </message>
     <message>
-        <source>Create instance apply failed: hash file failed: {path}.</source>
+        <source>Create instance apply failed: hash file failed: %1.</source>
         <translation>创建实例申请失败：文件哈希失败：%1。</translation>
     </message>
     <message>
@@ -496,7 +496,7 @@
         <translation>导入文件失败：文件路径为空。</translation>
     </message>
     <message>
-        <source>Import file failed: invalid file: {path}.</source>
+        <source>Import file failed: invalid file: %1.</source>
         <translation>导入文件失败：无效的文件：%1。</translation>
     </message>
     <message>
@@ -624,23 +624,23 @@
         <translation>更新器错误：无效的扩展字段。</translation>
     </message>
     <message>
-        <source>Updater error: missing {field}.</source>
+        <source>Updater error: missing %1.</source>
         <translation>更新器错误：缺少字段 %1。</translation>
     </message>
     <message>
-        <source>Updater error: invalid {field}.</source>
+        <source>Updater error: invalid %1.</source>
         <translation>更新器错误：无效的字段 %1。</translation>
     </message>
     <message>
-        <source>Change user DB path failed: user {user_id} not found for server {server_url}.</source>
+        <source>Change user DB path failed: user %1 not found for server %2.</source>
         <translation>修改用户数据库路径失败：服务器 %2 上未找到用户 %1。</translation>
     </message>
     <message>
-        <source>Change user DB path failed: {path}: {reason}.</source>
+        <source>Change user DB path failed: %1: %2.</source>
         <translation>修改用户数据库路径失败：%1：%2。</translation>
     </message>
     <message>
-        <source>Change user DB path failed: migration is already in progress for user {user_id}.</source>
+        <source>Change user DB path failed: migration is already in progress for user %1.</source>
         <translation>修改用户数据库路径失败：用户 %1 的数据迁移已在进行中。</translation>
     </message>
 </context>
