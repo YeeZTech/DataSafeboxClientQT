@@ -1087,11 +1087,11 @@ Item {
                         // Name field
                         Column {
                             width: (parent.width - 24) / 2  // Half width minus spacing
-                            spacing: 4
+                            spacing: 10
                             
                             SelectableText {
                                 text: qsTr("Name")
-                                font.pixelSize: 16
+                                font.pixelSize: 14
                                 color: "#62748e"
                             }
                             
@@ -1117,11 +1117,11 @@ Item {
                         // Creator field
                         Column {
                             width: (parent.width - 24) / 2
-                            spacing: 4
+                            spacing: 10
                             
                             SelectableText {
                                 text: qsTr("Creator")
-                                font.pixelSize: 16
+                                font.pixelSize: 14
                                 color: "#62748e"
                             }
                             
@@ -1135,11 +1135,11 @@ Item {
                         // Status field
                         Column {
                             width: (parent.width - 24) / 2
-                            spacing: 4
+                            spacing: 10
                             
                             SelectableText {
                                 text: qsTr("Status")
-                                font.pixelSize: 16
+                                font.pixelSize: 14
                                 color: "#62748e"
                             }
                             
@@ -1169,11 +1169,11 @@ Item {
                         // Created time field
                         Column {
                             width: (parent.width - 24) / 2
-                            spacing: 4
+                            spacing: 10
 
                             SelectableText {
                                 text: qsTr("Creation Time")
-                                font.pixelSize: 16
+                                font.pixelSize: 14
                                 color: "#62748e"
                             }
 
@@ -1188,14 +1188,14 @@ Item {
                         Column {
                             id: payerFieldColumn
                             width: (parent.width - 24) / 2
-                            spacing: 4
+                            spacing: 10
                             
                             Row {
                                 spacing: 4
                                 
                                 SelectableText {
                                     text: qsTr("Fee Payer")
-                                    font.pixelSize: 16
+                                    font.pixelSize: 14
                                     color: "#62748e"
                                     anchors.verticalCenter: parent.verticalCenter
                                 }
@@ -1280,7 +1280,7 @@ Item {
                             
                             SelectableText {
                                 text: root.formatPayerText(root.domainData.payer)
-                                font.pixelSize: 14
+                                font.pixelSize: 16
                                 color: "#0f172b"
                             }
                         }
@@ -1289,7 +1289,7 @@ Item {
                     // Description field
                     Column {
                         width: parent.width
-                        spacing: 8
+                        spacing: 2
                         
                         Item {
                             width: parent.width
@@ -1302,7 +1302,7 @@ Item {
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.verticalCenterOffset: 1
                                 text: qsTr("Description")
-                                font.pixelSize: 16
+                                font.pixelSize: 14
                                 color: "#62748e"
                             }
                             Rectangle {
@@ -1423,9 +1423,9 @@ Item {
                             id: descriptionBox
                             width: parent.width
                             visible: root.isEditingDescription || (root.domainData.description && root.domainData.description.length > 0)
-                            // Dynamic height: minimum 57px, or based on content
-                            property int minHeight: 57
-                            property int padding: 32  // Top and bottom padding (16px * 2)
+                            // Dynamic height: minimum 45px, or based on content
+                            property int minHeight: 45
+                            property int padding: 20  // Top padding 4px + bottom padding 16px
                             
                             // Calculate height based on content
                             height: {
@@ -1456,7 +1456,7 @@ Item {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 0
                                 anchors.top: parent.top
-                                anchors.topMargin: 16
+                                anchors.topMargin: 4
                                 width: parent.width
                                 text: (root.domainData.description && root.domainData.description.length > 0) ? root.domainData.description : ""
                                 font.pixelSize: 14
@@ -1473,7 +1473,7 @@ Item {
                                 anchors.right: parent.right
                                 anchors.rightMargin: 17
                                 anchors.top: parent.top
-                                anchors.topMargin: 16
+                                anchors.topMargin: 4
                                 // Don't use anchors.bottom, let height be determined by content
                                 height: contentHeight > 0 ? contentHeight : 25  // Minimum height for one line
                                 text: root.editedDescription
