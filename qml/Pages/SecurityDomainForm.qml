@@ -277,8 +277,9 @@ Item {
                             height: 36
 
                             Row {
+                                id: payerTextRow
                                 anchors.right: parent.right
-                                anchors.rightMargin: 0
+                                anchors.rightMargin: -4
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 0
 
@@ -297,18 +298,20 @@ Item {
                                     font.pixelSize: root.fontSizeLabel
                                     color: "#314158"
                                     anchors.verticalCenter: parent.verticalCenter
-                                    width: implicitWidth - 8
                                 }
-                                
-                                // Help button
-                                Rectangle {
-                                    id: helpButton
-                                    width: 16
-                                    height: 16
-                                    color: "transparent"
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    anchors.verticalCenterOffset: 2
-                                    visible: true
+                            }
+
+                            // Help button - anchored immediately after colon
+                            Rectangle {
+                                id: helpButton
+                                width: 16
+                                height: 16
+                                color: "transparent"
+                                anchors.left: payerTextRow.right
+                                anchors.leftMargin: -6
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.verticalCenterOffset: 2
+                                visible: true
                                     
                                     Image {
                                         anchors.centerIn: parent
@@ -375,7 +378,6 @@ Item {
                                             }
                                         }
                                     }
-                                }
                             }
                         }
                         
@@ -523,6 +525,7 @@ Item {
                                 SelectableText {
                                     id: usersLabel
                                     anchors.right: parent.right
+                                    anchors.rightMargin: -4
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Visible Users:")
                                     font.family: root.fontFamily

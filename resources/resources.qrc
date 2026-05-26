@@ -69,6 +69,7 @@
         <file alias="icons/icon-edit.svg">../icons/icon-edit.svg</file>
         <file alias="icons/icon-encrypt-to-domain.svg">../icons/icon-encrypt-to-domain.svg</file>
         <file alias="icons/icon-info.svg">../icons/icon-info.svg</file>
+        <file alias="icons/icon-info-dark.svg">../icons/icon-info-dark.svg</file>
         <file alias="icons/icon-warning.svg">../icons/icon-warning.svg</file>
         <file alias="icons/icon-warnning.svg">../icons/icon-warnning.svg</file>
         <file alias="icons/icon-check-success.svg">../icons/icon-check-success.svg</file>

@@ -155,13 +155,14 @@ Rectangle {
                         height: 16
                         color: "transparent"
                         anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenterOffset: 2
 
                         Image {
                             id: payerInfoIcon
                             width: 16
                             height: 16
                             anchors.centerIn: parent
-                            source: "qrc:/icons/icon-info.svg"
+                            source: "qrc:/icons/icon-info-dark.svg"
                             fillMode: Image.PreserveAspectFit
                             visible: true
 
