@@ -63,15 +63,14 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 28
                     height: 28
-                    radius: 6
-                    color: closeArea.containsMouse ? "#f0f4f8" : "transparent"
-                    Behavior on color { ColorAnimation { duration: 100 } }
+                    radius: 14
+                    color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
 
                     Text {
                         anchors.centerIn: parent
                         text: "×"
                         font.pixelSize: 20
-                        color: "#8a9bb0"
+                        color: closeArea.containsMouse ? "#0f4c81" : "#314158"
                     }
 
                     MouseArea {

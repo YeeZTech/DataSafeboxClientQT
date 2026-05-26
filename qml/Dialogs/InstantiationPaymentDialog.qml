@@ -43,7 +43,7 @@ Popup {
             // 标题行（24px 高，文字 18px）
             Item {
                 width: parent.width
-                height: 18
+                height: 24
 
                 SelectableText {
                     anchors.left: parent.left
@@ -56,7 +56,7 @@ Popup {
 
                 Rectangle {
                     anchors.right: parent.right
-                    anchors.top: parent.top
+                    anchors.verticalCenter: parent.verticalCenter
                     width: 24
                     height: 24
                     radius: 12

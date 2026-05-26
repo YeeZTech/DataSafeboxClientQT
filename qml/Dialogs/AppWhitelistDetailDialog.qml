@@ -113,7 +113,7 @@ Popup {
             // ── Title row ──────────────────────────────────────────
             Item {
                 width: parent.width
-                height: 18
+                height: 24
 
                 SelectableText {
                     anchors.left: parent.left

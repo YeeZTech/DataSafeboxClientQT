@@ -85,19 +85,18 @@ Popup {
         }
 
         Rectangle {
-            width: 16
-            height: 16
-            x: parent.width - 32
-            y: 16
-            radius: 2
+            width: 24
+            height: 24
+            x: parent.width - 44
+            y: 21
+            radius: 12
             color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
 
             Text {
                 anchors.centerIn: parent
                 text: "×"
-                font.pixelSize: 16
-                color: "#314158"
-                opacity: 0.7
+                font.pixelSize: 18
+                color: closeArea.containsMouse ? "#0f4c81" : "#314158"
             }
 
             MouseArea {

@@ -36,7 +36,7 @@ Item {
     // Unified typography
     property string fontFamily: "Microsoft YaHei"
     property int fontSizeTitle: 28
-    property int fontSizeLabel: 18
+    property int fontSizeLabel: 14
     property int fontSizeBody: 16
     property int fontSizeCaption: 14
     
@@ -278,7 +278,7 @@ Item {
 
                             Row {
                                 anchors.right: parent.right
-                                anchors.rightMargin: -19
+                                anchors.rightMargin: 0
                                 anchors.verticalCenter: parent.verticalCenter
                                 spacing: 0
 
@@ -297,6 +297,7 @@ Item {
                                     font.pixelSize: root.fontSizeLabel
                                     color: "#314158"
                                     anchors.verticalCenter: parent.verticalCenter
+                                    width: implicitWidth - 8
                                 }
                                 
                                 // Help button
@@ -545,13 +546,26 @@ Item {
                                     border.width: 1
                                     Behavior on color { ColorAnimation { duration: 180 } }
                                     
-                                    SelectableText {
+                                    Row {
                                         anchors.centerIn: parent
-                                        text: qsTr("Add Visible User")
-                                        font.family: root.fontFamily
-                                        font.pixelSize: root.fontSizeBody
-                                        font.weight: Font.Medium
-                                        color: "#5a7c9b"  // 与输入文字一致
+                                        spacing: 6
+
+                                        Image {
+                                            width: 18
+                                            height: 18
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            source: "qrc:/icons/icon-add-user-blue.svg"
+                                            fillMode: Image.PreserveAspectFit
+                                        }
+
+                                        SelectableText {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: qsTr("Add Visible User")
+                                            font.family: root.fontFamily
+                                            font.pixelSize: root.fontSizeBody
+                                            font.weight: Font.Medium
+                                            color: "#5a7c9b"
+                                        }
                                     }
                                     
                                     MouseArea {

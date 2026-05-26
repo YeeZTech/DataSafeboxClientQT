@@ -43,11 +43,11 @@ Rectangle {
 
             Column {
                 width: (parent.width - 24) / 2
-                spacing: 4
+                spacing: 10
 
                 SelectableText {
                     text: qsTr("Name")
-                    font.pixelSize: 16
+                    font.pixelSize: 14
                     color: "#62748e"
                 }
 
@@ -72,11 +72,11 @@ Rectangle {
 
             Column {
                 width: (parent.width - 24) / 2
-                spacing: 4
+                spacing: 10
 
                 SelectableText {
                     text: qsTr("Creator")
-                    font.pixelSize: 16
+                    font.pixelSize: 14
                     color: "#62748e"
                 }
 
@@ -89,11 +89,11 @@ Rectangle {
 
             Column {
                 width: (parent.width - 24) / 2
-                spacing: 4
+                spacing: 10
 
                 SelectableText {
                     text: qsTr("Status")
-                    font.pixelSize: 16
+                    font.pixelSize: 14
                     color: "#62748e"
                 }
 
@@ -121,11 +121,11 @@ Rectangle {
 
             Column {
                 width: (parent.width - 24) / 2
-                spacing: 4
+                spacing: 10
 
                 SelectableText {
                     text: qsTr("Creation Time")
-                    font.pixelSize: 16
+                    font.pixelSize: 14
                     color: "#62748e"
                 }
 
@@ -138,14 +138,14 @@ Rectangle {
 
             Column {
                 width: (parent.width - 24) / 2
-                spacing: 4
+                spacing: 10
 
                 Row {
                     spacing: 4
 
                     SelectableText {
                         text: qsTr("Fee Payer")
-                        font.pixelSize: 16
+                        font.pixelSize: 14
                         color: "#62748e"
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -220,7 +220,7 @@ Rectangle {
 
                 SelectableText {
                     text: card.payerText
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                     color: "#0f172b"
                 }
             }
@@ -228,7 +228,7 @@ Rectangle {
 
         Column {
             width: parent.width
-            spacing: 8
+            spacing: 2
 
             Item {
                 width: parent.width
@@ -239,7 +239,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.verticalCenterOffset: 1
                     text: qsTr("Description")
-                    font.pixelSize: 16
+                    font.pixelSize: 14
                     color: "#62748e"
                 }
 
@@ -345,8 +345,8 @@ Rectangle {
                 id: descriptionBox
                 width: parent.width
                 visible: card.isEditingDescription || (card.domainData.description && card.domainData.description.length > 0)
-                property int minHeight: 57
-                property int padding: 32
+                property int minHeight: 45
+                property int padding: 20
 
                 height: {
                     if (card.isEditingDescription) {
@@ -370,10 +370,10 @@ Rectangle {
                 SelectableText {
                     id: descriptionText
                     anchors.left: parent.left
-                    anchors.leftMargin: 17
+                    anchors.leftMargin: 0
                     anchors.top: parent.top
-                    anchors.topMargin: 16
-                    width: parent.width - 34
+                    anchors.topMargin: 4
+                    width: parent.width
                     text: (card.domainData.description && card.domainData.description.length > 0) ? card.domainData.description : ""
                     font.pixelSize: 14
                     color: "#0f172b"
@@ -388,7 +388,7 @@ Rectangle {
                     anchors.right: parent.right
                     anchors.rightMargin: 17
                     anchors.top: parent.top
-                    anchors.topMargin: 16
+                    anchors.topMargin: 4
                     height: contentHeight > 0 ? contentHeight : 25
                     text: card.editedDescription
                     font.pixelSize: 14

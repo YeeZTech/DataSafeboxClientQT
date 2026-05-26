@@ -47,7 +47,7 @@ Popup {
             // Header with title and close button
             Item {
                 width: parent.width
-                height: 18
+                height: 24
                 
                 SelectableText {
                     anchors.left: parent.left
@@ -63,7 +63,7 @@ Popup {
                     width: 24
                     height: 24
                     anchors.right: parent.right
-                    anchors.top: parent.top
+                    anchors.verticalCenter: parent.verticalCenter
                     radius: 12
                     color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
 

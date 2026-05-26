@@ -120,9 +120,9 @@ Popup {
             spacing: 0
             Item {
                 width: parent.width
-                height: 18
-                
-                SelectableText {
+                height: 24
+
+                Text {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("File Export Details")
@@ -131,11 +131,12 @@ Popup {
                     color: "#0f172b"
                     font.letterSpacing: -0.44
                 }
+
                 Rectangle {
                     width: 24
                     height: 24
                     anchors.right: parent.right
-                    anchors.top: parent.top
+                    anchors.verticalCenter: parent.verticalCenter
                     radius: 12
                     color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
 
