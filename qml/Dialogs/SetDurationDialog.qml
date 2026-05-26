@@ -48,7 +48,7 @@ Popup {
 
                 Item {
                     width: parent.width
-                    height: 24
+                    height: 28
 
                     SelectableText {
                         anchors.left: parent.left
@@ -61,10 +61,10 @@ Popup {
 
                     Rectangle {
                         anchors.right: parent.right
-                        anchors.top: parent.top
-                        width: 24
-                        height: 24
-                        radius: 12
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 28
+                        height: 28
+                        radius: 14
                         color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
 
                         MouseArea {
@@ -80,14 +80,14 @@ Popup {
 
                         Rectangle {
                             anchors.centerIn: parent
-                            width: 12
+                            width: 14
                             height: 1.5
                             rotation: 45
                             color: closeArea.containsMouse ? "#0f4c81" : "#0f172b"
                         }
                         Rectangle {
                             anchors.centerIn: parent
-                            width: 12
+                            width: 14
                             height: 1.5
                             rotation: -45
                             color: closeArea.containsMouse ? "#0f4c81" : "#0f172b"

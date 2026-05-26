@@ -404,7 +404,7 @@ ApplicationWindow {
         anchors.rightMargin: 16
         width: 28
         height: 28
-        radius: 6
+        radius: 14
         color: backLoginArea.containsMouse ? "#f0f4f8" : "transparent"
         border.color: backLoginArea.containsMouse ? "#cad5e2" : "transparent"
         border.width: 1

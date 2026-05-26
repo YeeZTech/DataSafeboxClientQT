@@ -80,7 +80,7 @@ Dialog {
             Rectangle {
                 width: 28
                 height: 28
-                radius: 6
+                radius: 14
                 color: closeMa.containsMouse && !root.forceUpdate ? "#f1f5f9" : "transparent"
 
                 Text {

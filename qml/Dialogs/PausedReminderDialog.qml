@@ -224,7 +224,7 @@ Popup {
             anchors.right: parent.right
             anchors.rightMargin: 12
             anchors.top: parent.top
-            anchors.topMargin: 12
+            anchors.topMargin: 20
 
             Text {
                 anchors.centerIn: parent

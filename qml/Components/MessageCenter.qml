@@ -471,7 +471,7 @@ Item {
                         visible: messageItem.hovered
                         width: 28
                         height: 28
-                        radius: 6
+                        radius: 14
                         color: deleteArea.containsMouse ? "#fee2e2" : "transparent"
                         anchors.right: parent.right
                         anchors.rightMargin: 17
@@ -714,7 +714,7 @@ Item {
 
                 Item {
                     width: parent.width
-                    height: 18
+                    height: 24
 
                     Text {
                         anchors.left: parent.left
@@ -729,7 +729,7 @@ Item {
                         width: 24
                         height: 24
                         anchors.right: parent.right
-                        anchors.top: parent.top
+                        anchors.verticalCenter: parent.verticalCenter
                         radius: 12
                         color: deleteCloseArea.containsMouse ? "#f0f4fa" : "transparent"
 
