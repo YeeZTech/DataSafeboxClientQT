@@ -35,14 +35,14 @@ void ArrearsManager::getArrearsOverview(const QString &token)
         }
         const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
         if (!doc.isObject()) {
-            emit arrearsOverviewFetchFailed("解析欠费状态失败");
+            emit arrearsOverviewFetchFailed(tr("Failed to parse arrears status"));
             return;
         }
         const QJsonObject obj = doc.object();
         const int resultCode = obj.value("resultCode").toInt();
         if (resultCode != 200) {
             const QString desc = obj.value("resultDesc").toString(
-                obj.value("msg").toString("获取欠费状态失败"));
+                obj.value("msg").toString(tr("Failed to get arrears status")));
             emit arrearsOverviewFetchFailed(desc);
             return;
         }

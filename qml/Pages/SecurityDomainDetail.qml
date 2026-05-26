@@ -992,7 +992,7 @@ Item {
                                     root.domainPubKey = pubKey
                                 }
                                 if (!pubKey) {
-                                    window.showError("未找到安全域公钥", "加密文件")
+                                    window.showError(qsTr("Security domain public key not found"), qsTr("Encrypt File"))
                                     return
                                 }
                                 root.encryptButtonBusy = true
@@ -1395,7 +1395,7 @@ Item {
                                         }
                                         if (root.isEditingDescription) {
                                             if ((root.editedDescription || "").length > root.descriptionMaxLength) {
-                                                root.descriptionErrorMessage = "描述最多可输入500个字符"
+                                                root.descriptionErrorMessage = qsTr("Description cannot exceed 500 characters")
                                                 return
                                             }
                                             root.descriptionErrorMessage = ""
@@ -1493,7 +1493,7 @@ Item {
                                 onTextChanged: {
                                     root.editedDescription = text
                                     if ((text || "").length > root.descriptionMaxLength) {
-                                        root.descriptionErrorMessage = "描述最多可输入500个字符"
+                                        root.descriptionErrorMessage = qsTr("Description cannot exceed 500 characters")
                                     } else {
                                         root.descriptionErrorMessage = ""
                                     }

@@ -39,19 +39,18 @@ ApplicationWindow {
     property string loginErrorMessage: ""
     readonly property int maxLoginRetries: 3
 
-    // 欠费 / 暂停状态
+    // Arrears / paused state
     property bool isAccountArrears: false
     property bool isAccountPaused: false
     readonly property string arrearsBillUrl: AppConfig ? AppConfig.apiBaseUrl().replace("api", "wallet") : "https://test-dsbox.dianshudata.com/wallet"
+    readonly property string arrearsBillLinkText: qsTr("\"My Bills\"")
     readonly property string arrearsAlertMessage: {
-        if (window.isAccountPaused) { return qsTr("Your account has been suspended and the related functions are unavailable. Please recharge in \"My Bills\" as soon as possible to ensure business continuity.") }
-        if (window.isAccountArrears) { return qsTr("Your account is in arrears and related services will be suspended soon. Please recharge in \"My Bills\" as soon as possible to ensure business continuity.") }
+        if (window.isAccountPaused) { return qsTr("Your account has been suspended and the related functions are unavailable. Please recharge in %1 as soon as possible to ensure business continuity.").arg(window.arrearsBillLinkText) }
+        if (window.isAccountArrears) { return qsTr("Your account is in arrears and related services will be suspended soon. Please recharge in %1 as soon as possible to ensure business continuity.").arg(window.arrearsBillLinkText) }
         return ""
     }
 
-    // Status translation map - 后端返回中文状态时直接显示，不翻译
-    // 注意：如果后端返回的是中文状态，应直接显示，不需要翻译
-    // 如果需要支持多语言，后端应返回代码（如 "0", "1"）或英文状态
+    // Maps internal Chinese status values from backend/DsccBridge to translated display text
     function translateStatus(chineseStatus) {
         var s = (chineseStatus || "").trim()
         if (s === "正常")                               return qsTr("Normal")
@@ -66,10 +65,8 @@ ApplicationWindow {
         return s
     }
 
-    // prefix: 可选场景前缀，如 "安全域创建"；会自动拼成 "安全域创建：<原因>"
     function showError(rawMessage, prefix) {
         var msg = rawMessage || ""
-        // SDK 格式: "API /api/xxx resultCode is NNN, due to <用户可读原因>."
         var idx = msg.indexOf("due to ")
         if (idx !== -1) {
             msg = msg.substring(idx + 7).replace(/\.$/, "").trim()
@@ -2616,15 +2613,15 @@ ApplicationWindow {
                     }
                 }
 
-                // 文字，含可点击的"我的钱包"
                 Text {
                     id: arrearsAlertText
                     anchors.verticalCenter: parent.verticalCenter
                     textFormat: Text.RichText
                     text: {
                         var raw = window.arrearsAlertMessage
-                        return raw.replace('"我的账单"',
-                            '<a href="wallet" style="color:#b91c1c;text-decoration:underline;">"我的账单"</a>')
+                        var linkText = window.arrearsBillLinkText
+                        return raw.replace(linkText,
+                            '<a href="wallet" style="color:#b91c1c;text-decoration:underline;">' + linkText + '</a>')
                     }
                     font.pixelSize: 13
                     color: "#b91c1c"

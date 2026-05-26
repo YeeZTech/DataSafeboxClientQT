@@ -176,12 +176,12 @@ void UpdateManager::checkUpdate(bool manual)
                 } else {
                     QString message = obj["message"].toString();
                     if (manual || !message.isEmpty()) {
-                        emit checkUpdateFailed(message.isEmpty() ? "检查更新失败" : message);
+                        emit checkUpdateFailed(message.isEmpty() ? tr("Failed to check for updates") : message);
                     }
                 }
             } else {
                 if (manual) {
-                    emit checkUpdateFailed("服务器响应格式错误");
+                    emit checkUpdateFailed(tr("Invalid server response format"));
                 }
             }
         } else {
@@ -198,15 +198,15 @@ void UpdateManager::checkUpdate(bool manual)
                 }
                 
                 if (lower.contains("host not found") || lower.contains("unable to resolve"))
-                    friendlyMsg = "无法解析服务器地址，请检查网络连接";
+                    friendlyMsg = tr("Cannot resolve server address, please check your network");
                 else if (lower.contains("timed out") || lower.contains("timeout"))
-                    friendlyMsg = "连接超时，请检查网络后重试";
+                    friendlyMsg = tr("Connection timed out, please check your network and try again");
                 else if (lower.contains("ssl") || lower.contains("certificate"))
-                    friendlyMsg = "SSL 安全验证失败，请检查网络环境";
+                    friendlyMsg = tr("SSL verification failed, please check your network environment");
                 else if (errorMsg.trimmed().isEmpty())
-                    friendlyMsg = "网络错误，请检查网络后重试";
+                    friendlyMsg = tr("Network error, please check your network and try again");
                 else if (httpCode > 0)
-                    friendlyMsg = QString("服务器返回错误: HTTP %1").arg(httpCode);
+                    friendlyMsg = tr("Server error: HTTP %1").arg(httpCode);
                 
                 emit checkUpdateFailed(friendlyMsg);
             }
@@ -293,7 +293,7 @@ void UpdateManager::startDownload()
     if (m_isDownloading) return;
 
     if (m_downloadUrl.isEmpty()) {
-        emit downloadFailed("无效的下载地址");
+        emit downloadFailed(tr("Invalid download URL"));
         return;
     }
 
@@ -340,7 +340,7 @@ void UpdateManager::startDownload()
     
     if (!resume) {
         if (!m_downloadFile->open(QIODevice::WriteOnly)) {
-            emit downloadFailed("无法创建下载文件");
+            emit downloadFailed(tr("Cannot create download file"));
             return;
         }
         existingSize = 0;
@@ -554,7 +554,7 @@ void UpdateManager::onDownloadFinished()
     }
     
     if (m_currentReply->error() != QNetworkReply::NoError && m_currentReply->error() != QNetworkReply::OperationCanceledError) {
-        emit downloadFailed("下载出错: " + m_currentReply->errorString());
+        emit downloadFailed(tr("Download error: %1").arg(m_currentReply->errorString()));
         m_currentReply->deleteLater();
         m_currentReply = nullptr;
         return;
@@ -600,7 +600,7 @@ void UpdateManager::installUpdate()
     }
 
     if (installerPath.isEmpty() || !QFile::exists(installerPath)) {
-        emit checkUpdateFailed("安装文件不存在，请重新下载");
+        emit checkUpdateFailed(tr("Installer file not found, please download again"));
         return;
     }
     
@@ -621,7 +621,7 @@ void UpdateManager::installUpdate()
         // Ensure the application quits
         QCoreApplication::quit();
     } else {
-        emit checkUpdateFailed("无法启动安装程序，请尝试手动安装。\n位置: " + nativePath);
+        emit checkUpdateFailed(tr("Cannot launch installer, please install manually.\nLocation: %1").arg(nativePath));
         // Show the file in explorer so user can run manually
         QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(installerPath).absolutePath()));
     }

@@ -970,6 +970,7 @@
         <translation>加密文件到此安全域</translation>
     </message>
     <message>
+        <location filename="../qml/Pages/SecurityDomainDetail.qml" line="995"/>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1069"/>
         <source>Security domain public key not found</source>
         <translation>未找到安全域公钥</translation>
@@ -1256,6 +1257,17 @@ Status:
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="4359"/>
         <source>Review file export applications. Creator can approve or reject. Only approved files can be exported, ensuring data security.</source>
         <translation>审核文件导出申请。创建者可批准或拒绝。仅已批准的文件可被导出，确保数据安全。</translation>
+    </message>
+    <message>
+        <location filename="../qml/Pages/SecurityDomainDetail.qml" line="995"/>
+        <source>Encrypt File</source>
+        <translation>加密文件</translation>
+    </message>
+    <message>
+        <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1398"/>
+        <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1496"/>
+        <source>Description cannot exceed 500 characters</source>
+        <translation>描述最多可输入500个字符</translation>
     </message>
 </context>
 <context>
@@ -1616,14 +1628,19 @@ Status:
         <translation>数据安全柜控制台</translation>
     </message>
     <message>
+        <location filename="../qml/main.qml" line="46"/>
+        <source>&quot;My Bills&quot;</source>
+        <translation>&quot;我的账单&quot;</translation>
+    </message>
+    <message>
         <location filename="../qml/main.qml" line="47"/>
-        <source>Your account has been suspended and the related functions are unavailable. Please recharge in &quot;My Bills&quot; as soon as possible to ensure business continuity.</source>
-        <translation>您的账户已暂停，相关功能不可用。请尽快在&quot;我的账单&quot;中充值以确保业务连续性。</translation>
+        <source>Your account has been suspended and the related functions are unavailable. Please recharge in %1 as soon as possible to ensure business continuity.</source>
+        <translation>您的账户已暂停，相关功能不可用。请尽快在%1中充值以确保业务连续性。</translation>
     </message>
     <message>
         <location filename="../qml/main.qml" line="48"/>
-        <source>Your account is in arrears and related services will be suspended soon. Please recharge in &quot;My Bills&quot; as soon as possible to ensure business continuity.</source>
-        <translation>您的账户已欠费，相关服务即将暂停。请尽快在&quot;我的账单&quot;中充值，以确保业务连续性。</translation>
+        <source>Your account is in arrears and related services will be suspended soon. Please recharge in %1 as soon as possible to ensure business continuity.</source>
+        <translation>您的账户已欠费，相关服务即将暂停。请尽快在%1中充值，以确保业务连续性。</translation>
     </message>
     <message>
         <location filename="../qml/main.qml" line="68"/>
@@ -1914,6 +1931,152 @@ Status:
         <location filename="../qml/main.qml" line="0"/>
         <source>Ended</source>
         <translation>已结束</translation>
+    </message>
+</context>
+<context>
+    <name>CasdoorHelper</name>
+    <message>
+        <source>Cannot connect to auth server, please check your network and try again</source>
+        <translation>无法连接认证服务器，请检查网络后重试</translation>
+    </message>
+    <message>
+        <source>Cannot resolve server address, please check your network</source>
+        <translation>无法解析服务器地址，请检查网络连接</translation>
+    </message>
+    <message>
+        <source>Connection timed out, please check your network and try again</source>
+        <translation>连接超时，请检查网络后重试</translation>
+    </message>
+    <message>
+        <source>SSL verification failed, please check your network environment</source>
+        <translation>SSL 安全验证失败，请检查网络环境</translation>
+    </message>
+    <message>
+        <source>Network error, please check your network and try again</source>
+        <translation>网络错误，请检查网络后重试</translation>
+    </message>
+    <message>
+        <source>Authorization code is empty</source>
+        <translation>授权码为空</translation>
+    </message>
+    <message>
+        <source>Login state error, please try again</source>
+        <translation>登录状态异常，请重试</translation>
+    </message>
+    <message>
+        <source>Login state verification failed, please try again</source>
+        <translation>登录状态校验失败，请重试</translation>
+    </message>
+    <message>
+        <source>Server response error, please try again</source>
+        <translation>服务器响应异常，请重试</translation>
+    </message>
+    <message>
+        <source>Login failed</source>
+        <translation>登录失败</translation>
+    </message>
+    <message>
+        <source>Failed to get user info</source>
+        <translation>获取用户信息失败</translation>
+    </message>
+    <message>
+        <source>Failed to get user info: missing required fields</source>
+        <translation>获取用户信息失败：缺少必要字段</translation>
+    </message>
+    <message>
+        <source>Login timed out, please try again</source>
+        <translation>登录超时，请重试</translation>
+    </message>
+    <message>
+        <source>Username cannot be empty</source>
+        <translation>用户名不能为空</translation>
+    </message>
+    <message>
+        <source>Not logged in, cannot search user</source>
+        <translation>未登录，无法查询用户</translation>
+    </message>
+    <message>
+        <source>User not found</source>
+        <translation>查询用户不存在</translation>
+    </message>
+    <message>
+        <source>Failed to parse user info</source>
+        <translation>解析用户信息失败</translation>
+    </message>
+    <message>
+        <source>Search result missing required fields, please contact admin</source>
+        <translation>查询结果缺少必填字段，请联系管理员</translation>
+    </message>
+</context>
+<context>
+    <name>UpdateManager</name>
+    <message>
+        <source>Failed to check for updates</source>
+        <translation>检查更新失败</translation>
+    </message>
+    <message>
+        <source>Invalid server response format</source>
+        <translation>服务器响应格式错误</translation>
+    </message>
+    <message>
+        <source>Cannot resolve server address, please check your network</source>
+        <translation>无法解析服务器地址，请检查网络连接</translation>
+    </message>
+    <message>
+        <source>Connection timed out, please check your network and try again</source>
+        <translation>连接超时，请检查网络后重试</translation>
+    </message>
+    <message>
+        <source>SSL verification failed, please check your network environment</source>
+        <translation>SSL 安全验证失败，请检查网络环境</translation>
+    </message>
+    <message>
+        <source>Network error, please check your network and try again</source>
+        <translation>网络错误，请检查网络后重试</translation>
+    </message>
+    <message>
+        <source>Server error: HTTP %1</source>
+        <translation>服务器返回错误: HTTP %1</translation>
+    </message>
+    <message>
+        <source>Invalid download URL</source>
+        <translation>无效的下载地址</translation>
+    </message>
+    <message>
+        <source>Cannot create download file</source>
+        <translation>无法创建下载文件</translation>
+    </message>
+    <message>
+        <source>Download error: %1</source>
+        <translation>下载出错: %1</translation>
+    </message>
+    <message>
+        <source>Installer file not found, please download again</source>
+        <translation>安装文件不存在，请重新下载</translation>
+    </message>
+    <message>
+        <source>Cannot launch installer, please install manually.
+Location: %1</source>
+        <translation>无法启动安装程序，请尝试手动安装。
+位置: %1</translation>
+    </message>
+</context>
+<context>
+    <name>ArrearsManager</name>
+    <message>
+        <source>Failed to parse arrears status</source>
+        <translation>解析欠费状态失败</translation>
+    </message>
+    <message>
+        <source>Failed to get arrears status</source>
+        <translation>获取欠费状态失败</translation>
+    </message>
+</context>
+<context>
+    <name>DsccBridge</name>
+    <message>
+        <source>Security domain creation failed</source>
+        <translation>安全域创建失败</translation>
     </message>
 </context>
 </TS>

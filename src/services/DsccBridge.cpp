@@ -363,7 +363,7 @@ void DsccBridge::connectAssetSignals()
                                 notification);
                 m_domainCreateFailureMessages.insert(
                     operationId,
-                    notificationDisplayText(notification, QStringLiteral("安全域创建失败")));
+                    notificationDisplayText(notification, tr("Security domain creation failed")));
                 emit domainCreateFailed(operationId, notification);
             });
 
@@ -1002,7 +1002,7 @@ QString DsccBridge::domainCreateFailureMessage(uint32_t operationId,
     }
 
     const QString trimmedFallback = fallback.trimmed();
-    return trimmedFallback.isEmpty() ? QStringLiteral("安全域创建失败") : trimmedFallback;
+    return trimmedFallback.isEmpty() ? tr("Security domain creation failed") : trimmedFallback;
 }
 
 QString DsccBridge::notificationMessage(const QVariant &notification,
@@ -1222,7 +1222,7 @@ void DsccBridge::createDomain(const QVariantMap &info)
 {
     if (!m_assets) {
         qWarning().noquote() << QStringLiteral("[DsccBridge] createDomain rejected because UserAssets is not initialized");
-        m_domainCreateFailureMessages.insert(0, QStringLiteral("安全域创建失败"));
+        m_domainCreateFailureMessages.insert(0, tr("Security domain creation failed"));
         emit domainCreateFailed(0, dscc::Notification());
         return;
     }

@@ -4,7 +4,7 @@
 <context>
     <name>Notification</name>
     <message>
-        <source>HTTP repsonse get error code %1</source>
+        <source>HTTP response returned error code %1</source>
         <translation>HTTP 响应返回错误码 %1</translation>
     </message>
     <message>
@@ -173,7 +173,7 @@
     </message>
     <message>
         <source>OpenBao transit encrypt response is missing ciphertext.</source>
-        <translation>OpenBao transit encrypt response is missing ciphertext.</translation>
+        <translation>OpenBao 传输加密响应缺少密文。</translation>
     </message>
     <message>
         <source>Crypto encrypt failed: source file is empty.</source>
@@ -257,7 +257,7 @@
     </message>
     <message>
         <source>Create directory %1 for database %2 failed due to %3.</source>
-        <translation>创建数据库目录 %1 失败：%2，原因：%3。</translation>
+        <translation>为数据库 %2 创建目录 %1 失败，原因：%3。</translation>
     </message>
     <message>
         <source>Create schema for database %1 failed due to %2.</source>

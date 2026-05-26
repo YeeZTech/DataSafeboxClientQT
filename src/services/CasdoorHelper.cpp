@@ -1,4 +1,5 @@
 ﻿#include "CasdoorHelper.h"
+#include <QCoreApplication>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QDateTime>
@@ -33,15 +34,15 @@ static QString friendlyError(const QString &raw)
 {
     const QString lower = raw.trimmed().toLower();
     if (lower.contains("connection refused"))
-        return "无法连接认证服务器，请检查网络后重试";
+        return QCoreApplication::translate("CasdoorHelper", "Cannot connect to auth server, please check your network and try again");
     if (lower.contains("host not found") || lower.contains("unable to resolve"))
-        return "无法解析服务器地址，请检查网络连接";
+        return QCoreApplication::translate("CasdoorHelper", "Cannot resolve server address, please check your network");
     if (lower.contains("timed out") || lower.contains("timeout"))
-        return "连接超时，请检查网络后重试";
+        return QCoreApplication::translate("CasdoorHelper", "Connection timed out, please check your network and try again");
     if (lower.contains("ssl") || lower.contains("certificate"))
-        return "SSL 安全验证失败，请检查网络环境";
+        return QCoreApplication::translate("CasdoorHelper", "SSL verification failed, please check your network environment");
     if (raw.trimmed().isEmpty())
-        return "网络错误，请检查网络后重试";
+        return QCoreApplication::translate("CasdoorHelper", "Network error, please check your network and try again");
     return raw.trimmed();
 }
 
@@ -90,20 +91,20 @@ void CasdoorHelper::handleAuthCode(const QString &code, const QString &state)
 {
     const QString normalizedCode = code.trimmed();
     if (normalizedCode.isEmpty()) {
-        emit loginFailed("授权码为空");
+        emit loginFailed(tr("Authorization code is empty"));
         return;
     }
     if (m_authCodeExchangeInFlight && normalizedCode == m_inFlightAuthCode) {
         return;
     }
     if (m_oauthState.isEmpty()) {
-        emit loginFailed("登录状态异常，请重试");
+        emit loginFailed(tr("Login state error, please try again"));
         return;
     }
     const QString callbackState = state.trimmed();
     if (callbackState.isEmpty() || callbackState != m_oauthState) {
         m_oauthState.clear();
-        emit loginFailed("登录状态校验失败，请重试");
+        emit loginFailed(tr("Login state verification failed, please try again"));
         return;
     }
     const QString requestState = m_oauthState;
@@ -164,17 +165,18 @@ void CasdoorHelper::onBackendLoginFinished(const QByteArray &body, const QString
     QJsonParseError jsonErr{};
     const QJsonDocument doc = QJsonDocument::fromJson(body, &jsonErr);
     if (jsonErr.error != QJsonParseError::NoError || !doc.isObject()) {
-        fail("服务器响应异常，请重试");
+        fail(tr("Server response error, please try again"));
         return;
     }
 
     const QVariantMap result = doc.object().toVariantMap();
     const int resultCode = result.value("resultCode", -1).toInt();
     if (resultCode != 200) {
+        const QString fallback = tr("Login failed");
         const QString msg = result.value("resultDesc",
                             result.value("msg",
-                            result.value("error", "登录失败"))).toString();
-        fail(msg.isEmpty() ? "登录失败" : msg);
+                            result.value("error", fallback))).toString();
+        fail(msg.isEmpty() ? fallback : msg);
         return;
     }
 
@@ -185,7 +187,7 @@ void CasdoorHelper::onBackendLoginFinished(const QByteArray &body, const QString
     m_currentIdToken = data.value("idToken").toString();
     if (m_currentIdToken.isEmpty()) m_currentIdToken = data.value("id_token").toString();
 
-    if (m_currentToken.isEmpty()) { fail("服务器响应异常，请重试"); return; }
+    if (m_currentToken.isEmpty()) { fail(tr("Server response error, please try again")); return; }
 
     // Parse JWT claims — no extra network call if all fields present
     const QVariantMap jwt = parseJwtClaims(m_currentToken);
@@ -259,22 +261,22 @@ void CasdoorHelper::fetchCasdoorUserInfo(const QString &accessToken)
         }
 
         const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
-        if (!doc.isObject()) { fail("获取用户信息失败"); return; }
+        if (!doc.isObject()) { fail(tr("Failed to get user info")); return; }
 
         const QJsonObject root = doc.object();
         if (root.value("status").toString().toLower() != "ok") {
             const QString msg = root.value("msg").toString();
-            fail(msg.isEmpty() ? "获取用户信息失败" : msg);
+            fail(msg.isEmpty() ? tr("Failed to get user info") : msg);
             return;
         }
-        if (!root.value("data").isObject()) { fail("获取用户信息失败"); return; }
+        if (!root.value("data").isObject()) { fail(tr("Failed to get user info")); return; }
 
         const QJsonObject dataObj = root.value("data").toObject();
         const QString name      = dataObj.value("name").toString();
         const QString userId    = dataObj.value("id").toString();
         const QString owner     = dataObj.value("owner").toString();
         if (name.isEmpty() || userId.isEmpty() || owner.isEmpty()) {
-            fail("获取用户信息失败：缺少必要字段");
+            fail(tr("Failed to get user info: missing required fields"));
             return;
         }
 
@@ -304,15 +306,15 @@ void CasdoorHelper::onLoginWatchdogTimeout()
     clearAuthExchangeState();
     m_currentToken.clear();
     m_currentIdToken.clear();
-    emit loginFailed("登录超时，请重试");
+    emit loginFailed(tr("Login timed out, please try again"));
 }
 
 void CasdoorHelper::searchUser(const QString &username)
 {
-    if (username.isEmpty()) { emit userSearchFailed("用户名不能为空"); return; }
+    if (username.isEmpty()) { emit userSearchFailed(tr("Username cannot be empty")); return; }
 
     if (m_sessionToken.isEmpty() || m_sessionOwner.isEmpty()) {
-        emit userSearchFailed("未登录，无法查询用户");
+        emit userSearchFailed(tr("Not logged in, cannot search user"));
         return;
     }
 
@@ -345,17 +347,17 @@ void CasdoorHelper::searchUser(const QString &username)
 
         if (networkError != QNetworkReply::NoError) {
             if (httpStatus == 404) {
-                emit userSearchFailed("查询用户不存在");
+                emit userSearchFailed(tr("User not found"));
             } else {
                 emit userSearchFailed(friendlyError(networkErrorText));
             }
             return;
         }
         const QJsonDocument doc = QJsonDocument::fromJson(body);
-        if (!doc.isObject()) { emit userSearchFailed("解析用户信息失败"); return; }
+        if (!doc.isObject()) { emit userSearchFailed(tr("Failed to parse user info")); return; }
         const QJsonObject root = doc.object();
         if (root.value("status").toString().toLower() != "ok") {
-            emit userSearchFailed("查询用户不存在");
+            emit userSearchFailed(tr("User not found"));
             return;
         }
         const QJsonObject dataObj = root.value("data").toObject();
@@ -363,7 +365,7 @@ void CasdoorHelper::searchUser(const QString &username)
         const QString userName = dataObj.value("name").toString().trimmed();
         const QString account = dataObj.value("displayName").toString().trimmed();
         if (dataObj.isEmpty() || userId.isEmpty() || userName.isEmpty() || account.isEmpty()) {
-            emit userSearchFailed("查询结果缺少必填字段，请联系管理员");
+            emit userSearchFailed(tr("Search result missing required fields, please contact admin"));
             return;
         }
         QVariantMap userInfo;
