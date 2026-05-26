@@ -11,9 +11,9 @@ Popup {
 
     width: {
         // Dynamic width based on parent size, with min/max constraints
-        var preferredWidth = 560
+        var preferredWidth = 520
         var maxWidth = parentWidth * 0.8
-        var minWidth = 480
+        var minWidth = 460
         return Math.max(minWidth, Math.min(preferredWidth, maxWidth))
     }
     height: {
@@ -268,9 +268,10 @@ Popup {
                 width: parent.width
                 spacing: 12
                 readonly property int twoColumnGap: 16
-                readonly property real leftColumnRatio: 0.58
-                readonly property int leftColumnWidth: Math.floor((width - twoColumnGap) * leftColumnRatio)
-                readonly property int rightColumnWidth: Math.max(0, width - twoColumnGap - leftColumnWidth)
+                // Right column is at least 215px so the longest English label
+                // ("Security Domain Instance Size") always fits on one line.
+                readonly property int rightColumnWidth: Math.max(215, Math.floor((width - twoColumnGap) * 0.45))
+                readonly property int leftColumnWidth: Math.max(0, width - twoColumnGap - rightColumnWidth)
 
                 // Row 1: Instance ID and Status
                 Row {
