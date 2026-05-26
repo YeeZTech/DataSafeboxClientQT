@@ -1454,10 +1454,10 @@ Item {
                             SelectableText {
                                 id: descriptionText
                                 anchors.left: parent.left
-                                anchors.leftMargin: 17
+                                anchors.leftMargin: 0
                                 anchors.top: parent.top
                                 anchors.topMargin: 16
-                                width: parent.width - 34
+                                width: parent.width
                                 text: (root.domainData.description && root.domainData.description.length > 0) ? root.domainData.description : ""
                                 font.pixelSize: 14
                                 color: "#0f172b"
