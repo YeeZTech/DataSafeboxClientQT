@@ -641,7 +641,7 @@ QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
                    info.pay_type == 2 ? QStringLiteral("使用者") : QStringLiteral("创建者"));
     QString statusText = info.domain_status == dscc::db::kDomainStatusClosed
                              ? QStringLiteral("已关闭")
-                             : QStringLiteral("运行中");
+                             : QStringLiteral("正常");
     if (domainCreateFailed) {
         statusText = QStringLiteral("创建失败");
     }

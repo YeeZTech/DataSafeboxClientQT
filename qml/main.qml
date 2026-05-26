@@ -53,8 +53,17 @@ ApplicationWindow {
     // 注意：如果后端返回的是中文状态，应直接显示，不需要翻译
     // 如果需要支持多语言，后端应返回代码（如 "0", "1"）或英文状态
     function translateStatus(chineseStatus) {
-        // 后端返回的中文状态直接返回，不进行翻译
-        return chineseStatus || ""
+        var s = (chineseStatus || "").trim()
+        if (s === "正常")                               return qsTr("Normal")
+        if (s === "运行中")                              return qsTr("Running")
+        if (s === "已关闭")                               return qsTr("Closed")
+        if (s === "创建失败")                              return qsTr("Creation Failed")
+        if (s === "停用" || s === "已停用" || s === "停用中") return qsTr("Suspended")
+        if (s === "待审核")                               return qsTr("Pending Review")
+        if (s === "已授权")                               return qsTr("Authorized")
+        if (s === "已拒绝")                               return qsTr("Rejected")
+        if (s === "已结束")                               return qsTr("Ended")
+        return s
     }
 
     // prefix: 可选场景前缀，如 "安全域创建"；会自动拼成 "安全域创建：<原因>"
@@ -1699,7 +1708,7 @@ ApplicationWindow {
                                 width: parent.width
                                 height: 40
                                 color: updateMouseArea.containsMouse ? "#E8F1F8" : "transparent"
-                                opacity: UpdateManager.isChecking ? 0.75 : 1.0
+                                opacity: 1.0
                                 
                                 Row {
                                     anchors.left: parent.left
@@ -1716,7 +1725,7 @@ ApplicationWindow {
                                     }
                                     
                                     Text {
-                                        text: UpdateManager.isChecking ? qsTr("Checking...") : qsTr("Check for Updates")
+                                        text: qsTr("Check for Updates")
                                         font.pixelSize: 14
                                         color: "#334155"
                                         anchors.verticalCenter: parent.verticalCenter
@@ -1734,14 +1743,8 @@ ApplicationWindow {
                                     id: updateMouseArea
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    cursorShape: UpdateManager.isChecking ? Qt.ArrowCursor : Qt.PointingHandCursor
+                                    cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        if (UpdateManager.isChecking) {
-                                            checkFailedDialog.text = qsTr("Checking update, please wait")
-                                            checkFailedDialog.open()
-                                            return
-                                        }
-
                                         if (UpdateManager.hasPendingInstall) {
                                             userMenu.visible = false
                                             pendingInstallWarningDialog.open()
@@ -1755,8 +1758,8 @@ ApplicationWindow {
                                         }
 
                                         userMenu.visible = false
-                                        window.hasUpdateNotification = false
-                                        UpdateManager.checkUpdate(true) // Manual check
+                                        noUpdateLabel.text = qsTr("Current version: v") + UpdateManager.currentVersion
+                                        noUpdateDialog.open()
                                     }
                                 }
                             }
