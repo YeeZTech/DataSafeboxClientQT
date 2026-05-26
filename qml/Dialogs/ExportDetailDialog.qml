@@ -183,11 +183,14 @@ Popup {
                             font.letterSpacing: -0.15
                         }
                         
-                        SelectableText {
+                        Text {
+                            width: parent.width
                             text: root.exportId
                             font.pixelSize: 16
                             color: "#000000"
                             font.letterSpacing: -0.31
+                            elide: Text.ElideMiddle
+                            wrapMode: Text.NoWrap
                         }
                     }
                     
@@ -203,17 +206,18 @@ Popup {
                             font.letterSpacing: -0.15
                         }
                         Rectangle {
-                            width: 54
-                            height: 22
+                            width: exportStatusText.implicitWidth + 18
+                            height: 26
                             radius: 8
                             color: statusStyle.bg
                             border.color: statusStyle.border
                             border.width: 1
                             
                             SelectableText {
+                                id: exportStatusText
                                 anchors.centerIn: parent
-                                text: root.status
-                                font.pixelSize: 12
+                                text: window.translateStatus(root.status)
+                                font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: statusStyle.text
                             }
@@ -236,11 +240,14 @@ Popup {
                             font.letterSpacing: -0.15
                         }
                         
-                        SelectableText {
+                        Text {
+                            width: parent.width
                             text: root.applicant
                             font.pixelSize: 16
                             color: "#000000"
                             font.letterSpacing: -0.31
+                            elide: Text.ElideMiddle
+                            wrapMode: Text.NoWrap
                         }
                     }
                     
@@ -357,14 +364,16 @@ Popup {
                                             sourceSize.height: 16
                                         }
                                         
-                                        SelectableText {
+                                        Text {
+                                            width: parent.width - 16 - 8  // subtract icon width and spacing
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: (typeof modelData === "string") ? modelData
                                                   : (modelData.fileName || modelData.filePath || modelData.name || "")
-                                            font.pixelSize: 16
+                                            font.pixelSize: 14
                                             color: "#000000"
                                             font.letterSpacing: -0.15
-                                            wrapMode: Text.WrapAnywhere
+                                            elide: Text.ElideMiddle
+                                            wrapMode: Text.NoWrap
                                         }
                                     }
                                 }

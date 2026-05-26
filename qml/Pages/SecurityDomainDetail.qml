@@ -128,6 +128,13 @@ Item {
     readonly property int actionRightMargin: 6
     readonly property int actionTextPixelSize: 14
     readonly property int actionTextWeight: Font.Medium
+
+    // FontMetrics for computing "Actions" text width to left-align View
+    FontMetrics {
+        id: actionFm
+        font.pixelSize: root.actionTextPixelSize
+        font.weight: root.actionTextWeight
+    }
     property bool auditDataLoaded: false
 
     function resetAuditDataLoading() {
@@ -440,10 +447,6 @@ Item {
         return deduped
     }
 
-    function getInstanceDetailFromCache(instanceId, instanceName) {
-        return null
-    }
-
     function resolveWhitelistProcessesByRow(row) {
         // Helper: normalize process entries so dialog can show fileName/fileHash
         function normProcs(src) {
@@ -469,106 +472,9 @@ Item {
             return out
         }
 
-        // First try: look up from instance detail cache
-        var instDetail = getInstanceDetailFromCache(row.instanceId || "", row.instanceName || "")
-        if (instDetail) {
-            var applyCode = (row.applyCode || "").toString().trim()
-            if (applyCode) {
-                var audits = instDetail.appWhitelistAudits || []
-                for (var i = 0; i < audits.length; i++) {
-                    var audit = audits[i] || {}
-                    if ((audit.applyCode || "").toString().trim() !== applyCode) continue
-                    var src = audit.processes || audit.rawFiles || audit.filePaths || []
-                    if (src.length > 0) return normProcs(src)
-                }
-            }
-        }
-
-        // Fallback: use processes/rawFiles stored directly on the row
+        // Use processes/rawFiles stored directly on the row
         var rowSrc = row.processes || row.rawFiles || row.filePaths || []
         return normProcs(rowSrc)
-    }
-
-    function resolveExportDialogDataByRow(row) {
-        var fallback = {
-            fileCount: Number(row.fileCount) || 0,
-            fileSize: Number(row.fileSize) || 0,
-            status: row.status || "待审核",
-            applyTime: row.applyTime || "",
-            reason: row.reason || "",
-            files: row.files || [],
-            fileCode: row.fileCode || "",
-            fileHash: row.fileHash || ""
-        }
-        var instDetail = getInstanceDetailFromCache(row.instanceId || "", row.instanceName || "")
-        if (!instDetail) {
-            return fallback
-        }
-        var applyCode = (row.applyCode || "").toString().trim()
-        if (!applyCode) {
-            return fallback
-        }
-        var reqs = instDetail.exportRequests || []
-        for (var i = 0; i < reqs.length; i++) {
-            var req = reqs[i] || {}
-            if ((req.applyCode || "").toString().trim() !== applyCode) {
-                continue
-            }
-
-            var reqFiles = req.rawFiles || req.filePaths || []
-            var target = null
-            var rowFileCode = (row.fileCode || "").toString().trim()
-            if (rowFileCode && reqFiles && reqFiles.length > 0) {
-                for (var rf = 0; rf < reqFiles.length; rf++) {
-                    var raw = reqFiles[rf] || {}
-                    if ((raw.fileCode || "").toString().trim() === rowFileCode) {
-                        target = raw
-                        break
-                    }
-                }
-            }
-            if (!target && reqFiles && reqFiles.length > 0) {
-                target = reqFiles[0] || null
-            }
-
-            var totalSize = Number(req.fileSize)
-            if (isNaN(totalSize) || totalSize < 0) {
-                totalSize = Number(req.totalFileSize)
-            }
-            if (isNaN(totalSize) || totalSize < 0) {
-                totalSize = Number(req.file_size)
-            }
-            if (isNaN(totalSize) || totalSize < 0) {
-                totalSize = 0
-            }
-
-            var targetSize = Number(target && target.fileSize !== undefined ? target.fileSize : (target ? target.file_size : 0))
-            if (isNaN(targetSize) || targetSize < 0) {
-                targetSize = 0
-            }
-            if (targetSize <= 0 && totalSize > 0) {
-                targetSize = totalSize
-            }
-
-            var targetPath = (target && (target.filePath || target.fileName)) ? (target.filePath || target.fileName) : ""
-            return {
-                fileCount: Number(req.fileCount) || (reqFiles ? reqFiles.length : 0),
-                fileSize: targetSize,
-                status: (target && target.status) || req.status || fallback.status,
-                applyTime: req.applyTime || fallback.applyTime,
-                reason: req.reason || fallback.reason,
-                files: targetPath ? [targetPath] : (fallback.files || []),
-                fileCode: (target && target.fileCode) || req.fileCode || fallback.fileCode,
-                fileHash: (target && target.fileHash) || req.fileHash || fallback.fileHash
-            }
-        }
-        return fallback
-    }
-    
-    function getDomainData() {
-        // 数据源为 Loaded 信号填充的 root.domainData，此函数仅作保护返回
-        if (domainDetailLoading) return emptyDomainDetail()
-        return root.domainData || emptyDomainDetail()
     }
 
     function reloadAllData() {
@@ -938,7 +844,23 @@ Item {
         ScrollBar.vertical: ScrollBar {
             policy: ScrollBar.AsNeeded
         }
-        
+
+        // Transparent MouseArea to detect clicks outside descriptionBox for cancel editing
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            enabled: root.isEditingDescription
+            z: -1  // Below content
+
+            onPressed: {
+                if (root.isEditingDescription) {
+                    root.editedDescription = root._originalDescription
+                    root.descriptionErrorMessage = ""
+                    root.isEditingDescription = false
+                }
+            }
+        }
+
         Column {
             id: contentColumn
             anchors.left: parent.left
@@ -948,7 +870,7 @@ Item {
             anchors.top: parent.top
             anchors.topMargin: 8
             spacing: 16  // reduce gap to tighten title上下留白
-            
+
             // Header with title and buttons
             Item {
                 width: parent.width
@@ -1229,16 +1151,14 @@ Item {
                                 }
                                 height: 28
                                 radius: 8
-                                property var domainStatusStyle: Theme.Colors.getStatusColor(root.domainData.status || "运行中")
+                                property var domainStatusStyle: Theme.Colors.getStatusColor(root.domainData.status || "正常")
                                 color: domainStatusStyle.bg
                                 border.color: domainStatusStyle.border
                                 border.width: 1
                                 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: (root.domainData.status || "") === "运行中"
-                                        ? qsTr("Normal")
-                                        : (window.translateStatus(root.domainData.status || "") || "")
+                                    text: window.translateStatus(root.domainData.status || "")
                                     font.pixelSize: 16
                                     font.weight: Font.Medium
                                     color: parent.domainStatusStyle.text
@@ -1266,6 +1186,7 @@ Item {
                         
                         // Payer field
                         Column {
+                            id: payerFieldColumn
                             width: (parent.width - 24) / 2
                             spacing: 4
                             
@@ -1318,15 +1239,19 @@ Item {
                                         radius: 4
                                         anchors.bottom: parent.top
                                         anchors.bottomMargin: 5
-                                        anchors.horizontalCenter: parent.horizontalCenter
                                         z: 100
+                                        // parent.x = 图标矩形在 Row 中的 x，Row 在 Column 中 x=0
+                                        // 因此 -parent.x 使弹窗左边界与 Column 左边界对齐
+                                        x: -parent.x
+                                        // 箭头居中于图标下方：图标中心在弹窗内坐标 = parent.x + 8
+                                        property real arrowX: Math.max(4, Math.min(parent.x + 8 - 6, width - 16))
                                         
-                                        // Tooltip arrow (pointing down, centered)
+                                        // Tooltip arrow (pointing down, centered under icon)
                                         Canvas {
                                             width: 12
                                             height: 6
                                             anchors.top: parent.bottom
-                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            x: payerTooltip.arrowX
                                             
                                             onPaint: {
                                                 var ctx = getContext("2d")
@@ -1344,7 +1269,7 @@ Item {
                                         Text {
                                             id: tooltipLabel
                                             anchors.centerIn: parent
-                                            text: qsTr("Who pays the costs incurred after security domain instantiation?")
+                                            text: qsTr("Who pays the costs incurred after security domain instantiation")
                                             font.pixelSize: 12
                                             color: "#ffffff"
                                             wrapMode: Text.NoWrap
@@ -1558,13 +1483,11 @@ Item {
                                 selectionColor: "#d4e4f1"  // 使用浅灰蓝色作为选中背景色
                                 wrapMode: TextArea.Wrap
                                 selectByMouse: true
-                                readOnly: root.isDomainReadOnly  // Read-only when domain is closed or current user isn't creator
-                                // Remove default padding to ensure accurate height calculation
+                                readOnly: root.isDomainReadOnly
                                 leftPadding: 0
                                 rightPadding: 0
                                 topPadding: 0
                                 bottomPadding: 0
-                                // background customization removed to avoid native style warnings
                                 visible: root.isEditingDescription
                                 
                                 onTextChanged: {
@@ -2609,8 +2532,8 @@ Item {
                                         Text {
                                             id: instanceOperationText
                                             property bool hovered: false
-                                            anchors.right: parent.right
-                                            anchors.rightMargin: root.actionRightMargin
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: Math.max(root.actionRightMargin, parent.width - root.actionRightMargin - actionFm.advanceWidth(qsTr("Actions")))
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: qsTr("View")
                                             font.pixelSize: root.actionTextPixelSize
@@ -3177,24 +3100,110 @@ Item {
                                             Layout.fillWidth: true
                                             Layout.fillHeight: true
                                             Rectangle {
+                                                id: whitelistStatusBadge
                                                 anchors.left: parent.left
                                                 anchors.leftMargin: 54
                                                 anchors.verticalCenter: parent.verticalCenter
-                                                implicitWidth: statusText.implicitWidth + 12
-                                                implicitHeight: 24
+                                                width: Math.min(statusText.implicitWidth + 12, parent.width - 54)
+                                                height: 24
                                                 radius: 6
                                                 property var auditStatusStyle: Theme.Colors.getStatusColor(modelData.status || "")
                                                 color: auditStatusStyle.bg
                                                 border.color: auditStatusStyle.border
                                                 border.width: 1
+                                                clip: true
                                                 Text {
                                                     id: statusText
-                                                    anchors.centerIn: parent
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    anchors.left: parent.left
+                                                    anchors.right: parent.right
+                                                    anchors.leftMargin: 6
+                                                    anchors.rightMargin: 6
                                                     text: getStatusText(modelData.status)
                                                     font.pixelSize: 14
                                                     font.weight: Font.Medium
                                                     color: parent.auditStatusStyle.text
                                                     horizontalAlignment: Text.AlignHCenter
+                                                    elide: Text.ElideMiddle
+                                                    wrapMode: Text.NoWrap
+                                                }
+                                                MouseArea {
+                                                    id: wlStatusHover
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                    acceptedButtons: Qt.NoButton
+                                                    cursorShape: Qt.ArrowCursor
+                                                }
+                                                Loader {
+                                                    active: statusText.truncated && wlStatusHover.containsMouse
+                                                    sourceComponent: wlStatusTooltipComp
+                                                    onLoaded: {
+                                                        var win = whitelistStatusBadge.Window.window
+                                                        if (win && item) item.parent = win.contentItem
+                                                    }
+                                                }
+                                                Component {
+                                                    id: wlStatusTooltipComp
+                                                    Item {
+                                                        id: wlTip
+                                                        z: 99999
+                                                        property point cellTL: {
+                                                            var win = whitelistStatusBadge.Window.window
+                                                            if (!win) return Qt.point(0, 0)
+                                                            return whitelistStatusBadge.mapToItem(win.contentItem, 0, 0)
+                                                        }
+                                                        property real anchorX: {
+                                                            var win = whitelistStatusBadge.Window.window
+                                                            if (!win) return 0
+                                                            return whitelistStatusBadge.mapToItem(win.contentItem, whitelistStatusBadge.width * 0.5, 0).x
+                                                        }
+                                                        readonly property real arrowSz: 6
+                                                        readonly property real winW: whitelistStatusBadge.Window.window ? whitelistStatusBadge.Window.window.width : 800
+                                                        readonly property real winH: whitelistStatusBadge.Window.window ? whitelistStatusBadge.Window.window.height : 600
+                                                        readonly property rect bRect: {
+                                                            var win = whitelistStatusBadge.Window.window
+                                                            if (!win) return Qt.rect(0, 0, winW, winH)
+                                                            var tl = appWhitelistAuditCard.mapToItem(win.contentItem, 0, 0)
+                                                            return Qt.rect(tl.x, tl.y, appWhitelistAuditCard.width, appWhitelistAuditCard.height)
+                                                        }
+                                                        readonly property real bW: Math.min(400, wlTipText.implicitWidth + 18)
+                                                        readonly property real bH: wlTipText.implicitHeight + 16
+                                                        readonly property real bX: Math.max(bRect.x + 4, Math.min(anchorX - bW * 0.5, bRect.x + bRect.width - bW - 4))
+                                                        readonly property real arrX: Math.max(4, Math.min(anchorX - bX - arrowSz, bW - arrowSz * 2 - 4))
+                                                        readonly property bool flip: (cellTL.y - bH - arrowSz) < (bRect.y + 4)
+                                                        width: wlBubble.width
+                                                        height: wlBubble.height + arrowSz
+                                                        x: bX
+                                                        y: (wlTip.flip ? (cellTL.y + whitelistStatusBadge.height) : (cellTL.y - bH - arrowSz)) + 5
+                                                        opacity: 0
+                                                        Component.onCompleted: opacity = 1
+                                                        Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                                                        Rectangle {
+                                                            id: wlBubble
+                                                            x: 0; y: wlTip.flip ? wlTip.arrowSz : 0
+                                                            width: wlTip.bW; height: wlTip.bH
+                                                            color: "#1e5a8e"; radius: 4
+                                                            Text {
+                                                                id: wlTipText
+                                                                anchors { left: parent.left; leftMargin: 9; right: parent.right; rightMargin: 9; top: parent.top; topMargin: 8 }
+                                                                text: getStatusText(modelData.status)
+                                                                color: "white"; font.pixelSize: 13
+                                                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere; maximumLineCount: 999
+                                                            }
+                                                        }
+                                                        Canvas {
+                                                            width: wlTip.arrowSz * 2; height: wlTip.arrowSz
+                                                            x: wlTip.arrX; y: wlTip.flip ? 0 : wlTip.bH
+                                                            onPaint: {
+                                                                var ctx = getContext("2d"); ctx.reset()
+                                                                ctx.fillStyle = "#1e5a8e"; ctx.beginPath()
+                                                                if (wlTip.flip) { ctx.moveTo(width*0.5,0); ctx.lineTo(0,height); ctx.lineTo(width,height) }
+                                                                else { ctx.moveTo(0,0); ctx.lineTo(width*0.5,height); ctx.lineTo(width,0) }
+                                                                ctx.closePath(); ctx.fill()
+                                                            }
+                                                            Component.onCompleted: requestPaint()
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -3207,8 +3216,8 @@ Item {
                                             Text {
                                                 id: appWhitelistOperationText
                                                 property bool hovered: false
-                                                anchors.right: parent.right
-                                                anchors.rightMargin: root.actionRightMargin
+                                                anchors.left: parent.left
+                                                anchors.leftMargin: Math.max(root.actionRightMargin, parent.width - root.actionRightMargin - actionFm.advanceWidth(qsTr("Actions")))
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: qsTr("View")
                                                 font.pixelSize: root.actionTextPixelSize
@@ -3550,6 +3559,7 @@ Item {
 
                                 Item {
                                     Layout.fillWidth: true
+                                    Layout.minimumWidth: 28
                                     Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
@@ -3564,6 +3574,7 @@ Item {
 
                                 Item {
                                     Layout.fillWidth: true
+                                    Layout.minimumWidth: 28
                                     Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
@@ -3578,6 +3589,7 @@ Item {
 
                                 Item {
                                     Layout.fillWidth: true
+                                    Layout.minimumWidth: 28
                                     Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
@@ -3592,6 +3604,7 @@ Item {
 
                                 Item {
                                     Layout.fillWidth: true
+                                    Layout.minimumWidth: 28
                                     Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
@@ -3601,29 +3614,34 @@ Item {
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
+                                        width: Math.max(0, parent.width - 12)
+                                        elide: Text.ElideRight
                                     }
                                 }
 
                                 // Application Time column (3rd from last)
                                 Item {
                                     Layout.fillWidth: true
+                                    Layout.minimumWidth: 28
                                     Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
-                                        anchors.leftMargin: 6
+                                        anchors.leftMargin: 0
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("Application Time")
                                         font.pixelSize: 14
                                         font.weight: Font.Medium
                                         color: Theme.Colors.textLabel
-                                        width: Math.max(0, parent.width - 12)
+                                        width: Math.max(0, parent.width)
                                         elide: Text.ElideRight
+                                        horizontalAlignment: Text.AlignLeft
                                     }
                                 }
 
                                 // Status column (2nd from last)
                                 Item {
                                     Layout.fillWidth: true
+                                    Layout.minimumWidth: 28
                                     Layout.fillHeight: true
                                     Text {
                                         anchors.left: parent.left
@@ -3701,6 +3719,7 @@ Item {
                                     // 申请方
                                     Item {
                                         Layout.fillWidth: true
+                                        Layout.minimumWidth: 28
                                         Layout.fillHeight: true
                                         CenteredTooltipText {
                                             anchors.fill: parent
@@ -3718,6 +3737,7 @@ Item {
                                     // 文件名称
                                     Item {
                                         Layout.fillWidth: true
+                                        Layout.minimumWidth: 28
                                         Layout.fillHeight: true
                                         CenteredTooltipText {
                                             anchors.fill: parent
@@ -3735,6 +3755,7 @@ Item {
                                     // 文件大小
                                     Item {
                                         Layout.fillWidth: true
+                                        Layout.minimumWidth: 28
                                         Layout.fillHeight: true
                                         CenteredTooltipText {
                                             anchors.fill: parent
@@ -3752,6 +3773,7 @@ Item {
                                     // 实例名称
                                     Item {
                                         Layout.fillWidth: true
+                                        Layout.minimumWidth: 28
                                         Layout.fillHeight: true
                                         CenteredTooltipText {
                                             anchors.fill: parent
@@ -3769,15 +3791,16 @@ Item {
                                     // 申请时间 (倒数第三列)
                                     Item {
                                         Layout.fillWidth: true
+                                        Layout.minimumWidth: 28
                                         Layout.fillHeight: true
                                         Text {
-                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            anchors.left: parent.left
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
                                             font.pixelSize: 14
                                             color: Theme.Colors.textLabel
-                                            width: Math.max(0, parent.width - 12)
-                                            horizontalAlignment: Text.AlignHCenter
+                                            width: Math.max(0, parent.width)
+                                            horizontalAlignment: Text.AlignLeft
                                             elide: Text.ElideMiddle
                                         }
                                     }
@@ -3785,26 +3808,113 @@ Item {
                                     // 状态 (倒数第二列)
                                     Item {
                                         Layout.fillWidth: true
+                                        Layout.minimumWidth: 28
                                         Layout.fillHeight: true
                                         Rectangle {
                                             anchors.left: parent.left
                                             anchors.leftMargin: 30
                                             anchors.verticalCenter: parent.verticalCenter
-                                            implicitWidth: exportStatusText.implicitWidth + 12
-                                            implicitHeight: 24
+                                            width: Math.min(exportStatusText.implicitWidth + 12, parent.width - 30)
+                                            height: 24
                                             radius: 6
+                                            id: expStatusBadge
                                             property var auditStatusStyle: Theme.Colors.getStatusColor(modelData.status || "待审核")
                                             color: auditStatusStyle.bg
                                             border.color: auditStatusStyle.border
                                             border.width: 1
+                                            clip: true
                                             Text {
                                                 id: exportStatusText
-                                                anchors.centerIn: parent
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                anchors.left: parent.left
+                                                anchors.right: parent.right
+                                                anchors.leftMargin: 6
+                                                anchors.rightMargin: 6
                                                 text: window.translateStatus(modelData.status || "")
                                                 font.pixelSize: 14
                                                 font.weight: Font.Medium
                                                 color: parent.auditStatusStyle.text
                                                 horizontalAlignment: Text.AlignHCenter
+                                                elide: Text.ElideMiddle
+                                                wrapMode: Text.NoWrap
+                                            }
+                                            MouseArea {
+                                                id: expStatusHover
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                acceptedButtons: Qt.NoButton
+                                                cursorShape: Qt.ArrowCursor
+                                            }
+                                            Loader {
+                                                active: exportStatusText.truncated && expStatusHover.containsMouse
+                                                sourceComponent: expStatusTooltipComp
+                                                onLoaded: {
+                                                    var win = expStatusBadge.Window.window
+                                                    if (win && item) item.parent = win.contentItem
+                                                }
+                                            }
+                                            Component {
+                                                id: expStatusTooltipComp
+                                                Item {
+                                                    id: expTip
+                                                    z: 99999
+                                                    property point cellTL: {
+                                                        var win = expStatusBadge.Window.window
+                                                        if (!win) return Qt.point(0, 0)
+                                                        return expStatusBadge.mapToItem(win.contentItem, 0, 0)
+                                                    }
+                                                    property real anchorX: {
+                                                        var win = expStatusBadge.Window.window
+                                                        if (!win) return 0
+                                                        return expStatusBadge.mapToItem(win.contentItem, expStatusBadge.width * 0.5, 0).x
+                                                    }
+                                                    readonly property real arrowSz: 6
+                                                    readonly property real winW: expStatusBadge.Window.window ? expStatusBadge.Window.window.width : 800
+                                                    readonly property real winH: expStatusBadge.Window.window ? expStatusBadge.Window.window.height : 600
+                                                    readonly property rect bRect: {
+                                                        var win = expStatusBadge.Window.window
+                                                        if (!win) return Qt.rect(0, 0, winW, winH)
+                                                        var tl = exportAuditCard.mapToItem(win.contentItem, 0, 0)
+                                                        return Qt.rect(tl.x, tl.y, exportAuditCard.width, exportAuditCard.height)
+                                                    }
+                                                    readonly property real bW: Math.min(400, expTipText.implicitWidth + 18)
+                                                    readonly property real bH: expTipText.implicitHeight + 16
+                                                    readonly property real bX: Math.max(bRect.x + 4, Math.min(anchorX - bW * 0.5, bRect.x + bRect.width - bW - 4))
+                                                    readonly property real arrX: Math.max(4, Math.min(anchorX - bX - arrowSz, bW - arrowSz * 2 - 4))
+                                                    readonly property bool flip: (cellTL.y - bH - arrowSz) < (bRect.y + 4)
+                                                    width: expBubble.width
+                                                    height: expBubble.height + arrowSz
+                                                    x: bX
+                                                    y: (expTip.flip ? (cellTL.y + expStatusBadge.height) : (cellTL.y - bH - arrowSz)) + 5
+                                                    opacity: 0
+                                                    Component.onCompleted: opacity = 1
+                                                    Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                                                    Rectangle {
+                                                        id: expBubble
+                                                        x: 0; y: expTip.flip ? expTip.arrowSz : 0
+                                                        width: expTip.bW; height: expTip.bH
+                                                        color: "#1e5a8e"; radius: 4
+                                                        Text {
+                                                            id: expTipText
+                                                            anchors { left: parent.left; leftMargin: 9; right: parent.right; rightMargin: 9; top: parent.top; topMargin: 8 }
+                                                            text: window.translateStatus(modelData.status || "")
+                                                            color: "white"; font.pixelSize: 13
+                                                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere; maximumLineCount: 999
+                                                        }
+                                                    }
+                                                    Canvas {
+                                                        width: expTip.arrowSz * 2; height: expTip.arrowSz
+                                                        x: expTip.arrX; y: expTip.flip ? 0 : expTip.bH
+                                                        onPaint: {
+                                                            var ctx = getContext("2d"); ctx.reset()
+                                                            ctx.fillStyle = "#1e5a8e"; ctx.beginPath()
+                                                            if (expTip.flip) { ctx.moveTo(width*0.5,0); ctx.lineTo(0,height); ctx.lineTo(width,height) }
+                                                            else { ctx.moveTo(0,0); ctx.lineTo(width*0.5,height); ctx.lineTo(width,0) }
+                                                            ctx.closePath(); ctx.fill()
+                                                        }
+                                                        Component.onCompleted: requestPaint()
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -3815,8 +3925,8 @@ Item {
                                         Layout.fillHeight: true
                                         Text {
                                             id: exportOperationText
-                                            anchors.right: parent.right
-                                            anchors.rightMargin: root.actionRightMargin
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: Math.max(root.actionRightMargin, parent.width - root.actionRightMargin - actionFm.advanceWidth(qsTr("Actions")))
                                             anchors.verticalCenter: parent.verticalCenter
                                             text: qsTr("View")
                                             font.pixelSize: root.actionTextPixelSize
@@ -4043,7 +4153,10 @@ Item {
     }
     
     function getStatusText(status) {
-        return status || ""
+        // Instance status "运行中" (code 3) means the instance is actively running,
+        // which maps to "Running". Only the security domain itself uses "Normal".
+        if ((status || "").trim() === "运行中") return qsTr("Running")
+        return window.translateStatus(status || "")
     }
 
     function parseDateTime(value) {

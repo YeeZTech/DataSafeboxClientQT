@@ -16,6 +16,7 @@ QtObject {
         "已授权": { bg: "#dcfce7", border: "#b9f8cf", text: "#008236", dot: "#00C950" },
         "已拒绝": { bg: "#ffe2e2", border: "#ffc9c9", text: "#c10007", dot: "#D4183D" },
         "创建失败": { bg: "#ffe2e2", border: "#ffc9c9", text: "#c10007", dot: "#D4183D" },
+        "正常":  { bg: "#dcfce7", border: "#b9f8cf", text: "#008236", dot: "#00C950" },
         "运行中": { bg: "#dcfce7", border: "#b9f8cf", text: "#008236", dot: "#00C950" },
         "已结束": { bg: "#f1f5f9", border: "#e2e8f0", text: "#314158", dot: "#90A1B9" }
     })
@@ -32,7 +33,7 @@ QtObject {
         "已授权": "Approved",
         "已拒绝": "Rejected",
         "创建失败": "Creation Failed",
-        "运行中": "Running",
+        "正常": "Normal",
         "已结束": "Ended"
     })
     
@@ -69,11 +70,18 @@ QtObject {
         return statusColors[status] || defaultStatusColor
     }
     
-    // Translate status from Chinese to display text
-    // 后端返回的状态文本直接显示，不进行翻译
-    // 如果需要支持多语言，后端应返回状态代码（如 "0", "1"）而非文本
+    // Translate status from Chinese backend value to current-language display text
     function translateStatus(status) {
-        return status || ""
+        var s = (status || "").trim()
+        if (s === "正常")                               return qsTr("Normal")
+        if (s === "已关闭")                               return qsTr("Closed")
+        if (s === "创建失败")                              return qsTr("Creation Failed")
+        if (s === "停用" || s === "已停用" || s === "停用中") return qsTr("Suspended")
+        if (s === "待审核")                               return qsTr("Pending Review")
+        if (s === "已授权")                               return qsTr("Authorized")
+        if (s === "已拒绝")                               return qsTr("Rejected")
+        if (s === "已结束")                               return qsTr("Ended")
+        return s
     }
 }
 

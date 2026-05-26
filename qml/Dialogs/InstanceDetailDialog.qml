@@ -11,9 +11,9 @@ Popup {
 
     width: {
         // Dynamic width based on parent size, with min/max constraints
-        var preferredWidth = 400
+        var preferredWidth = 560
         var maxWidth = parentWidth * 0.8
-        var minWidth = 340
+        var minWidth = 480
         return Math.max(minWidth, Math.min(preferredWidth, maxWidth))
     }
     height: {
@@ -287,10 +287,13 @@ Popup {
                             color: "#62748e"
                         }
 
-                        SelectableText {
+                        Text {
+                            width: parent.width
                             text: root.instanceId
                             font.pixelSize: 16
                             color: "#000000"
+                            elide: Text.ElideMiddle
+                            wrapMode: Text.NoWrap
                         }
                     }
 
@@ -305,17 +308,18 @@ Popup {
                         }
 
                         Rectangle {
-                            width: 54
-                            height: 22
+                            width: instanceStatusText.implicitWidth + 18
+                            height: 26
                             radius: 8
                             color: statusStyle.bg
                             border.color: statusStyle.border
                             border.width: 1
 
                             SelectableText {
+                                id: instanceStatusText
                                 anchors.centerIn: parent
-                                text: root.status
-                                font.pixelSize: 12
+                                text: window.translateStatus(root.status)
+                                font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: statusStyle.text
                             }
@@ -338,10 +342,13 @@ Popup {
                             color: "#62748e"
                         }
 
-                        SelectableText {
+                        Text {
+                            width: parent.width
                             text: root.creator
                             font.pixelSize: 16
                             color: "#000000"
+                            elide: Text.ElideMiddle
+                            wrapMode: Text.NoWrap
                         }
                     }
 
@@ -353,6 +360,7 @@ Popup {
                             text: qsTr("Security Domain Instance Size")
                             font.pixelSize: 14
                             color: "#62748e"
+                            width: parent.width
                         }
 
                         SelectableText {

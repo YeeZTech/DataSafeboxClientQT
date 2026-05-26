@@ -23,7 +23,7 @@ function psLiteral(value) {
 Component.prototype.createOperations = function() {
     var isWindows = installer.value("os") === "win";
     var targetDirRaw = installer.value("TargetDir");
-    var appDisplayName = "\u6570\u636e\u5b89\u5168\u67dc";
+    var appDisplayName = "\u6570\u636e\u5b89\u5168\u67dc\u63a7\u5236\u53f0";
 
     if (isWindows && targetDirRaw) {
         var regCleanScript =

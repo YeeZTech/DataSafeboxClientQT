@@ -171,10 +171,13 @@ Popup {
                             font.pixelSize: 14
                             color: "#62748e"
                         }
-                        SelectableText {
+                        Text {
+                            width: parent.width
                             text: root.applyCode || "-"
                             font.pixelSize: 16
                             color: "#000000"
+                            elide: Text.ElideMiddle
+                            wrapMode: Text.NoWrap
                         }
                     }
 
@@ -191,7 +194,7 @@ Popup {
                         // Status badge
                         Rectangle {
                             width: statusBadgeText.implicitWidth + 18
-                            height: 22
+                            height: 26
                             radius: 8
                             color: root.statusStyle.bg
                             border.color: root.statusStyle.border
@@ -200,8 +203,8 @@ Popup {
                             Text {
                                 id: statusBadgeText
                                 anchors.centerIn: parent
-                                text: root.status || "-"
-                                font.pixelSize: 12
+                                text: window.translateStatus(root.status) || "-"
+                                font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: root.statusStyle.text
                             }
@@ -223,10 +226,13 @@ Popup {
                             font.pixelSize: 14
                             color: "#62748e"
                         }
-                        SelectableText {
+                        Text {
+                            width: parent.width
                             text: root.creator || "-"
                             font.pixelSize: 16
                             color: "#000000"
+                            elide: Text.ElideMiddle
+                            wrapMode: Text.NoWrap
                         }
                     }
 

@@ -456,7 +456,7 @@ Rectangle {
                             visible: false
                             currentIndex: -1  // No default selection
                             
-                            model: ["本地磁盘 (C:)", "本地磁盘 (D:)"]
+                            model: [qsTr("Local Disk (C:)"), qsTr("Local Disk (D:)")]
                             
                             // Custom delegate for each option
                             delegate: ItemDelegate {

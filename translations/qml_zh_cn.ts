@@ -588,6 +588,16 @@
 <context>
     <name>InstantiateForm</name>
     <message>
+        <location filename="../qml/Pages/InstantiateForm.qml" line="0"/>
+        <source>Local Disk (C:)</source>
+        <translation>本地磁盘 (C:)</translation>
+    </message>
+    <message>
+        <location filename="../qml/Pages/InstantiateForm.qml" line="0"/>
+        <source>Local Disk (D:)</source>
+        <translation>本地磁盘 (D:)</translation>
+    </message>
+    <message>
         <location filename="../qml/Pages/InstantiateForm.qml" line="87"/>
         <source>Create Security Domain Instance</source>
         <translation>创建安全域实例</translation>
@@ -897,7 +907,7 @@
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="588"/>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1197"/>
         <source>Creator</source>
-        <translation>创建者</translation>
+        <translation>创建方</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="591"/>
@@ -1007,8 +1017,8 @@
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1343"/>
-        <source>Who pays the costs incurred after security domain instantiation?</source>
-        <translation>安全域实例化后产生的费用由谁支付？</translation>
+        <source>Who pays the costs incurred after security domain instantiation</source>
+        <translation>安全域实例化后产生的费用由谁支付</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainDetail.qml" line="1375"/>
@@ -1289,12 +1299,12 @@ Status:
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="428"/>
         <source>Creator</source>
-        <translation>创建者</translation>
+        <translation>创建方</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="485"/>
         <source>User</source>
-        <translation>使用者</translation>
+        <translation>使用方</translation>
     </message>
     <message>
         <location filename="../qml/Pages/SecurityDomainForm.qml" line="526"/>
@@ -1746,6 +1756,11 @@ Status:
         <translation>更新正在下载中，请稍后安装</translation>
     </message>
     <message>
+        <location filename="../qml/main.qml" line="1760"/>
+        <source>Current version: v</source>
+        <translation>当前版本：v</translation>
+    </message>
+    <message>
         <location filename="../qml/main.qml" line="1799"/>
         <source>Logout</source>
         <translation>退出登录</translation>
@@ -1851,9 +1866,54 @@ Status:
         <translation>立即安装</translation>
     </message>
     <message>
-        <location filename="../qml/main.qml" line="2548"/>
+        <location filename="../qml/main.qml" line="56"/>
         <source>Already up to date, current version is v</source>
         <translation>当前已是最新版本 v</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="0"/>
+        <source>Normal</source>
+        <translation>正常</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="0"/>
+        <source>Running</source>
+        <translation>运行中</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="0"/>
+        <source>Closed</source>
+        <translation>已关闭</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="0"/>
+        <source>Creation Failed</source>
+        <translation>创建失败</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="0"/>
+        <source>Suspended</source>
+        <translation>已停用</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="0"/>
+        <source>Pending Review</source>
+        <translation>待审核</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="0"/>
+        <source>Authorized</source>
+        <translation>已授权</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="0"/>
+        <source>Rejected</source>
+        <translation>已拒绝</translation>
+    </message>
+    <message>
+        <location filename="../qml/main.qml" line="0"/>
+        <source>Ended</source>
+        <translation>已结束</translation>
     </message>
 </context>
 </TS>

@@ -490,9 +490,7 @@ Item {
                             
                             Text {
                                 anchors.centerIn: parent
-                                text: (instanceData.status || "运行中") === "运行中"
-                                    ? qsTr("Normal")
-                                    : window.translateStatus(instanceData.status || "运行中")
+                                text: window.translateStatus(instanceData.status || "运行中")
                                 font.pixelSize: 12
                                 font.weight: Font.Medium
                                 color: parent.statusBadgeStyle.text
