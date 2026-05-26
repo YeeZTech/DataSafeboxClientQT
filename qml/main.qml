@@ -331,8 +331,8 @@ ApplicationWindow {
 
         function onDomainCreateFailed(operationId, notification) {
             createSecurityDomainForm.isSubmitting = false
-            var errorMessage = notification && notification.Localized ? notification.Localized() : ""
-            window.showError(errorMessage || qsTr("Security domain creation failed"), qsTr("Security Domain Creation"))
+            var msg = DsccBridge.notificationMessage(notification, qsTr("Security domain creation failed"))
+            window.showError(msg, qsTr("Security Domain Creation"))
         }
 
         function onCoreErrorOccurred(notification) {
