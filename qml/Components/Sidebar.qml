@@ -716,23 +716,14 @@ Rectangle {
                 anchors.leftMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 12
-                Rectangle {
+                Item {
                     width: 32
                     height: 32
-                    radius: 16
-                    color: "#d4e4f1"
 
-                    Image {
-                        id: sidebarUserAvatar
+                    Rectangle {
                         anchors.fill: parent
-                        source: sidebar.currentUserAvatar
-                        fillMode: Image.PreserveAspectCrop
-                        smooth: true
-                        visible: sidebar.currentUserAvatar !== ""
-                        layer.enabled: true
-                        layer.effect: ShaderEffect {
-                            fragmentShader: "varying highp vec2 qt_TexCoord0; uniform sampler2D source; uniform lowp float qt_Opacity; void main() { lowp vec4 c = texture2D(source, qt_TexCoord0); highp vec2 uv = qt_TexCoord0 - vec2(0.5, 0.5); lowp float a = 1.0 - smoothstep(0.47, 0.5, length(uv)); gl_FragColor = c * a * qt_Opacity; }"
-                        }
+                        radius: 16
+                        color: "#d4e4f1"
                     }
 
                     Image {
@@ -741,7 +732,35 @@ Rectangle {
                         height: 16
                         source: Qt.resolvedUrl("icons/icon-user-avatar.svg")
                         fillMode: Image.PreserveAspectFit
-                        visible: sidebar.currentUserAvatar === "" || sidebarUserAvatar.status === Image.Error
+                        visible: sidebar.currentUserAvatar === ""
+                    }
+
+                    Canvas {
+                        id: sidebarAvatarCanvas
+                        anchors.fill: parent
+                        visible: sidebar.currentUserAvatar !== ""
+                        property string avatarUrl: sidebar.currentUserAvatar
+                        onAvatarUrlChanged: {
+                            if (avatarUrl !== "") loadImage(avatarUrl)
+                            requestPaint()
+                        }
+                        onImageLoaded: requestPaint()
+                        Component.onCompleted: {
+                            if (avatarUrl !== "") loadImage(avatarUrl)
+                        }
+                        onPaint: {
+                            var ctx = getContext("2d")
+                            ctx.clearRect(0, 0, width, height)
+                            if (avatarUrl !== "" && isImageLoaded(avatarUrl)) {
+                                ctx.save()
+                                ctx.beginPath()
+                                ctx.arc(width / 2, height / 2, width / 2, 0, Math.PI * 2)
+                                ctx.closePath()
+                                ctx.clip()
+                                ctx.drawImage(avatarUrl, 0, 0, width, height)
+                                ctx.restore()
+                            }
+                        }
                     }
                 }
 
@@ -869,23 +888,14 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 12
 
-                            Rectangle {
+                            Item {
                                 width: 32
                                 height: 32
-                                radius: 16
-                                color: "#D4E4F1"
 
-                                Image {
-                                    id: userMenuHeaderAvatar
+                                Rectangle {
                                     anchors.fill: parent
-                                    source: sidebar.currentUserAvatar
-                                    fillMode: Image.PreserveAspectCrop
-                                    smooth: true
-                                    visible: sidebar.currentUserAvatar !== ""
-                                    layer.enabled: true
-                                    layer.effect: ShaderEffect {
-                                        fragmentShader: "varying highp vec2 qt_TexCoord0; uniform sampler2D source; uniform lowp float qt_Opacity; void main() { lowp vec4 c = texture2D(source, qt_TexCoord0); highp vec2 uv = qt_TexCoord0 - vec2(0.5, 0.5); lowp float a = 1.0 - smoothstep(0.47, 0.5, length(uv)); gl_FragColor = c * a * qt_Opacity; }"
-                                    }
+                                    radius: 16
+                                    color: "#D4E4F1"
                                 }
 
                                 Image {
@@ -894,7 +904,35 @@ Rectangle {
                                     height: 16
                                     source: Qt.resolvedUrl("icons/icon-user-avatar.svg")
                                     fillMode: Image.PreserveAspectFit
-                                    visible: sidebar.currentUserAvatar === "" || userMenuHeaderAvatar.status === Image.Error
+                                    visible: sidebar.currentUserAvatar === ""
+                                }
+
+                                Canvas {
+                                    id: userMenuAvatarCanvas
+                                    anchors.fill: parent
+                                    visible: sidebar.currentUserAvatar !== ""
+                                    property string avatarUrl: sidebar.currentUserAvatar
+                                    onAvatarUrlChanged: {
+                                        if (avatarUrl !== "") loadImage(avatarUrl)
+                                        requestPaint()
+                                    }
+                                    onImageLoaded: requestPaint()
+                                    Component.onCompleted: {
+                                        if (avatarUrl !== "") loadImage(avatarUrl)
+                                    }
+                                    onPaint: {
+                                        var ctx = getContext("2d")
+                                        ctx.clearRect(0, 0, width, height)
+                                        if (avatarUrl !== "" && isImageLoaded(avatarUrl)) {
+                                            ctx.save()
+                                            ctx.beginPath()
+                                            ctx.arc(width / 2, height / 2, width / 2, 0, Math.PI * 2)
+                                            ctx.closePath()
+                                            ctx.clip()
+                                            ctx.drawImage(avatarUrl, 0, 0, width, height)
+                                            ctx.restore()
+                                        }
+                                    }
                                 }
                             }
 
@@ -992,17 +1030,51 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 12
 
-                            Image {
-                                id: userInfoMenuAvatar
-                                width: 16
-                                height: 16
+                            Item {
+                                width: 20
+                                height: 20
                                 anchors.verticalCenter: parent.verticalCenter
-                                source: sidebar.currentUserAvatar !== "" ? sidebar.currentUserAvatar : Qt.resolvedUrl("icons/icon-user-avatar.svg")
-                                fillMode: Image.PreserveAspectFit
-                                clip: true
-                                onStatusChanged: {
-                                    if (status === Image.Error && source !== Qt.resolvedUrl("icons/icon-user-avatar.svg")) {
-                                        source = Qt.resolvedUrl("icons/icon-user-avatar.svg");
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: 10
+                                    color: "#d4e4f1"
+                                }
+
+                                Image {
+                                    anchors.centerIn: parent
+                                    width: 12
+                                    height: 12
+                                    source: Qt.resolvedUrl("icons/icon-user-avatar.svg")
+                                    fillMode: Image.PreserveAspectFit
+                                    visible: sidebar.currentUserAvatar === ""
+                                }
+
+                                Canvas {
+                                    id: userInfoMenuAvatarCanvas
+                                    anchors.fill: parent
+                                    visible: sidebar.currentUserAvatar !== ""
+                                    property string avatarUrl: sidebar.currentUserAvatar
+                                    onAvatarUrlChanged: {
+                                        if (avatarUrl !== "") loadImage(avatarUrl)
+                                        requestPaint()
+                                    }
+                                    onImageLoaded: requestPaint()
+                                    Component.onCompleted: {
+                                        if (avatarUrl !== "") loadImage(avatarUrl)
+                                    }
+                                    onPaint: {
+                                        var ctx = getContext("2d")
+                                        ctx.clearRect(0, 0, width, height)
+                                        if (avatarUrl !== "" && isImageLoaded(avatarUrl)) {
+                                            ctx.save()
+                                            ctx.beginPath()
+                                            ctx.arc(width / 2, height / 2, width / 2, 0, Math.PI * 2)
+                                            ctx.closePath()
+                                            ctx.clip()
+                                            ctx.drawImage(avatarUrl, 0, 0, width, height)
+                                            ctx.restore()
+                                        }
                                     }
                                 }
                             }

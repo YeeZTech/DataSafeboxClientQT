@@ -1396,6 +1396,10 @@
         <translation>创建安全域实例</translation>
     </message>
     <message>
+        <source>How to Instantiate Security Domain?</source>
+        <translation>如何实例化安全域？</translation>
+    </message>
+    <message>
         <source>Name</source>
         <translation type="vanished">名称</translation>
     </message>
@@ -1719,8 +1723,8 @@ Status:
     </message>
     <message>
         <location line="+73"/>
-        <source>Please enter security domain description</source>
-        <translation>请输入安全域描述</translation>
+        <source>Please describe the security domain's purpose so other users can understand it</source>
+        <translation>请描述安全域的用途等信息，以便其他用户了解该安全域的用途</translation>
     </message>
     <message>
         <location line="+92"/>
