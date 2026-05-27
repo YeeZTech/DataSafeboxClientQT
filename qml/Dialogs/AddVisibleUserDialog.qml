@@ -5,7 +5,7 @@ import "." as Theme
 Popup {
     id: root
     width: 446
-    height: hasError ? 250 : 226
+    height: hasError ? 278 : 254
     modal: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     x: (parent ? (parent.width - width) / 2 : 0)
@@ -171,7 +171,7 @@ Popup {
                     Text {
                         anchors.fill: parent
                         verticalAlignment: Text.AlignVCenter
-                        text: qsTr("Please enter the Dianshu account")
+                        text: qsTr("Please enter the other party's Dianshu ID to add as visible user")
                         font.pixelSize: 14
                         color: "#5a7c9b"
                         visible: !accountInput.text && !accountInput.activeFocus
@@ -221,6 +221,39 @@ Popup {
                     font.pixelSize: 14
                     color: "#e7000b"
                     anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+
+            Row {
+                spacing: 4
+                height: 20
+
+                Image {
+                    width: 14
+                    height: 14
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: "qrc:/icons/icon-info-dark.svg"
+                    fillMode: Image.PreserveAspectFit
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("What is Dianshu ID?")
+                    font.pixelSize: 13
+                    font.underline: true
+                    color: linkHover.containsMouse ? "#0f4c81" : "#1566c0"
+
+                    MouseArea {
+                        id: linkHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            var url = "";
+                            if (url)
+                                Qt.openUrlExternally(url);
+                        }
+                    }
                 }
             }
         }

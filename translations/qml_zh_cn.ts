@@ -11,7 +11,6 @@
         <translation>用户未找到</translation>
     </message>
     <message>
-        <location line="+25"/>
         <source>Network request timed out, please check your connection and retry</source>
         <translation>网络请求超时，请检查网络后重试</translation>
     </message>
@@ -27,8 +26,12 @@
     </message>
     <message>
         <location line="+45"/>
-        <source>Please enter the Dianshu account</source>
-        <translation>请输入典枢号</translation>
+        <source>Please enter the other party&apos;s Dianshu ID to add as visible user</source>
+        <translation>请输入对方的典枢号以添加可见用户</translation>
+    </message>
+    <message>
+        <source>What is Dianshu ID?</source>
+        <translation>什么是典枢号？</translation>
     </message>
     <message>
         <location line="+81"/>
@@ -337,8 +340,8 @@
     </message>
     <message>
         <location line="+29"/>
-        <source>Creator</source>
-        <translation>创建方</translation>
+        <source>Creator Dianshu ID</source>
+        <translation>创建方典枢号</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -495,13 +498,13 @@
     </message>
     <message>
         <location line="+61"/>
-        <source>Account</source>
-        <translation>账号</translation>
+        <source>Dianshu ID</source>
+        <translation>典枢号</translation>
     </message>
     <message>
         <location line="+15"/>
-        <source>Name</source>
-        <translation>名称</translation>
+        <source>Nickname</source>
+        <translation>用户昵称</translation>
     </message>
     <message>
         <location line="+16"/>

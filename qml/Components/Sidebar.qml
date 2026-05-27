@@ -721,7 +721,6 @@ Rectangle {
                     height: 32
                     radius: 16
                     color: "#d4e4f1"
-                    clip: true
 
                     Image {
                         id: sidebarUserAvatar
@@ -730,6 +729,10 @@ Rectangle {
                         fillMode: Image.PreserveAspectCrop
                         smooth: true
                         visible: sidebar.currentUserAvatar !== ""
+                        layer.enabled: true
+                        layer.effect: ShaderEffect {
+                            fragmentShader: "varying highp vec2 qt_TexCoord0; uniform sampler2D source; uniform lowp float qt_Opacity; void main() { lowp vec4 c = texture2D(source, qt_TexCoord0); highp vec2 uv = qt_TexCoord0 - vec2(0.5, 0.5); lowp float a = 1.0 - smoothstep(0.47, 0.5, length(uv)); gl_FragColor = c * a * qt_Opacity; }"
+                        }
                     }
 
                     Image {
@@ -871,7 +874,6 @@ Rectangle {
                                 height: 32
                                 radius: 16
                                 color: "#D4E4F1"
-                                clip: true
 
                                 Image {
                                     id: userMenuHeaderAvatar
@@ -880,6 +882,10 @@ Rectangle {
                                     fillMode: Image.PreserveAspectCrop
                                     smooth: true
                                     visible: sidebar.currentUserAvatar !== ""
+                                    layer.enabled: true
+                                    layer.effect: ShaderEffect {
+                                        fragmentShader: "varying highp vec2 qt_TexCoord0; uniform sampler2D source; uniform lowp float qt_Opacity; void main() { lowp vec4 c = texture2D(source, qt_TexCoord0); highp vec2 uv = qt_TexCoord0 - vec2(0.5, 0.5); lowp float a = 1.0 - smoothstep(0.47, 0.5, length(uv)); gl_FragColor = c * a * qt_Opacity; }"
+                                    }
                                 }
 
                                 Image {
