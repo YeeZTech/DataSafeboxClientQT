@@ -614,6 +614,42 @@
         <translation>加密失败</translation>
     </message>
     <message>
+        <source>Encryption Successful</source>
+        <translation>加密成功</translation>
+    </message>
+    <message>
+        <source>Encryption Failed</source>
+        <translation>加密失败</translation>
+    </message>
+    <message>
+        <source>File encryption successful! You can send the encrypted file to the recipient. After importing it into their security domain instance, they will be able to use it normally.</source>
+        <translation>文件加密成功！您可将加密文件发送给使用方，对方将加密文件导入至安全域实例后即可正常使用。</translation>
+    </message>
+    <message>
+        <source>File encryption failed. Reason: </source>
+        <translation>文件加密失败，失败原因：</translation>
+    </message>
+    <message>
+        <source> You may try encrypting again or contact support for help.</source>
+        <translation> 您可尝试重新加密文件或联系客服寻求帮助。</translation>
+    </message>
+    <message>
+        <source>View Encrypted File Guide</source>
+        <translation>查看加密文件使用说明</translation>
+    </message>
+    <message>
+        <source>Open File Save Directory</source>
+        <translation>打开文件保存目录</translation>
+    </message>
+    <message>
+        <source>Contact Support</source>
+        <translation>联系客服</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>重试</translation>
+    </message>
+    <message>
         <location line="-484"/>
         <location line="+71"/>
         <location line="+6"/>

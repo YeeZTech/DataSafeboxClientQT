@@ -608,6 +608,13 @@ ApplicationWindow {
                 onInstantiateRequested: {
                     instantiationHelpDialog.open();
                 }
+
+                onContactSupportRequested: {
+                    if (customerServiceDialog.opened)
+                        customerServiceDialog.close();
+                    else
+                        customerServiceDialog.open();
+                }
             }
 
             // Instantiation Help Dialog
