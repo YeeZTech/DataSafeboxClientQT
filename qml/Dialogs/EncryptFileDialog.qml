@@ -35,6 +35,7 @@ Popup {
     property string _currentTargetFile: ""
     property int _currentModelIndex: -1  // model index of item being encrypted
     property bool _encrypting: false
+    property bool _retrying: false
     property int _encryptProgress: 0
     property bool _encryptProgressDismissed: false
     property string _resultMessage: ""
@@ -62,6 +63,11 @@ Popup {
     }
 
     onOpened: {
+        if (_retrying) {
+            _retrying = false;
+            Qt.callLater(startEncryption);
+            return;
+        }
         selectedFilePath = "";
         selectedOutputPath = "";
         _encryptQueue = [];
@@ -1488,6 +1494,7 @@ Popup {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             encryptFailurePopup.close();
+                            root._retrying = true;
                             root.open();
                         }
                     }
