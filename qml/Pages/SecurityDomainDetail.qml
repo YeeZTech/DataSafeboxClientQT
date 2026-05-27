@@ -670,6 +670,74 @@ Item {
                         }
                     }
 
+                    Rectangle {
+                        id: createInstanceButton
+                        visible: true
+                        width: instantiateRow.width + 24
+                        height: 36
+                        radius: 8
+                        color: {
+                            if (instantiateMouseArea.pressed)
+                                return "#dce8f5";
+                            if (instantiateMouseArea.containsMouse)
+                                return "#eef4fb";
+                            return "#ffffff";
+                        }
+                        border.color: instantiateMouseArea.containsMouse ? Theme.Colors.primary : Qt.lighter(Theme.Colors.primary, 1.4)
+                        border.width: 1
+                        opacity: !root.isDomainReadOnly ? 1.0 : 0.5
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+                        Behavior on opacity {
+                            NumberAnimation {
+                                duration: 150
+                            }
+                        }
+
+                        Row {
+                            id: instantiateRow
+                            anchors.left: parent.left
+                            anchors.leftMargin: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 8
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: qsTr("How to Instantiate Security Domain?")
+                                font.pixelSize: 16
+                                font.weight: Font.Medium
+                                color: instantiateMouseArea.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.3) : Theme.Colors.primary
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 150
+                                    }
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            id: instantiateMouseArea
+                            anchors.fill: parent
+                            enabled: !root.isDomainReadOnly
+                            hoverEnabled: true
+                            cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                            onClicked: {
+                                if (root.isDomainReadOnly) {
+                                    return;
+                                }
+                                root.instantiateRequested();
+                            }
+                        }
+                    }
+
                     // Only visible to creator and when domain is active
                     Rectangle {
                         id: encryptFileButton
@@ -743,80 +811,6 @@ Item {
                                 }
                                 root.encryptButtonBusy = true;
                                 encryptFileDialog.open();
-                            }
-                        }
-                    }
-                    Rectangle {
-                        id: createInstanceButton
-                        visible: true
-                        width: instantiateRow.width + 24
-                        height: 36
-                        radius: 8
-                        color: {
-                            if (instantiateMouseArea.pressed)
-                                return "#dce8f5";
-                            if (instantiateMouseArea.containsMouse)
-                                return "#eef4fb";
-                            return "#ffffff";
-                        }
-                        border.color: instantiateMouseArea.containsMouse ? Theme.Colors.primary : Qt.lighter(Theme.Colors.primary, 1.4)
-                        border.width: 1
-                        opacity: !root.isDomainReadOnly ? 1.0 : 0.5
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 150
-                            }
-                        }
-                        Behavior on border.color {
-                            ColorAnimation {
-                                duration: 150
-                            }
-                        }
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 150
-                            }
-                        }
-
-                        Row {
-                            id: instantiateRow
-                            anchors.left: parent.left
-                            anchors.leftMargin: 12
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 8
-                            Image {
-                                width: 16
-                                height: 16
-                                anchors.verticalCenter: parent.verticalCenter
-                                source: Qt.resolvedUrl("icons/icon-domain-instance.svg")
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: qsTr("Create Security Domain Instance")
-                                font.pixelSize: 16
-                                font.weight: Font.Medium
-                                color: instantiateMouseArea.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.3) : Theme.Colors.primary
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: 150
-                                    }
-                                }
-                            }
-                        }
-
-                        MouseArea {
-                            id: instantiateMouseArea
-                            anchors.fill: parent
-                            enabled: !root.isDomainReadOnly
-                            hoverEnabled: true
-                            cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                            onClicked: {
-                                if (root.isDomainReadOnly) {
-                                    return;
-                                }
-                                root.instantiateRequested();
                             }
                         }
                     }
