@@ -334,7 +334,6 @@ Item {
                     height: 79
                     radius: 10
                     property bool hovered: false
-                    property bool showTooltip: false
                     property var messageData: modelData
                     color: hovered ? Theme.Colors.secondary : Theme.Colors.backgroundGray
                     border.width: 1
@@ -380,91 +379,20 @@ Item {
                                 elide: Text.ElideRight
                                 maximumLineCount: 1
                                 Layout.fillWidth: true
+                                ToolTip.visible: messageItem.hovered && implicitWidth > width
+                                ToolTip.text: messageItem.messageData.message || ""
+                                ToolTip.delay: 500
                             }
                         }
                     }
 
-                    Rectangle {
-                        id: messageTooltip
-                        visible: messageItem.showTooltip
-                        width: messageItem.width
-                        height: messageItem.height
-                        color: "#1e5a8e"
-                        radius: 10
-                        z: 1000
-                        x: 0
-                        y: (index > 0) ? (-height - 12) : (messageItem.height + 12)
-                        border.width: 1
-                        border.color: "#0f4c81"
-
-                        Text {
-                            id: msgTooltipText
-                            anchors.fill: parent
-                            anchors.margins: 12
-                            text: messageItem.messageData.message || ""
-                            font.pixelSize: 13
-                            color: "white"
-                            wrapMode: Text.WordWrap
-                            maximumLineCount: 3
-                            elide: Text.ElideRight
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        // 上方覆盖时：箭头显示在底部居中
-                        Canvas {
-                            visible: index > 0
-                            width: 10
-                            height: 5
-                            anchors.top: parent.bottom
-                            x: Math.round((parent.width - width) / 2)
-                            onPaint: {
-                                var ctx = getContext("2d");
-                                ctx.reset();
-                                ctx.fillStyle = "#1e5a8e";
-                                ctx.beginPath();
-                                ctx.moveTo(0, 0);
-                                ctx.lineTo(5, 5);
-                                ctx.lineTo(10, 0);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                        }
-
-                        // 首条消息下方显示时：箭头显示在顶部居中
-                        Canvas {
-                            visible: index === 0
-                            width: 10
-                            height: 5
-                            anchors.bottom: parent.top
-                            x: Math.round((parent.width - width) / 2)
-                            onPaint: {
-                                var ctx = getContext("2d");
-                                ctx.reset();
-                                ctx.fillStyle = "#1e5a8e";
-                                ctx.beginPath();
-                                ctx.moveTo(0, 5);
-                                ctx.lineTo(5, 0);
-                                ctx.lineTo(10, 5);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-                        }
-                    }
-
-                    // Click to mark as read + tooltip on hover
+                    // Click to mark as read + hover state
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: messageItem.messageData.isRead === 0 ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onEntered: {
-                            messageItem.hovered = true;
-                            if (messageText.implicitWidth > messageText.width)
-                                messageItem.showTooltip = true;
-                        }
-                        onExited: {
-                            messageItem.hovered = false;
-                            messageItem.showTooltip = false;
-                        }
+                        onEntered: messageItem.hovered = true
+                        onExited: messageItem.hovered = false
                         onClicked: {
                             if (messageItem.messageData.isRead === 0) {
                                 DsccBridge.readMessage(messageItem.messageData.messageCode);
