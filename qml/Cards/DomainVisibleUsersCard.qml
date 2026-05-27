@@ -166,7 +166,7 @@ Rectangle {
                             anchors.left: parent.left
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
-                            text: qsTr("Account")
+                            text: qsTr("Dianshu ID")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
@@ -181,7 +181,7 @@ Rectangle {
                             anchors.left: parent.left
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
-                            text: qsTr("Name")
+                            text: qsTr("Nickname")
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel

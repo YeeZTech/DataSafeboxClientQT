@@ -75,7 +75,7 @@ Rectangle {
                 spacing: 10
 
                 SelectableText {
-                    text: qsTr("Creator")
+                    text: qsTr("Creator Dianshu ID")
                     font.pixelSize: 14
                     color: "#62748e"
                 }
@@ -399,7 +399,7 @@ Rectangle {
                     anchors.topMargin: 4
                     width: parent.width
                     text: (card.domainData.description && card.domainData.description.length > 0) ? card.domainData.description : ""
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                     color: "#0f172b"
                     wrapMode: TextEdit.Wrap
                     visible: !card.isEditingDescription
@@ -415,7 +415,7 @@ Rectangle {
                     anchors.topMargin: 4
                     height: contentHeight > 0 ? contentHeight : 25
                     text: card.editedDescription
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                     color: "#0f172b"
                     selectedTextColor: "#0f172b"
                     selectionColor: "#d4e4f1"
