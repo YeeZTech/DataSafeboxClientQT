@@ -30,6 +30,8 @@ Item {
     property bool isValid: trimmedDomainName !== "" && domainNameError === "" && payer !== "" && description.length <= 500
     property bool isSubmitting: false
     property var currentUser: null
+    // Max width for the form content area — keeps left/right margins equal on wide screens
+    readonly property int maxFormWidth: 680
     // Unified typography
     property string fontFamily: "Microsoft YaHei"
     property int fontSizeTitle: 28
@@ -114,12 +116,12 @@ Item {
                         id: formContent
                         anchors.left: parent.left
                         anchors.right: parent.right
+                        anchors.leftMargin: Math.max(32, (parent.width - root.maxFormWidth) / 2)
+                        anchors.rightMargin: Math.max(32, (parent.width - root.maxFormWidth) / 2)
                         anchors.top: parent.top
                         anchors.topMargin: 24
-                        anchors.leftMargin: 32
-                        anchors.rightMargin: 32
                         property int spacingRow: 40
-                        property int labelWidth: 176  // 固定宽度，确保标签对齐
+                        property int labelWidth: 110  // 固定宽度，确保标签对齐
                         property int fieldWidth: Math.max(240, width - labelWidth - spacingRow)  // 根据formContent宽度计算
                         height: descriptionRow.y + descriptionRow.height + 16  // 动态计算高度，底部边距从24改为16
 

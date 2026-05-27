@@ -216,12 +216,11 @@ Popup {
                     height: 36
                     radius: 8
                     color: {
-                        // 默认: #fd7977, 悬停: 稍浅, 点击: #fb2c36
                         if (confirmArea.pressed)
-                            return "#fb2c36";  // 点击状态
+                            return "#A40E20";  // 点击状态
                         if (confirmArea.containsMouse)
-                            return "#fe9a98";  // 悬停状态（稍浅）
-                        return "#fd7977";  // 默认状态
+                            return "#FD7977";  // 悬停状态
+                        return "#FB2C36";  // 默认状态
                     }
 
                     Behavior on color {

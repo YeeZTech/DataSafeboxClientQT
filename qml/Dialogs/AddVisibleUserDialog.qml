@@ -5,7 +5,7 @@ import "." as Theme
 Popup {
     id: root
     width: 446
-    height: hasError ? 278 : 254
+    height: hasError ? 244 : 216
     modal: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     x: (parent ? (parent.width - width) / 2 : 0)
