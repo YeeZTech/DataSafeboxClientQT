@@ -602,8 +602,12 @@ Item {
                     onPressed: parent.pressed = true
                     onReleased: parent.pressed = false
                     onClicked: {
-                        root.currentPage = root.currentPage - 1;
-                        root._applyFilterAndPaginate();
+                        var mc = root;
+                        var targetPage = mc.currentPage - 1;
+                        Qt.callLater(function () {
+                            mc.currentPage = targetPage;
+                            mc._applyFilterAndPaginate();
+                        });
                     }
                 }
             }
@@ -652,8 +656,12 @@ Item {
                         onReleased: parent.pressed = false
                         onClicked: {
                             if (!parent.isCurrent) {
-                                root.currentPage = pageNum;
-                                root._applyFilterAndPaginate();
+                                var mc = root;
+                                var targetPage = pageNum;
+                                Qt.callLater(function () {
+                                    mc.currentPage = targetPage;
+                                    mc._applyFilterAndPaginate();
+                                });
                             }
                         }
                     }
@@ -701,8 +709,12 @@ Item {
                     onPressed: parent.pressed = true
                     onReleased: parent.pressed = false
                     onClicked: {
-                        root.currentPage = root.currentPage + 1;
-                        root._applyFilterAndPaginate();
+                        var mc = root;
+                        var targetPage = mc.currentPage + 1;
+                        Qt.callLater(function () {
+                            mc.currentPage = targetPage;
+                            mc._applyFilterAndPaginate();
+                        });
                     }
                 }
             }
