@@ -218,7 +218,7 @@ Popup {
                             SelectableText {
                                 id: exportStatusText
                                 anchors.centerIn: parent
-                                text: window.translateStatus(root.status)
+                                text: Colors.translateStatus(root.status)
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: statusStyle.text
