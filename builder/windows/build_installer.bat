@@ -131,7 +131,7 @@ for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "(Select-Xml -
 if not defined PACKAGE_VERSION (echo [Error] Failed to read version from config.xml & goto :fail)
 set "OUTPUT_INSTALLER=%SCRIPT_DIR%DataSafebox_%PACKAGE_VERSION%.exe"
 echo [INFO] Version: %PACKAGE_VERSION%
-powershell -NoProfile -Command "$v='%PACKAGE_VERSION%'; $dir='%SCRIPT_DIR%'; $cn=[char]0x6570+[char]0x636e+[char]0x5b89+[char]0x5168+[char]0x67dc+[char]0x63a7+[char]0x5236+[char]0x53f0; Write-Host ('[INFO] Output : '+$dir+$cn+'_'+$v+'.exe')"
+echo [INFO] Output : %OUTPUT_INSTALLER%
 echo.
 
 rem --- Step 0/6: compile translation files ---
@@ -294,7 +294,7 @@ popd
 if not "%BC_ERROR%"=="0" goto :fail
 
 rem Rename installer to localized Chinese name using PowerShell Unicode codepoints
-powershell -NoProfile -Command "$v='%PACKAGE_VERSION%'; $dir='%SCRIPT_DIR%'; $src=$dir+'DataSafebox_'+$v+'.exe'; $cn=[char]0x6570+[char]0x636e+[char]0x5b89+[char]0x5168+[char]0x67dc+[char]0x63a7+[char]0x5236+[char]0x53f0; $dst=$dir+$cn+'_'+$v+'.exe'; if(Test-Path $src){Move-Item $src $dst -Force}; Write-Host ''; Write-Host '=================================================='; Write-Host '  Build complete'; Write-Host ('  Output: '+$dst); Write-Host '==================================================' "
+powershell -NoProfile -Command "$v='%PACKAGE_VERSION%'; $dir='%SCRIPT_DIR%'; Write-Host ''; Write-Host '=================================================='; Write-Host '  Build complete'; Write-Host ('  Output: '+$dir+'DataSafebox_'+$v+'.exe'); Write-Host '==================================================' "
 echo.
 pause
 exit /b 0

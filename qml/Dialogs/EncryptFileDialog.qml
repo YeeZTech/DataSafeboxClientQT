@@ -1275,7 +1275,7 @@ Popup {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: { if (false) Qt.openUrlExternally("") }
+                        onClicked: Qt.openUrlExternally("https://help.yeez.tech/docs/bu-zhou-5-mai-fang-jia-mi-yuan-shi-shu-ju")
                     }
                 }
 
@@ -1419,9 +1419,9 @@ Popup {
                 width: parent.width
                 textFormat: Text.RichText
                 text: qsTr("File encryption failed. Reason: ") +
-                      "<a href='https://help.yeez.tech/docs/bu-zhou-5-mai-fang-jia-mi-yuan-shi-shu-ju' style='color:#1566c0;text-decoration:underline;'>" +
+                      "<a href='https://help.yeez.tech/docs/bu-zhou-5-mai-fang-jia-mi-yuan-shi-shu-ju' style='color:#ef4444;text-decoration:underline;'>" +
                       encryptFailurePopup.errorText +
-                      "</a>" +
+                      "</a>，" +
                       qsTr(" You may try encrypting again or contact support for help.")
                 font.pixelSize: 14
                 color: "#475569"
