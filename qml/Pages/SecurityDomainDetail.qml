@@ -78,6 +78,7 @@ Item {
 
     // Signals
     signal instantiateRequested
+    signal contactSupportRequested
 
     property bool _pendingGuideShow: false
     property int _guideShowRetryCount: 0
@@ -428,6 +429,10 @@ Item {
             if (!encrypting) {
                 root.encryptButtonBusy = false;
             }
+        }
+
+        onContactSupportRequested: {
+            root.contactSupportRequested();
         }
     }
 

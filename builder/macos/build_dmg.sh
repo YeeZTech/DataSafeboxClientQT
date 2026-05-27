@@ -71,6 +71,7 @@ DMG_NAME="DataSafebox_${VERSION}.dmg"
 # ===========================================================================
 # USE_TEST_ENV validation
 # ===========================================================================
+USE_TEST_ENV="${USE_TEST_ENV:-0}"
 if [[ -z "${USE_TEST_ENV:-}" ]]; then
     die "USE_TEST_ENV is not set. Export USE_TEST_ENV=0 (production) or USE_TEST_ENV=1 (test) before running this script."
 fi

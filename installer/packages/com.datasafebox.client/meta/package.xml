@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package>
     <DisplayName>数据安全柜控制台</DisplayName>
-    <Description>数据安全柜控制台。</Description>
-    <Version>1.0.1</Version>
+    <Description>数据安全柜控制台</Description>
+    <Version>1.0.3</Version>
     <ReleaseDate>2026-01-20</ReleaseDate>
     <Default>true</Default>
     <Script>installscript.qs</Script>
     <Licenses>
-        <License name="开源许可与第三方组件声明" file="license_zh_CN.txt"/>
+        <License name="用户协议" file="license_zh_CN.txt"/>
     </Licenses>
 </Package>

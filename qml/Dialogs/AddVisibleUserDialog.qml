@@ -249,7 +249,7 @@ Popup {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            var url = "";
+                            var url = "https://help.yeez.tech/docs/dian-shu-hao";
                             if (url)
                                 Qt.openUrlExternally(url);
                         }

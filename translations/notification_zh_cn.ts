@@ -56,6 +56,10 @@
         <translation>API %1 返回错误码 %2，原因未知。</translation>
     </message>
     <message>
+        <source>unknown message</source>
+        <translation>未知错误</translation>
+    </message>
+    <message>
         <source>API %1 return has no serverTime</source>
         <translation>API %1 返回缺少 serverTime 字段</translation>
     </message>

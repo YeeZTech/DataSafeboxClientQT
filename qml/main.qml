@@ -608,6 +608,13 @@ ApplicationWindow {
                 onInstantiateRequested: {
                     instantiationHelpDialog.open();
                 }
+
+                onContactSupportRequested: {
+                    if (customerServiceDialog.opened)
+                        customerServiceDialog.close();
+                    else
+                        customerServiceDialog.open();
+                }
             }
 
             // Instantiation Help Dialog
@@ -1038,7 +1045,7 @@ ApplicationWindow {
         width: Math.min(280, noUpdateLabel.implicitWidth + 80)
         height: 56
         x: (parent.width - width) / 2
-        y: 60
+        y: (parent.height - height) / 2
         modal: false
         focus: false
         parent: Overlay.overlay
