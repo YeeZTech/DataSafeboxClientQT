@@ -1030,53 +1030,12 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 12
 
-                            Item {
+                            Image {
                                 width: 20
                                 height: 20
                                 anchors.verticalCenter: parent.verticalCenter
-
-                                Rectangle {
-                                    anchors.fill: parent
-                                    radius: 10
-                                    color: "#d4e4f1"
-                                }
-
-                                Image {
-                                    anchors.centerIn: parent
-                                    width: 12
-                                    height: 12
-                                    source: Qt.resolvedUrl("icons/icon-user-avatar.svg")
-                                    fillMode: Image.PreserveAspectFit
-                                    visible: sidebar.currentUserAvatar === ""
-                                }
-
-                                Canvas {
-                                    id: userInfoMenuAvatarCanvas
-                                    anchors.fill: parent
-                                    visible: sidebar.currentUserAvatar !== ""
-                                    property string avatarUrl: sidebar.currentUserAvatar
-                                    onAvatarUrlChanged: {
-                                        if (avatarUrl !== "") loadImage(avatarUrl)
-                                        requestPaint()
-                                    }
-                                    onImageLoaded: requestPaint()
-                                    Component.onCompleted: {
-                                        if (avatarUrl !== "") loadImage(avatarUrl)
-                                    }
-                                    onPaint: {
-                                        var ctx = getContext("2d")
-                                        ctx.clearRect(0, 0, width, height)
-                                        if (avatarUrl !== "" && isImageLoaded(avatarUrl)) {
-                                            ctx.save()
-                                            ctx.beginPath()
-                                            ctx.arc(width / 2, height / 2, width / 2, 0, Math.PI * 2)
-                                            ctx.closePath()
-                                            ctx.clip()
-                                            ctx.drawImage(avatarUrl, 0, 0, width, height)
-                                            ctx.restore()
-                                        }
-                                    }
-                                }
+                                source: Qt.resolvedUrl("icons/icon-user-avatar.svg")
+                                fillMode: Image.PreserveAspectFit
                             }
 
                             Text {
