@@ -12,9 +12,11 @@ Rectangle {
     property int actionTextPixelSize: 14
     property int actionTextWeight: Font.Medium
 
-    signal addUserRequested()
+    signal addUserRequested
     signal removeUserRequested(string account, string authUserId)
-    function resetPage() { currentPage = 1 }
+    function resetPage() {
+        currentPage = 1;
+    }
 
     property int userCount: visibleUsers ? visibleUsers.length : 0
     property int currentPage: 1
@@ -25,9 +27,17 @@ Rectangle {
     readonly property int accountColumnWidth: Math.max(0, width - 32 - nameColumnWidth - operationColumnWidth)
 
     function normalizeCurrentPage() {
-        if (totalPages <= 0) { if (currentPage !== 1) currentPage = 1; return }
-        if (currentPage < 1) { currentPage = 1; return }
-        if (currentPage > totalPages) currentPage = totalPages
+        if (totalPages <= 0) {
+            if (currentPage !== 1)
+                currentPage = 1;
+            return;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+            return;
+        }
+        if (currentPage > totalPages)
+            currentPage = totalPages;
     }
     onUserCountChanged: normalizeCurrentPage()
     onTotalPagesChanged: normalizeCurrentPage()
@@ -65,13 +75,19 @@ Rectangle {
                 property bool hovered: false
                 property bool pressed: false
                 color: {
-                    if (pressed) return "#c1d9ef"
-                    if (hovered) return "#eaf2fb"
-                    return "transparent"
+                    if (pressed)
+                        return "#c1d9ef";
+                    if (hovered)
+                        return "#eaf2fb";
+                    return "transparent";
                 }
                 visible: true
                 opacity: (!card.isDomainReadOnly && !card.operationBusy) ? 1.0 : 0.5
-                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 150
+                    }
+                }
 
                 Row {
                     anchors.right: parent.right
@@ -198,9 +214,9 @@ Rectangle {
 
                 Repeater {
                     model: {
-                        var users = card.visibleUsers || []
-                        var start = (card.currentPage - 1) * card.itemsPerPage
-                        return users.slice(start, Math.min(start + card.itemsPerPage, users.length))
+                        var users = card.visibleUsers || [];
+                        var start = (card.currentPage - 1) * card.itemsPerPage;
+                        return users.slice(start, Math.min(start + card.itemsPerPage, users.length));
                     }
 
                     Rectangle {
@@ -252,7 +268,11 @@ Rectangle {
                                 height: parent.height
                                 visible: true
                                 opacity: !card.isDomainReadOnly ? 1.0 : 0.5
-                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: 150
+                                    }
+                                }
 
                                 Text {
                                     id: removeText
@@ -273,12 +293,15 @@ Rectangle {
                                         onEntered: removeText.hovered = true
                                         onExited: removeText.hovered = false
                                         onClicked: {
-                                            if (card.isDomainReadOnly || card.operationBusy) return
-                                            if (card.pendingRemovedAccount) return
-                                            var targetAccount = modelData.account || ""
-                                            var targetAuthUserId = modelData.authUserId || ""
-                                            if (!targetAuthUserId) return
-                                            card.removeUserRequested(targetAccount, targetAuthUserId)
+                                            if (card.isDomainReadOnly || card.operationBusy)
+                                                return;
+                                            if (card.pendingRemovedAccount)
+                                                return;
+                                            var targetAccount = modelData.account || "";
+                                            var targetAuthUserId = modelData.authUserId || "";
+                                            if (!targetAuthUserId)
+                                                return;
+                                            card.removeUserRequested(targetAccount, targetAuthUserId);
                                         }
                                     }
                                 }

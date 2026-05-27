@@ -8,18 +8,21 @@
 class SingleApplication : public QApplication
 {
     Q_OBJECT
-public:
+  public:
     SingleApplication(int &argc, char **argv, const QString &serverName = QString());
-    bool isRunning() const { return m_isRunning; }
+    bool isRunning() const
+    {
+        return m_isRunning;
+    }
     bool sendMessage(const QString &message);
 
-signals:
+  signals:
     void messageReceived(const QString &message);
 
-private slots:
+  private slots:
     void newLocalConnection();
 
-private:
+  private:
     void initLocalConnection();
 
     bool m_isRunning;

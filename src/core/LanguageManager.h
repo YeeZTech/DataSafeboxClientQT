@@ -2,8 +2,8 @@
 #define LANGUAGEMANAGER_H
 
 #include <QObject>
-#include <QTranslator>
 #include <QString>
+#include <QTranslator>
 
 /**
  * LanguageManager
@@ -17,25 +17,28 @@ class LanguageManager : public QObject
     Q_OBJECT
     Q_PROPERTY(QString currentLanguage READ currentLanguage NOTIFY languageChanged)
 
-public:
+  public:
     explicit LanguageManager(QObject *parent = nullptr);
     ~LanguageManager() override = default;
 
-    QString currentLanguage() const { return m_currentLanguage; }
+    QString currentLanguage() const
+    {
+        return m_currentLanguage;
+    }
 
     void applyInitialLanguage();
     Q_INVOKABLE void switchLanguage(const QString &languageCode);
 
-signals:
+  signals:
     void languageChanged(QString languageCode);
 
-private:
+  private:
     void loadLanguage(const QString &languageCode);
     void installNotificationTranslator();
 
     QTranslator m_translator;
     QTranslator m_qmlTranslator;
-    QString     m_currentLanguage;
+    QString m_currentLanguage;
 };
 
 #endif // LANGUAGEMANAGER_H

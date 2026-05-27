@@ -1,12 +1,12 @@
 ﻿#ifndef CASDOORHELPER_H
 #define CASDOORHELPER_H
 
+#include "AppConfig.h"
+#include <QNetworkCookie>
 #include <QObject>
 #include <QString>
-#include <QVariantMap>
 #include <QTimer>
-#include <QNetworkCookie>
-#include "AppConfig.h"
+#include <QVariantMap>
 
 class QNetworkAccessManager;
 class QWebEngineCookieStore;
@@ -14,25 +14,34 @@ class QWebEngineCookieStore;
 class CasdoorHelper : public QObject
 {
     Q_OBJECT
-public:
+  public:
     explicit CasdoorHelper(QObject *parent = nullptr);
-    static CasdoorHelper* instance();
+    static CasdoorHelper *instance();
 
     // Configuration
-    const QString endpoint  = QLatin1String(AppCfg::CASDOOR_ENDPOINT);
-    const QString clientId  = QLatin1String(AppCfg::CASDOOR_CLIENT_ID);
+    const QString endpoint = QLatin1String(AppCfg::CASDOOR_ENDPOINT);
+    const QString clientId = QLatin1String(AppCfg::CASDOOR_CLIENT_ID);
 
     Q_INVOKABLE QString getSigninUrl();
-    Q_INVOKABLE QString getRedirectUri() const { return redirectUri; }
-    Q_INVOKABLE QString getStateValue()  const { return m_oauthState; }
-    Q_INVOKABLE QString getEndpoint()    const { return endpoint; }
+    Q_INVOKABLE QString getRedirectUri() const
+    {
+        return redirectUri;
+    }
+    Q_INVOKABLE QString getStateValue() const
+    {
+        return m_oauthState;
+    }
+    Q_INVOKABLE QString getEndpoint() const
+    {
+        return endpoint;
+    }
     Q_INVOKABLE void handleAuthCode(const QString &code, const QString &state = QString());
     Q_INVOKABLE void searchUser(const QString &username);
     Q_INVOKABLE void logout();
     Q_INVOKABLE void clearCasdoorCookies();
     Q_INVOKABLE void setCasdoorWebProfile(QObject *profile);
 
-signals:
+  signals:
     void loginSuccess(const QVariantMap &user);
     void loginFailed(const QString &errorMessage);
     void logoutCompleted();
@@ -40,22 +49,22 @@ signals:
     void userSearchCompleted(const QVariantMap &userInfo);
     void userSearchFailed(const QString &errorMessage);
 
-private slots:
+  private slots:
     void onLoginWatchdogTimeout();
     void onCookieAdded(const QNetworkCookie &cookie);
     void onCookieRemoved(const QNetworkCookie &cookie);
 
-private:
+  private:
     const QString redirectUri = QLatin1String(AppCfg::CASDOOR_REDIRECT_URI);
 
-    QString  m_oauthState;
-    QString  m_currentToken;
-    QString  m_currentIdToken;
-    QString  m_sessionToken;
-    QString  m_sessionOwner;
-    bool     m_authCodeExchangeInFlight = false;
-    QString  m_inFlightAuthCode;
-    QTimer   m_loginWatchdog;
+    QString m_oauthState;
+    QString m_currentToken;
+    QString m_currentIdToken;
+    QString m_sessionToken;
+    QString m_sessionOwner;
+    bool m_authCodeExchangeInFlight = false;
+    QString m_inFlightAuthCode;
+    QTimer m_loginWatchdog;
 
     QNetworkAccessManager *m_network;
     QWebEngineCookieStore *m_cookieStore = nullptr;

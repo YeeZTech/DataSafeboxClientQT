@@ -1,20 +1,19 @@
 ﻿#include "ArrearsManager.h"
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QUrl>
 
-ArrearsManager::ArrearsManager(QObject *parent)
-    : QObject(parent)
-    , m_network(new QNetworkAccessManager(this))
+ArrearsManager::ArrearsManager(QObject *parent) : QObject(parent), m_network(new QNetworkAccessManager(this))
 {
 }
 
 void ArrearsManager::getArrearsOverview(const QString &token)
 {
-    if (token.isEmpty()) {
+    if (token.isEmpty())
+    {
         emit arrearsOverviewFetchFailed("Token is required");
         return;
     }
@@ -29,20 +28,23 @@ void ArrearsManager::getArrearsOverview(const QString &token)
     QNetworkReply *reply = m_network->post(req, QByteArray());
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         reply->deleteLater();
-        if (reply->error() != QNetworkReply::NoError) {
+        if (reply->error() != QNetworkReply::NoError)
+        {
             emit arrearsOverviewFetchFailed(reply->errorString());
             return;
         }
         const QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
-        if (!doc.isObject()) {
+        if (!doc.isObject())
+        {
             emit arrearsOverviewFetchFailed(tr("Failed to parse arrears status"));
             return;
         }
         const QJsonObject obj = doc.object();
         const int resultCode = obj.value("resultCode").toInt();
-        if (resultCode != 200) {
-            const QString desc = obj.value("resultDesc").toString(
-                obj.value("msg").toString(tr("Failed to get arrears status")));
+        if (resultCode != 200)
+        {
+            const QString desc =
+                obj.value("resultDesc").toString(obj.value("msg").toString(tr("Failed to get arrears status")));
             emit arrearsOverviewFetchFailed(desc);
             return;
         }

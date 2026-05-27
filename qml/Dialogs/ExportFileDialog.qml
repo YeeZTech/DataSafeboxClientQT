@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Dialogs
 import Qt.labs.platform 1.1 as Platform
@@ -23,19 +23,19 @@ Popup {
     readonly property bool canSubmit: selectedFilePaths.length > 0
 
     signal confirmClicked(var filePaths, string reasonText)
-    signal cancelClicked()
+    signal cancelClicked
 
     onAllowedDirectoryChanged: {
-        _allowedCanonical = canonicalPath(allowedDirectory)
-        updateFileDialogFolder()
-        fileError = ""
+        _allowedCanonical = canonicalPath(allowedDirectory);
+        updateFileDialogFolder();
+        fileError = "";
     }
 
     function resetForm() {
-        selectedFilePaths = []
-        fileDisplayText = ""
-        reasonText = ""
-        fileError = ""
+        selectedFilePaths = [];
+        fileDisplayText = "";
+        reasonText = "";
+        fileError = "";
     }
 
     background: Rectangle {
@@ -87,8 +87,8 @@ Popup {
                         cursorShape: Qt.PointingHandCursor
 
                         onClicked: {
-                            root.close()
-                            root.cancelClicked()
+                            root.close();
+                            root.cancelClicked();
                         }
                     }
 
@@ -102,7 +102,10 @@ Popup {
             }
 
             // 标题与内容之间的间距（向下整体移动 16px，原 16px → 32px）
-            Item { width: parent.width; height: 16 }
+            Item {
+                width: parent.width
+                height: 16
+            }
 
             // 内容区
             Column {
@@ -237,7 +240,11 @@ Popup {
                         color: reasonArea.activeFocus ? Theme.Colors.backgroundWhite : (reasonHoverArea.containsMouse ? "#e9eef6" : Theme.Colors.backgroundWhite)
                         border.color: "#cad5e2"
                         border.width: 1
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
 
                         MouseArea {
                             id: reasonHoverArea
@@ -275,7 +282,10 @@ Popup {
             }
 
             // 文字与按钮之间的间距（与设计稿一致为 16px，额外向下移动按钮 8px）
-            Item { width: parent.width; height: 16 }
+            Item {
+                width: parent.width
+                height: 16
+            }
 
             // 确定按钮
             Rectangle {
@@ -308,9 +318,9 @@ Popup {
                     cursorShape: root.canSubmit ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: {
                         if (!root.canSubmit)
-                            return
-                        root.confirmClicked(root.selectedFilePaths.slice(0), root.reasonText)
-                        root.close()
+                            return;
+                        root.confirmClicked(root.selectedFilePaths.slice(0), root.reasonText);
+                        root.close();
                     }
                 }
             }
@@ -324,92 +334,86 @@ Popup {
         Component.onCompleted: updateFileDialogFolder()
         onAccepted: {
             if (fileDialog.selectedFiles && fileDialog.selectedFiles.length > 0) {
-                var validPaths = []
+                var validPaths = [];
                 for (var i = 0; i < fileDialog.selectedFiles.length; i++) {
-                    var url = fileDialog.selectedFiles[i].toString()
-                    var normalized = normalizeFileUrl(url)
+                    var url = fileDialog.selectedFiles[i].toString();
+                    var normalized = normalizeFileUrl(url);
                     if (!isPathAllowed(normalized)) {
-                        root.fileError = root.allowedDirectory && root.allowedDirectory.length > 0 ?
-                                         "Files can only be selected from " + root.allowedDirectory + qsTr(" directory") :
-                                         qsTr("Cannot select the specified file")
-                        root.selectedFilePaths = []
-                        root.fileDisplayText = ""
-                        return
+                        root.fileError = root.allowedDirectory && root.allowedDirectory.length > 0 ? "Files can only be selected from " + root.allowedDirectory + qsTr(" directory") : qsTr("Cannot select the specified file");
+                        root.selectedFilePaths = [];
+                        root.fileDisplayText = "";
+                        return;
                     }
-                    validPaths.push(normalized)
+                    validPaths.push(normalized);
                 }
-                root.fileError = ""
-                root.selectedFilePaths = validPaths
-                root.fileDisplayText = validPaths.length === 1
-                        ? extractFileName(validPaths[0])
-                        : (validPaths.length + qsTr(" files"))
+                root.fileError = "";
+                root.selectedFilePaths = validPaths;
+                root.fileDisplayText = validPaths.length === 1 ? extractFileName(validPaths[0]) : (validPaths.length + qsTr(" files"));
             }
         }
     }
 
     function extractFileName(path) {
         if (!path)
-            return ""
-        var separator = path.indexOf("\\") !== -1 ? "\\" : "/"
-        var parts = path.split(separator)
-        return parts.length > 0 ? parts[parts.length - 1] : path
+            return "";
+        var separator = path.indexOf("\\") !== -1 ? "\\" : "/";
+        var parts = path.split(separator);
+        return parts.length > 0 ? parts[parts.length - 1] : path;
     }
 
     function normalizeFileUrl(url) {
         if (!url)
-            return ""
-        var str = url.toString()
+            return "";
+        var str = url.toString();
         if (str.startsWith("file:///")) {
-            var decoded = decodeURIComponent(str.substring(8))
+            var decoded = decodeURIComponent(str.substring(8));
             if (Qt.platform.os === "windows") {
-                return decoded.replace(/\//g, "\\")
+                return decoded.replace(/\//g, "\\");
             }
-            return decoded.startsWith("/") ? decoded : "/" + decoded
+            return decoded.startsWith("/") ? decoded : "/" + decoded;
         } else if (str.startsWith("file://")) {
-            var decoded = decodeURIComponent(str.substring(7))
+            var decoded = decodeURIComponent(str.substring(7));
             if (Qt.platform.os === "windows") {
-                return decoded.replace(/\//g, "\\")
+                return decoded.replace(/\//g, "\\");
             }
-            return decoded.startsWith("/") ? decoded : "/" + decoded
+            return decoded.startsWith("/") ? decoded : "/" + decoded;
         }
-        return decodeURIComponent(str)
+        return decodeURIComponent(str);
     }
 
     function canonicalPath(path) {
         if (!path)
-            return ""
-        var normalized = path.toString().replace(/\\/g, "/")
+            return "";
+        var normalized = path.toString().replace(/\\/g, "/");
         if (Qt.platform.os === "windows")
-            normalized = normalized.toLowerCase()
+            normalized = normalized.toLowerCase();
         if (normalized.length > 0 && !normalized.endsWith("/"))
-            normalized += "/"
-        return normalized
+            normalized += "/";
+        return normalized;
     }
 
     function isPathAllowed(path) {
         if (!_allowedCanonical || _allowedCanonical.length === 0)
-            return true
-        var selectedCanonical = canonicalPath(path)
-        return selectedCanonical.indexOf(_allowedCanonical) === 0
+            return true;
+        var selectedCanonical = canonicalPath(path);
+        return selectedCanonical.indexOf(_allowedCanonical) === 0;
     }
 
     function pathToUrl(path) {
         if (!path || path.length === 0)
-            return Platform.StandardPaths.standardLocations(Platform.StandardPaths.HomeLocation)[0]
-        var normalized = path.replace(/\\/g, "/")
+            return Platform.StandardPaths.standardLocations(Platform.StandardPaths.HomeLocation)[0];
+        var normalized = path.replace(/\\/g, "/");
         if (Qt.platform.os === "windows") {
-            return "file:///" + normalized.replace(/ /g, "%20")
+            return "file:///" + normalized.replace(/ /g, "%20");
         }
         if (!normalized.startsWith("/"))
-            normalized = "/" + normalized
-        return "file://" + normalized.replace(/ /g, "%20")
+            normalized = "/" + normalized;
+        return "file://" + normalized.replace(/ /g, "%20");
     }
 
     function updateFileDialogFolder() {
         if (!fileDialog)
-            return
-        fileDialog.currentFolder = (allowedDirectory && allowedDirectory.length > 0) ?
-            pathToUrl(allowedDirectory) :
-            Platform.StandardPaths.standardLocations(Platform.StandardPaths.HomeLocation)[0]
+            return;
+        fileDialog.currentFolder = (allowedDirectory && allowedDirectory.length > 0) ? pathToUrl(allowedDirectory) : Platform.StandardPaths.standardLocations(Platform.StandardPaths.HomeLocation)[0];
     }
 }

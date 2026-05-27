@@ -2,17 +2,19 @@
 #include "sentry.h"
 #include <QDebug>
 
-SentryBridge::SentryBridge(QObject *parent)
-    : QObject(parent)
+SentryBridge::SentryBridge(QObject *parent) : QObject(parent)
 {
 }
 
 void SentryBridge::captureMessage(const QString &message, int level)
 {
     const char *levelName = "info";
-    if (level == 1) {
+    if (level == 1)
+    {
         levelName = "warning";
-    } else if (level >= 2) {
+    }
+    else if (level >= 2)
+    {
         levelName = "error";
     }
 

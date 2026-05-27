@@ -1,4 +1,4 @@
-﻿pragma Singleton
+pragma Singleton
 import QtQuick 2.15
 
 QtObject {
@@ -22,22 +22,20 @@ QtObject {
      */
     function normalizeVolumeToBytes(sizeValue) {
         if ((!sizeValue && sizeValue !== 0) || isNaN(Number(sizeValue))) {
-            return 0
+            return 0;
         }
-
-        var value = Number(sizeValue)
+        var value = Number(sizeValue);
         if (value <= 0) {
-            return 0
+            return 0;
         }
-
-        var ONE_GB_IN_BYTES = 1024 * 1024 * 1024
+        var ONE_GB_IN_BYTES = 1024 * 1024 * 1024;
         // Large values are treated as bytes to avoid MB->bytes double conversion.
         if (value >= ONE_GB_IN_BYTES) {
-            return value
+            return value;
         }
 
         // Small values are treated as MB.
-        return value * 1024 * 1024
+        return value * 1024 * 1024;
     }
 
     /**
@@ -51,36 +49,33 @@ QtObject {
      */
     function formatSize(sizeValue) {
         if ((!sizeValue && sizeValue !== 0) || isNaN(Number(sizeValue))) {
-            return "-"
+            return "-";
         }
-
-        var bytes = Number(sizeValue)
+        var bytes = Number(sizeValue);
         if (bytes < 0) {
-            return "-"
+            return "-";
         }
-
-        var KB = 1024
-        var MB = KB * 1024
-        var GB = MB * 1024
-        var TB = GB * 1024
-        var PB = TB * 1024
-
+        var KB = 1024;
+        var MB = KB * 1024;
+        var GB = MB * 1024;
+        var TB = GB * 1024;
+        var PB = TB * 1024;
         if (bytes >= PB) {
-            return (bytes / PB).toFixed(2) + " PB"
+            return (bytes / PB).toFixed(2) + " PB";
         }
         if (bytes >= TB) {
-            return (bytes / TB).toFixed(2) + " TB"
+            return (bytes / TB).toFixed(2) + " TB";
         }
         if (bytes >= GB) {
-            return (bytes / GB).toFixed(2) + " GB"
+            return (bytes / GB).toFixed(2) + " GB";
         }
         if (bytes >= MB) {
-            return (bytes / MB).toFixed(2) + " MB"
+            return (bytes / MB).toFixed(2) + " MB";
         }
         if (bytes >= KB) {
-            return (bytes / KB).toFixed(2) + " KB"
+            return (bytes / KB).toFixed(2) + " KB";
         }
-        return bytes + " B"
+        return bytes + " B";
     }
 
     /**
@@ -96,35 +91,30 @@ QtObject {
      */
     function formatDateTime(value) {
         if (!value && value !== 0) {
-            return "-"
+            return "-";
         }
-
-        var date
+        var date;
         if (value instanceof Date) {
-            date = value
+            date = value;
         } else if (typeof value === "number") {
-            date = new Date(value)
+            date = new Date(value);
         } else if (typeof value === "string") {
-            var normalized = value.replace(" ", "T")
-            date = new Date(normalized)
+            var normalized = value.replace(" ", "T");
+            date = new Date(normalized);
         }
-
         if (!date || isNaN(date.getTime())) {
-            return value || "-"
+            return value || "-";
         }
-
         function pad(num) {
-            num = Math.floor(num)
-            return num < 10 ? "0" + num : "" + num
+            num = Math.floor(num);
+            return num < 10 ? "0" + num : "" + num;
         }
-
-        var year = date.getFullYear()
-        var month = pad(date.getMonth() + 1)
-        var day = pad(date.getDate())
-        var hours = pad(date.getHours())
-        var minutes = pad(date.getMinutes())
-
-        return year + "-" + month + "-" + day + " " + hours + ":" + minutes
+        var year = date.getFullYear();
+        var month = pad(date.getMonth() + 1);
+        var day = pad(date.getDate());
+        var hours = pad(date.getHours());
+        var minutes = pad(date.getMinutes());
+        return year + "-" + month + "-" + day + " " + hours + ":" + minutes;
     }
 
     /**
@@ -142,25 +132,17 @@ QtObject {
      * - displayWidth("a你b好") → 6
      */
     function displayWidth(str) {
-        var w = 0
+        var w = 0;
         for (var i = 0; i < str.length; i++) {
-            var c = str.charCodeAt(i)
+            var c = str.charCodeAt(i);
             // CJK Unified Ideographs, CJK Symbols, Fullwidth Forms, Hiragana, Katakana
-            if ((c >= 0x1100 && c <= 0x115F) ||
-                (c >= 0x2E80 && c <= 0x303F) ||
-                (c >= 0x3040 && c <= 0xA4CF) ||
-                (c >= 0xAC00 && c <= 0xD7AF) ||
-                (c >= 0xF900 && c <= 0xFAFF) ||
-                (c >= 0xFE10 && c <= 0xFE1F) ||
-                (c >= 0xFE30 && c <= 0xFE4F) ||
-                (c >= 0xFF00 && c <= 0xFF60) ||
-                (c >= 0xFFE0 && c <= 0xFFE6)) {
-                w += 2
+            if ((c >= 0x1100 && c <= 0x115F) || (c >= 0x2E80 && c <= 0x303F) || (c >= 0x3040 && c <= 0xA4CF) || (c >= 0xAC00 && c <= 0xD7AF) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFE10 && c <= 0xFE1F) || (c >= 0xFE30 && c <= 0xFE4F) || (c >= 0xFF00 && c <= 0xFF60) || (c >= 0xFFE0 && c <= 0xFFE6)) {
+                w += 2;
             } else {
-                w += 1
+                w += 1;
             }
         }
-        return w
+        return w;
     }
 
     /**
@@ -180,25 +162,29 @@ QtObject {
      * - truncateText("ShortText", 20, 5, 5) → "ShortText"
      */
     function truncateText(text, maxLen, headLen, tailLen) {
-        if (!text) return ""
-        var str = text.toString()
-        if (displayWidth(str) <= maxLen) return str
+        if (!text)
+            return "";
+        var str = text.toString();
+        if (displayWidth(str) <= maxLen)
+            return str;
         // Build head substring up to headLen display-width units
-        var head = "", hw = 0
+        var head = "", hw = 0;
         for (var i = 0; i < str.length && hw < headLen; i++) {
-            var cw = displayWidth(str.charAt(i))
-            if (hw + cw > headLen) break
-            head += str.charAt(i)
-            hw += cw
+            var cw = displayWidth(str.charAt(i));
+            if (hw + cw > headLen)
+                break;
+            head += str.charAt(i);
+            hw += cw;
         }
         // Build tail substring up to tailLen display-width units (from the end)
-        var tail = "", tw = 0
+        var tail = "", tw = 0;
         for (var j = str.length - 1; j >= 0 && tw < tailLen; j--) {
-            var tcw = displayWidth(str.charAt(j))
-            if (tw + tcw > tailLen) break
-            tail = str.charAt(j) + tail
-            tw += tcw
+            var tcw = displayWidth(str.charAt(j));
+            if (tw + tcw > tailLen)
+                break;
+            tail = str.charAt(j) + tail;
+            tw += tcw;
         }
-        return head + "..." + tail
+        return head + "..." + tail;
     }
 }

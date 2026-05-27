@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "." as Theme
 
@@ -10,7 +10,7 @@ Popup {
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     x: (parent ? (parent.width - width) / 2 : 0)
     y: (parent ? (parent.height - height) / 2 : 0)
-    
+
     property string account: ""
     property bool hasError: false
     property string errorMessage: qsTr("User not found")
@@ -19,29 +19,28 @@ Popup {
     property var currentUserInfo: null  // 存储当前验证通过的用户信息
     property string domainCreator: ""  // 安全域创建者，用于拦截重复添加
     signal addClicked(string account)
-    signal cancelClicked()
+    signal cancelClicked
 
     function normalizeUserSearchError(message) {
-        var text = message ? message.toString().trim() : ""
+        var text = message ? message.toString().trim() : "";
         if (!text) {
-            return qsTr("User not found")
+            return qsTr("User not found");
         }
 
         // Defensive fallback for mojibake/garbled backend text.
         if (/[�]/.test(text) || /(钐登|鑠查谢|璧绺|缺少|字段|失败|状态|异常|字碱皮|琀|潏)/.test(text)) {
-            return qsTr("User not found")
+            return qsTr("User not found");
         }
-
-        return text
+        return text;
     }
-    
+
     onClosed: {
-        verifyTimeoutTimer.stop()
-        accountInput.text = ""
-        root.hasError = false
-        root.isVerifying = false
-        root.pendingAccount = ""
-        root.currentUserInfo = null
+        verifyTimeoutTimer.stop();
+        accountInput.text = "";
+        root.hasError = false;
+        root.isVerifying = false;
+        root.pendingAccount = "";
+        root.currentUserInfo = null;
     }
 
     // 网络超时保护：避免 Casdoor 接口长时间无响应导致界面卡死
@@ -50,22 +49,23 @@ Popup {
         interval: 15000
         repeat: false
         onTriggered: {
-            if (!root.isVerifying) return
-            root.isVerifying = false
-            root.pendingAccount = ""
-            root.hasError = true
-            root.errorMessage = qsTr("Network request timed out, please check your connection and retry")
+            if (!root.isVerifying)
+                return;
+            root.isVerifying = false;
+            root.pendingAccount = "";
+            root.hasError = true;
+            root.errorMessage = qsTr("Network request timed out, please check your connection and retry");
         }
     }
-    
+
     // Remove default Popup background and border
     background: null
     padding: 0
-    
+
     Overlay.modal: Rectangle {
         color: "#80000000"
     }
-    
+
     Rectangle {
         id: bgRect
         width: root.width
@@ -105,8 +105,8 @@ Popup {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    root.close()
-                    root.cancelClicked()
+                    root.close();
+                    root.cancelClicked();
                 }
             }
         }
@@ -131,8 +131,16 @@ Popup {
                 color: accountInput.activeFocus ? "white" : (inputHoverArea.containsMouse ? "#e9eef6" : "white")
                 border.color: root.hasError ? "#c10007" : "#cad5e2"
                 border.width: 1
-                Behavior on border.color { ColorAnimation { duration: 180 } }
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on border.color {
+                    ColorAnimation {
+                        duration: 180
+                    }
+                }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
 
                 MouseArea {
                     id: inputHoverArea
@@ -156,8 +164,8 @@ Popup {
                     selectedTextColor: "#0f172b"
 
                     onTextChanged: {
-                        root.account = text
-                        root.hasError = false
+                        root.account = text;
+                        root.hasError = false;
                     }
 
                     Text {
@@ -169,14 +177,14 @@ Popup {
                         visible: !accountInput.text && !accountInput.activeFocus
                     }
 
-                    Keys.onPressed: function(event) {
+                    Keys.onPressed: function (event) {
                         if (event.key === Qt.Key_C && (event.modifiers & Qt.ControlModifier)) {
-                            accountInput.copy()
-                            event.accepted = true
+                            accountInput.copy();
+                            event.accepted = true;
                         }
                         if (event.key === Qt.Key_A && (event.modifiers & Qt.ControlModifier)) {
-                            accountInput.selectAll()
-                            event.accepted = true
+                            accountInput.selectAll();
+                            event.accepted = true;
                         }
                     }
                 }
@@ -229,18 +237,30 @@ Popup {
                 height: 36
                 radius: 8
                 color: {
-                    if (cancelArea.pressed) return "#bedbff"
-                    if (cancelArea.containsMouse) return "#e8f8ff"
-                    return "white"
+                    if (cancelArea.pressed)
+                        return "#bedbff";
+                    if (cancelArea.containsMouse)
+                        return "#e8f8ff";
+                    return "white";
                 }
                 border.color: {
-                    if (cancelArea.pressed) return "#add3e6"
-                    if (cancelArea.containsMouse) return "#79aecd"
-                    return "#cad5e2"
+                    if (cancelArea.pressed)
+                        return "#add3e6";
+                    if (cancelArea.containsMouse)
+                        return "#79aecd";
+                    return "#cad5e2";
                 }
                 border.width: 1
-                Behavior on color { ColorAnimation { duration: 150 } }
-                Behavior on border.color { ColorAnimation { duration: 150 } }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
+                Behavior on border.color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
 
                 SelectableText {
                     anchors.centerIn: parent
@@ -256,8 +276,8 @@ Popup {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        root.close()
-                        root.cancelClicked()
+                        root.close();
+                        root.cancelClicked();
                     }
                 }
             }
@@ -267,14 +287,25 @@ Popup {
                 height: 36
                 radius: 8
                 color: {
-                    if (!addArea.enabled) return "#0f4c81"
-                    if (addArea.pressed) return Qt.darker("#0f4c81", 1.2)
-                    if (addArea.containsMouse) return Qt.lighter("#0f4c81", 1.15)
-                    return "#0f4c81"
+                    if (!addArea.enabled)
+                        return "#0f4c81";
+                    if (addArea.pressed)
+                        return Qt.darker("#0f4c81", 1.2);
+                    if (addArea.containsMouse)
+                        return Qt.lighter("#0f4c81", 1.15);
+                    return "#0f4c81";
                 }
                 opacity: addArea.enabled ? 1.0 : 0.5
-                Behavior on opacity { NumberAnimation { duration: 200 } }
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 200
+                    }
+                }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
 
                 SelectableText {
                     anchors.centerIn: parent
@@ -291,16 +322,15 @@ Popup {
                     enabled: accountInput.text.trim() !== "" && !root.isVerifying
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     onClicked: {
-                        var trimmedAccount = accountInput.text ? accountInput.text.trim() : ""
+                        var trimmedAccount = accountInput.text ? accountInput.text.trim() : "";
                         if (!trimmedAccount || root.isVerifying) {
-                            return
+                            return;
                         }
-
-                        root.hasError = false
-                        root.pendingAccount = trimmedAccount
-                        root.isVerifying = true
-                        verifyTimeoutTimer.restart()
-                        CasdoorHelper.searchUser(trimmedAccount)
+                        root.hasError = false;
+                        root.pendingAccount = trimmedAccount;
+                        root.isVerifying = true;
+                        verifyTimeoutTimer.restart();
+                        CasdoorHelper.searchUser(trimmedAccount);
                     }
                 }
             }
@@ -312,20 +342,19 @@ Popup {
         target: CasdoorHelper
 
         function onUserSearchCompleted(user) {
-            if (!root.isVerifying) return
-            verifyTimeoutTimer.stop()
-            root.isVerifying = false
-
-            var userId = (user.user_id || user.authUserId || "").trim()
-            var userName = (user.user_name || user.authUserName || "").trim()
-            var account = (user.account || "").trim()
-            var displayName = (user.displayName || account).trim()
+            if (!root.isVerifying)
+                return;
+            verifyTimeoutTimer.stop();
+            root.isVerifying = false;
+            var userId = (user.user_id || user.authUserId || "").trim();
+            var userName = (user.user_name || user.authUserName || "").trim();
+            var account = (user.account || "").trim();
+            var displayName = (user.displayName || account).trim();
             if (!userId || !userName || !account) {
-                root.hasError = true
-                root.errorMessage = qsTr("Query result is missing required fields, please contact administrator")
-                return
+                root.hasError = true;
+                root.errorMessage = qsTr("Query result is missing required fields, please contact administrator");
+                return;
             }
-
             root.currentUserInfo = {
                 user_id: userId,
                 user_name: userName,
@@ -333,18 +362,19 @@ Popup {
                 authUserId: userId,
                 displayName: displayName,
                 authUserName: userName
-            }
-            root.addClicked(root.pendingAccount)
-            root.pendingAccount = ""
-            root.close()
+            };
+            root.addClicked(root.pendingAccount);
+            root.pendingAccount = "";
+            root.close();
         }
 
         function onUserSearchFailed(errorMessage) {
-            if (!root.isVerifying) return
-            verifyTimeoutTimer.stop()
-            root.isVerifying = false
-            root.hasError = true
-            root.errorMessage = root.normalizeUserSearchError(errorMessage)
+            if (!root.isVerifying)
+                return;
+            verifyTimeoutTimer.stop();
+            root.isVerifying = false;
+            root.hasError = true;
+            root.errorMessage = root.normalizeUserSearchError(errorMessage);
         }
     }
 
@@ -420,4 +450,3 @@ Popup {
         }
     }
 }
-

@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "." as Theme
 
@@ -19,7 +19,7 @@ Popup {
     property string durationText: ""
 
     signal confirmClicked(string durationText)
-    signal cancelClicked()
+    signal cancelClicked
 
     background: null
     padding: 0
@@ -68,8 +68,8 @@ Popup {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.close()
-                            root.cancelClicked()
+                            root.close();
+                            root.cancelClicked();
                         }
                     }
 
@@ -91,7 +91,10 @@ Popup {
             }
 
             // 标题与黄色提示块之间 28px 间距（累计向下偏移 12px）
-            Item { width: parent.width; height: 28 }
+            Item {
+                width: parent.width
+                height: 28
+            }
 
             // 黄色提示块
             Rectangle {
@@ -130,7 +133,10 @@ Popup {
             }
 
             // 黄色提示块与明细区域之间 16px 间距
-            Item { width: parent.width; height: 16 }
+            Item {
+                width: parent.width
+                height: 16
+            }
 
             // 费用明细区域（h≈129px）
             Column {
@@ -235,7 +241,10 @@ Popup {
             }
 
             // 明细与按钮之间 24px 间距
-            Item { width: parent.width; height: 24 }
+            Item {
+                width: parent.width
+                height: 24
+            }
 
             // 底部按钮区：与 Figma 的 61px/88px 宽度和 8px 间距对齐
             Row {
@@ -250,11 +259,17 @@ Popup {
                     height: 36
                     radius: 8
                     color: {
-                        if (confirmMouseArea.pressed) return Qt.lighter("#0f4c81", 1.3)
-                        if (confirmMouseArea.containsMouse) return Qt.lighter("#0f4c81", 1.2)
-                        return "#0f4c81"
+                        if (confirmMouseArea.pressed)
+                            return Qt.lighter("#0f4c81", 1.3);
+                        if (confirmMouseArea.containsMouse)
+                            return Qt.lighter("#0f4c81", 1.2);
+                        return "#0f4c81";
                     }
-                    Behavior on color { ColorAnimation { duration: 300 } }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 300
+                        }
+                    }
 
                     Text {
                         anchors.centerIn: parent
@@ -270,8 +285,8 @@ Popup {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.confirmClicked(root.durationText)
-                            root.close()
+                            root.confirmClicked(root.durationText);
+                            root.close();
                         }
                     }
                 }
@@ -282,18 +297,30 @@ Popup {
                     height: 36
                     radius: 8
                     color: {
-                        if (cancelMouseArea2.pressed) return "#bedbff"
-                        if (cancelMouseArea2.containsMouse) return "#e8f8ff"
-                        return "white"
+                        if (cancelMouseArea2.pressed)
+                            return "#bedbff";
+                        if (cancelMouseArea2.containsMouse)
+                            return "#e8f8ff";
+                        return "white";
                     }
                     border.width: 1
                     border.color: {
-                        if (cancelMouseArea2.pressed) return "#add3e6"
-                        if (cancelMouseArea2.containsMouse) return "#79aecd"
-                        return "#cad5e2"
+                        if (cancelMouseArea2.pressed)
+                            return "#add3e6";
+                        if (cancelMouseArea2.containsMouse)
+                            return "#79aecd";
+                        return "#cad5e2";
                     }
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
 
                     Text {
                         anchors.centerIn: parent
@@ -309,8 +336,8 @@ Popup {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.close()
-                            root.cancelClicked()
+                            root.close();
+                            root.cancelClicked();
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "." as Theme
 
@@ -11,8 +11,8 @@ Popup {
     x: (parent ? (parent.width - width) / 2 : 0)
     y: (parent ? (parent.height - height) / 2 : 0)
 
-    signal confirmClicked()
-    signal cancelClicked()
+    signal confirmClicked
+    signal cancelClicked
 
     background: null
     padding: 0
@@ -60,8 +60,8 @@ Popup {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.close()
-                            root.cancelClicked()
+                            root.close();
+                            root.cancelClicked();
                         }
                     }
 
@@ -83,7 +83,10 @@ Popup {
             }
 
             // 标题与图标之间 48px 间距（整块向下微调，使浅绿色背景及下方内容整体下移）
-            Item { width: parent.width; height: 48 }
+            Item {
+                width: parent.width
+                height: 48
+            }
 
             // 成功图标容器
             Rectangle {
@@ -103,7 +106,10 @@ Popup {
             }
 
             // 图标与文字之间 16px 间距
-            Item { width: parent.width; height: 16 }
+            Item {
+                width: parent.width
+                height: 16
+            }
 
             // "支付成功"文字（bounding box 高度 24px）
             Item {
@@ -121,7 +127,10 @@ Popup {
             }
 
             // 文字与按钮之间 40px 间距
-            Item { width: parent.width; height: 40 }
+            Item {
+                width: parent.width
+                height: 40
+            }
 
             // "确定"按钮
             Rectangle {
@@ -130,11 +139,17 @@ Popup {
                 radius: 8
                 anchors.horizontalCenter: parent.horizontalCenter
                 color: {
-                    if (confirmMouseArea.pressed) return Qt.darker("#0F4C81", 1.2)
-                    if (confirmMouseArea.containsMouse) return Qt.lighter("#0F4C81", 1.15)
-                    return "#0F4C81"
+                    if (confirmMouseArea.pressed)
+                        return Qt.darker("#0F4C81", 1.2);
+                    if (confirmMouseArea.containsMouse)
+                        return Qt.lighter("#0F4C81", 1.15);
+                    return "#0F4C81";
                 }
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
 
                 Text {
                     anchors.centerIn: parent
@@ -150,8 +165,8 @@ Popup {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        root.confirmClicked()
-                        root.close()
+                        root.confirmClicked();
+                        root.close();
                     }
                 }
             }

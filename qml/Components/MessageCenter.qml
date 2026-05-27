@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import "." as Theme
@@ -22,113 +22,119 @@ Item {
     property bool serverLoading: false
 
     signal unreadCountFetched(int count)
-    signal unreadMessageMarkedRead()
-    signal allMessagesMarkedRead()
+    signal unreadMessageMarkedRead
+    signal allMessagesMarkedRead
     signal domainMessageClicked(string domainCode)
 
     function getVisiblePages() {
-        var total = root.serverTotalPages
-        var current = root.currentPage
-        var pages = []
+        var total = root.serverTotalPages;
+        var current = root.currentPage;
+        var pages = [];
         if (total <= 7) {
-            for (var i = 1; i <= total; i++) pages.push(i)
+            for (var i = 1; i <= total; i++)
+                pages.push(i);
         } else {
             if (current <= 4) {
-                for (var i = 1; i <= 5; i++) pages.push(i)
-                pages.push(-1)
-                pages.push(total)
+                for (var i = 1; i <= 5; i++)
+                    pages.push(i);
+                pages.push(-1);
+                pages.push(total);
             } else if (current >= total - 3) {
-                pages.push(1)
-                pages.push(-1)
-                for (var i = total - 4; i <= total; i++) pages.push(i)
+                pages.push(1);
+                pages.push(-1);
+                for (var i = total - 4; i <= total; i++)
+                    pages.push(i);
             } else {
-                pages.push(1)
-                pages.push(-1)
-                for (var i = current - 1; i <= current + 1; i++) pages.push(i)
-                pages.push(-1)
-                pages.push(total)
+                pages.push(1);
+                pages.push(-1);
+                for (var i = current - 1; i <= current + 1; i++)
+                    pages.push(i);
+                pages.push(-1);
+                pages.push(total);
             }
         }
-        return pages
+        return pages;
     }
 
     // Signals
-    signal backRequested()
+    signal backRequested
 
     function _applyFilterAndPaginate() {
-        var filtered = []
+        var filtered = [];
         for (var i = 0; i < allMessages.length; i++) {
-            var m = allMessages[i]
+            var m = allMessages[i];
             if (root.currentFilter === "unread") {
-                if (m.isRead === 0) filtered.push(m)
+                if (m.isRead === 0)
+                    filtered.push(m);
             } else {
-                filtered.push(m)
+                filtered.push(m);
             }
         }
-
-        var total = Math.ceil(filtered.length / root.pageSize)
-        if (total < 1) total = 1
-        root.serverTotalPages = total
-        if (root.currentPage > total) root.currentPage = total
-
-        var startIdx = (root.currentPage - 1) * root.pageSize
-        var endIdx = Math.min(startIdx + root.pageSize, filtered.length)
-        var page = []
+        var total = Math.ceil(filtered.length / root.pageSize);
+        if (total < 1)
+            total = 1;
+        root.serverTotalPages = total;
+        if (root.currentPage > total)
+            root.currentPage = total;
+        var startIdx = (root.currentPage - 1) * root.pageSize;
+        var endIdx = Math.min(startIdx + root.pageSize, filtered.length);
+        var page = [];
         for (var j = startIdx; j < endIdx; j++) {
-            page.push(filtered[j])
+            page.push(filtered[j]);
         }
-        root.serverMessages = page
-
-        var unreadCount = 0
+        root.serverMessages = page;
+        var unreadCount = 0;
         for (var k = 0; k < allMessages.length; k++) {
-            if (allMessages[k].isRead === 0) unreadCount++
+            if (allMessages[k].isRead === 0)
+                unreadCount++;
         }
-        root.unreadCountFetched(unreadCount)
+        root.unreadCountFetched(unreadCount);
     }
 
     function fetchMessages(pageNo) {
-        root.currentPage = pageNo
-        DsccBridge.loadMessageList()
+        root.currentPage = pageNo;
+        DsccBridge.loadMessageList();
     }
 
     // 将 createTime 转换为可读格式（支持时间戳毫秒数和字符串两种格式）
     function formatCreateTime(val) {
-        if (!val) return ""
-        var ts = parseInt(val)
+        if (!val)
+            return "";
+        var ts = parseInt(val);
         if (!isNaN(ts) && ts > 1000000000000) {
-            var d = new Date(ts)
-            var year  = d.getFullYear()
-            var month = ("0" + (d.getMonth() + 1)).slice(-2)
-            var day   = ("0" + d.getDate()).slice(-2)
-            return year + "-" + month + "-" + day
+            var d = new Date(ts);
+            var year = d.getFullYear();
+            var month = ("0" + (d.getMonth() + 1)).slice(-2);
+            var day = ("0" + d.getDate()).slice(-2);
+            return year + "-" + month + "-" + day;
         }
-        return String(val).substring(0, 10)
+        return String(val).substring(0, 10);
     }
 
     function fetchUnreadCount() {
-        DsccBridge.loadMessageList()
+        DsccBridge.loadMessageList();
     }
 
     onVisibleChanged: {
         if (visible) {
-            currentFilter = "all"
-            currentPage = 1
-            fetchUnreadCount()
+            currentFilter = "all";
+            currentPage = 1;
+            fetchUnreadCount();
         }
     }
 
     Connections {
         target: DsccBridge
         function onMessageListLoaded(messages) {
-            root.allMessages = messages
-            root._applyFilterAndPaginate()
-            root.serverLoading = false
+            root.allMessages = messages;
+            root._applyFilterAndPaginate();
+            root.serverLoading = false;
         }
         function onMessageRead(operation_id, message_code) {
-            root.unreadMessageMarkedRead()
+            root.unreadMessageMarkedRead();
         }
         function onAllMessagesRead(operation_id) {
-            root.allMessagesMarkedRead()
+            root.allMessagesMarkedRead();
         }
     }
 
@@ -209,9 +215,9 @@ Item {
                     onEntered: allTab.hovered = true
                     onExited: allTab.hovered = false
                     onClicked: {
-                        root.currentFilter = "all"
-                        root.currentPage = 1
-                        root._applyFilterAndPaginate()
+                        root.currentFilter = "all";
+                        root.currentPage = 1;
+                        root._applyFilterAndPaginate();
                     }
                 }
             }
@@ -248,9 +254,9 @@ Item {
                     onEntered: unreadTab.hovered = true
                     onExited: unreadTab.hovered = false
                     onClicked: {
-                        root.currentFilter = "unread"
-                        root.currentPage = 1
-                        root._applyFilterAndPaginate()
+                        root.currentFilter = "unread";
+                        root.currentPage = 1;
+                        root._applyFilterAndPaginate();
                     }
                 }
             }
@@ -376,7 +382,6 @@ Item {
                                 Layout.fillWidth: true
                             }
                         }
-
                     }
 
                     Rectangle {
@@ -413,15 +418,15 @@ Item {
                             anchors.top: parent.bottom
                             x: Math.round((parent.width - width) / 2)
                             onPaint: {
-                                var ctx = getContext("2d")
-                                ctx.reset()
-                                ctx.fillStyle = "#1e5a8e"
-                                ctx.beginPath()
-                                ctx.moveTo(0, 0)
-                                ctx.lineTo(5, 5)
-                                ctx.lineTo(10, 0)
-                                ctx.closePath()
-                                ctx.fill()
+                                var ctx = getContext("2d");
+                                ctx.reset();
+                                ctx.fillStyle = "#1e5a8e";
+                                ctx.beginPath();
+                                ctx.moveTo(0, 0);
+                                ctx.lineTo(5, 5);
+                                ctx.lineTo(10, 0);
+                                ctx.closePath();
+                                ctx.fill();
                             }
                         }
 
@@ -433,15 +438,15 @@ Item {
                             anchors.bottom: parent.top
                             x: Math.round((parent.width - width) / 2)
                             onPaint: {
-                                var ctx = getContext("2d")
-                                ctx.reset()
-                                ctx.fillStyle = "#1e5a8e"
-                                ctx.beginPath()
-                                ctx.moveTo(0, 5)
-                                ctx.lineTo(5, 0)
-                                ctx.lineTo(10, 5)
-                                ctx.closePath()
-                                ctx.fill()
+                                var ctx = getContext("2d");
+                                ctx.reset();
+                                ctx.fillStyle = "#1e5a8e";
+                                ctx.beginPath();
+                                ctx.moveTo(0, 5);
+                                ctx.lineTo(5, 0);
+                                ctx.lineTo(10, 5);
+                                ctx.closePath();
+                                ctx.fill();
                             }
                         }
                     }
@@ -452,16 +457,17 @@ Item {
                         hoverEnabled: true
                         cursorShape: messageItem.messageData.isRead === 0 ? Qt.PointingHandCursor : Qt.ArrowCursor
                         onEntered: {
-                            messageItem.hovered = true
-                            if (messageText.implicitWidth > messageText.width) messageItem.showTooltip = true
+                            messageItem.hovered = true;
+                            if (messageText.implicitWidth > messageText.width)
+                                messageItem.showTooltip = true;
                         }
                         onExited: {
-                            messageItem.hovered = false
-                            messageItem.showTooltip = false
+                            messageItem.hovered = false;
+                            messageItem.showTooltip = false;
                         }
                         onClicked: {
                             if (messageItem.messageData.isRead === 0) {
-                                DsccBridge.readMessage(messageItem.messageData.messageCode)
+                                DsccBridge.readMessage(messageItem.messageData.messageCode);
                             }
                         }
                     }
@@ -491,8 +497,8 @@ Item {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                deleteConfirmDialog.targetMessageCode = messageItem.messageData.messageCode || ""
-                                deleteConfirmDialog.open()
+                                deleteConfirmDialog.targetMessageCode = messageItem.messageData.messageCode || "";
+                                deleteConfirmDialog.open();
                             }
                         }
                     }
@@ -562,16 +568,21 @@ Item {
                 property bool hovered: false
                 property bool pressed: false
                 color: {
-                    if (root.currentPage <= 1) return "#919eab"
-                    if (pressed) return "white"
-                    if (hovered) return "#1b5fa8"
-                    return "#212b36"
+                    if (root.currentPage <= 1)
+                        return "#919eab";
+                    if (pressed)
+                        return "white";
+                    if (hovered)
+                        return "#1b5fa8";
+                    return "#212b36";
                 }
                 anchors.verticalCenter: parent.verticalCenter
 
                 Rectangle {
                     anchors.centerIn: parent
-                    width: 22; height: 22; radius: 3
+                    width: 22
+                    height: 22
+                    radius: 3
                     visible: root.currentPage > 1 && (parent.hovered || parent.pressed)
                     color: parent.pressed ? "#1b5fa8" : "#e3f2fd"
                     z: -1
@@ -584,12 +595,15 @@ Item {
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     hoverEnabled: true
                     onEntered: parent.hovered = true
-                    onExited: { parent.hovered = false; parent.pressed = false }
+                    onExited: {
+                        parent.hovered = false;
+                        parent.pressed = false;
+                    }
                     onPressed: parent.pressed = true
                     onReleased: parent.pressed = false
                     onClicked: {
-                        root.currentPage = root.currentPage - 1
-                        root._applyFilterAndPaginate()
+                        root.currentPage = root.currentPage - 1;
+                        root._applyFilterAndPaginate();
                     }
                 }
             }
@@ -598,16 +612,20 @@ Item {
             Repeater {
                 model: root.getVisiblePages()
                 Rectangle {
-                    width: 22; height: 22; radius: 3
+                    width: 22
+                    height: 22
+                    radius: 3
                     property int pageNum: modelData
                     property bool isEllipsis: pageNum === -1
                     property bool hovered: false
                     property bool pressed: false
                     property bool isCurrent: pageNum === root.currentPage
                     color: {
-                        if (pressed && !isCurrent) return "#1b5fa8"
-                        if (hovered && !isEllipsis) return "#e3f2fd"
-                        return "white"
+                        if (pressed && !isCurrent)
+                            return "#1b5fa8";
+                        if (hovered && !isEllipsis)
+                            return "#e3f2fd";
+                        return "white";
                     }
                     border.color: isCurrent ? "#1b5fa8" : "#dfe3e8"
                     border.width: 1
@@ -625,13 +643,17 @@ Item {
                         cursorShape: !isEllipsis ? Qt.PointingHandCursor : Qt.ArrowCursor
                         hoverEnabled: true
                         onEntered: parent.hovered = true
-                        onExited: { parent.hovered = false; parent.pressed = false }
-                        onPressed: if (!parent.isCurrent) parent.pressed = true
+                        onExited: {
+                            parent.hovered = false;
+                            parent.pressed = false;
+                        }
+                        onPressed: if (!parent.isCurrent)
+                            parent.pressed = true
                         onReleased: parent.pressed = false
                         onClicked: {
                             if (!parent.isCurrent) {
-                                root.currentPage = pageNum
-                                root._applyFilterAndPaginate()
+                                root.currentPage = pageNum;
+                                root._applyFilterAndPaginate();
                             }
                         }
                     }
@@ -645,16 +667,21 @@ Item {
                 property bool hovered: false
                 property bool pressed: false
                 color: {
-                    if (root.currentPage >= root.serverTotalPages) return "#919eab"
-                    if (pressed) return "white"
-                    if (hovered) return "#1b5fa8"
-                    return "#212b36"
+                    if (root.currentPage >= root.serverTotalPages)
+                        return "#919eab";
+                    if (pressed)
+                        return "white";
+                    if (hovered)
+                        return "#1b5fa8";
+                    return "#212b36";
                 }
                 anchors.verticalCenter: parent.verticalCenter
 
                 Rectangle {
                     anchors.centerIn: parent
-                    width: 22; height: 22; radius: 3
+                    width: 22
+                    height: 22
+                    radius: 3
                     visible: root.currentPage < root.serverTotalPages && (parent.hovered || parent.pressed)
                     color: parent.pressed ? "#1b5fa8" : "#e3f2fd"
                     z: -1
@@ -667,12 +694,15 @@ Item {
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                     hoverEnabled: true
                     onEntered: parent.hovered = true
-                    onExited: { parent.hovered = false; parent.pressed = false }
+                    onExited: {
+                        parent.hovered = false;
+                        parent.pressed = false;
+                    }
                     onPressed: parent.pressed = true
                     onReleased: parent.pressed = false
                     onClicked: {
-                        root.currentPage = root.currentPage + 1
-                        root._applyFilterAndPaginate()
+                        root.currentPage = root.currentPage + 1;
+                        root._applyFilterAndPaginate();
                     }
                 }
             }
@@ -750,7 +780,10 @@ Item {
                     }
                 }
 
-                Item { width: parent.width; height: 24 }
+                Item {
+                    width: parent.width
+                    height: 24
+                }
 
                 Text {
                     width: parent.width
@@ -760,7 +793,10 @@ Item {
                     wrapMode: Text.WordWrap
                 }
 
-                Item { width: parent.width; height: 28 }
+                Item {
+                    width: parent.width
+                    height: 28
+                }
 
                 Row {
                     anchors.right: parent.right
@@ -772,15 +808,19 @@ Item {
                         height: 36
                         radius: 8
                         color: {
-                            if (deleteCancelArea.pressed) return "#bedbff"
-                            if (deleteCancelArea.containsMouse) return "#e8f8ff"
-                            return "white"
+                            if (deleteCancelArea.pressed)
+                                return "#bedbff";
+                            if (deleteCancelArea.containsMouse)
+                                return "#e8f8ff";
+                            return "white";
                         }
                         border.width: 1
                         border.color: {
-                            if (deleteCancelArea.pressed) return "#add3e6"
-                            if (deleteCancelArea.containsMouse) return "#79aecd"
-                            return "#cad5e2"
+                            if (deleteCancelArea.pressed)
+                                return "#add3e6";
+                            if (deleteCancelArea.containsMouse)
+                                return "#79aecd";
+                            return "#cad5e2";
                         }
 
                         Text {
@@ -805,9 +845,11 @@ Item {
                         height: 36
                         radius: 8
                         color: {
-                            if (deleteConfirmArea.pressed) return "#fb2c36"
-                            if (deleteConfirmArea.containsMouse) return "#fe9a98"
-                            return "#fd7977"
+                            if (deleteConfirmArea.pressed)
+                                return "#fb2c36";
+                            if (deleteConfirmArea.containsMouse)
+                                return "#fe9a98";
+                            return "#fd7977";
                         }
 
                         Text {
@@ -824,8 +866,8 @@ Item {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                DsccBridge.deleteMessage(deleteConfirmDialog.targetMessageCode)
-                                deleteConfirmDialog.close()
+                                DsccBridge.deleteMessage(deleteConfirmDialog.targetMessageCode);
+                                deleteConfirmDialog.close();
                             }
                         }
                     }

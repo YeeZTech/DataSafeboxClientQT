@@ -7,7 +7,7 @@
 class SentryBridge : public QObject
 {
     Q_OBJECT
-public:
+  public:
     explicit SentryBridge(QObject *parent = nullptr);
 
     Q_INVOKABLE void captureMessage(const QString &message, int level = 0);

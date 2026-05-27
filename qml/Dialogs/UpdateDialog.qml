@@ -1,13 +1,11 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 Dialog {
     id: root
     modal: true
-    closePolicy: (root.forceUpdate || UpdateManager.isDownloading || root.startedDownloadFromDialog)
-        ? Popup.NoAutoClose
-        : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+    closePolicy: (root.forceUpdate || UpdateManager.isDownloading || root.startedDownloadFromDialog) ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
 
     x: (parent.width - width) / 2
     y: (parent.height - height) / 2
@@ -18,9 +16,11 @@ Dialog {
     property string fileSizeStr: ""
     property bool startedDownloadFromDialog: false
 
-    signal immediateActionTriggered()
+    signal immediateActionTriggered
 
-    Overlay.modal: Rectangle { color: "#80000000" }
+    Overlay.modal: Rectangle {
+        color: "#80000000"
+    }
 
     background: Rectangle {
         color: "white"
@@ -35,24 +35,24 @@ Dialog {
     Connections {
         target: UpdateManager
         function onUpdateAvailable(version, desc, force) {
-            root.versionStr = version
-            root.forceUpdate = force
-            var bytes = UpdateManager.clientSize
+            root.versionStr = version;
+            root.forceUpdate = force;
+            var bytes = UpdateManager.clientSize;
             if (bytes > 0) {
-                root.fileSizeStr = (bytes / 1024 / 1024).toFixed(1) + "MB"
+                root.fileSizeStr = (bytes / 1024 / 1024).toFixed(1) + "MB";
             } else {
-                root.fileSizeStr = ""
+                root.fileSizeStr = "";
             }
-            root.open()
+            root.open();
         }
         function onDownloadProgressChanged(progress) {
             if (root.startedDownloadFromDialog && progress >= 1.0) {
-                root.startedDownloadFromDialog = false
-                root.close()
+                root.startedDownloadFromDialog = false;
+                root.close();
             }
         }
         function onDownloadFailed(message) {
-            root.startedDownloadFromDialog = false
+            root.startedDownloadFromDialog = false;
         }
     }
 
@@ -75,7 +75,9 @@ Dialog {
                 color: "#0f172b"
             }
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             Rectangle {
                 width: 28
@@ -111,9 +113,7 @@ Dialog {
 
             Text {
                 Layout.fillWidth: true
-                text: qsTr("Your current client version is ") + UpdateManager.currentVersion
-                    + qsTr(", which is not the latest. We recommend updating to the latest version ") + root.versionStr
-                    + qsTr(" for a better experience.")
+                text: qsTr("Your current client version is ") + UpdateManager.currentVersion + qsTr(", which is not the latest. We recommend updating to the latest version ") + root.versionStr + qsTr(" for a better experience.")
                 font.pixelSize: 14
                 color: "#374151"
                 wrapMode: Text.WordWrap
@@ -181,7 +181,9 @@ Dialog {
                         color: "#6b7280"
                     }
 
-                    Item { Layout.fillWidth: true }
+                    Item {
+                        Layout.fillWidth: true
+                    }
 
                     Text {
                         text: UpdateManager.downloadSpeed
@@ -209,7 +211,9 @@ Dialog {
             Layout.bottomMargin: 16
             spacing: 12
 
-            Item { Layout.fillWidth: true }
+            Item {
+                Layout.fillWidth: true
+            }
 
             // "以后再说"
             Rectangle {
@@ -255,13 +259,16 @@ Dialog {
                 width: 100
                 height: 38
                 radius: 6
-                color: btnMa.pressed ? Qt.darker("#0f4c81", 1.2)
-                     : (btnMa.containsMouse ? Qt.lighter("#0f4c81", 1.1) : "#0f4c81")
-                Behavior on color { ColorAnimation { duration: 120 } }
+                color: btnMa.pressed ? Qt.darker("#0f4c81", 1.2) : (btnMa.containsMouse ? Qt.lighter("#0f4c81", 1.1) : "#0f4c81")
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 120
+                    }
+                }
 
                 Text {
                     anchors.centerIn: parent
-text: UpdateManager.isDownloading ? qsTr("Downloading...") : (UpdateManager.downloadProgress >= 1.0 ? qsTr("Install Now") : qsTr("Update Now"))
+                    text: UpdateManager.isDownloading ? qsTr("Downloading...") : (UpdateManager.downloadProgress >= 1.0 ? qsTr("Install Now") : qsTr("Update Now"))
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: "white"
@@ -274,13 +281,13 @@ text: UpdateManager.isDownloading ? qsTr("Downloading...") : (UpdateManager.down
                     enabled: !UpdateManager.isDownloading
                     cursorShape: UpdateManager.isDownloading ? Qt.ArrowCursor : Qt.PointingHandCursor
                     onClicked: {
-                        root.immediateActionTriggered()
+                        root.immediateActionTriggered();
                         if (UpdateManager.downloadProgress >= 1.0) {
-                            root.close()
-                            UpdateManager.installUpdate()
+                            root.close();
+                            UpdateManager.installUpdate();
                         } else {
-                            root.startedDownloadFromDialog = true
-                            UpdateManager.startDownload()
+                            root.startedDownloadFromDialog = true;
+                            UpdateManager.startDownload();
                         }
                     }
                 }

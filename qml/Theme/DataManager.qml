@@ -1,4 +1,4 @@
-﻿pragma Singleton
+pragma Singleton
 import QtQuick 2.15
 
 /**
@@ -21,10 +21,10 @@ QtObject {
 
     // 登出用户
     function logoutUser() {
-        root.currentUser = null
-        root.userLoggedOut()
+        root.currentUser = null;
+        root.userLoggedOut();
     }
 
     // 用户登出信号
-    signal userLoggedOut()
+    signal userLoggedOut
 }

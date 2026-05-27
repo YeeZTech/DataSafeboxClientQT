@@ -11,7 +11,9 @@ Rectangle {
     property int actionTextWeight: Font.Medium
 
     signal viewExportRequested(var auditData)
-    function resetPage() { currentPage = 1 }
+    function resetPage() {
+        currentPage = 1;
+    }
 
     property int auditCount: audits ? audits.length : 0
     property int currentPage: 1
@@ -27,16 +29,26 @@ Rectangle {
     }
 
     function normalizeCurrentPage() {
-        if (totalPages <= 0) { if (currentPage !== 1) currentPage = 1; return }
-        if (currentPage < 1) { currentPage = 1; return }
-        if (currentPage > totalPages) currentPage = totalPages
+        if (totalPages <= 0) {
+            if (currentPage !== 1)
+                currentPage = 1;
+            return;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+            return;
+        }
+        if (currentPage > totalPages)
+            currentPage = totalPages;
     }
     onAuditCountChanged: normalizeCurrentPage()
     onTotalPagesChanged: normalizeCurrentPage()
 
     function formatFileSizeLowercase(bytesValue) {
-        var s = (Theme.Utils.formatSize(bytesValue) || "").toString().trim()
-        return s.replace(/\b([KMGT]?B)\b/g, function(unit) { return unit.toLowerCase() })
+        var s = (Theme.Utils.formatSize(bytesValue) || "").toString().trim();
+        return s.replace(/\b([KMGT]?B)\b/g, function (unit) {
+            return unit.toLowerCase();
+        });
     }
 
     height: 32 + 28 + 12 + (auditCount > 0 ? (32 + (32 * itemsPerPage) + (totalPages > 1 ? 36 : 0)) : 30)
@@ -229,9 +241,9 @@ Rectangle {
 
                 Repeater {
                     model: {
-                        var list = card.audits || []
-                        var start = (card.currentPage - 1) * card.itemsPerPage
-                        return list.slice(start, Math.min(start + card.itemsPerPage, list.length))
+                        var list = card.audits || [];
+                        var start = (card.currentPage - 1) * card.itemsPerPage;
+                        return list.slice(start, Math.min(start + card.itemsPerPage, list.length));
                     }
 
                     Rectangle {
@@ -355,13 +367,13 @@ Rectangle {
                                 Layout.minimumWidth: 28
                                 Layout.fillHeight: true
                                 Rectangle {
+                                    id: expStatusBadge
                                     anchors.left: parent.left
                                     anchors.leftMargin: 30
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: Math.min(exportStatusText.implicitWidth + 12, parent.width - 30)
                                     height: 24
                                     radius: 6
-                                    id: expStatusBadge
                                     property var auditStatusStyle: Theme.Colors.getStatusColor(modelData.status || Theme.Colors.statusPendingReview)
                                     color: auditStatusStyle.bg
                                     border.color: auditStatusStyle.border
@@ -393,8 +405,9 @@ Rectangle {
                                         active: exportStatusText.truncated && expStatusHover.containsMouse
                                         sourceComponent: expStatusTooltipComp
                                         onLoaded: {
-                                            var win = expStatusBadge.Window.window
-                                            if (win && item) item.parent = win.contentItem
+                                            var win = expStatusBadge.Window.window;
+                                            if (win && item)
+                                                item.parent = win.contentItem;
                                         }
                                     }
                                     Component {
@@ -403,23 +416,26 @@ Rectangle {
                                             id: expTip
                                             z: 99999
                                             property point cellTL: {
-                                                var win = expStatusBadge.Window.window
-                                                if (!win) return Qt.point(0, 0)
-                                                return expStatusBadge.mapToItem(win.contentItem, 0, 0)
+                                                var win = expStatusBadge.Window.window;
+                                                if (!win)
+                                                    return Qt.point(0, 0);
+                                                return expStatusBadge.mapToItem(win.contentItem, 0, 0);
                                             }
                                             property real anchorX: {
-                                                var win = expStatusBadge.Window.window
-                                                if (!win) return 0
-                                                return expStatusBadge.mapToItem(win.contentItem, expStatusBadge.width * 0.5, 0).x
+                                                var win = expStatusBadge.Window.window;
+                                                if (!win)
+                                                    return 0;
+                                                return expStatusBadge.mapToItem(win.contentItem, expStatusBadge.width * 0.5, 0).x;
                                             }
                                             readonly property real arrowSz: 6
                                             readonly property real winW: expStatusBadge.Window.window ? expStatusBadge.Window.window.width : 800
                                             readonly property real winH: expStatusBadge.Window.window ? expStatusBadge.Window.window.height : 600
                                             readonly property rect bRect: {
-                                                var win = expStatusBadge.Window.window
-                                                if (!win) return Qt.rect(0, 0, winW, winH)
-                                                var tl = card.mapToItem(win.contentItem, 0, 0)
-                                                return Qt.rect(tl.x, tl.y, card.width, card.height)
+                                                var win = expStatusBadge.Window.window;
+                                                if (!win)
+                                                    return Qt.rect(0, 0, winW, winH);
+                                                var tl = card.mapToItem(win.contentItem, 0, 0);
+                                                return Qt.rect(tl.x, tl.y, card.width, card.height);
                                             }
                                             readonly property real bW: Math.min(400, expTipText.implicitWidth + 18)
                                             readonly property real bH: expTipText.implicitHeight + 16
@@ -432,29 +448,58 @@ Rectangle {
                                             y: (expTip.flip ? (cellTL.y + expStatusBadge.height) : (cellTL.y - bH - arrowSz)) + 5
                                             opacity: 0
                                             Component.onCompleted: opacity = 1
-                                            Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                                            Behavior on opacity {
+                                                NumberAnimation {
+                                                    duration: 120
+                                                    easing.type: Easing.OutCubic
+                                                }
+                                            }
                                             Rectangle {
                                                 id: expBubble
-                                                x: 0; y: expTip.flip ? expTip.arrowSz : 0
-                                                width: expTip.bW; height: expTip.bH
-                                                color: "#1e5a8e"; radius: 4
+                                                x: 0
+                                                y: expTip.flip ? expTip.arrowSz : 0
+                                                width: expTip.bW
+                                                height: expTip.bH
+                                                color: "#1e5a8e"
+                                                radius: 4
                                                 Text {
                                                     id: expTipText
-                                                    anchors { left: parent.left; leftMargin: 9; right: parent.right; rightMargin: 9; top: parent.top; topMargin: 8 }
+                                                    anchors {
+                                                        left: parent.left
+                                                        leftMargin: 9
+                                                        right: parent.right
+                                                        rightMargin: 9
+                                                        top: parent.top
+                                                        topMargin: 8
+                                                    }
                                                     text: Theme.Colors.translateStatus(modelData.status || "")
-                                                    color: "white"; font.pixelSize: 13
-                                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere; maximumLineCount: 999
+                                                    color: "white"
+                                                    font.pixelSize: 13
+                                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                    maximumLineCount: 999
                                                 }
                                             }
                                             Canvas {
-                                                width: expTip.arrowSz * 2; height: expTip.arrowSz
-                                                x: expTip.arrX; y: expTip.flip ? 0 : expTip.bH
+                                                width: expTip.arrowSz * 2
+                                                height: expTip.arrowSz
+                                                x: expTip.arrX
+                                                y: expTip.flip ? 0 : expTip.bH
                                                 onPaint: {
-                                                    var ctx = getContext("2d"); ctx.reset()
-                                                    ctx.fillStyle = "#1e5a8e"; ctx.beginPath()
-                                                    if (expTip.flip) { ctx.moveTo(width*0.5,0); ctx.lineTo(0,height); ctx.lineTo(width,height) }
-                                                    else { ctx.moveTo(0,0); ctx.lineTo(width*0.5,height); ctx.lineTo(width,0) }
-                                                    ctx.closePath(); ctx.fill()
+                                                    var ctx = getContext("2d");
+                                                    ctx.reset();
+                                                    ctx.fillStyle = "#1e5a8e";
+                                                    ctx.beginPath();
+                                                    if (expTip.flip) {
+                                                        ctx.moveTo(width * 0.5, 0);
+                                                        ctx.lineTo(0, height);
+                                                        ctx.lineTo(width, height);
+                                                    } else {
+                                                        ctx.moveTo(0, 0);
+                                                        ctx.lineTo(width * 0.5, height);
+                                                        ctx.lineTo(width, 0);
+                                                    }
+                                                    ctx.closePath();
+                                                    ctx.fill();
                                                 }
                                                 Component.onCompleted: requestPaint()
                                             }

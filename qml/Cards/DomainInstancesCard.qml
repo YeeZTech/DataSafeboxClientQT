@@ -17,7 +17,9 @@ Rectangle {
     property int actionTextWeight: Font.Medium
 
     signal viewInstanceRequested(var instanceData, bool isApprover)
-    function resetPage() { currentPage = 1 }
+    function resetPage() {
+        currentPage = 1;
+    }
 
     property int instanceCount: DomainUtils.toJsArray(instances).length
     property int currentPage: 1
@@ -35,28 +37,38 @@ Rectangle {
     }
 
     function normalizeCurrentPage() {
-        if (totalPages <= 0) { if (currentPage !== 1) currentPage = 1; return }
-        if (currentPage < 1) { currentPage = 1; return }
-        if (currentPage > totalPages) currentPage = totalPages
+        if (totalPages <= 0) {
+            if (currentPage !== 1)
+                currentPage = 1;
+            return;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+            return;
+        }
+        if (currentPage > totalPages)
+            currentPage = totalPages;
     }
     onInstanceCountChanged: normalizeCurrentPage()
     onTotalPagesChanged: normalizeCurrentPage()
 
     function getPagedInstances() {
-        var list = DomainUtils.toJsArray(instances)
-        var start = (currentPage - 1) * itemsPerPage
-        return list.slice(start, Math.min(start + itemsPerPage, list.length))
+        var list = DomainUtils.toJsArray(instances);
+        var start = (currentPage - 1) * itemsPerPage;
+        return list.slice(start, Math.min(start + itemsPerPage, list.length));
     }
 
     function resolveApplicantText(instance) {
-        return DomainUtils.resolveInstanceApplicantText(instance, visibleUsers)
+        return DomainUtils.resolveInstanceApplicantText(instance, visibleUsers);
     }
 
     function formatRemainingDays(instance) {
-        var days = DateTimeUtils.remainingDays(instance)
-        if (days < 0) return "-"
-        if (days === 0) return "0" + qsTr(" days")
-        return days + qsTr(" days")
+        var days = DateTimeUtils.remainingDays(instance);
+        if (days < 0)
+            return "-";
+        if (days === 0)
+            return "0" + qsTr(" days");
+        return days + qsTr(" days");
     }
 
     height: 32 + 28 + 12 + (instanceCount > 0 ? (32 + (32 * itemsPerPage) + (totalPages > 1 ? 36 : 0)) : 30)
@@ -334,13 +346,13 @@ Rectangle {
                                         onEntered: instanceOperationText.hovered = true
                                         onExited: instanceOperationText.hovered = false
                                         onClicked: {
-                                            var isApprover = false
+                                            var isApprover = false;
                                             if (card.currentUser && DomainUtils.isInstanceCreatorVisibleUser(modelData, card.visibleUsers)) {
                                                 if (DomainUtils.isCurrentUserDomainCreator(card.currentUser, card.domainData)) {
-                                                    isApprover = true
+                                                    isApprover = true;
                                                 }
                                             }
-                                            card.viewInstanceRequested(modelData, isApprover)
+                                            card.viewInstanceRequested(modelData, isApprover);
                                         }
                                     }
                                 }

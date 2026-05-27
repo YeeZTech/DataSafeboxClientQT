@@ -1,13 +1,13 @@
 ﻿#ifndef UPDATEMANAGER_H
 #define UPDATEMANAGER_H
 
-#include <QObject>
+#include <QDateTime>
+#include <QDebug>
+#include <QFile>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-#include <QFile>
-#include <QDateTime>
+#include <QObject>
 #include <QTimer>
-#include <QDebug>
 
 class UpdateManager : public QObject
 {
@@ -22,7 +22,7 @@ class UpdateManager : public QObject
     Q_PROPERTY(bool hasPendingInstall READ hasPendingInstall NOTIFY pendingInstallChanged)
     Q_PROPERTY(qint64 clientSize READ clientSize NOTIFY updateAvailable)
 
-public:
+  public:
     explicit UpdateManager(QObject *parent = nullptr);
     ~UpdateManager();
 
@@ -56,7 +56,7 @@ public:
     Q_INVOKABLE void markPendingInstall();
     Q_INVOKABLE void clearPendingInstall();
 
-signals:
+  signals:
     // Found a new version
     void updateAvailable(const QString &version, const QString &desc, bool force);
     // Checked but no new version found (mostly for manual check)
@@ -70,15 +70,15 @@ signals:
     void downloadFailed(const QString &message);
     void checkStatusChanged();
     void pendingInstallChanged();
-    void pendingInstallReminder(const QString &filePath);  // Reminder to install pending update
+    void pendingInstallReminder(const QString &filePath); // Reminder to install pending update
 
-private slots:
+  private slots:
     void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void onDownloadFinished();
     void onDownloadReadyRead();
     void updateSpeed();
 
-private:
+  private:
     QNetworkAccessManager *m_networkManager;
     QString m_latestVersion;
     QString m_updateDescription;
@@ -92,29 +92,29 @@ private:
 
     double m_downloadProgress;
     QString m_downloadSpeedStr;
-    
+
     QNetworkReply *m_currentReply;
     QFile *m_downloadFile;
     QString m_downloadedFilePath;
     QString m_cacheDirectory;
-    
+
     // For speed calculation
     qint64 m_lastBytesReceived;
     qint64 m_bytesReceivedSinceLastTimer;
     QTimer *m_speedTimer;
 
     // Configuration
-    int m_clientType;  // 1: Windows, 2: Mac, 3: Linux
-    
+    int m_clientType; // 1: Windows, 2: Mac, 3: Linux
+
     // Pending install state
     bool m_hasPendingInstall;
     QString m_pendingInstallFilePath;
     QString m_pendingInstallStateFile;
-    
+
     // Methods for pending install state persistence
     void loadPendingInstallState();
     void savePendingInstallState();
-    
+
     bool isNewerVersion(const QString &remoteVer);
     QString formatSpeed(qint64 bytesPerSec);
     void checkRemoteFileStatus(); // Helper to check file size via HEAD

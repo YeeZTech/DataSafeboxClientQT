@@ -14,29 +14,33 @@ Item {
     visible: totalPages > 1
 
     function getVisiblePages() {
-        var total = paginationRoot.totalPages
-        var current = paginationRoot.currentPage
-        var pages = []
+        var total = paginationRoot.totalPages;
+        var current = paginationRoot.currentPage;
+        var pages = [];
         if (total <= 7) {
-            for (var i = 1; i <= total; i++) pages.push(i)
+            for (var i = 1; i <= total; i++)
+                pages.push(i);
         } else {
             if (current <= 4) {
-                for (var j = 1; j <= 5; j++) pages.push(j)
-                pages.push(-1)
-                pages.push(total)
+                for (var j = 1; j <= 5; j++)
+                    pages.push(j);
+                pages.push(-1);
+                pages.push(total);
             } else if (current >= total - 3) {
-                pages.push(1)
-                pages.push(-1)
-                for (var k = total - 4; k <= total; k++) pages.push(k)
+                pages.push(1);
+                pages.push(-1);
+                for (var k = total - 4; k <= total; k++)
+                    pages.push(k);
             } else {
-                pages.push(1)
-                pages.push(-1)
-                for (var m = current - 1; m <= current + 1; m++) pages.push(m)
-                pages.push(-1)
-                pages.push(total)
+                pages.push(1);
+                pages.push(-1);
+                for (var m = current - 1; m <= current + 1; m++)
+                    pages.push(m);
+                pages.push(-1);
+                pages.push(total);
             }
         }
-        return pages
+        return pages;
     }
 
     Row {
@@ -50,16 +54,21 @@ Item {
             property bool hovered: false
             property bool pressed: false
             color: {
-                if (paginationRoot.currentPage <= 1) return "#919eab"
-                if (pressed) return "white"
-                if (hovered) return "#1b5fa8"
-                return "#212b36"
+                if (paginationRoot.currentPage <= 1)
+                    return "#919eab";
+                if (pressed)
+                    return "white";
+                if (hovered)
+                    return "#1b5fa8";
+                return "#212b36";
             }
             anchors.verticalCenter: parent.verticalCenter
 
             Rectangle {
                 anchors.centerIn: parent
-                width: 22; height: 22; radius: 3
+                width: 22
+                height: 22
+                radius: 3
                 visible: paginationRoot.currentPage > 1 && (parent.hovered || parent.pressed)
                 color: parent.pressed ? "#1b5fa8" : "#e3f2fd"
                 z: -1
@@ -72,12 +81,15 @@ Item {
                 cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                 hoverEnabled: true
                 onEntered: parent.hovered = true
-                onExited: { parent.hovered = false; parent.pressed = false }
+                onExited: {
+                    parent.hovered = false;
+                    parent.pressed = false;
+                }
                 onPressed: parent.pressed = true
                 onReleased: parent.pressed = false
                 onClicked: {
-                    paginationRoot.currentPage--
-                    paginationRoot.pageChanged(paginationRoot.currentPage)
+                    paginationRoot.currentPage--;
+                    paginationRoot.pageChanged(paginationRoot.currentPage);
                 }
             }
         }
@@ -85,16 +97,20 @@ Item {
         Repeater {
             model: paginationRoot.getVisiblePages()
             Rectangle {
-                width: 22; height: 22; radius: 3
+                width: 22
+                height: 22
+                radius: 3
                 property int pageNum: modelData
                 property bool isEllipsis: pageNum === -1
                 property bool hovered: false
                 property bool pressed: false
                 property bool isCurrent: pageNum === paginationRoot.currentPage
                 color: {
-                    if (pressed && !isCurrent) return "#1b5fa8"
-                    if (hovered) return "#e3f2fd"
-                    return "white"
+                    if (pressed && !isCurrent)
+                        return "#1b5fa8";
+                    if (hovered)
+                        return "#e3f2fd";
+                    return "white";
                 }
                 border.color: isCurrent ? "#1b5fa8" : "#dfe3e8"
                 border.width: 1
@@ -111,13 +127,17 @@ Item {
                     cursorShape: !parent.isEllipsis ? Qt.PointingHandCursor : Qt.ArrowCursor
                     hoverEnabled: true
                     onEntered: parent.hovered = true
-                    onExited: { parent.hovered = false; parent.pressed = false }
-                    onPressed: if (!parent.isCurrent) parent.pressed = true
+                    onExited: {
+                        parent.hovered = false;
+                        parent.pressed = false;
+                    }
+                    onPressed: if (!parent.isCurrent)
+                        parent.pressed = true
                     onReleased: parent.pressed = false
                     onClicked: {
                         if (!parent.isCurrent) {
-                            paginationRoot.currentPage = parent.pageNum
-                            paginationRoot.pageChanged(paginationRoot.currentPage)
+                            paginationRoot.currentPage = parent.pageNum;
+                            paginationRoot.pageChanged(paginationRoot.currentPage);
                         }
                     }
                 }
@@ -130,16 +150,21 @@ Item {
             property bool hovered: false
             property bool pressed: false
             color: {
-                if (paginationRoot.currentPage >= paginationRoot.totalPages) return "#919eab"
-                if (pressed) return "white"
-                if (hovered) return "#1b5fa8"
-                return "#212b36"
+                if (paginationRoot.currentPage >= paginationRoot.totalPages)
+                    return "#919eab";
+                if (pressed)
+                    return "white";
+                if (hovered)
+                    return "#1b5fa8";
+                return "#212b36";
             }
             anchors.verticalCenter: parent.verticalCenter
 
             Rectangle {
                 anchors.centerIn: parent
-                width: 22; height: 22; radius: 3
+                width: 22
+                height: 22
+                radius: 3
                 visible: paginationRoot.currentPage < paginationRoot.totalPages && (parent.hovered || parent.pressed)
                 color: parent.pressed ? "#1b5fa8" : "#e3f2fd"
                 z: -1
@@ -152,12 +177,15 @@ Item {
                 cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                 hoverEnabled: true
                 onEntered: parent.hovered = true
-                onExited: { parent.hovered = false; parent.pressed = false }
+                onExited: {
+                    parent.hovered = false;
+                    parent.pressed = false;
+                }
                 onPressed: parent.pressed = true
                 onReleased: parent.pressed = false
                 onClicked: {
-                    paginationRoot.currentPage++
-                    paginationRoot.pageChanged(paginationRoot.currentPage)
+                    paginationRoot.currentPage++;
+                    paginationRoot.pageChanged(paginationRoot.currentPage);
                 }
             }
         }

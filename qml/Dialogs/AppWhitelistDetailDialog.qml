@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "." as Theme
 
@@ -9,10 +9,10 @@ Popup {
     property real parentHeight: parent ? parent.height : 600
 
     width: {
-        var preferredWidth = 510
-        var maxWidth = parentWidth * 0.85
-        var minWidth = 400
-        return Math.max(minWidth, Math.min(preferredWidth, maxWidth))
+        var preferredWidth = 510;
+        var maxWidth = parentWidth * 0.85;
+        var minWidth = 400;
+        return Math.max(minWidth, Math.min(preferredWidth, maxWidth));
     }
     height: mainColumn.implicitHeight + 40
 
@@ -41,45 +41,49 @@ Popup {
     property bool loading: false               // 文件列表加载中
 
     // ── signals ──────────────────────────────────────────────────
-    signal approveClicked()
-    signal rejectClicked()
+    signal approveClicked
+    signal rejectClicked
 
     // ── parent resize ─────────────────────────────────────────────
     Connections {
         target: root.parent
-        function onWidthChanged() { root.parentWidth = root.parent.width }
-        function onHeightChanged() { root.parentHeight = root.parent.height }
+        function onWidthChanged() {
+            root.parentWidth = root.parent.width;
+        }
+        function onHeightChanged() {
+            root.parentHeight = root.parent.height;
+        }
     }
 
     readonly property var statusStyle: Theme.Colors.getStatusColor(status)
 
     function syncSelectedProcess() {
         if (!root.processes || root.processes.length === 0) {
-            root.fileCode = ""
-            root.fileHash = ""
-            return
+            root.fileCode = "";
+            root.fileHash = "";
+            return;
         }
-
         if (root.selectedProcessIndex < 0 || root.selectedProcessIndex >= root.processes.length) {
-            root.selectedProcessIndex = 0
+            root.selectedProcessIndex = 0;
         }
-
-        var selected = root.processes[root.selectedProcessIndex] || {}
-        root.fileCode = selected.fileCode || ""
-        root.fileHash = selected.fileHash || ""
-        root.appName = selected.fileName || root.appName
+        var selected = root.processes[root.selectedProcessIndex] || {};
+        root.fileCode = selected.fileCode || "";
+        root.fileHash = selected.fileHash || "";
+        root.appName = selected.fileName || root.appName;
     }
 
     onProcessesChanged: {
         if (selectedProcessIndex >= processCount) {
-            selectedProcessIndex = 0
+            selectedProcessIndex = 0;
         }
-        syncSelectedProcess()
+        syncSelectedProcess();
     }
 
     onSelectedProcessIndexChanged: syncSelectedProcess()
     onOpened: syncSelectedProcess()
-    onClosed: { loading = false }
+    onClosed: {
+        loading = false;
+    }
 
     // Hidden TextEdit used as clipboard helper
     TextEdit {
@@ -149,7 +153,10 @@ Popup {
                 }
             }
 
-            Item { width: parent.width; height: 12 }
+            Item {
+                width: parent.width
+                height: 12
+            }
 
             // ── Fields area ────────────────────────────────────────
             Column {
@@ -296,8 +303,14 @@ Popup {
                 }
             }
 
-            Item { width: parent.width; height: 12 }
-            Item { width: parent.width; height: 4 }
+            Item {
+                width: parent.width
+                height: 12
+            }
+            Item {
+                width: parent.width
+                height: 4
+            }
 
             SelectableText {
                 text: qsTr("App Whitelist Dependency Files")
@@ -305,7 +318,10 @@ Popup {
                 color: "#62748e"
             }
 
-            Item { width: parent.width; height: 8 }
+            Item {
+                width: parent.width
+                height: 8
+            }
 
             // ── Processes table ─────────────────────────────────────
             Rectangle {
@@ -503,12 +519,12 @@ Popup {
 
                                             // 将鼠标坐标映射到 root.contentItem
                                             property real mappedMouseX: {
-                                                var p = hashHoverArea.mapToItem(root.contentItem, mouseX, mouseY)
-                                                return p.x
+                                                var p = hashHoverArea.mapToItem(root.contentItem, mouseX, mouseY);
+                                                return p.x;
                                             }
                                             property real mappedMouseY: {
-                                                var p = hashHoverArea.mapToItem(root.contentItem, mouseX, mouseY)
-                                                return p.y
+                                                var p = hashHoverArea.mapToItem(root.contentItem, mouseX, mouseY);
+                                                return p.y;
                                             }
                                         }
 
@@ -558,15 +574,15 @@ Popup {
                                                         anchors.top: parent.bottom
                                                         x: hashTooltip.arrowOffsetX
                                                         onPaint: {
-                                                            var ctx = getContext("2d")
-                                                            ctx.reset()
-                                                            ctx.fillStyle = "#1e5a8e"
-                                                            ctx.beginPath()
-                                                            ctx.moveTo(0, 0)
-                                                            ctx.lineTo(5, 5)
-                                                            ctx.lineTo(10, 0)
-                                                            ctx.closePath()
-                                                            ctx.fill()
+                                                            var ctx = getContext("2d");
+                                                            ctx.reset();
+                                                            ctx.fillStyle = "#1e5a8e";
+                                                            ctx.beginPath();
+                                                            ctx.moveTo(0, 0);
+                                                            ctx.lineTo(5, 5);
+                                                            ctx.lineTo(10, 0);
+                                                            ctx.closePath();
+                                                            ctx.fill();
                                                         }
                                                     }
                                                 }
@@ -596,47 +612,54 @@ Popup {
                                                 width: 14
                                                 height: 14
                                                 opacity: copyHashBtn.copied ? 1 : (copyHashArea.containsMouse ? 0.8 : 0.6)
-                                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                                                Behavior on opacity {
+                                                    NumberAnimation {
+                                                        duration: 150
+                                                    }
+                                                }
 
                                                 onPaint: {
-                                                    var ctx = getContext("2d")
-                                                    ctx.reset()
-                                                    
+                                                    var ctx = getContext("2d");
+                                                    ctx.reset();
                                                     if (copyHashBtn.copied) {
                                                         // Draw checkmark
-                                                        ctx.strokeStyle = "#2e7d32"
-                                                        ctx.lineWidth = 2
-                                                        ctx.lineCap = "round"
-                                                        ctx.lineJoin = "round"
-                                                        ctx.beginPath()
-                                                        ctx.moveTo(3, 7)
-                                                        ctx.lineTo(6, 10)
-                                                        ctx.lineTo(11, 4)
-                                                        ctx.stroke()
+                                                        ctx.strokeStyle = "#2e7d32";
+                                                        ctx.lineWidth = 2;
+                                                        ctx.lineCap = "round";
+                                                        ctx.lineJoin = "round";
+                                                        ctx.beginPath();
+                                                        ctx.moveTo(3, 7);
+                                                        ctx.lineTo(6, 10);
+                                                        ctx.lineTo(11, 4);
+                                                        ctx.stroke();
                                                     } else {
                                                         // Draw copy icon (two overlapping squares)
-                                                        ctx.strokeStyle = copyHashArea.containsMouse ? "#0d5a95" : "#1b5fa8"
-                                                        ctx.lineWidth = 1.5
-                                                        ctx.lineCap = "round"
-                                                        ctx.lineJoin = "round"
-                                                        
+                                                        ctx.strokeStyle = copyHashArea.containsMouse ? "#0d5a95" : "#1b5fa8";
+                                                        ctx.lineWidth = 1.5;
+                                                        ctx.lineCap = "round";
+                                                        ctx.lineJoin = "round";
+
                                                         // Back square
-                                                        ctx.strokeRect(3.5, 1.5, 7, 7)
+                                                        ctx.strokeRect(3.5, 1.5, 7, 7);
                                                         // Front square
-                                                        ctx.fillStyle = "white"
-                                                        ctx.fillRect(4.5, 4.5, 7, 7)
-                                                        ctx.strokeRect(4.5, 4.5, 7, 7)
+                                                        ctx.fillStyle = "white";
+                                                        ctx.fillRect(4.5, 4.5, 7, 7);
+                                                        ctx.strokeRect(4.5, 4.5, 7, 7);
                                                     }
                                                 }
 
                                                 Connections {
                                                     target: copyHashBtn
-                                                    function onCopiedChanged() { copyIcon.requestPaint() }
+                                                    function onCopiedChanged() {
+                                                        copyIcon.requestPaint();
+                                                    }
                                                 }
 
                                                 Connections {
                                                     target: copyHashArea
-                                                    function onContainsMouseChanged() { copyIcon.requestPaint() }
+                                                    function onContainsMouseChanged() {
+                                                        copyIcon.requestPaint();
+                                                    }
                                                 }
                                             }
 
@@ -653,11 +676,11 @@ Popup {
                                                 cursorShape: Qt.PointingHandCursor
                                                 onClicked: {
                                                     if (modelData.fileHash) {
-                                                        clipboardHelper.text = modelData.fileHash
-                                                        clipboardHelper.selectAll()
-                                                        clipboardHelper.copy()
-                                                        copyHashBtn.copied = true
-                                                        copyResetTimer.restart()
+                                                        clipboardHelper.text = modelData.fileHash;
+                                                        clipboardHelper.selectAll();
+                                                        clipboardHelper.copy();
+                                                        copyHashBtn.copied = true;
+                                                        copyResetTimer.restart();
                                                     }
                                                 }
                                             }
@@ -671,7 +694,11 @@ Popup {
             }
 
             // ── Action buttons (only for 待审核) ────────────────────
-            Item { width: parent.width; height: shouldShowActionButtons ? 12 : 0; visible: shouldShowActionButtons }
+            Item {
+                width: parent.width
+                height: shouldShowActionButtons ? 12 : 0
+                visible: shouldShowActionButtons
+            }
 
             Item {
                 width: parent.width
@@ -692,8 +719,16 @@ Popup {
                     color: pressed ? "#ffe9e9" : (hovered ? "#fff5f5" : "white")
                     border.color: pressed ? "#ff6b6b" : (hovered ? "#ff9090" : "#ffa2a2")
                     border.width: 1
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
 
                     Text {
                         anchors.centerIn: parent
@@ -713,8 +748,8 @@ Popup {
                         onReleased: rejectBtn.pressed = false
                         onCanceled: rejectBtn.pressed = false
                         onClicked: {
-                            root.rejectClicked()
-                            root.close()
+                            root.rejectClicked();
+                            root.close();
                         }
                     }
                 }
@@ -728,7 +763,11 @@ Popup {
                     height: 36
                     radius: 8
                     color: approveBtnArea.pressed ? "#0a3d6b" : (approveBtnArea.containsMouse ? "#0d5a95" : "#0f4c81")
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 120
+                        }
+                    }
                     visible: shouldShowActionButtons
 
                     Text {
@@ -745,8 +784,8 @@ Popup {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.approveClicked()
-                            root.close()
+                            root.approveClicked();
+                            root.close();
                         }
                     }
                 }

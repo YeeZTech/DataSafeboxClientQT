@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "." as Theme
 
@@ -11,34 +11,29 @@ Popup {
 
     width: {
         // Dynamic width based on parent size, with min/max constraints
-        var preferredWidth = 520
-        var maxWidth = parentWidth * 0.8
-        var minWidth = 460
-        return Math.max(minWidth, Math.min(preferredWidth, maxWidth))
+        var preferredWidth = 520;
+        var maxWidth = parentWidth * 0.8;
+        var minWidth = 460;
+        return Math.max(minWidth, Math.min(preferredWidth, maxWidth));
     }
     height: {
         // Dynamic height calculation based on actual content
-        var titleHeight = 18
-        var topMargin = 20
-        var bottomMargin = 20
-        var afterTitleSpace = 10
-        var costFieldHeight = 0
-        var afterCostSpace = 0
-        var fieldsHeight = fieldsContainer ? fieldsContainer.implicitHeight : 150
-        var beforeWhitelistSpace = 0
-        var whitelistLabelHeight = 0
-        var afterWhitelistLabelSpace = 0
-        var whitelistTableHeight = 0
-        var buttonsSpace = shouldShowActionButtons ? 8 : 0
-        var buttonsHeight = shouldShowActionButtons ? 36 : 0
-
-        var totalHeight = topMargin + titleHeight + afterTitleSpace + costFieldHeight +
-                         afterCostSpace + fieldsHeight + beforeWhitelistSpace +
-                         whitelistLabelHeight + afterWhitelistLabelSpace +
-                         whitelistTableHeight + buttonsSpace + buttonsHeight + bottomMargin
-
-        var maxHeight = parentHeight * 0.9
-        return Math.min(totalHeight, maxHeight)
+        var titleHeight = 18;
+        var topMargin = 20;
+        var bottomMargin = 20;
+        var afterTitleSpace = 10;
+        var costFieldHeight = 0;
+        var afterCostSpace = 0;
+        var fieldsHeight = fieldsContainer ? fieldsContainer.implicitHeight : 150;
+        var beforeWhitelistSpace = 0;
+        var whitelistLabelHeight = 0;
+        var afterWhitelistLabelSpace = 0;
+        var whitelistTableHeight = 0;
+        var buttonsSpace = shouldShowActionButtons ? 8 : 0;
+        var buttonsHeight = shouldShowActionButtons ? 36 : 0;
+        var totalHeight = topMargin + titleHeight + afterTitleSpace + costFieldHeight + afterCostSpace + fieldsHeight + beforeWhitelistSpace + whitelistLabelHeight + afterWhitelistLabelSpace + whitelistTableHeight + buttonsSpace + buttonsHeight + bottomMargin;
+        var maxHeight = parentHeight * 0.9;
+        return Math.min(totalHeight, maxHeight);
     }
     modal: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
@@ -62,100 +57,99 @@ Popup {
     readonly property var statusStyle: Theme.Colors.getStatusColor(status)
 
     function getTotalPages() {
-        return whitelistApps && whitelistApps.length > 0 ? Math.ceil(whitelistApps.length / 3) : 0
+        return whitelistApps && whitelistApps.length > 0 ? Math.ceil(whitelistApps.length / 3) : 0;
     }
 
     function normalizeCurrentPage() {
-        var total = getTotalPages()
+        var total = getTotalPages();
         if (total <= 0) {
             if (currentPage !== 1) {
-                currentPage = 1
+                currentPage = 1;
             }
-            return
+            return;
         }
-
         if (currentPage < 1) {
-            currentPage = 1
-            return
+            currentPage = 1;
+            return;
         }
-
         if (currentPage > total) {
-            currentPage = total
+            currentPage = total;
         }
     }
 
     onWhitelistAppsChanged: normalizeCurrentPage()
 
     function getPagedApps() {
-        if (!whitelistApps || whitelistApps.length === 0) return []
-        var startIdx = (currentPage - 1) * 3
-        var endIdx = Math.min(startIdx + 3, whitelistApps.length)
-        var result = []
+        if (!whitelistApps || whitelistApps.length === 0)
+            return [];
+        var startIdx = (currentPage - 1) * 3;
+        var endIdx = Math.min(startIdx + 3, whitelistApps.length);
+        var result = [];
         for (var i = startIdx; i < endIdx; i++) {
-            result.push(whitelistApps[i])
+            result.push(whitelistApps[i]);
         }
-        return result
+        return result;
     }
 
     // Get page numbers to display (with ellipsis support)
     function getVisiblePages() {
-        var total = getTotalPages()
+        var total = getTotalPages();
         if (total <= 7) {
             // Show all pages if 7 or less
-            var pages = []
+            var pages = [];
             for (var i = 1; i <= total; i++) {
-                pages.push(i)
+                pages.push(i);
             }
-            return pages
+            return pages;
         }
 
         // Show first, last, current and adjacent pages with ellipsis
-        var pages = []
+        var pages = [];
         if (currentPage <= 3) {
             // Near start: 1 2 3 4 ... last
             for (var i = 1; i <= Math.min(4, total); i++) {
-                pages.push(i)
+                pages.push(i);
             }
             if (total > 5) {
-                pages.push(-1) // -1 means ellipsis
-                pages.push(total)
+                pages.push(-1); // -1 means ellipsis
+                pages.push(total);
             } else if (total === 5) {
-                pages.push(5)
+                pages.push(5);
             }
         } else if (currentPage >= total - 2) {
             // Near end: 1 ... last-3 last-2 last-1 last
-            pages.push(1)
+            pages.push(1);
             if (total > 5) {
-                pages.push(-1)
+                pages.push(-1);
             }
             for (var i = Math.max(total - 3, 2); i <= total; i++) {
-                pages.push(i)
+                pages.push(i);
             }
         } else {
             // Middle: 1 ... current-1 current current+1 ... last
-            pages.push(1)
-            pages.push(-1)
-            pages.push(currentPage - 1)
-            pages.push(currentPage)
-            pages.push(currentPage + 1)
-            pages.push(-2) // -2 means second ellipsis
-            pages.push(total)
+            pages.push(1);
+            pages.push(-1);
+            pages.push(currentPage - 1);
+            pages.push(currentPage);
+            pages.push(currentPage + 1);
+            pages.push(-2); // -2 means second ellipsis
+            pages.push(total);
         }
-        return pages
+        return pages;
     }
 
-    signal approveClicked()
-    signal rejectClicked()
-    signal cancelClicked()
+    signal approveClicked
+    signal rejectClicked
+    signal cancelClicked
 
     // Monitor parent size changes
     Connections {
         target: root.parent
         function onWidthChanged() {
-            root.parentWidth = root.parent.width
+            root.parentWidth = root.parent.width;
         }
         function onHeightChanged() {
-            root.parentHeight = root.parent.height
+            root.parentHeight = root.parent.height;
         }
     }
 
@@ -205,8 +199,8 @@ Popup {
                         cursorShape: Qt.PointingHandCursor
 
                         onClicked: {
-                            root.close()
-                            root.cancelClicked()
+                            root.close();
+                            root.cancelClicked();
                         }
                     }
 
@@ -586,10 +580,10 @@ Popup {
                                                 anchors.fill: parent
                                                 hoverEnabled: true
                                                 onEntered: {
-                                                    pathTooltipItem.visible = true
+                                                    pathTooltipItem.visible = true;
                                                 }
                                                 onExited: {
-                                                    pathTooltipItem.visible = false
+                                                    pathTooltipItem.visible = false;
                                                 }
                                             }
                                         }
@@ -639,10 +633,10 @@ Popup {
                                                 anchors.fill: parent
                                                 hoverEnabled: true
                                                 onEntered: {
-                                                    hashTooltipItem.visible = true
+                                                    hashTooltipItem.visible = true;
                                                 }
                                                 onExited: {
-                                                    hashTooltipItem.visible = false
+                                                    hashTooltipItem.visible = false;
                                                 }
                                             }
                                         }
@@ -694,7 +688,7 @@ Popup {
                                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                                         onClicked: {
                                             if (root.currentPage > 1) {
-                                                root.currentPage--
+                                                root.currentPage--;
                                             }
                                         }
                                     }
@@ -731,7 +725,7 @@ Popup {
                                             cursorShape: isCurrentPage ? Qt.ArrowCursor : Qt.PointingHandCursor
                                             onClicked: {
                                                 if (!isEllipsis && !isCurrentPage) {
-                                                    root.currentPage = pageNum
+                                                    root.currentPage = pageNum;
                                                 }
                                             }
                                         }
@@ -762,7 +756,7 @@ Popup {
                                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                                         onClicked: {
                                             if (root.currentPage < paginationRow.totalPages) {
-                                                root.currentPage++
+                                                root.currentPage++;
                                             }
                                         }
                                     }
@@ -800,9 +794,21 @@ Popup {
                     color: pressed ? "#ffe9e9" : (hovered ? "#fff5f5" : "#ffffff")
                     border.color: pressed ? "#ff6b6b" : (hovered ? "#ff9090" : "#ffa2a2")
                     border.width: 1
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
-                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 150
+                        }
+                    }
 
                     SelectableText {
                         anchors.centerIn: parent
@@ -819,8 +825,8 @@ Popup {
                         hoverEnabled: true
                         cursorShape: root.allowApproveReject ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                         onClicked: {
-                            root.rejectClicked()
-                            root.close()
+                            root.rejectClicked();
+                            root.close();
                         }
                         onEntered: parent.hovered = true
                         onExited: parent.hovered = false
@@ -840,12 +846,22 @@ Popup {
                     radius: 8
                     opacity: root.allowApproveReject ? 1.0 : 0.5
                     color: {
-                        if (approveArea.pressed) return "#0a3d6b"
-                        if (approveArea.containsMouse) return "#0d5a95"
-                        return "#0f4c81"
+                        if (approveArea.pressed)
+                            return "#0a3d6b";
+                        if (approveArea.containsMouse)
+                            return "#0d5a95";
+                        return "#0f4c81";
                     }
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 150
+                        }
+                    }
                     visible: shouldShowActionButtons
 
                     SelectableText {
@@ -863,8 +879,8 @@ Popup {
                         hoverEnabled: true
                         cursorShape: root.allowApproveReject ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                         onClicked: {
-                            root.approveClicked()
-                            root.close()
+                            root.approveClicked();
+                            root.close();
                         }
                     }
                 }

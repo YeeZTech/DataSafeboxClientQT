@@ -13,7 +13,7 @@ class PathManager : public QObject
     Q_PROPERTY(QString tempDir READ tempDir NOTIFY cacheDirChanged)
     Q_PROPERTY(qint64 cacheSizeBytes READ cacheSizeBytes NOTIFY cacheSizeChanged)
 
-public:
+  public:
     explicit PathManager(QObject *parent = nullptr);
 
     QString rootDir() const;
@@ -34,12 +34,12 @@ public:
     Q_INVOKABLE qint64 refreshCacheSize();
     Q_INVOKABLE qint64 clearCache();
 
-signals:
+  signals:
     void cacheDirChanged();
     void tempDirChanged();
     void cacheSizeChanged();
 
-private:
+  private:
     QString m_rootDir;
     QString m_dataDir;
     QString m_defaultCacheDir;

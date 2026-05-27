@@ -14,20 +14,15 @@ class DsccBridge : public QObject
 {
     Q_OBJECT
 
-public:
-    explicit DsccBridge(const QString &metaDbPath,
-                        const QString &dsccDataRoot,
-                        const QString &serverUrl,
-                        const QString &credential,
-                        QObject *parent = nullptr);
+  public:
+    explicit DsccBridge(const QString &metaDbPath, const QString &dsccDataRoot, const QString &serverUrl,
+                        const QString &credential, QObject *parent = nullptr);
     ~DsccBridge() override;
 
     void initialize();
     void shutdown();
 
-    Q_INVOKABLE void setCurrentUser(const QString &userId,
-                                    const QString &userName,
-                                    const QString &accessToken,
+    Q_INVOKABLE void setCurrentUser(const QString &userId, const QString &userName, const QString &accessToken,
                                     const QString &refreshToken);
     Q_INVOKABLE void clearCurrentUser();
 
@@ -40,47 +35,31 @@ public:
     Q_INVOKABLE void updateDomainDesc(const QString &domainCode, const QString &desc);
     Q_INVOKABLE void addUserToDomain(const QString &domainCode, const QString &userId);
     Q_INVOKABLE void removeUserFromDomain(const QString &domainCode, const QString &userId);
-    Q_INVOKABLE QString domainCreateFailureMessage(uint32_t operation_id,
-                                                   const QString &fallback) const;
+    Q_INVOKABLE QString domainCreateFailureMessage(uint32_t operation_id, const QString &fallback) const;
     Q_INVOKABLE void auditInstanceRequest(const QString &instanceCode, bool approved);
-    Q_INVOKABLE void auditRequest(const QString &auditCode,
-                                  const QString &fileCode,
-                                  bool approved,
+    Q_INVOKABLE void auditRequest(const QString &auditCode, const QString &fileCode, bool approved,
                                   const QString &reason);
-    Q_INVOKABLE QString notificationMessage(const QVariant &notification,
-                                            const QString &fallback) const;
+    Q_INVOKABLE QString notificationMessage(const QVariant &notification, const QString &fallback) const;
     Q_INVOKABLE void loadMessageList();
     Q_INVOKABLE void readMessage(const QString &messageCode);
     Q_INVOKABLE void readAllMessages();
     Q_INVOKABLE void deleteMessage(const QString &messageCode);
-    Q_INVOKABLE void encryptFile(const QString &sourceFile,
-                                 const QString &targetFile,
-                                 const QString &publicKey);
-    Q_INVOKABLE QString encryptedTargetFilePath(const QString &sourceFile,
-                                                const QString &outputDir) const;
+    Q_INVOKABLE void encryptFile(const QString &sourceFile, const QString &targetFile, const QString &publicKey);
+    Q_INVOKABLE QString encryptedTargetFilePath(const QString &sourceFile, const QString &outputDir) const;
 
-signals:
+  signals:
     void messageListLoaded(QVariantList messages);
     void messageRead(uint32_t operation_id, QString message_code);
-    void messageReadFailed(uint32_t operation_id,
-                           QString message_code,
-                           dscc::Notification notification);
+    void messageReadFailed(uint32_t operation_id, QString message_code, dscc::Notification notification);
     void allMessagesRead(uint32_t operation_id);
     void allMessagesReadFailed(uint32_t operation_id, dscc::Notification notification);
     void messageDeleted(uint32_t operation_id, QString message_code);
-    void messageDeleteFailed(uint32_t operation_id,
-                             QString message_code,
-                             dscc::Notification notification);
+    void messageDeleteFailed(uint32_t operation_id, QString message_code, dscc::Notification notification);
     void encryptFileStarted(uint32_t operation_id, QString source_file, QString target_file);
-    void encryptFileProgress(uint32_t operation_id,
-                             QString source_file,
-                             QString target_file,
-                             quint64 processed_bytes,
+    void encryptFileProgress(uint32_t operation_id, QString source_file, QString target_file, quint64 processed_bytes,
                              quint64 total_bytes);
     void encryptFileSucceeded(uint32_t operation_id, QString source_file, QString target_file);
-    void encryptFileFailed(uint32_t operation_id,
-                           QString source_file,
-                           QString target_file,
+    void encryptFileFailed(uint32_t operation_id, QString source_file, QString target_file,
                            dscc::Notification notification);
     void encryptFileCanceled(uint32_t operation_id, QString source_file, QString target_file);
     void domainListLoaded(QVariantList domains);
@@ -94,27 +73,19 @@ signals:
     void domainDescUpdated(uint32_t operation_id, QString domain_code);
     void domainDescUpdateFailed(uint32_t operation_id, QString domain_code, dscc::Notification notification);
     void addUserToDomainSuccess(uint32_t operation_id, QString domain_code, QString user_id);
-    void addUserToDomainFailed(uint32_t operation_id,
-                               QString domain_code,
-                               QString user_id,
+    void addUserToDomainFailed(uint32_t operation_id, QString domain_code, QString user_id,
                                dscc::Notification notification);
     void removeUserFromDomainSuccess(uint32_t operation_id, QString domain_code, QString user_id);
-    void removeUserFromDomainFailed(uint32_t operation_id,
-                                    QString domain_code,
-                                    QString user_id,
+    void removeUserFromDomainFailed(uint32_t operation_id, QString domain_code, QString user_id,
                                     dscc::Notification notification);
     void auditRequestSuccess(uint32_t operation_id, QString audit_code, QString file_code);
-    void auditRequestFailed(uint32_t operation_id,
-                            QString audit_code,
-                            QString file_code,
+    void auditRequestFailed(uint32_t operation_id, QString audit_code, QString file_code,
                             dscc::Notification notification);
     void auditInstanceRequestSuccess(uint32_t operation_id, QString instance_code);
-    void auditInstanceRequestFailed(uint32_t operation_id,
-                                    QString instance_code,
-                                    dscc::Notification notification);
+    void auditInstanceRequestFailed(uint32_t operation_id, QString instance_code, dscc::Notification notification);
     void coreErrorOccurred(dscc::Notification notification);
 
-private:
+  private:
     void connectAssetSignals();
     QString userDomainDbPath(const QString &userId) const;
     bool isDomainInactiveForOperation(const QString &domainCode) const;
@@ -122,7 +93,8 @@ private:
     QVariantMap instanceInfoToVariant(const dscc::InstanceInfo &info) const;
     QVariantMap messageInfoToVariant(const dscc::MessageInfo &info) const;
 
-    struct FileCryptoOperation {
+    struct FileCryptoOperation
+    {
         QString sourceFile;
         QString targetFile;
     };

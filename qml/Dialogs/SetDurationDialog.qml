@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "." as Theme
 
@@ -13,17 +13,17 @@ Popup {
 
     property string durationText: ""
     readonly property bool canConfirm: durationInput && durationInput.text && durationInput.text.trim().length > 0
-    
+
     signal confirmClicked(string durationText)
-    signal cancelClicked()
+    signal cancelClicked
 
     background: null
     padding: 0
 
     onOpened: {
-        durationText = ""
+        durationText = "";
         if (durationInput) {
-            durationInput.text = ""
+            durationInput.text = "";
         }
     }
 
@@ -73,8 +73,8 @@ Popup {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                root.close()
-                                root.cancelClicked()
+                                root.close();
+                                root.cancelClicked();
                             }
                         }
 
@@ -156,7 +156,11 @@ Popup {
                                 color: durationInput.activeFocus ? Theme.Colors.backgroundWhite : (durationInputHover.containsMouse ? "#e9eef6" : Theme.Colors.inputBackground)
                                 border.width: 1
                                 border.color: "#cad5e2"
-                                Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 150
+                                    }
+                                }
 
                                 MouseArea {
                                     id: durationInputHover
@@ -221,18 +225,30 @@ Popup {
                             height: 36
                             radius: 8
                             color: {
-                                if (cancelMouseArea.pressed) return "#bedbff"
-                                if (cancelMouseArea.containsMouse) return "#e8f8ff"
-                                return "white"
+                                if (cancelMouseArea.pressed)
+                                    return "#bedbff";
+                                if (cancelMouseArea.containsMouse)
+                                    return "#e8f8ff";
+                                return "white";
                             }
                             border.width: 1
                             border.color: {
-                                if (cancelMouseArea.pressed) return "#add3e6"
-                                if (cancelMouseArea.containsMouse) return "#79aecd"
-                                return "#cad5e2"
+                                if (cancelMouseArea.pressed)
+                                    return "#add3e6";
+                                if (cancelMouseArea.containsMouse)
+                                    return "#79aecd";
+                                return "#cad5e2";
                             }
-                            Behavior on color { ColorAnimation { duration: 150 } }
-                            Behavior on border.color { ColorAnimation { duration: 150 } }
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: 150
+                                }
+                            }
+                            Behavior on border.color {
+                                ColorAnimation {
+                                    duration: 150
+                                }
+                            }
 
                             Text {
                                 anchors.centerIn: parent
@@ -248,8 +264,8 @@ Popup {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
-                                    root.close()
-                                    root.cancelClicked()
+                                    root.close();
+                                    root.cancelClicked();
                                 }
                             }
                         }
@@ -261,7 +277,11 @@ Popup {
                             property bool hovered: false
                             color: hovered && root.canConfirm ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
                             opacity: root.canConfirm ? 1.0 : 0.5
-                            Behavior on color { ColorAnimation { duration: 120 } }
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: 120
+                                }
+                            }
 
                             Text {
                                 anchors.centerIn: parent
@@ -276,11 +296,12 @@ Popup {
                                 enabled: root.canConfirm
                                 hoverEnabled: true
                                 cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                onEntered: if (enabled) parent.hovered = true
+                                onEntered: if (enabled)
+                                    parent.hovered = true
                                 onExited: parent.hovered = false
                                 onClicked: {
-                                    root.confirmClicked(durationInput.text.trim())
-                                    root.close()
+                                    root.confirmClicked(durationInput.text.trim());
+                                    root.close();
                                 }
                             }
                         }

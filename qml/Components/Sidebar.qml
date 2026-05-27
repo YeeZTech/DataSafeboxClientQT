@@ -13,13 +13,13 @@ Rectangle {
     property var domainList: []
     property bool domainRefreshing: false
 
-    signal createDomainRequested()
+    signal createDomainRequested
     signal domainSelected(string domainCode, string pubKey, string name)
-    signal refreshDomainsRequested()
+    signal refreshDomainsRequested
     signal pageRequested(string page)
-    signal logoutRequested()
-    signal checkUpdateClicked()
-    signal minimizeWindowRequested()
+    signal logoutRequested
+    signal checkUpdateClicked
+    signal minimizeWindowRequested
 
     color: Theme.Colors.backgroundSidebar
     border.color: Theme.Colors.borderSlate
@@ -71,12 +71,12 @@ Rectangle {
                 anchors.rightMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
                 radius: 4
-                color: createButtonMouseArea.containsMouse
-                    ? (createButtonMouseArea.pressed
-                       ? Qt.darker(Theme.Colors.primary, 1.2)
-                       : Qt.lighter(Theme.Colors.primary, 1.2))
-                    : Theme.Colors.primary
-                Behavior on color { ColorAnimation { duration: 120 } }
+                color: createButtonMouseArea.containsMouse ? (createButtonMouseArea.pressed ? Qt.darker(Theme.Colors.primary, 1.2) : Qt.lighter(Theme.Colors.primary, 1.2)) : Theme.Colors.primary
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 120
+                    }
+                }
 
                 Text {
                     id: createButtonText
@@ -131,412 +131,331 @@ Rectangle {
                     anchors.topMargin: 12
                     spacing: 8
 
-                Item {
-                    id: securityDomainSection
-                    width: parent.width
-
-                    property bool securityDomainExpanded: true
-
-                    property int headerHeight: 36
-                    property int listTopMargin: 44
-                    property int itemHeight: 32
-                    height: {
-                        if (!securityDomainExpanded) {
-                            return headerHeight
-                        }
-                        if (securityDomainRepeater.model && securityDomainRepeater.model.length > 0) {
-                            var listBottom = listTopMargin + securityDomainRepeater.model.length * itemHeight
-                            return Math.max(headerHeight, listBottom)
-                        }
-                        return headerHeight
-                    }
-
-                    Behavior on height {
-                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                    }
-
-                    Rectangle {
-                        id: securityDomainHeader
+                    Item {
+                        id: securityDomainSection
                         width: parent.width
-                        height: 36
-                        anchors.left: parent.left
-                        anchors.leftMargin: 0
-                        radius: 4
-                        property bool hovered: false
-                        color: hovered ? "#eaf2fb" : "transparent"
 
-                        Row {
-                            spacing: 8
-                            height: parent.height
-                            anchors.verticalCenter: parent.verticalCenter
-                            x: 8
-                            Image {
-                                id: dropdownIcon1
-                                width: 14
-                                height: 14
+                        property bool securityDomainExpanded: true
+
+                        property int headerHeight: 36
+                        property int listTopMargin: 44
+                        property int itemHeight: 32
+                        height: {
+                            if (!securityDomainExpanded) {
+                                return headerHeight;
+                            }
+                            if (securityDomainRepeater.model && securityDomainRepeater.model.length > 0) {
+                                var listBottom = listTopMargin + securityDomainRepeater.model.length * itemHeight;
+                                return Math.max(headerHeight, listBottom);
+                            }
+                            return headerHeight;
+                        }
+
+                        Behavior on height {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+
+                        Rectangle {
+                            id: securityDomainHeader
+                            width: parent.width
+                            height: 36
+                            anchors.left: parent.left
+                            anchors.leftMargin: 0
+                            radius: 4
+                            property bool hovered: false
+                            color: hovered ? "#eaf2fb" : "transparent"
+
+                            Row {
+                                spacing: 8
+                                height: parent.height
                                 anchors.verticalCenter: parent.verticalCenter
-                                source: Qt.resolvedUrl("icons/icon-dropdown.svg")
-                                fillMode: Image.PreserveAspectFit
-                                rotation: securityDomainSection.securityDomainExpanded ? 0 : -90
+                                x: 8
+                                Image {
+                                    id: dropdownIcon1
+                                    width: 14
+                                    height: 14
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    source: Qt.resolvedUrl("icons/icon-dropdown.svg")
+                                    fillMode: Image.PreserveAspectFit
+                                    rotation: securityDomainSection.securityDomainExpanded ? 0 : -90
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    hoverEnabled: true
-                                    onEntered: securityDomainHeader.hovered = true
-                                    onExited: securityDomainHeader.hovered = false
-                                    onClicked: {
-                                        securityDomainSection.securityDomainExpanded = !securityDomainSection.securityDomainExpanded
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: securityDomainHeader.hovered = true
+                                        onExited: securityDomainHeader.hovered = false
+                                        onClicked: {
+                                            securityDomainSection.securityDomainExpanded = !securityDomainSection.securityDomainExpanded;
+                                        }
+                                    }
+
+                                    Behavior on rotation {
+                                        NumberAnimation {
+                                            duration: 200
+                                            easing.type: Easing.OutCubic
+                                        }
                                     }
                                 }
-
-                                Behavior on rotation {
-                                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                                }
-                            }
-
-                            Image {
-                                id: securityDomainIcon
-                                width: 16
-                                height: 16
-                                anchors.verticalCenter: parent.verticalCenter
-                                source: Qt.resolvedUrl("icons/icon-security-domain.svg")
-                                fillMode: Image.PreserveAspectFit
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    hoverEnabled: true
-                                    onEntered: securityDomainHeader.hovered = true
-                                    onExited: securityDomainHeader.hovered = false
-                                    onClicked: {
-                                        securityDomainSection.securityDomainExpanded = !securityDomainSection.securityDomainExpanded
-                                    }
-                                }
-                            }
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: qsTr("Security Domain")
-                                font.pixelSize: 14
-                                font.weight: Font.Bold
-                                color: Theme.Colors.primary
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    hoverEnabled: true
-                                    onEntered: securityDomainHeader.hovered = true
-                                    onExited: securityDomainHeader.hovered = false
-                                    onClicked: {
-                                        securityDomainSection.securityDomainExpanded = !securityDomainSection.securityDomainExpanded
-                                    }
-                                }
-                            }
-
-                            Item {
-                                id: domainRefreshBtn
-                                width: 20
-                                height: 20
-                                anchors.verticalCenter: parent.verticalCenter
 
                                 Image {
-                                    id: domainRefreshIcon
+                                    id: securityDomainIcon
                                     width: 16
                                     height: 16
-                                    anchors.centerIn: parent
-                                    source: Qt.resolvedUrl("icons/icon-update-refresh.svg")
-                                    fillMode: Image.PreserveAspectFit
-                                    opacity: domainRefreshArea.pressed ? 0.5 : (domainRefreshArea.containsMouse ? 1.0 : 0.7)
-                                    scale:   domainRefreshArea.pressed ? 0.85 : 1.0
-                                    Behavior on opacity { NumberAnimation { duration: 100 } }
-                                    Behavior on scale   { NumberAnimation { duration: 80  } }
-                                }
-
-                                RotationAnimator {
-                                    id: domainRefreshAnim
-                                    target: domainRefreshIcon
-                                    from: 0; to: 360
-                                    duration: 800
-                                    loops: Animation.Infinite
-                                    running: sidebar.domainRefreshing
-                                }
-
-                                MouseArea {
-                                    id: domainRefreshArea
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    hoverEnabled: true
-                                    onEntered: securityDomainHeader.hovered = false
-                                    onExited:  securityDomainHeader.hovered = false
-                                    onClicked: sidebar.refreshDomainsRequested()
-                                }
-                            }
-                        }
-                    }
-
-                    Item {
-                        id: securityDomainListContainer
-                        anchors.left: parent.left
-                        anchors.leftMargin: 20
-                        anchors.right: parent.right
-                        anchors.rightMargin: 0
-                        anchors.top: parent.top
-                        anchors.topMargin: 36
-
-                        height: securityDomainRepeater.model && securityDomainRepeater.model.length > 0 ?
-                            (securityDomainRepeater.model.length * 32) : 0
-                        visible: securityDomainSection.securityDomainExpanded
-                        opacity: securityDomainSection.securityDomainExpanded ? 1 : 0
-
-                        Behavior on opacity {
-                            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                        }
-
-                        Repeater {
-                            id: securityDomainRepeater
-                            model: sidebar.domainList
-
-                            Rectangle {
-                                anchors.top: parent.top
-                                anchors.topMargin: index * 32
-                                anchors.left: parent.left
-                                anchors.leftMargin: 8
-                                height: 32
-                                width: Math.max(0, parent.width - 8)
-                                radius: 4
-                                property bool hovered: false
-                                readonly property bool isSelected: (modelData.domainCode || "") === sidebar.selectedDomainCode && sidebar.selectedDomainCode !== ""
-                                color: isSelected ? "#c2d8ef"
-                                                  : (hovered ? "#d6e8f5" : Qt.rgba(194/255, 216/255, 239/255, 0))
-                                border.color: "transparent"
-                                border.width: 0
-                                Behavior on color { ColorAnimation { duration: 120 } }
-
-                                Rectangle {
-                                    x: 8
-                                    width: 8
-                                    height: 8
-                                    radius: 4
                                     anchors.verticalCenter: parent.verticalCenter
-                                    color: Theme.Colors.getStatusColor(modelData.status || Theme.Colors.statusRunning).dot
+                                    source: Qt.resolvedUrl("icons/icon-security-domain.svg")
+                                    fillMode: Image.PreserveAspectFit
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: securityDomainHeader.hovered = true
+                                        onExited: securityDomainHeader.hovered = false
+                                        onClicked: {
+                                            securityDomainSection.securityDomainExpanded = !securityDomainSection.securityDomainExpanded;
+                                        }
+                                    }
                                 }
 
                                 Text {
-                                    id: domainNameText
-                                    x: 24
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: modelData.name
+                                    text: qsTr("Security Domain")
                                     font.pixelSize: 14
-                                    font.weight: parent.isSelected ? Font.Medium : Font.Normal
-                                    color: parent.isSelected ? Theme.Colors.primary : (parent.hovered ? "#1e3a5f" : "#45556c")
-                                    Behavior on color { ColorAnimation { duration: 120 } }
-                                    maximumLineCount: 1
-                                    elide: Text.ElideMiddle
-                                    width: Math.max(0, (pendingBadge.visible ? pendingBadge.x - 6 : parent.width - 8) - x)
-                                    readonly property bool isOverflow: implicitWidth > width
-                                    property bool showTooltip: domainItemMouseArea.containsMouse
-                                                               && domainNameText.isOverflow
-                                                               && domainItemMouseArea.mouseX >= domainNameText.x
-                                                               && domainItemMouseArea.mouseX <= (domainNameText.x + domainNameText.width)
-
-                                    Popup {
-                                        id: domainNameTooltip
-                                        parent: Overlay.overlay
-                                        modal: false
-                                        focus: false
-                                        closePolicy: Popup.NoAutoClose
-                                        padding: 0
-                                        visible: domainNameText.showTooltip
-                                        z: 99999
-
-                                        readonly property real maxBubbleWidth: Overlay.overlay ? Math.max(160, Overlay.overlay.width - 16) : 400
-                                        readonly property real bubbleWidth: Math.min(Math.max(domainNameTooltipText.implicitWidth + 16, 120), maxBubbleWidth)
-
-                                        x: {
-                                            var p = domainNameText.mapToItem(Overlay.overlay, 0, 0)
-                                            var desired = p.x + (domainNameText.width - bubbleWidth) / 2
-                                            var minX = 8
-                                            var maxX = Overlay.overlay ? (Overlay.overlay.width - bubbleWidth - 8) : desired
-                                            return Math.max(minX, Math.min(desired, maxX))
+                                    font.weight: Font.Bold
+                                    color: Theme.Colors.primary
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: securityDomainHeader.hovered = true
+                                        onExited: securityDomainHeader.hovered = false
+                                        onClicked: {
+                                            securityDomainSection.securityDomainExpanded = !securityDomainSection.securityDomainExpanded;
                                         }
-                                        y: {
-                                            var p = domainNameText.mapToItem(Overlay.overlay, 0, 0)
-                                            return p.y - bubbleBackground.height - 8
+                                    }
+                                }
+
+                                Item {
+                                    id: domainRefreshBtn
+                                    width: 20
+                                    height: 20
+                                    anchors.verticalCenter: parent.verticalCenter
+
+                                    Image {
+                                        id: domainRefreshIcon
+                                        width: 16
+                                        height: 16
+                                        anchors.centerIn: parent
+                                        source: Qt.resolvedUrl("icons/icon-update-refresh.svg")
+                                        fillMode: Image.PreserveAspectFit
+                                        opacity: domainRefreshArea.pressed ? 0.5 : (domainRefreshArea.containsMouse ? 1.0 : 0.7)
+                                        scale: domainRefreshArea.pressed ? 0.85 : 1.0
+                                        Behavior on opacity {
+                                            NumberAnimation {
+                                                duration: 100
+                                            }
                                         }
+                                        Behavior on scale {
+                                            NumberAnimation {
+                                                duration: 80
+                                            }
+                                        }
+                                    }
 
-                                        background: Item {
-                                            Rectangle {
-                                                id: bubbleBackground
-                                                width: domainNameTooltip.bubbleWidth
-                                                height: Math.max(28, domainNameTooltipText.implicitHeight + 10)
-                                                color: "#1e5a8e"
-                                                radius: 4
+                                    RotationAnimator {
+                                        id: domainRefreshAnim
+                                        target: domainRefreshIcon
+                                        from: 0
+                                        to: 360
+                                        duration: 800
+                                        loops: Animation.Infinite
+                                        running: sidebar.domainRefreshing
+                                    }
 
-                                                Text {
-                                                    id: domainNameTooltipText
-                                                    anchors.centerIn: parent
-                                                    width: Math.max(0, parent.width - 16)
-                                                    text: domainNameText.text
-                                                    font.pixelSize: 13
-                                                    color: "white"
-                                                    wrapMode: Text.WrapAnywhere
-                                                    horizontalAlignment: Text.AlignHCenter
-                                                }
+                                    MouseArea {
+                                        id: domainRefreshArea
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: securityDomainHeader.hovered = false
+                                        onExited: securityDomainHeader.hovered = false
+                                        onClicked: sidebar.refreshDomainsRequested()
+                                    }
+                                }
+                            }
+                        }
 
-                                                Canvas {
-                                                    width: 10
-                                                    height: 5
-                                                    anchors.top: parent.bottom
-                                                    anchors.horizontalCenter: parent.horizontalCenter
-                                                    onPaint: {
-                                                        var ctx = getContext("2d")
-                                                        ctx.reset()
-                                                        ctx.fillStyle = "#1e5a8e"
-                                                        ctx.beginPath()
-                                                        ctx.moveTo(0, 0)
-                                                        ctx.lineTo(5, 5)
-                                                        ctx.lineTo(10, 0)
-                                                        ctx.closePath()
-                                                        ctx.fill()
+                        Item {
+                            id: securityDomainListContainer
+                            anchors.left: parent.left
+                            anchors.leftMargin: 20
+                            anchors.right: parent.right
+                            anchors.rightMargin: 0
+                            anchors.top: parent.top
+                            anchors.topMargin: 36
+
+                            height: securityDomainRepeater.model && securityDomainRepeater.model.length > 0 ? (securityDomainRepeater.model.length * 32) : 0
+                            visible: securityDomainSection.securityDomainExpanded
+                            opacity: securityDomainSection.securityDomainExpanded ? 1 : 0
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 200
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+
+                            Repeater {
+                                id: securityDomainRepeater
+                                model: sidebar.domainList
+
+                                Rectangle {
+                                    anchors.top: parent.top
+                                    anchors.topMargin: index * 32
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 8
+                                    height: 32
+                                    width: Math.max(0, parent.width - 8)
+                                    radius: 4
+                                    property bool hovered: false
+                                    readonly property bool isSelected: (modelData.domainCode || "") === sidebar.selectedDomainCode && sidebar.selectedDomainCode !== ""
+                                    color: isSelected ? "#c2d8ef" : (hovered ? "#d6e8f5" : Qt.rgba(194 / 255, 216 / 255, 239 / 255, 0))
+                                    border.color: "transparent"
+                                    border.width: 0
+                                    Behavior on color {
+                                        ColorAnimation {
+                                            duration: 120
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        x: 8
+                                        width: 8
+                                        height: 8
+                                        radius: 4
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        color: Theme.Colors.getStatusColor(modelData.status || Theme.Colors.statusRunning).dot
+                                    }
+
+                                    Text {
+                                        id: domainNameText
+                                        x: 24
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: modelData.name
+                                        font.pixelSize: 14
+                                        font.weight: parent.isSelected ? Font.Medium : Font.Normal
+                                        color: parent.isSelected ? Theme.Colors.primary : (parent.hovered ? "#1e3a5f" : "#45556c")
+                                        Behavior on color {
+                                            ColorAnimation {
+                                                duration: 120
+                                            }
+                                        }
+                                        maximumLineCount: 1
+                                        elide: Text.ElideMiddle
+                                        width: Math.max(0, (pendingBadge.visible ? pendingBadge.x - 6 : parent.width - 8) - x)
+                                        readonly property bool isOverflow: implicitWidth > width
+                                        property bool showTooltip: domainItemMouseArea.containsMouse && domainNameText.isOverflow && domainItemMouseArea.mouseX >= domainNameText.x && domainItemMouseArea.mouseX <= (domainNameText.x + domainNameText.width)
+
+                                        Popup {
+                                            id: domainNameTooltip
+                                            parent: Overlay.overlay
+                                            modal: false
+                                            focus: false
+                                            closePolicy: Popup.NoAutoClose
+                                            padding: 0
+                                            visible: domainNameText.showTooltip
+                                            z: 99999
+
+                                            readonly property real maxBubbleWidth: Overlay.overlay ? Math.max(160, Overlay.overlay.width - 16) : 400
+                                            readonly property real bubbleWidth: Math.min(Math.max(domainNameTooltipText.implicitWidth + 16, 120), maxBubbleWidth)
+
+                                            x: {
+                                                var p = domainNameText.mapToItem(Overlay.overlay, 0, 0);
+                                                var desired = p.x + (domainNameText.width - bubbleWidth) / 2;
+                                                var minX = 8;
+                                                var maxX = Overlay.overlay ? (Overlay.overlay.width - bubbleWidth - 8) : desired;
+                                                return Math.max(minX, Math.min(desired, maxX));
+                                            }
+                                            y: {
+                                                var p = domainNameText.mapToItem(Overlay.overlay, 0, 0);
+                                                return p.y - bubbleBackground.height - 8;
+                                            }
+
+                                            background: Item {
+                                                Rectangle {
+                                                    id: bubbleBackground
+                                                    width: domainNameTooltip.bubbleWidth
+                                                    height: Math.max(28, domainNameTooltipText.implicitHeight + 10)
+                                                    color: "#1e5a8e"
+                                                    radius: 4
+
+                                                    Text {
+                                                        id: domainNameTooltipText
+                                                        anchors.centerIn: parent
+                                                        width: Math.max(0, parent.width - 16)
+                                                        text: domainNameText.text
+                                                        font.pixelSize: 13
+                                                        color: "white"
+                                                        wrapMode: Text.WrapAnywhere
+                                                        horizontalAlignment: Text.AlignHCenter
+                                                    }
+
+                                                    Canvas {
+                                                        width: 10
+                                                        height: 5
+                                                        anchors.top: parent.bottom
+                                                        anchors.horizontalCenter: parent.horizontalCenter
+                                                        onPaint: {
+                                                            var ctx = getContext("2d");
+                                                            ctx.reset();
+                                                            ctx.fillStyle = "#1e5a8e";
+                                                            ctx.beginPath();
+                                                            ctx.moveTo(0, 0);
+                                                            ctx.lineTo(5, 5);
+                                                            ctx.lineTo(10, 0);
+                                                            ctx.closePath();
+                                                            ctx.fill();
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                }
 
-                                Rectangle {
-                                    id: pendingBadge
-                                    property int auditCount: 0
-                                    visible: auditCount > 0
-                                    x: 130
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: auditCount > 99 ? 32 : (auditCount > 9 ? 24 : 16)
-                                    height: 16
-                                    radius: 8
-                                    color: "#D4183D"
-                                    z: 10
-                                    Text {
-                                        anchors.centerIn: parent
-                                        color: "#fff"
-                                        font.pixelSize: 11
-                                        font.bold: true
-                                        text: pendingBadge.auditCount > 99 ? "99+" : pendingBadge.auditCount.toString()
+                                    Rectangle {
+                                        id: pendingBadge
+                                        property int auditCount: 0
+                                        visible: auditCount > 0
+                                        x: 130
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: auditCount > 99 ? 32 : (auditCount > 9 ? 24 : 16)
+                                        height: 16
+                                        radius: 8
+                                        color: "#D4183D"
+                                        z: 10
+                                        Text {
+                                            anchors.centerIn: parent
+                                            color: "#fff"
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                            text: pendingBadge.auditCount > 99 ? "99+" : pendingBadge.auditCount.toString()
+                                        }
                                     }
-                                }
 
-                                MouseArea {
-                                    id: domainItemMouseArea
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    hoverEnabled: true
-                                    onEntered: parent.hovered = true
-                                    onExited: parent.hovered = false
-                                    onClicked: {
-                                        sidebar.domainSelected(modelData.domainCode || "", modelData.pubKey || "", modelData.name || "")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Item {
-                    id: securityInstanceSection
-                    visible: false
-                    width: parent.width
-
-                    property bool securityInstanceExpanded: true
-
-                    property int headerHeight: 36
-                    property int listTopMargin: 44
-                    property int itemHeight: 32
-                    height: {
-                        if (!securityInstanceExpanded) {
-                            return headerHeight
-                        }
-                        if (securityInstanceRepeater.model && securityInstanceRepeater.model.length > 0) {
-                            var listBottom = listTopMargin + securityInstanceRepeater.model.length * itemHeight
-                            return Math.max(headerHeight, listBottom)
-                        }
-                        return headerHeight
-                    }
-
-                    Behavior on height {
-                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                    }
-
-                    Rectangle {
-                        id: securityInstanceHeader
-                        width: parent.width
-                        height: 36
-                        anchors.left: parent.left
-                        anchors.leftMargin: 0
-                        radius: 4
-                        property bool hovered: false
-                        color: hovered ? "#eaf2fb" : "transparent"
-
-                        Row {
-                            spacing: 8
-                            height: parent.height
-                            anchors.verticalCenter: parent.verticalCenter
-                            x: 8
-                            Image {
-                                id: dropdownIcon2
-                                width: 14
-                                height: 14
-                                anchors.verticalCenter: parent.verticalCenter
-                                source: Qt.resolvedUrl("icons/icon-dropdown.svg")
-                                fillMode: Image.PreserveAspectFit
-                                rotation: securityInstanceSection.securityInstanceExpanded ? 0 : -90
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        securityInstanceSection.securityInstanceExpanded = !securityInstanceSection.securityInstanceExpanded
-                                    }
-                                }
-
-                                Behavior on rotation {
-                                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                                }
-                            }
-
-                            Image {
-                                id: securityInstanceIcon
-                                width: 16
-                                height: 16
-                                anchors.verticalCenter: parent.verticalCenter
-                                source: Qt.resolvedUrl("icons/icon-security-instance.svg")
-                                fillMode: Image.PreserveAspectFit
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    hoverEnabled: true
-                                    onEntered: securityInstanceHeader.hovered = true
-                                    onExited: securityInstanceHeader.hovered = false
-                                    onClicked: {
-                                        securityInstanceSection.securityInstanceExpanded = !securityInstanceSection.securityInstanceExpanded
-                                    }
-                                }
-                            }
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: qsTr("Security Domain Instance")
-                                font.pixelSize: 14
-                                font.weight: Font.Bold
-                                color: Theme.Colors.primary
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    hoverEnabled: true
-                                    onEntered: securityInstanceHeader.hovered = true
-                                    onExited: securityInstanceHeader.hovered = false
-                                    onClicked: {
-                                        securityInstanceSection.securityInstanceExpanded = !securityInstanceSection.securityInstanceExpanded
+                                    MouseArea {
+                                        id: domainItemMouseArea
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: parent.hovered = true
+                                        onExited: parent.hovered = false
+                                        onClicked: {
+                                            sidebar.domainSelected(modelData.domainCode || "", modelData.pubKey || "", modelData.name || "");
+                                        }
                                     }
                                 }
                             }
@@ -544,131 +463,236 @@ Rectangle {
                     }
 
                     Item {
-                        id: securityInstanceListContainer
-                        anchors.left: parent.left
-                        anchors.leftMargin: 20
-                        anchors.right: parent.right
-                        anchors.rightMargin: 0
-                        anchors.top: parent.top
-                        anchors.topMargin: 36
+                        id: securityInstanceSection
+                        visible: false
+                        width: parent.width
 
-                        height: securityInstanceRepeater.model && securityInstanceRepeater.model.length > 0 ?
-                            (securityInstanceRepeater.model.length * 32) : 0
-                        visible: securityInstanceSection.securityInstanceExpanded
-                        opacity: securityInstanceSection.securityInstanceExpanded ? 1 : 0
+                        property bool securityInstanceExpanded: true
 
-                        Behavior on opacity {
-                            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                        property int headerHeight: 36
+                        property int listTopMargin: 44
+                        property int itemHeight: 32
+                        height: {
+                            if (!securityInstanceExpanded) {
+                                return headerHeight;
+                            }
+                            if (securityInstanceRepeater.model && securityInstanceRepeater.model.length > 0) {
+                                var listBottom = listTopMargin + securityInstanceRepeater.model.length * itemHeight;
+                                return Math.max(headerHeight, listBottom);
+                            }
+                            return headerHeight;
                         }
 
-                        Repeater {
-                            id: securityInstanceRepeater
-                            model: []
+                        Behavior on height {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.OutCubic
+                            }
+                        }
 
-                            Rectangle {
-                                anchors.top: parent.top
-                                anchors.topMargin: index * 32
-                                anchors.left: parent.left
-                                anchors.leftMargin: 8
-                                height: 32
-                                width: Math.max(0, parent.width - 8)
-                                radius: 4
-                                property bool hovered: false
-                                readonly property bool isSelected: false
-                                color: isSelected ? "#c8d9e8"
-                                                  : (hovered ? "#eaf2fb" : "transparent")
+                        Rectangle {
+                            id: securityInstanceHeader
+                            width: parent.width
+                            height: 36
+                            anchors.left: parent.left
+                            anchors.leftMargin: 0
+                            radius: 4
+                            property bool hovered: false
+                            color: hovered ? "#eaf2fb" : "transparent"
 
-                                Rectangle {
-                                    x: 8
-                                    width: 8
-                                    height: 8
-                                    radius: 4
+                            Row {
+                                spacing: 8
+                                height: parent.height
+                                anchors.verticalCenter: parent.verticalCenter
+                                x: 8
+                                Image {
+                                    id: dropdownIcon2
+                                    width: 14
+                                    height: 14
                                     anchors.verticalCenter: parent.verticalCenter
-                                    color: modelData.color
+                                    source: Qt.resolvedUrl("icons/icon-dropdown.svg")
+                                    fillMode: Image.PreserveAspectFit
+                                    rotation: securityInstanceSection.securityInstanceExpanded ? 0 : -90
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            securityInstanceSection.securityInstanceExpanded = !securityInstanceSection.securityInstanceExpanded;
+                                        }
+                                    }
+
+                                    Behavior on rotation {
+                                        NumberAnimation {
+                                            duration: 200
+                                            easing.type: Easing.OutCubic
+                                        }
+                                    }
+                                }
+
+                                Image {
+                                    id: securityInstanceIcon
+                                    width: 16
+                                    height: 16
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    source: Qt.resolvedUrl("icons/icon-security-instance.svg")
+                                    fillMode: Image.PreserveAspectFit
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: securityInstanceHeader.hovered = true
+                                        onExited: securityInstanceHeader.hovered = false
+                                        onClicked: {
+                                            securityInstanceSection.securityInstanceExpanded = !securityInstanceSection.securityInstanceExpanded;
+                                        }
+                                    }
                                 }
 
                                 Text {
-                                    id: securityInstanceNameText
-                                    x: 24
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: modelData.name
+                                    text: qsTr("Security Domain Instance")
                                     font.pixelSize: 14
-                                    font.weight: Font.Normal
-                                    color: "#45556c"
-                                    maximumLineCount: 1
-                                    elide: Text.ElideMiddle
-                                    width: Math.max(0, parent.width - x - 8)
-                                    readonly property bool isOverflow: implicitWidth > width
-                                    property bool showTooltip: securityInstanceItemMouseArea.containsMouse
-                                                               && securityInstanceNameText.isOverflow
-                                                               && securityInstanceItemMouseArea.mouseX >= securityInstanceNameText.x
-                                                               && securityInstanceItemMouseArea.mouseX <= (securityInstanceNameText.x + securityInstanceNameText.width)
-
-                                    Rectangle {
-                                        visible: parent.showTooltip
-                                        width: Math.min(instanceNameTooltipText.implicitWidth + 16, 400)
-                                        height: 28
-                                        color: "#1e5a8e"
-                                        radius: 4
-                                        z: 1000
-                                        y: -height - 8
-                                        x: -8
-
-                                        Text {
-                                            id: instanceNameTooltipText
-                                            anchors.centerIn: parent
-                                            text: parent.parent.text
-                                            font.pixelSize: 13
-                                            color: "white"
-                                            maximumLineCount: 1
-                                            elide: Text.ElideRight
+                                    font.weight: Font.Bold
+                                    color: Theme.Colors.primary
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: securityInstanceHeader.hovered = true
+                                        onExited: securityInstanceHeader.hovered = false
+                                        onClicked: {
+                                            securityInstanceSection.securityInstanceExpanded = !securityInstanceSection.securityInstanceExpanded;
                                         }
-
-                                        Canvas {
-                                            width: 10
-                                            height: 5
-                                            anchors.top: parent.bottom
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 10
-                                            onPaint: {
-                                                var ctx = getContext("2d")
-                                                ctx.reset()
-                                                ctx.fillStyle = "#1e5a8e"
-                                                ctx.beginPath()
-                                                ctx.moveTo(0, 0)
-                                                ctx.lineTo(5, 5)
-                                                ctx.lineTo(10, 0)
-                                                ctx.closePath()
-                                                ctx.fill()
-                                            }
-                                        }
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: securityInstanceItemMouseArea
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    hoverEnabled: true
-                                    onEntered: parent.hovered = true
-                                    onExited: parent.hovered = false
-                                    onClicked: {
-                                        // placeholder — instance detail navigation not yet wired
                                     }
                                 }
                             }
                         }
 
-                    Item {
-                        width: parent.width
-                        height: 36
-                    }
-                    }
-                }
-                }
+                        Item {
+                            id: securityInstanceListContainer
+                            anchors.left: parent.left
+                            anchors.leftMargin: 20
+                            anchors.right: parent.right
+                            anchors.rightMargin: 0
+                            anchors.top: parent.top
+                            anchors.topMargin: 36
 
+                            height: securityInstanceRepeater.model && securityInstanceRepeater.model.length > 0 ? (securityInstanceRepeater.model.length * 32) : 0
+                            visible: securityInstanceSection.securityInstanceExpanded
+                            opacity: securityInstanceSection.securityInstanceExpanded ? 1 : 0
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 200
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+
+                            Repeater {
+                                id: securityInstanceRepeater
+                                model: []
+
+                                Rectangle {
+                                    anchors.top: parent.top
+                                    anchors.topMargin: index * 32
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 8
+                                    height: 32
+                                    width: Math.max(0, parent.width - 8)
+                                    radius: 4
+                                    property bool hovered: false
+                                    readonly property bool isSelected: false
+                                    color: isSelected ? "#c8d9e8" : (hovered ? "#eaf2fb" : "transparent")
+
+                                    Rectangle {
+                                        x: 8
+                                        width: 8
+                                        height: 8
+                                        radius: 4
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        color: modelData.color
+                                    }
+
+                                    Text {
+                                        id: securityInstanceNameText
+                                        x: 24
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: modelData.name
+                                        font.pixelSize: 14
+                                        font.weight: Font.Normal
+                                        color: "#45556c"
+                                        maximumLineCount: 1
+                                        elide: Text.ElideMiddle
+                                        width: Math.max(0, parent.width - x - 8)
+                                        readonly property bool isOverflow: implicitWidth > width
+                                        property bool showTooltip: securityInstanceItemMouseArea.containsMouse && securityInstanceNameText.isOverflow && securityInstanceItemMouseArea.mouseX >= securityInstanceNameText.x && securityInstanceItemMouseArea.mouseX <= (securityInstanceNameText.x + securityInstanceNameText.width)
+
+                                        Rectangle {
+                                            visible: parent.showTooltip
+                                            width: Math.min(instanceNameTooltipText.implicitWidth + 16, 400)
+                                            height: 28
+                                            color: "#1e5a8e"
+                                            radius: 4
+                                            z: 1000
+                                            y: -height - 8
+                                            x: -8
+
+                                            Text {
+                                                id: instanceNameTooltipText
+                                                anchors.centerIn: parent
+                                                text: parent.parent.text
+                                                font.pixelSize: 13
+                                                color: "white"
+                                                maximumLineCount: 1
+                                                elide: Text.ElideRight
+                                            }
+
+                                            Canvas {
+                                                width: 10
+                                                height: 5
+                                                anchors.top: parent.bottom
+                                                anchors.left: parent.left
+                                                anchors.leftMargin: 10
+                                                onPaint: {
+                                                    var ctx = getContext("2d");
+                                                    ctx.reset();
+                                                    ctx.fillStyle = "#1e5a8e";
+                                                    ctx.beginPath();
+                                                    ctx.moveTo(0, 0);
+                                                    ctx.lineTo(5, 5);
+                                                    ctx.lineTo(10, 0);
+                                                    ctx.closePath();
+                                                    ctx.fill();
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        id: securityInstanceItemMouseArea
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        hoverEnabled: true
+                                        onEntered: parent.hovered = true
+                                        onExited: parent.hovered = false
+                                        onClicked:
+                                        // placeholder — instance detail navigation not yet wired
+                                        {}
+                                    }
+                                }
+                            }
+
+                            Item {
+                                width: parent.width
+                                height: 36
+                            }
+                        }
+                    }
                 }
             }
+        }
         Item {
             id: userProfileSection
             width: parent.width
@@ -723,8 +747,9 @@ Rectangle {
                     width: 111
                     anchors.verticalCenter: parent.verticalCenter
                     text: {
-                        if (!sidebar.currentUser) return ""
-                        return sidebar.currentUser.displayName || sidebar.currentUser.userName || ""
+                        if (!sidebar.currentUser)
+                            return "";
+                        return sidebar.currentUser.displayName || sidebar.currentUser.userName || "";
                     }
                     font.pixelSize: 14
                     font.weight: Font.Normal
@@ -734,10 +759,7 @@ Rectangle {
                     maximumLineCount: 1
                     elide: Text.ElideMiddle
                     readonly property bool isOverflow: implicitWidth > width
-                    property bool showTooltip: userProfileToggleArea.containsMouse
-                                               && sidebarUserNameText.isOverflow
-                                               && userProfileToggleArea.mouseX >= (userProfileRow.x + sidebarUserNameText.x)
-                                               && userProfileToggleArea.mouseX <= (userProfileRow.x + sidebarUserNameText.x + sidebarUserNameText.width)
+                    property bool showTooltip: userProfileToggleArea.containsMouse && sidebarUserNameText.isOverflow && userProfileToggleArea.mouseX >= (userProfileRow.x + sidebarUserNameText.x) && userProfileToggleArea.mouseX <= (userProfileRow.x + sidebarUserNameText.x + sidebarUserNameText.width)
 
                     Rectangle {
                         visible: parent.showTooltip
@@ -766,15 +788,15 @@ Rectangle {
                             anchors.left: parent.left
                             anchors.leftMargin: 10
                             onPaint: {
-                                var ctx = getContext("2d")
-                                ctx.reset()
-                                ctx.fillStyle = "#1e5a8e"
-                                ctx.beginPath()
-                                ctx.moveTo(0, 0)
-                                ctx.lineTo(5, 5)
-                                ctx.lineTo(10, 0)
-                                ctx.closePath()
-                                ctx.fill()
+                                var ctx = getContext("2d");
+                                ctx.reset();
+                                ctx.fillStyle = "#1e5a8e";
+                                ctx.beginPath();
+                                ctx.moveTo(0, 0);
+                                ctx.lineTo(5, 5);
+                                ctx.lineTo(10, 0);
+                                ctx.closePath();
+                                ctx.fill();
                             }
                         }
                     }
@@ -789,7 +811,10 @@ Rectangle {
                     rotation: userMenu.visible ? 0 : 180
 
                     Behavior on rotation {
-                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                        NumberAnimation {
+                            duration: 200
+                            easing.type: Easing.OutCubic
+                        }
                     }
                 }
             }
@@ -808,7 +833,7 @@ Rectangle {
                 hoverEnabled: true
                 visible: !userMenu.visible
                 onClicked: {
-                    userMenu.visible = true
+                    userMenu.visible = true;
                 }
             }
 
@@ -872,18 +897,16 @@ Rectangle {
                                 width: parent.width - 32 - 16 - 36
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: {
-                                    if (!sidebar.currentUser) return ""
-                                    return sidebar.currentUser.displayName || sidebar.currentUser.userName || ""
+                                    if (!sidebar.currentUser)
+                                        return "";
+                                    return sidebar.currentUser.displayName || sidebar.currentUser.userName || "";
                                 }
                                 font.pixelSize: 14
                                 color: "#334155"
                                 maximumLineCount: 1
                                 elide: Text.ElideMiddle
                                 readonly property bool isOverflow: implicitWidth > width
-                                property bool showTooltip: userHeaderMouseArea.containsMouse
-                                                           && userMenuHeaderUserNameText.isOverflow
-                                                           && userHeaderMouseArea.mouseX >= (userMenuHeaderRow.x + userMenuHeaderUserNameText.x)
-                                                           && userHeaderMouseArea.mouseX <= (userMenuHeaderRow.x + userMenuHeaderUserNameText.x + userMenuHeaderUserNameText.width)
+                                property bool showTooltip: userHeaderMouseArea.containsMouse && userMenuHeaderUserNameText.isOverflow && userHeaderMouseArea.mouseX >= (userMenuHeaderRow.x + userMenuHeaderUserNameText.x) && userHeaderMouseArea.mouseX <= (userMenuHeaderRow.x + userMenuHeaderUserNameText.x + userMenuHeaderUserNameText.width)
 
                                 Rectangle {
                                     visible: parent.showTooltip
@@ -912,15 +935,15 @@ Rectangle {
                                         anchors.left: parent.left
                                         anchors.leftMargin: 10
                                         onPaint: {
-                                            var ctx = getContext("2d")
-                                            ctx.reset()
-                                            ctx.fillStyle = "#1e5a8e"
-                                            ctx.beginPath()
-                                            ctx.moveTo(0, 0)
-                                            ctx.lineTo(5, 5)
-                                            ctx.lineTo(10, 0)
-                                            ctx.closePath()
-                                            ctx.fill()
+                                            var ctx = getContext("2d");
+                                            ctx.reset();
+                                            ctx.fillStyle = "#1e5a8e";
+                                            ctx.beginPath();
+                                            ctx.moveTo(0, 0);
+                                            ctx.lineTo(5, 5);
+                                            ctx.lineTo(10, 0);
+                                            ctx.closePath();
+                                            ctx.fill();
                                         }
                                     }
                                 }
@@ -941,7 +964,7 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                userMenu.visible = false
+                                userMenu.visible = false;
                             }
                         }
                     }
@@ -973,7 +996,7 @@ Rectangle {
                                 clip: true
                                 onStatusChanged: {
                                     if (status === Image.Error && source !== Qt.resolvedUrl("icons/icon-user-avatar.svg")) {
-                                        source = Qt.resolvedUrl("icons/icon-user-avatar.svg")
+                                        source = Qt.resolvedUrl("icons/icon-user-avatar.svg");
                                     }
                                 }
                             }
@@ -992,9 +1015,9 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                userMenu.visible = false
-                                Qt.openUrlExternally(AppConfig.userCenterUrl())
-                                sidebar.minimizeWindowRequested()
+                                userMenu.visible = false;
+                                Qt.openUrlExternally(AppConfig.userCenterUrl());
+                                sidebar.minimizeWindowRequested();
                             }
                         }
                     }
@@ -1032,8 +1055,8 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                userMenu.visible = false
-                                Qt.openUrlExternally(AppConfig.walletUrl())
+                                userMenu.visible = false;
+                                Qt.openUrlExternally(AppConfig.walletUrl());
                             }
                         }
                     }
@@ -1118,8 +1141,8 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                userMenu.visible = false
-                                sidebar.pageRequested("settings")
+                                userMenu.visible = false;
+                                sidebar.pageRequested("settings");
                             }
                         }
                     }
@@ -1157,8 +1180,8 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                userMenu.visible = false
-                                Qt.openUrlExternally(AppConfig.helpDocsUrl())
+                                userMenu.visible = false;
+                                Qt.openUrlExternally(AppConfig.helpDocsUrl());
                             }
                         }
                     }
@@ -1205,8 +1228,8 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                userMenu.visible = false
-                                sidebar.checkUpdateClicked()
+                                userMenu.visible = false;
+                                sidebar.checkUpdateClicked();
                             }
                         }
                     }
@@ -1250,8 +1273,8 @@ Rectangle {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                userMenu.visible = false
-                                sidebar.logoutRequested()
+                                userMenu.visible = false;
+                                sidebar.logoutRequested();
                             }
                         }
                     }

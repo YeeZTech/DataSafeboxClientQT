@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import Qt.labs.platform 1.1
 import "." as Theme
@@ -42,115 +42,127 @@ Popup {
 
     // Count helpers
     readonly property int _pendingCount: {
-        var c = 0
+        var c = 0;
         for (var i = 0; i < pathListModel.count; i++) {
-            var s = pathListModel.get(i).status
-            if (s === "pending" || s === "failed") c++
+            var s = pathListModel.get(i).status;
+            if (s === "pending" || s === "failed")
+                c++;
         }
-        return c
+        return c;
     }
     readonly property int _encryptedCount: {
-        var c = 0
+        var c = 0;
         for (var i = 0; i < pathListModel.count; i++) {
-            if (pathListModel.get(i).status === "encrypted") c++
+            if (pathListModel.get(i).status === "encrypted")
+                c++;
         }
-        return c
+        return c;
     }
 
     onOpened: {
-        selectedFilePath = ""
-        selectedOutputPath = ""
-        _encryptQueue = []
-        _encryptTotal = 0
-        _encryptDone = 0
-        _encryptFailed = 0
-        _encryptProgress = 0
-        _encrypting = false
-        _encryptProgressDismissed = true
-        _resultMessage = ""
-        _resultType = ""
-        _currentOperationId = -1
-        _currentSourceFile = ""
-        _currentTargetFile = ""
-        _currentModelIndex = -1
-        pathListModel.clear()
-        encryptionStateChanged(false)
+        selectedFilePath = "";
+        selectedOutputPath = "";
+        _encryptQueue = [];
+        _encryptTotal = 0;
+        _encryptDone = 0;
+        _encryptFailed = 0;
+        _encryptProgress = 0;
+        _encrypting = false;
+        _encryptProgressDismissed = true;
+        _resultMessage = "";
+        _resultType = "";
+        _currentOperationId = -1;
+        _currentSourceFile = "";
+        _currentTargetFile = "";
+        _currentModelIndex = -1;
+        pathListModel.clear();
+        encryptionStateChanged(false);
     }
 
     // ---- Helper functions ----
     function getFileName(filePath) {
-        if (!filePath) return ""
-        var parts = filePath.split(/[/\\]/)
-        return parts[parts.length - 1]
+        if (!filePath)
+            return "";
+        var parts = filePath.split(/[/\\]/);
+        return parts[parts.length - 1];
     }
 
     // 检查路径是否为目录（空实现，返回 false）
     function _isDirectory(path) {
-        return false
+        return false;
     }
 
     // 递归列出目录下所有文件（空实现，返回空数组）
     function _listFilesRecursive(dirPath) {
-        return []
+        return [];
     }
 
     function getFileDir(filePath) {
-        if (!filePath) return ""
-        var parts = filePath.replace(/\\/g, "/").split("/")
-        parts.pop()
-        return parts.join("/")
+        if (!filePath)
+            return "";
+        var parts = filePath.replace(/\\/g, "/").split("/");
+        parts.pop();
+        return parts.join("/");
     }
 
     function urlToLocalPath(fileUrl) {
         if (typeof fileUrl.toLocalFile === "function") {
-            return fileUrl.toLocalFile()
+            return fileUrl.toLocalFile();
         }
-        var urlString = fileUrl.toString()
+        var urlString = fileUrl.toString();
         if (urlString.startsWith("file:///")) {
-            var path = urlString.substring(8)
+            var path = urlString.substring(8);
             if (Qt.platform.os === "windows" && path.length > 0 && path[0] === '/') {
-                path = path.substring(1)
+                path = path.substring(1);
             }
-            return path
+            return path;
         } else if (urlString.startsWith("file://")) {
-            return urlString.substring(7)
+            return urlString.substring(7);
         } else if (urlString.startsWith("file:/")) {
-            var p2 = urlString.substring(6)
+            var p2 = urlString.substring(6);
             if (Qt.platform.os === "windows" && p2.length > 0 && p2[0] === '/') {
-                p2 = p2.substring(1)
+                p2 = p2.substring(1);
             }
-            return p2
+            return p2;
         }
-        return urlString
+        return urlString;
     }
 
     // Find path in model, returns index or -1
     function _findPathInModel(p) {
         for (var i = 0; i < pathListModel.count; i++) {
-            if (pathListModel.get(i).path === p) return i
+            if (pathListModel.get(i).path === p)
+                return i;
         }
-        return -1
+        return -1;
     }
 
     // Update model item status by model index
     // For folder items: if all expanded files are done, mark folder as encrypted
     function _markModelItemStatus(modelIdx, status) {
-        if (modelIdx < 0 || modelIdx >= pathListModel.count) return
+        if (modelIdx < 0 || modelIdx >= pathListModel.count)
+            return;
         // For folder items, track via _folderFileMap
-        var item = pathListModel.get(modelIdx)
+        var item = pathListModel.get(modelIdx);
         if (item.isDir) {
             // folder: update internal tracking and set status when all files done
-            if (!root._folderDoneMap) root._folderDoneMap = {}
-            var key = modelIdx.toString()
-            if (!root._folderDoneMap[key]) root._folderDoneMap[key] = { total: 0, done: 0, failed: 0 }
-            root._folderDoneMap[key].done++
-            if (status === "failed") root._folderDoneMap[key].failed++
+            if (!root._folderDoneMap)
+                root._folderDoneMap = {};
+            var key = modelIdx.toString();
+            if (!root._folderDoneMap[key])
+                root._folderDoneMap[key] = {
+                    total: 0,
+                    done: 0,
+                    failed: 0
+                };
+            root._folderDoneMap[key].done++;
+            if (status === "failed")
+                root._folderDoneMap[key].failed++;
             if (root._folderDoneMap[key].done >= root._folderDoneMap[key].total) {
-                pathListModel.setProperty(modelIdx, "status",
-                    root._folderDoneMap[key].failed > 0 ? "failed" : "encrypted")
+                pathListModel.setProperty(modelIdx, "status", root._folderDoneMap[key].failed > 0 ? "failed" : "encrypted");
             }
         } else {
-            pathListModel.setProperty(modelIdx, "status", status)
+            pathListModel.setProperty(modelIdx, "status", status);
         }
     }
     property var _folderDoneMap: ({})
@@ -164,290 +176,298 @@ Popup {
     property real _tooltipBoxW: 0
 
     function addPaths(paths) {
-        if (root._encrypting) return
-        root._encryptProgressDismissed = true
-        root._resultMessage = ""
-        var duplicates = []
+        if (root._encrypting)
+            return;
+        root._encryptProgressDismissed = true;
+        root._resultMessage = "";
+        var duplicates = [];
         for (var i = 0; i < paths.length; i++) {
-            var p = paths[i]
-            var existingIdx = _findPathInModel(p)
+            var p = paths[i];
+            var existingIdx = _findPathInModel(p);
             if (existingIdx >= 0) {
-                var existingStatus = pathListModel.get(existingIdx).status
+                var existingStatus = pathListModel.get(existingIdx).status;
                 if (existingStatus === "encrypted") {
-                    duplicates.push(getFileName(p) + qsTr(" (encrypted)"))
+                    duplicates.push(getFileName(p) + qsTr(" (encrypted)"));
                 } else {
-                    duplicates.push(getFileName(p) + qsTr(" (already in list)"))
+                    duplicates.push(getFileName(p) + qsTr(" (already in list)"));
                 }
-                continue
+                continue;
             }
             pathListModel.append({
                 "path": p,
                 "name": getFileName(p),
                 "isDir": _isDirectory(p),
                 "status": "pending"  // pending | encrypted | failed
-            })
+            });
         }
         // Backward compat
         if (pathListModel.count > 0) {
-            root.selectedFilePath = pathListModel.get(0).path
+            root.selectedFilePath = pathListModel.get(0).path;
         }
         // Show duplicate warning
         if (duplicates.length > 0) {
-            duplicateDialog.text = duplicates.join("\n")
-            duplicateDialog.open()
+            duplicateDialog.text = duplicates.join("\n");
+            duplicateDialog.open();
         }
     }
 
     function removePath(index) {
-        if (root._encrypting) return
-        root._encryptProgressDismissed = true
-        root._resultMessage = ""
-        if (index < 0 || index >= pathListModel.count) return
-        pathListModel.remove(index)
-        root.selectedFilePath = pathListModel.count > 0 ? pathListModel.get(0).path : ""
+        if (root._encrypting)
+            return;
+        root._encryptProgressDismissed = true;
+        root._resultMessage = "";
+        if (index < 0 || index >= pathListModel.count)
+            return;
+        pathListModel.remove(index);
+        root.selectedFilePath = pathListModel.count > 0 ? pathListModel.get(0).path : "";
     }
 
     function _formatEncryptFailure(notification, fallback) {
         if (typeof DsccBridge !== "undefined" && DsccBridge.notificationMessage) {
-            var message = DsccBridge.notificationMessage(notification, fallback)
-            if (message) return message
+            var message = DsccBridge.notificationMessage(notification, fallback);
+            if (message)
+                return message;
         }
-        return fallback
+        return fallback;
     }
 
     function _operationMatches(operationId, sourceFile, targetFile) {
         if (root._currentSourceFile !== sourceFile || root._currentTargetFile !== targetFile) {
-            return false
+            return false;
         }
-        return root._currentOperationId < 0 || root._currentOperationId === operationId
+        return root._currentOperationId < 0 || root._currentOperationId === operationId;
     }
 
     function _finishEncryptionQueue() {
-        root._encrypting = false
-        root.encryptionStateChanged(false)
-        root._currentOperationId = -1
-        root._currentSourceFile = ""
-        root._currentTargetFile = ""
-        root._currentModelIndex = -1
-        root._encryptProgress = 100
-        root._encryptProgressDismissed = false
-
+        root._encrypting = false;
+        root.encryptionStateChanged(false);
+        root._currentOperationId = -1;
+        root._currentSourceFile = "";
+        root._currentTargetFile = "";
+        root._currentModelIndex = -1;
+        root._encryptProgress = 100;
+        root._encryptProgressDismissed = false;
         if (root._encryptFailed === 0) {
-            root._resultMessage = ""
-            root._resultType = "success"
+            root._resultMessage = "";
+            root._resultType = "success";
         } else if (root._encryptFailed < root._encryptTotal) {
-            root._resultMessage = qsTr("Partially completed: %1 succeeded, %2 failed")
-                .arg(root._encryptTotal - root._encryptFailed)
-                .arg(root._encryptFailed)
-            root._resultType = "warning"
+            root._resultMessage = qsTr("Partially completed: %1 succeeded, %2 failed").arg(root._encryptTotal - root._encryptFailed).arg(root._encryptFailed);
+            root._resultType = "warning";
         } else {
-            root._resultMessage = ""
-            root._resultType = "error"
+            root._resultMessage = "";
+            root._resultType = "error";
         }
     }
 
     function _beginNextEncryption() {
         if (root._encryptQueue.length === 0) {
-            root._finishEncryptionQueue()
-            return
+            root._finishEncryptionQueue();
+            return;
         }
-
-        var queue = root._encryptQueue
-        var next = queue.shift()
-        root._encryptQueue = queue
-
-        var targetFile = DsccBridge.encryptedTargetFilePath(next.file, root.selectedOutputPath)
+        var queue = root._encryptQueue;
+        var next = queue.shift();
+        root._encryptQueue = queue;
+        var targetFile = DsccBridge.encryptedTargetFilePath(next.file, root.selectedOutputPath);
         if (!targetFile) {
-            root._markModelItemStatus(next.modelIndex, "failed")
-            root._encryptDone++
-            root._encryptFailed++
-            root._resultMessage = qsTr("Failed to generate encrypted file output path")
-            root._resultType = "error"
-            root._beginNextEncryption()
-            return
+            root._markModelItemStatus(next.modelIndex, "failed");
+            root._encryptDone++;
+            root._encryptFailed++;
+            root._resultMessage = qsTr("Failed to generate encrypted file output path");
+            root._resultType = "error";
+            root._beginNextEncryption();
+            return;
         }
-
-        root._currentOperationId = -1
-        root._currentSourceFile = next.file
-        root._currentTargetFile = targetFile
-        root._currentModelIndex = next.modelIndex
-        root._encryptProgress = Math.round((root._encryptDone / Math.max(1, root._encryptTotal)) * 100)
-
-        DsccBridge.encryptFile(next.file, targetFile, root._currentPubKey)
+        root._currentOperationId = -1;
+        root._currentSourceFile = next.file;
+        root._currentTargetFile = targetFile;
+        root._currentModelIndex = next.modelIndex;
+        root._encryptProgress = Math.round((root._encryptDone / Math.max(1, root._encryptTotal)) * 100);
+        DsccBridge.encryptFile(next.file, targetFile, root._currentPubKey);
     }
 
     function _completeCurrentEncryption(status, message) {
-        root._markModelItemStatus(root._currentModelIndex, status)
-        root._encryptDone++
+        root._markModelItemStatus(root._currentModelIndex, status);
+        root._encryptDone++;
         if (status !== "encrypted") {
-            root._encryptFailed++
-            root._resultMessage = message || qsTr("Encryption failed")
-            root._resultType = "error"
+            root._encryptFailed++;
+            root._resultMessage = message || qsTr("Encryption failed");
+            root._resultType = "error";
         }
-
-        root._currentOperationId = -1
-        root._currentSourceFile = ""
-        root._currentTargetFile = ""
-        root._currentModelIndex = -1
-        root._beginNextEncryption()
+        root._currentOperationId = -1;
+        root._currentSourceFile = "";
+        root._currentTargetFile = "";
+        root._currentModelIndex = -1;
+        root._beginNextEncryption();
     }
 
     function _startEncryptionWithBridge() {
-        if (root._encrypting) return
-
+        if (root._encrypting)
+            return;
         for (var r = 0; r < pathListModel.count; r++) {
             if (pathListModel.get(r).status === "failed") {
-                pathListModel.setProperty(r, "status", "pending")
+                pathListModel.setProperty(r, "status", "pending");
             }
         }
-
-        var pubKey = root.domainPubKey || ""
+        var pubKey = root.domainPubKey || "";
         if (!pubKey) {
-            root._resultMessage = qsTr("Security domain public key not found")
-            root._resultType = "error"
-            root._encryptProgressDismissed = false
-            return
+            root._resultMessage = qsTr("Security domain public key not found");
+            root._resultType = "error";
+            root._encryptProgressDismissed = false;
+            return;
         }
-
-        var queue = []
+        var queue = [];
         for (var i = 0; i < pathListModel.count; i++) {
-            var item = pathListModel.get(i)
-            if (item.status !== "pending") continue
+            var item = pathListModel.get(i);
+            if (item.status !== "pending")
+                continue;
             if (item.isDir) {
-                pathListModel.setProperty(i, "status", "failed")
-                continue
+                pathListModel.setProperty(i, "status", "failed");
+                continue;
             }
-            queue.push({ file: item.path, modelIndex: i })
+            queue.push({
+                file: item.path,
+                modelIndex: i
+            });
         }
-
         if (queue.length === 0) {
-            root._resultMessage = qsTr("No files to encrypt")
-            root._resultType = "error"
-            root._encryptProgressDismissed = false
-            return
+            root._resultMessage = qsTr("No files to encrypt");
+            root._resultType = "error";
+            root._encryptProgressDismissed = false;
+            return;
         }
-
-        root._currentPubKey = pubKey
-        root._encryptQueue = queue
-        root._encryptTotal = queue.length
-        root._encryptDone = 0
-        root._encryptFailed = 0
-        root._encryptProgress = 0
-        root._encrypting = true
-        root.encryptionStateChanged(true)
-        root._encryptProgressDismissed = false
-        root._resultMessage = ""
-        root._resultType = ""
-        root._currentOperationId = -1
-        root._currentSourceFile = ""
-        root._currentTargetFile = ""
-        root._currentModelIndex = -1
-
-        root._beginNextEncryption()
+        root._currentPubKey = pubKey;
+        root._encryptQueue = queue;
+        root._encryptTotal = queue.length;
+        root._encryptDone = 0;
+        root._encryptFailed = 0;
+        root._encryptProgress = 0;
+        root._encrypting = true;
+        root.encryptionStateChanged(true);
+        root._encryptProgressDismissed = false;
+        root._resultMessage = "";
+        root._resultType = "";
+        root._currentOperationId = -1;
+        root._currentSourceFile = "";
+        root._currentTargetFile = "";
+        root._currentModelIndex = -1;
+        root._beginNextEncryption();
     }
 
     function startEncryption() {
-        root._startEncryptionWithBridge()
-        return
+        root._startEncryptionWithBridge();
+        return;
         // Reset failed items to pending for re-encryption
         for (var r = 0; r < pathListModel.count; r++) {
             if (pathListModel.get(r).status === "failed") {
-                pathListModel.setProperty(r, "status", "pending")
+                pathListModel.setProperty(r, "status", "pending");
             }
         }
         // Collect only pending items
-        var pendingItems = []
+        var pendingItems = [];
         for (var i = 0; i < pathListModel.count; i++) {
-            var item = pathListModel.get(i)
+            var item = pathListModel.get(i);
             if (item.status === "pending") {
-                pendingItems.push({ path: item.path, isDir: item.isDir, modelIndex: i })
+                pendingItems.push({
+                    path: item.path,
+                    isDir: item.isDir,
+                    modelIndex: i
+                });
             }
         }
         if (pendingItems.length === 0) {
-            root._resultMessage = qsTr("No files to encrypt")
-            root._resultType = "error"
-            root._encryptProgressDismissed = false
-            return
+            root._resultMessage = qsTr("No files to encrypt");
+            root._resultType = "error";
+            root._encryptProgressDismissed = false;
+            return;
         }
 
         // Resolve pubKey
-        var pubKey = root.domainPubKey || ""
+        var pubKey = root.domainPubKey || "";
         if (!pubKey || pubKey === "") {
             // empty stub: show error when public key unavailable
-            root._resultMessage = qsTr("Security domain public key not found")
-            root._resultType = "error"
-            root._encryptProgressDismissed = false
-            return
+            root._resultMessage = qsTr("Security domain public key not found");
+            root._resultType = "error";
+            root._encryptProgressDismissed = false;
+            return;
         }
         if (!pubKey || pubKey === "") {
-            root._resultMessage = qsTr("Security domain public key not found")
-            root._resultType = "error"
-            root._encryptProgressDismissed = false
-            return
+            root._resultMessage = qsTr("Security domain public key not found");
+            root._resultType = "error";
+            root._encryptProgressDismissed = false;
+            return;
         }
 
         // Build file queue: expand folders, preserve per-item output path
-        var queue = []
-        root._folderDoneMap = {}
+        var queue = [];
+        root._folderDoneMap = {};
         for (var j = 0; j < pendingItems.length; j++) {
-            var pi = pendingItems[j]
+            var pi = pendingItems[j];
             if (pi.isDir) {
-                var files = _listFilesRecursive(pi.path)
+                var files = _listFilesRecursive(pi.path);
                 if (files.length === 0) {
-                    pathListModel.setProperty(pi.modelIndex, "status", "failed")
-                    continue
+                    pathListModel.setProperty(pi.modelIndex, "status", "failed");
+                    continue;
                 }
-                var normalizedSource = pi.path.replace(/\\/g, "/").replace(/\/+$/, "")
-                var normalizedCustom = root.selectedOutputPath ? root.selectedOutputPath.replace(/\\/g, "/").replace(/\/+$/, "") : ""
-                var folderName = getFileName(normalizedSource)
-                var folderBaseOutput = ""
+                var normalizedSource = pi.path.replace(/\\/g, "/").replace(/\/+$/, "");
+                var normalizedCustom = root.selectedOutputPath ? root.selectedOutputPath.replace(/\\/g, "/").replace(/\/+$/, "") : "";
+                var folderName = getFileName(normalizedSource);
+                var folderBaseOutput = "";
                 if (normalizedCustom && normalizedCustom !== normalizedSource) {
-                    folderBaseOutput = normalizedCustom + "/" + folderName
+                    folderBaseOutput = normalizedCustom + "/" + folderName;
                 } else {
-                    var folderParent = getFileDir(normalizedSource)
-                    folderBaseOutput = folderParent + "/" + folderName + "_encrypted"
+                    var folderParent = getFileDir(normalizedSource);
+                    folderBaseOutput = folderParent + "/" + folderName + "_encrypted";
                 }
-                root._folderDoneMap[pi.modelIndex.toString()] = { total: files.length, done: 0, failed: 0 }
+                root._folderDoneMap[pi.modelIndex.toString()] = {
+                    total: files.length,
+                    done: 0,
+                    failed: 0
+                };
                 for (var k = 0; k < files.length; k++) {
-                    var fileFullPath = files[k].replace(/\\/g, "/")
-                    var relativePath = fileFullPath.substring(normalizedSource.length + 1)
-                    var relativeDir = getFileDir(relativePath)
-                    var fileOutput = relativeDir ? (folderBaseOutput + "/" + relativeDir) : folderBaseOutput
-                    queue.push({ file: files[k], output: fileOutput, modelIndex: pi.modelIndex })
+                    var fileFullPath = files[k].replace(/\\/g, "/");
+                    var relativePath = fileFullPath.substring(normalizedSource.length + 1);
+                    var relativeDir = getFileDir(relativePath);
+                    var fileOutput = relativeDir ? (folderBaseOutput + "/" + relativeDir) : folderBaseOutput;
+                    queue.push({
+                        file: files[k],
+                        output: fileOutput,
+                        modelIndex: pi.modelIndex
+                    });
                 }
             } else {
-                var fileOut = root.selectedOutputPath || getFileDir(pi.path)
-                queue.push({ file: pi.path, output: fileOut, modelIndex: pi.modelIndex })
+                var fileOut = root.selectedOutputPath || getFileDir(pi.path);
+                queue.push({
+                    file: pi.path,
+                    output: fileOut,
+                    modelIndex: pi.modelIndex
+                });
             }
         }
-
         if (queue.length === 0) {
-            root._resultMessage = qsTr("No encryptable files found")
-            root._resultType = "error"
-            root._encryptProgressDismissed = false
-            return
+            root._resultMessage = qsTr("No encryptable files found");
+            root._resultType = "error";
+            root._encryptProgressDismissed = false;
+            return;
         }
-
-        root._currentPubKey = pubKey
-        root._encryptTotal = queue.length
-        root._encryptDone = 0
-        root._encryptFailed = 0
-        root._encryptProgress = 0
-        root._encrypting = true
-        root._encryptProgressDismissed = false
-        root._resultMessage = ""
-        root._resultType = ""
-
-        var first = queue.shift()
-        root._encryptQueue = queue
-        root._currentModelIndex = first.modelIndex
+        root._currentPubKey = pubKey;
+        root._encryptTotal = queue.length;
+        root._encryptDone = 0;
+        root._encryptFailed = 0;
+        root._encryptProgress = 0;
+        root._encrypting = true;
+        root._encryptProgressDismissed = false;
+        root._resultMessage = "";
+        root._resultType = "";
+        var first = queue.shift();
+        root._encryptQueue = queue;
+        root._currentModelIndex = first.modelIndex;
         // 空实现：模拟加密完成
-        root._encrypting = false
-        root._encryptDone = root._encryptTotal
-        root._encryptProgress = 100
-        root._encryptProgressDismissed = false
-        root._resultMessage = qsTr("Function disabled")
-        root._resultType = "error"
+        root._encrypting = false;
+        root._encryptDone = root._encryptTotal;
+        root._encryptProgress = 100;
+        root._encryptProgressDismissed = false;
+        root._resultMessage = qsTr("Function disabled");
+        root._resultType = "error";
     }
 
     // ---- Dialogs ----
@@ -458,15 +478,15 @@ Popup {
         fileMode: FileDialog.OpenFile
 
         onAccepted: {
-            var paths = []
+            var paths = [];
             if (fileDialog.files && fileDialog.files.length > 0) {
                 for (var i = 0; i < fileDialog.files.length; i++) {
-                    paths.push(root.urlToLocalPath(fileDialog.files[i]))
+                    paths.push(root.urlToLocalPath(fileDialog.files[i]));
                 }
             } else if (fileDialog.file) {
-                paths.push(root.urlToLocalPath(fileDialog.file))
+                paths.push(root.urlToLocalPath(fileDialog.file));
             }
-            root.addPaths(paths)
+            root.addPaths(paths);
         }
     }
 
@@ -475,8 +495,9 @@ Popup {
         title: qsTr("Select Folder")
 
         onAccepted: {
-            var folderPath = root.urlToLocalPath(folderSelectDialog.folder)
-            if (folderPath) root.addPaths([folderPath])
+            var folderPath = root.urlToLocalPath(folderSelectDialog.folder);
+            if (folderPath)
+                root.addPaths([folderPath]);
         }
     }
 
@@ -485,7 +506,7 @@ Popup {
         title: qsTr("Select Output Path")
 
         onAccepted: {
-            root.selectedOutputPath = root.urlToLocalPath(folderDialog.folder)
+            root.selectedOutputPath = root.urlToLocalPath(folderDialog.folder);
         }
     }
 
@@ -498,34 +519,35 @@ Popup {
 
         function onEncryptFileStarted(operationId, sourceFile, targetFile) {
             if (root._currentSourceFile === sourceFile && root._currentTargetFile === targetFile) {
-                root._currentOperationId = operationId
+                root._currentOperationId = operationId;
             }
         }
 
         function onEncryptFileProgress(operationId, sourceFile, targetFile, processedBytes, totalBytes) {
-            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
-
-            var currentRatio = totalBytes > 0 ? (processedBytes / totalBytes) : 0
-            currentRatio = Math.max(0, Math.min(1, currentRatio))
-            var overallRatio = (root._encryptDone + currentRatio) / Math.max(1, root._encryptTotal)
-            root._encryptProgress = Math.round(Math.max(0, Math.min(1, overallRatio)) * 100)
+            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile))
+                return;
+            var currentRatio = totalBytes > 0 ? (processedBytes / totalBytes) : 0;
+            currentRatio = Math.max(0, Math.min(1, currentRatio));
+            var overallRatio = (root._encryptDone + currentRatio) / Math.max(1, root._encryptTotal);
+            root._encryptProgress = Math.round(Math.max(0, Math.min(1, overallRatio)) * 100);
         }
 
         function onEncryptFileSucceeded(operationId, sourceFile, targetFile) {
-            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
-            root._completeCurrentEncryption("encrypted", "")
+            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile))
+                return;
+            root._completeCurrentEncryption("encrypted", "");
         }
 
         function onEncryptFileFailed(operationId, sourceFile, targetFile, notification) {
-            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
-            root._completeCurrentEncryption(
-                "failed",
-                root._formatEncryptFailure(notification, qsTr("Encryption failed")))
+            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile))
+                return;
+            root._completeCurrentEncryption("failed", root._formatEncryptFailure(notification, qsTr("Encryption failed")));
         }
 
         function onEncryptFileCanceled(operationId, sourceFile, targetFile) {
-            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile)) return
-            root._completeCurrentEncryption("failed", qsTr("Encryption cancelled"))
+            if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile))
+                return;
+            root._completeCurrentEncryption("failed", qsTr("Encryption cancelled"));
         }
     }
 
@@ -567,7 +589,8 @@ Popup {
                     }
 
                     Rectangle {
-                        width: 24; height: 24
+                        width: 24
+                        height: 24
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         radius: 12
@@ -579,7 +602,10 @@ Popup {
                             enabled: !root._encrypting
                             hoverEnabled: true
                             cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                            onClicked: { root.close(); root.cancelClicked() }
+                            onClicked: {
+                                root.close();
+                                root.cancelClicked();
+                            }
                         }
 
                         Text {
@@ -621,8 +647,16 @@ Popup {
                         color: addFileBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
                         border.color: addFileBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
                         border.width: 1
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
 
                         Row {
                             anchors.left: parent.left
@@ -634,7 +668,8 @@ Popup {
                             spacing: 12
 
                             Image {
-                                width: 16; height: 16
+                                width: 16
+                                height: 16
                                 anchors.verticalCenter: parent.verticalCenter
                                 source: Qt.resolvedUrl("icons/icon-directory.svg")
                                 fillMode: Image.PreserveAspectFit
@@ -690,8 +725,16 @@ Popup {
                         color: outputBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
                         border.color: outputBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
                         border.width: 1
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
 
                         Row {
                             anchors.left: parent.left
@@ -703,7 +746,8 @@ Popup {
                             spacing: 12
 
                             Image {
-                                width: 16; height: 16
+                                width: 16
+                                height: 16
                                 anchors.verticalCenter: parent.verticalCenter
                                 source: Qt.resolvedUrl("icons/icon-directory.svg")
                                 fillMode: Image.PreserveAspectFit
@@ -720,9 +764,7 @@ Popup {
                                     anchors.leftMargin: 2
                                     anchors.rightMargin: 2
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: root.selectedOutputPath
-                                          ? root.selectedOutputPath
-                                          : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("Select output path"))
+                                    text: root.selectedOutputPath ? root.selectedOutputPath : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("Select output path"))
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
                                     color: (root.selectedOutputPath || root.selectedFilePath) ? "#0f172b" : "#94a3b8"
@@ -783,19 +825,15 @@ Popup {
                     Row {
                         width: parent.width
                         Text {
-                            text: root._encrypting
-                                ? (root._encryptTotal > 1
-                                    ? qsTr("Encrypting (") + (root._encryptDone + 1) + "/" + root._encryptTotal + ")"
-                                    : qsTr("Encrypting..."))
-                                : (root._resultType === "error" ? qsTr("Encryption failed")
-                                    : root._resultType === "warning" ? qsTr("Partially completed") : qsTr("Encryption completed"))
+                            text: root._encrypting ? (root._encryptTotal > 1 ? qsTr("Encrypting (") + (root._encryptDone + 1) + "/" + root._encryptTotal + ")" : qsTr("Encrypting...")) : (root._resultType === "error" ? qsTr("Encryption failed") : root._resultType === "warning" ? qsTr("Partially completed") : qsTr("Encryption completed"))
                             font.pixelSize: 12
                             font.weight: Font.Medium
-                            color: root._encrypting ? "#314158"
-                                : (root._resultType === "error" ? "#ef4444"
-                                    : root._resultType === "warning" ? "#f59e0b" : "#22c55e")
+                            color: root._encrypting ? "#314158" : (root._resultType === "error" ? "#ef4444" : root._resultType === "warning" ? "#f59e0b" : "#22c55e")
                         }
-                        Item { width: parent.width - parent.children[0].width - parent.children[2].width; height: 1 }
+                        Item {
+                            width: parent.width - parent.children[0].width - parent.children[2].width
+                            height: 1
+                        }
                         Text {
                             text: root._encrypting ? root._encryptProgress + "%" : ""
                             font.pixelSize: 12
@@ -806,7 +844,8 @@ Popup {
                     ProgressBar {
                         id: inlineProgressBar
                         width: parent.width
-                        from: 0; to: 100
+                        from: 0
+                        to: 100
                         value: root._encryptProgress
 
                         background: Rectangle {
@@ -824,17 +863,27 @@ Popup {
                                 width: inlineProgressBar.visualPosition * parent.width
                                 height: parent.height
                                 radius: 3
-                                color: root._resultType === "error" ? "#ef4444"
-                                    : root._resultType === "warning" ? "#f59e0b" : "#22c55e"
-                                Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+                                color: root._resultType === "error" ? "#ef4444" : root._resultType === "warning" ? "#f59e0b" : "#22c55e"
+                                Behavior on width {
+                                    NumberAnimation {
+                                        duration: 150
+                                        easing.type: Easing.OutQuad
+                                    }
+                                }
 
                                 Rectangle {
                                     anchors.fill: parent
                                     radius: 3
                                     gradient: Gradient {
                                         orientation: Gradient.Vertical
-                                        GradientStop { position: 0.0; color: Qt.rgba(1, 1, 1, 0.25) }
-                                        GradientStop { position: 0.5; color: "transparent" }
+                                        GradientStop {
+                                            position: 0.0
+                                            color: Qt.rgba(1, 1, 1, 0.25)
+                                        }
+                                        GradientStop {
+                                            position: 0.5
+                                            color: "transparent"
+                                        }
                                     }
                                 }
                             }
@@ -850,9 +899,7 @@ Popup {
                         color: root._resultType === "error" ? "#ef4444" : "#314158"
                         wrapMode: Text.WrapAnywhere
                     }
-
                 }
-
             }
 
             // Footer buttons
@@ -862,20 +909,34 @@ Popup {
                 spacing: 8
 
                 Rectangle {
-                    width: 61; height: 36; radius: 8
+                    width: 61
+                    height: 36
+                    radius: 8
                     color: {
-                        if (cancelArea.pressed) return "#bedbff"
-                        if (cancelArea.containsMouse) return "#e8f8ff"
-                        return "white"
+                        if (cancelArea.pressed)
+                            return "#bedbff";
+                        if (cancelArea.containsMouse)
+                            return "#e8f8ff";
+                        return "white";
                     }
                     border.width: 1
                     border.color: {
-                        if (cancelArea.pressed) return "#add3e6"
-                        if (cancelArea.containsMouse) return "#79aecd"
-                        return "#cad5e2"
+                        if (cancelArea.pressed)
+                            return "#add3e6";
+                        if (cancelArea.containsMouse)
+                            return "#79aecd";
+                        return "#cad5e2";
                     }
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
 
                     Text {
                         anchors.centerIn: parent
@@ -891,22 +952,37 @@ Popup {
                         enabled: !root._encrypting
                         hoverEnabled: true
                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                        onClicked: { root.close(); root.cancelClicked() }
+                        onClicked: {
+                            root.close();
+                            root.cancelClicked();
+                        }
                     }
                 }
 
                 Rectangle {
                     width: encryptBtnText.implicitWidth + 24
-                    height: 36; radius: 8
+                    height: 36
+                    radius: 8
                     color: {
-                        if (root._pendingCount === 0) return "#0f4c81"
-                        if (encryptArea.pressed) return "#0f4c81"
-                        if (encryptArea.containsMouse) return Qt.lighter("#0f4c81", 1.15)
-                        return "#0f4c81"
+                        if (root._pendingCount === 0)
+                            return "#0f4c81";
+                        if (encryptArea.pressed)
+                            return "#0f4c81";
+                        if (encryptArea.containsMouse)
+                            return Qt.lighter("#0f4c81", 1.15);
+                        return "#0f4c81";
                     }
                     opacity: root._pendingCount > 0 && !root._encrypting ? 1.0 : 0.5
-                    Behavior on opacity { NumberAnimation { duration: 200 } }
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 200
+                        }
+                    }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
 
                     Text {
                         id: encryptBtnText
@@ -933,7 +1009,8 @@ Popup {
     // ---- Duplicate warning dialog ----
     Popup {
         id: duplicateDialog
-        width: 380; height: duplicateContent.implicitHeight + 40
+        width: 380
+        height: duplicateContent.implicitHeight + 40
         modal: true
         x: (parent ? (parent.width - width) / 2 : 0)
         y: (parent ? (parent.height - height) / 2 : 0)
@@ -975,7 +1052,9 @@ Popup {
                 anchors.right: parent.right
 
                 Rectangle {
-                    width: 60; height: 32; radius: 8
+                    width: 60
+                    height: 32
+                    radius: 8
                     color: Theme.Colors.primary
 
                     Text {
@@ -1039,15 +1118,15 @@ Popup {
                     anchors.top: parent.bottom
                     x: floatingTooltip.arrowOffsetX
                     onPaint: {
-                        var ctx = getContext("2d")
-                        ctx.reset()
-                        ctx.fillStyle = "#1e5a8e"
-                        ctx.beginPath()
-                        ctx.moveTo(0, 0)
-                        ctx.lineTo(5, 5)
-                        ctx.lineTo(10, 0)
-                        ctx.closePath()
-                        ctx.fill()
+                        var ctx = getContext("2d");
+                        ctx.reset();
+                        ctx.fillStyle = "#1e5a8e";
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(5, 5);
+                        ctx.lineTo(10, 0);
+                        ctx.closePath();
+                        ctx.fill();
                     }
                 }
             }
@@ -1055,6 +1134,6 @@ Popup {
     }
 
     // Signals
-    signal cancelClicked()
-    signal encryptClicked()
+    signal cancelClicked
+    signal encryptClicked
 }

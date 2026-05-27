@@ -1,4 +1,4 @@
-﻿pragma Singleton
+pragma Singleton
 import QtQuick 2.15
 import QtQml
 
@@ -23,24 +23,74 @@ QtObject {
 
     // Status colors
     readonly property var statusColors: ({
-        "待审核": { bg: "#fef3c6", border: "#fee685", text: "#bb4d00", dot: "#F0B100" },
-        "已授权": { bg: "#dcfce7", border: "#b9f8cf", text: "#008236", dot: "#00C950" },
-        "已拒绝": { bg: "#ffe2e2", border: "#ffc9c9", text: "#c10007", dot: "#D4183D" },
-        "创建失败": { bg: "#ffe2e2", border: "#ffc9c9", text: "#c10007", dot: "#D4183D" },
-        "正常":  { bg: "#dcfce7", border: "#b9f8cf", text: "#008236", dot: "#00C950" },
-        "运行中": { bg: "#dcfce7", border: "#b9f8cf", text: "#008236", dot: "#00C950" },
-        "已关闭": { bg: "#f1f5f9", border: "#e2e8f0", text: "#314158", dot: "#90A1B9" },
-        "停用":  { bg: "#ffe2e2", border: "#ffc9c9", text: "#c10007", dot: "#D4183D" },
-        "已停用": { bg: "#ffe2e2", border: "#ffc9c9", text: "#c10007", dot: "#D4183D" },
-        "已结束": { bg: "#f1f5f9", border: "#e2e8f0", text: "#314158", dot: "#90A1B9" }
-    })
+            "待审核": {
+                bg: "#fef3c6",
+                border: "#fee685",
+                text: "#bb4d00",
+                dot: "#F0B100"
+            },
+            "已授权": {
+                bg: "#dcfce7",
+                border: "#b9f8cf",
+                text: "#008236",
+                dot: "#00C950"
+            },
+            "已拒绝": {
+                bg: "#ffe2e2",
+                border: "#ffc9c9",
+                text: "#c10007",
+                dot: "#D4183D"
+            },
+            "创建失败": {
+                bg: "#ffe2e2",
+                border: "#ffc9c9",
+                text: "#c10007",
+                dot: "#D4183D"
+            },
+            "正常": {
+                bg: "#dcfce7",
+                border: "#b9f8cf",
+                text: "#008236",
+                dot: "#00C950"
+            },
+            "运行中": {
+                bg: "#dcfce7",
+                border: "#b9f8cf",
+                text: "#008236",
+                dot: "#00C950"
+            },
+            "已关闭": {
+                bg: "#f1f5f9",
+                border: "#e2e8f0",
+                text: "#314158",
+                dot: "#90A1B9"
+            },
+            "停用": {
+                bg: "#ffe2e2",
+                border: "#ffc9c9",
+                text: "#c10007",
+                dot: "#D4183D"
+            },
+            "已停用": {
+                bg: "#ffe2e2",
+                border: "#ffc9c9",
+                text: "#c10007",
+                dot: "#D4183D"
+            },
+            "已结束": {
+                bg: "#f1f5f9",
+                border: "#e2e8f0",
+                text: "#314158",
+                dot: "#90A1B9"
+            }
+        })
     readonly property var defaultStatusColor: ({
-        bg: "#f1f5f9",
-        border: "#e2e8f0",
-        text: "#314158",
-        dot: "#90A1B9"
-    })
-    
+            bg: "#f1f5f9",
+            border: "#e2e8f0",
+            text: "#314158",
+            dot: "#90A1B9"
+        })
+
     // Neutral colors
     readonly property color textPrimary: "#030213"
     readonly property color textSecondary: "#5A7C9B"
@@ -52,12 +102,12 @@ QtObject {
     readonly property color backgroundWhite: "#FFFFFF"
     readonly property color backgroundGray: "#f8fafc"
     readonly property color backgroundSidebar: "#f5f8fb"
-    
+
     // Form specific colors
     readonly property color requiredMarker: "#fb2c36"
     readonly property color textCounter: "#90a1b9"
     readonly property color buttonDisabled: "#E6E6E6"  // Use border color per spec
-    
+
     // Border colors (alias for consistency)
     readonly property color borderSlate: "#E6E6E6"  // Same as border per spec
 
@@ -72,24 +122,32 @@ QtObject {
 
     function getStatusColor(status) {
         if (!statusColors || !status) {
-            return defaultStatusColor
+            return defaultStatusColor;
         }
-        return statusColors[status] || defaultStatusColor
+        return statusColors[status] || defaultStatusColor;
     }
-    
+
     // Translate status from Chinese backend value to current-language display text
     function translateStatus(status) {
-        var s = (status || "").trim()
-        if (s === "正常")                               return qsTr("Normal")
-        if (s === "运行中")                              return qsTr("Running")
-        if (s === "已关闭")                               return qsTr("Closed")
-        if (s === "创建失败")                              return qsTr("Creation Failed")
-        if (s === "停用" || s === "已停用" || s === "停用中") return qsTr("Suspended")
-        if (s === "待审核")                               return qsTr("Pending Review")
-        if (s === "已授权")                               return qsTr("Authorized")
-        if (s === "已拒绝")                               return qsTr("Rejected")
-        if (s === "已结束")                               return qsTr("Ended")
-        return s
+        var s = (status || "").trim();
+        if (s === "正常")
+            return qsTr("Normal");
+        if (s === "运行中")
+            return qsTr("Running");
+        if (s === "已关闭")
+            return qsTr("Closed");
+        if (s === "创建失败")
+            return qsTr("Creation Failed");
+        if (s === "停用" || s === "已停用" || s === "停用中")
+            return qsTr("Suspended");
+        if (s === "待审核")
+            return qsTr("Pending Review");
+        if (s === "已授权")
+            return qsTr("Authorized");
+        if (s === "已拒绝")
+            return qsTr("Rejected");
+        if (s === "已结束")
+            return qsTr("Ended");
+        return s;
     }
 }
-

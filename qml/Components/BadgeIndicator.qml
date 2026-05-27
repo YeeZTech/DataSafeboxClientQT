@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 
 // 红色数字角标 — 项目内统一样式
 // 用法: BadgeIndicator { count: 5; x: 161 }

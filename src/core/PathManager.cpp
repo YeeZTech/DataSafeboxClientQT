@@ -10,12 +10,11 @@
 #include <QStandardPaths>
 #include <QUrl>
 
-PathManager::PathManager(QObject *parent)
-    : QObject(parent)
-    , m_cacheSizeBytes(0)
+PathManager::PathManager(QObject *parent) : QObject(parent), m_cacheSizeBytes(0)
 {
     m_rootDir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-    if (m_rootDir.isEmpty()) {
+    if (m_rootDir.isEmpty())
+    {
         m_rootDir = QCoreApplication::applicationDirPath();
     }
 
@@ -29,11 +28,15 @@ PathManager::PathManager(QObject *parent)
     // Use settings file in rootDir to avoid creating files in AppData\Roaming
     QSettings settings(QDir(m_rootDir).filePath("settings.ini"), QSettings::IniFormat);
     const QString configuredCacheDir = settings.value("paths/cacheDir").toString().trimmed();
-    if (!configuredCacheDir.isEmpty() && ensureDir(configuredCacheDir)) {
+    if (!configuredCacheDir.isEmpty() && ensureDir(configuredCacheDir))
+    {
         m_cacheDir = QDir::cleanPath(configuredCacheDir);
-    } else {
+    }
+    else
+    {
         m_cacheDir = QDir::cleanPath(m_defaultCacheDir);
-        if (!configuredCacheDir.isEmpty()) {
+        if (!configuredCacheDir.isEmpty())
+        {
             settings.remove("paths/cacheDir");
         }
     }
@@ -82,7 +85,8 @@ qint64 PathManager::cacheSizeBytes() const
 QString PathManager::featureDataDir(const QString &feature) const
 {
     const QString cleanedFeature = feature.trimmed();
-    if (cleanedFeature.isEmpty()) {
+    if (cleanedFeature.isEmpty())
+    {
         return m_dataDir;
     }
     const QString dirPath = QDir(m_dataDir).filePath(cleanedFeature);
@@ -93,7 +97,8 @@ QString PathManager::featureDataDir(const QString &feature) const
 QString PathManager::featureCacheDir(const QString &feature) const
 {
     const QString cleanedFeature = feature.trimmed();
-    if (cleanedFeature.isEmpty()) {
+    if (cleanedFeature.isEmpty())
+    {
         return m_cacheDir;
     }
     const QString dirPath = QDir(m_cacheDir).filePath(cleanedFeature);
@@ -104,7 +109,8 @@ QString PathManager::featureCacheDir(const QString &feature) const
 QString PathManager::featureTempDir(const QString &feature) const
 {
     const QString cleanedFeature = feature.trimmed();
-    if (cleanedFeature.isEmpty()) {
+    if (cleanedFeature.isEmpty())
+    {
         return m_tempDir;
     }
     const QString dirPath = QDir(m_tempDir).filePath(cleanedFeature);
@@ -115,17 +121,20 @@ QString PathManager::featureTempDir(const QString &feature) const
 bool PathManager::setTempDir(const QString &dirPath)
 {
     const QString trimmed = dirPath.trimmed();
-    if (trimmed.isEmpty()) {
+    if (trimmed.isEmpty())
+    {
         return false;
     }
 
-    if (!ensureDir(trimmed)) {
+    if (!ensureDir(trimmed))
+    {
         return false;
     }
 
     const QString normalized = QDir::cleanPath(trimmed);
 
-    if (normalized == m_cacheDir) {
+    if (normalized == m_cacheDir)
+    {
         return true;
     }
 
@@ -147,7 +156,8 @@ bool PathManager::setTempDir(const QString &dirPath)
 void PathManager::resetTempDir()
 {
     const QString normalizedDefault = QDir::cleanPath(m_defaultCacheDir);
-    if (QDir::cleanPath(m_cacheDir) == normalizedDefault) {
+    if (QDir::cleanPath(m_cacheDir) == normalizedDefault)
+    {
         return;
     }
 
@@ -174,7 +184,8 @@ bool PathManager::openTempDir()
 bool PathManager::openPath(const QString &path)
 {
     const QString cleaned = QDir::cleanPath(path);
-    if (!ensureDir(cleaned)) {
+    if (!ensureDir(cleaned))
+    {
         return false;
     }
     return QDesktopServices::openUrl(QUrl::fromLocalFile(cleaned));
@@ -183,7 +194,8 @@ bool PathManager::openPath(const QString &path)
 qint64 PathManager::refreshCacheSize()
 {
     const qint64 currentSize = calculateDirSize(m_cacheDir);
-    if (currentSize != m_cacheSizeBytes) {
+    if (currentSize != m_cacheSizeBytes)
+    {
         m_cacheSizeBytes = currentSize;
         emit cacheSizeChanged();
     }
@@ -204,7 +216,8 @@ qint64 PathManager::clearCache()
 bool PathManager::ensureDir(const QString &path)
 {
     QDir dir(path);
-    if (dir.exists()) {
+    if (dir.exists())
+    {
         return true;
     }
     return dir.mkpath(".");
@@ -213,13 +226,15 @@ bool PathManager::ensureDir(const QString &path)
 qint64 PathManager::calculateDirSize(const QString &path)
 {
     QDir dir(path);
-    if (!dir.exists()) {
+    if (!dir.exists())
+    {
         return 0;
     }
 
     qint64 size = 0;
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
+    while (it.hasNext())
+    {
         it.next();
         size += it.fileInfo().size();
     }
@@ -229,17 +244,22 @@ qint64 PathManager::calculateDirSize(const QString &path)
 bool PathManager::clearDirContents(const QString &path)
 {
     QDir dir(path);
-    if (!dir.exists()) {
+    if (!dir.exists())
+    {
         return true;
     }
 
     bool ok = true;
     const QFileInfoList entries = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries);
-    for (const QFileInfo &entry : entries) {
-        if (entry.isDir()) {
+    for (const QFileInfo &entry : entries)
+    {
+        if (entry.isDir())
+        {
             QDir child(entry.absoluteFilePath());
             ok = child.removeRecursively() && ok;
-        } else {
+        }
+        else
+        {
             ok = QFile::remove(entry.absoluteFilePath()) && ok;
         }
     }

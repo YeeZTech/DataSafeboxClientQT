@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "." as Theme
 
@@ -12,53 +12,49 @@ Popup {
 
     readonly property string reminderMessage: qsTr("Account overdue. Please recharge on the <a href=\"bill\"><u><b>My Bills</b></u></a> page to continue.")
     readonly property string instanceNamesText: {
-        var names = []
-
+        var names = [];
         function pushUnique(value) {
-            var text = (value || "").toString().trim()
+            var text = (value || "").toString().trim();
             if (!text) {
-                return
+                return;
             }
             if (names.indexOf(text) === -1) {
-                names.push(text)
+                names.push(text);
             }
         }
-
         if (root.focusInstanceNames && root.focusInstanceNames.length) {
             for (var i = 0; i < root.focusInstanceNames.length; i++) {
-                pushUnique(root.focusInstanceNames[i])
+                pushUnique(root.focusInstanceNames[i]);
             }
         }
-
         if (names.length === 0 && root.fallbackDomainCode && root.dataManager && root.dataManager.getInstanceNamesByDomainCode) {
-            var domainNames = root.dataManager.getInstanceNamesByDomainCode(root.fallbackDomainCode) || []
+            var domainNames = root.dataManager.getInstanceNamesByDomainCode(root.fallbackDomainCode) || [];
             for (var j = 0; j < domainNames.length; j++) {
-                pushUnique(domainNames[j])
+                pushUnique(domainNames[j]);
             }
         }
-
         if (names.length === 0) {
-            return "-"
+            return "-";
         }
         if (names.length <= 2) {
-            return names.join("、")
+            return names.join("、");
         }
-        return names[0] + "、" + names[1] + "..."
+        return names[0] + "、" + names[1] + "...";
     }
 
     readonly property string balanceText: {
         if (!root.dataManager || !root.dataManager.arrearsOverviewData) {
-            return "-"
+            return "-";
         }
-        var raw = root.dataManager.arrearsOverviewData.balance
+        var raw = root.dataManager.arrearsOverviewData.balance;
         if (raw === undefined || raw === null || raw === "") {
-            return "-"
+            return "-";
         }
-        var num = Number(raw)
+        var num = Number(raw);
         if (isNaN(num)) {
-            return String(raw)
+            return String(raw);
         }
-        return num.toFixed(2)
+        return num.toFixed(2);
     }
 
     parent: Overlay.overlay
@@ -146,16 +142,14 @@ Popup {
                 anchors.fill: reminderText
                 hoverEnabled: true
                 cursorShape: reminderText.linkAt(mouseX, mouseY) ? Qt.PointingHandCursor : Qt.ArrowCursor
-                onClicked: function(mouse) {
-                    var link = reminderText.linkAt(mouse.x, mouse.y)
+                onClicked: function (mouse) {
+                    var link = reminderText.linkAt(mouse.x, mouse.y);
                     if (!link) {
-                        return
+                        return;
                     }
-                    var targetUrl = (root.billUrl && root.billUrl.length > 0)
-                        ? root.billUrl
-                        : "https://test-dsbox.dianshudata.com/wallet"
-                    Qt.openUrlExternally(targetUrl)
-                    root.close()
+                    var targetUrl = (root.billUrl && root.billUrl.length > 0) ? root.billUrl : "https://test-dsbox.dianshudata.com/wallet";
+                    Qt.openUrlExternally(targetUrl);
+                    root.close();
                 }
             }
         }
@@ -198,18 +192,17 @@ Popup {
                 acceptedButtons: Qt.NoButton
             }
 
-            ToolTip.visible: instanceNamesHoverArea.containsMouse
-                             && instanceNamesValue.implicitWidth > instanceNamesValue.width
+            ToolTip.visible: instanceNamesHoverArea.containsMouse && instanceNamesValue.implicitWidth > instanceNamesValue.width
             ToolTip.text: root.instanceNamesText
             ToolTip.delay: 300
         }
 
         Text {
+            id: amountText
             anchors.left: parent.left
             anchors.leftMargin: 51
             anchors.top: parent.top
             anchors.topMargin: 188
-            id: amountText
             font.pixelSize: 14
             color: "#314158"
             textFormat: Text.RichText

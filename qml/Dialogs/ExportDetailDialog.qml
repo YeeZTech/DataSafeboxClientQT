@@ -1,4 +1,4 @@
-﻿import QtQuick 2.15
+import QtQuick 2.15
 import QtQuick.Controls 2.15
 import "." as Theme
 
@@ -10,7 +10,7 @@ Popup {
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     x: (parent ? (parent.width - width) / 2 : 0)
     y: (parent ? (parent.height - height) / 2 : 0)
-    
+
     // Properties for export detail data
     property string exportId: ""
     property string fileCode: ""   // fileCode of the single file in this export apply
@@ -25,7 +25,7 @@ Popup {
     property string reason: ""
     property bool isCreator: false
     property bool allowApproveReject: true  // If true, show approve/reject buttons for pending status (from SecurityDomainDetail)
-                                           // If false, always show close button (from SecurityInstanceDetail)
+    // If false, always show close button (from SecurityInstanceDetail)
     readonly property int fileListRowHeight: 20
     readonly property int fileListRowSpacing: 8
     readonly property int fileListVerticalPadding: 26  // 13px top/bottom margins inside ScrollView
@@ -41,66 +41,67 @@ Popup {
     }
 
     readonly property real reasonMaxContentHeight: reasonFontMetrics.height * reasonMaxVisibleLines
-    
+
     // Signals
-    signal approveClicked()
-    signal rejectClicked()
-    signal cancelClicked()
-    
+    signal approveClicked
+    signal rejectClicked
+    signal cancelClicked
+
     readonly property var statusStyle: Theme.Colors.getStatusColor(status)
 
     function formatApplyTimeToMinute(raw) {
-        var s = (raw || "").toString().trim()
-        if (!s) return ""
+        var s = (raw || "").toString().trim();
+        if (!s)
+            return "";
 
         // Match: yyyy-MM-dd HH:mm[:ss]
-        var m = s.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})(?::\d{2})?$/)
-        if (m) return m[1] + " " + m[2]
+        var m = s.match(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})(?::\d{2})?$/);
+        if (m)
+            return m[1] + " " + m[2];
 
         // Match ISO: yyyy-MM-ddTHH:mm[:ss][.sss][Z|+08:00]
-        var iso = s.match(/^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})(?::\d{2})?/)
-        if (iso) return iso[1] + " " + iso[2]
-
-        return s
+        var iso = s.match(/^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})(?::\d{2})?/);
+        if (iso)
+            return iso[1] + " " + iso[2];
+        return s;
     }
 
     function formatFileSizeLowercase(bytesValue) {
-        var s = (Theme.Utils.formatSize(bytesValue) || "").toString().trim()
+        var s = (Theme.Utils.formatSize(bytesValue) || "").toString().trim();
         // Normalize units to lowercase, including single-byte unit "B" -> "b"
-        return s.replace(/\b([KMGT]?B)\b/g, function(unit) {
-            return unit.toLowerCase()
-        })
+        return s.replace(/\b([KMGT]?B)\b/g, function (unit) {
+            return unit.toLowerCase();
+        });
     }
-    
-    function calculateFileListHeight() {
-        var count = root.files ? root.files.length : 0
-        if (count < 1)
-            count = 1  // keep a minimal footprint even when there are no files
 
-        var contentHeight = (count * fileListRowHeight) + ((count - 1) * fileListRowSpacing)
-        var totalHeight = contentHeight + fileListVerticalPadding
-        return Math.min(fileListMaxHeight, totalHeight)
+    function calculateFileListHeight() {
+        var count = root.files ? root.files.length : 0;
+        if (count < 1)
+            count = 1;  // keep a minimal footprint even when there are no files
+
+        var contentHeight = (count * fileListRowHeight) + ((count - 1) * fileListRowSpacing);
+        var totalHeight = contentHeight + fileListVerticalPadding;
+        return Math.min(fileListMaxHeight, totalHeight);
     }
 
     function calculateReasonSectionHeight() {
         // If no reason, return 0 to hide the entire section
         if (!root.reason || root.reason.length === 0) {
-            return 0
+            return 0;
         }
-        
         if (!reasonColumn || !reasonBox || !reasonLabel) {
-            return 0
+            return 0;
         }
-        var labelHeight = reasonLabel.implicitHeight || 0
-        var boxHeight = Math.max(48, Math.min(reasonMaxContentHeight + 24, reasonText.implicitHeight + 24))
-        var spacing = reasonColumn.spacing || 0
-        return reasonSectionTopSpacing + labelHeight + spacing + boxHeight
+        var labelHeight = reasonLabel.implicitHeight || 0;
+        var boxHeight = Math.max(48, Math.min(reasonMaxContentHeight + 24, reasonText.implicitHeight + 24));
+        var spacing = reasonColumn.spacing || 0;
+        return reasonSectionTopSpacing + labelHeight + spacing + boxHeight;
     }
-    
+
     // Remove default Popup background and border
     background: null
     padding: 0
-    
+
     // Main dialog container
     Rectangle {
         anchors.fill: parent
@@ -108,7 +109,7 @@ Popup {
         color: Theme.Colors.backgroundWhite
         border.color: Qt.rgba(0, 0, 0, 0.1)
         border.width: 1
-        
+
         Column {
             id: mainColumn
             anchors.top: parent.top
@@ -146,8 +147,8 @@ Popup {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.close()
-                            root.cancelClicked()
+                            root.close();
+                            root.cancelClicked();
                         }
                     }
 
@@ -159,7 +160,7 @@ Popup {
                     }
                 }
             }
-            
+
             // Spacing between title and content
             Item {
                 width: parent.width
@@ -171,19 +172,19 @@ Popup {
                 Row {
                     width: parent.width
                     spacing: 16
-                    
+
                     // Application Number column
                     Column {
                         width: (parent.width - 16) / 2  // 2 columns with 16px gap
                         spacing: 4
-                        
+
                         SelectableText {
                             text: qsTr("Application No.")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
                         }
-                        
+
                         Text {
                             width: parent.width
                             text: root.exportId
@@ -194,12 +195,12 @@ Popup {
                             wrapMode: Text.NoWrap
                         }
                     }
-                    
+
                     // Status column
                     Column {
                         width: (parent.width - 16) / 2
                         spacing: 4
-                        
+
                         SelectableText {
                             text: qsTr("Status")
                             font.pixelSize: 14
@@ -213,7 +214,7 @@ Popup {
                             color: statusStyle.bg
                             border.color: statusStyle.border
                             border.width: 1
-                            
+
                             SelectableText {
                                 id: exportStatusText
                                 anchors.centerIn: parent
@@ -228,19 +229,19 @@ Popup {
                 Row {
                     width: parent.width
                     spacing: 16
-                    
+
                     // Applicant column
                     Column {
                         width: (parent.width - 16) / 2
                         spacing: 4
-                        
+
                         SelectableText {
                             text: qsTr("Applicant")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
                         }
-                        
+
                         Text {
                             width: parent.width
                             text: root.applicant
@@ -251,19 +252,19 @@ Popup {
                             wrapMode: Text.NoWrap
                         }
                     }
-                    
+
                     // Application Time column
                     Column {
                         width: (parent.width - 16) / 2
                         spacing: 4
-                        
+
                         SelectableText {
                             text: qsTr("Application Time")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
                         }
-                        
+
                         SelectableText {
                             text: root.formatApplyTimeToMinute(root.applyTime)
                             font.pixelSize: 16
@@ -275,19 +276,19 @@ Popup {
                 Row {
                     width: parent.width
                     spacing: 16
-                    
+
                     // File Count column
                     Column {
                         width: (parent.width - 16) / 2
                         spacing: 4
-                        
+
                         SelectableText {
                             text: qsTr("File Count")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
                         }
-                        
+
                         SelectableText {
                             text: root.fileCount.toString()
                             font.pixelSize: 16
@@ -295,19 +296,19 @@ Popup {
                             font.letterSpacing: -0.31
                         }
                     }
-                    
+
                     // File Size column
                     Column {
                         width: (parent.width - 16) / 2
                         spacing: 4
-                        
+
                         SelectableText {
                             text: qsTr("File Size")
                             font.pixelSize: 14
                             color: "#62748e"
                             font.letterSpacing: -0.15
                         }
-                        
+
                         SelectableText {
                             text: root.formatFileSizeLowercase(root.fileSize)
                             font.pixelSize: 16
@@ -319,14 +320,14 @@ Popup {
                 Column {
                     width: parent.width
                     spacing: 8
-                    
+
                     SelectableText {
                         text: qsTr("Files Requested for Export")
                         font.pixelSize: 14
                         color: "#62748e"
                         font.letterSpacing: -0.15
                     }
-                    
+
                     // File list container - dynamic height up to 158px based on file count
                     Rectangle {
                         width: parent.width
@@ -335,23 +336,23 @@ Popup {
                         color: "transparent"
                         border.color: "#cad5e2"
                         border.width: 1
-                        
+
                         // Scrollable file list
                         ScrollView {
                             anchors.fill: parent
                             anchors.margins: 13
                             clip: true
-                            
+
                             ScrollBar.vertical.policy: ScrollBar.AsNeeded
                             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                            
+
                             Column {
                                 width: parent.parent.width - 26  // Account for margins (13px * 2)
                                 spacing: 8
-                                
+
                                 Repeater {
                                     model: root.files
-                                    
+
                                     delegate: Row {
                                         width: parent.width
                                         height: 20
@@ -364,12 +365,11 @@ Popup {
                                             sourceSize.width: 16
                                             sourceSize.height: 16
                                         }
-                                        
+
                                         Text {
                                             width: parent.width - 16 - 8  // subtract icon width and spacing
                                             anchors.verticalCenter: parent.verticalCenter
-                                            text: (typeof modelData === "string") ? modelData
-                                                  : (modelData.fileName || modelData.filePath || modelData.name || "")
+                                            text: (typeof modelData === "string") ? modelData : (modelData.fileName || modelData.filePath || modelData.name || "")
                                             font.pixelSize: 14
                                             color: "#000000"
                                             font.letterSpacing: -0.15
@@ -383,7 +383,7 @@ Popup {
                     }
                 }
             }
-            
+
             Item {
                 width: parent.width
                 height: reasonSectionTopSpacing
@@ -445,7 +445,7 @@ Popup {
                     }
                 }
             }
-            
+
             // Spacer between reason section and buttons
             Item {
                 width: parent.width
@@ -472,7 +472,11 @@ Popup {
                         color: pressed ? "#ffe9e9" : (hovered ? "#fff5f5" : Theme.Colors.backgroundWhite)
                         border.color: pressed ? "#ff6b6b" : (hovered ? "#ff9090" : "#ffa2a2")
                         border.width: 1
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
 
                         SelectableText {
                             anchors.centerIn: parent
@@ -494,8 +498,8 @@ Popup {
                             onReleased: parent.pressed = false
                             onCanceled: parent.pressed = false
                             onClicked: {
-                                root.rejectClicked()
-                                root.close()
+                                root.rejectClicked();
+                                root.close();
                             }
                         }
                     }
@@ -504,11 +508,17 @@ Popup {
                         height: 36
                         radius: 8
                         color: {
-                            if (approveArea.pressed) return "#0a3d6b"
-                            if (approveArea.containsMouse) return "#0d5a95"
-                            return "#0f4c81"
+                            if (approveArea.pressed)
+                                return "#0a3d6b";
+                            if (approveArea.containsMouse)
+                                return "#0d5a95";
+                            return "#0f4c81";
                         }
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
                         visible: root.allowApproveReject && root.isCreator && root.status === "待审核"
 
                         SelectableText {
@@ -526,16 +536,18 @@ Popup {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                root.approveClicked()
-                                root.close()
+                                root.approveClicked();
+                                root.close();
                             }
                         }
                     }
                 }
             }
 
-            Item { width: parent.width; height: 12 }
+            Item {
+                width: parent.width
+                height: 12
+            }
         }
     }
-
 }

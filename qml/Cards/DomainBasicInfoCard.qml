@@ -16,9 +16,9 @@ Rectangle {
     property string domainCreatorText: ""
     property string payerText: ""
 
-    signal editDescriptionRequested()
+    signal editDescriptionRequested
     signal saveDescriptionRequested(string text)
-    signal cancelDescriptionRequested()
+    signal cancelDescriptionRequested
 
     width: parent ? parent.width : 200
     height: 48 + basicInfoColumn.implicitHeight
@@ -99,8 +99,8 @@ Rectangle {
 
                 Rectangle {
                     width: {
-                        var statusText = card.domainData.status || ""
-                        return Math.max(60, statusText.length * 14 + 18)
+                        var statusText = card.domainData.status || "";
+                        return Math.max(60, statusText.length * 14 + 18);
                     }
                     height: 28
                     radius: 8
@@ -195,15 +195,15 @@ Rectangle {
                                 x: payerTooltip.arrowX
 
                                 onPaint: {
-                                    var ctx = getContext("2d")
-                                    ctx.reset()
-                                    ctx.fillStyle = "#1e5a8e"
-                                    ctx.beginPath()
-                                    ctx.moveTo(0, 0)
-                                    ctx.lineTo(6, 6)
-                                    ctx.lineTo(12, 0)
-                                    ctx.closePath()
-                                    ctx.fill()
+                                    var ctx = getContext("2d");
+                                    ctx.reset();
+                                    ctx.fillStyle = "#1e5a8e";
+                                    ctx.beginPath();
+                                    ctx.moveTo(0, 0);
+                                    ctx.lineTo(6, 6);
+                                    ctx.lineTo(12, 0);
+                                    ctx.closePath();
+                                    ctx.fill();
                                 }
                             }
 
@@ -256,11 +256,17 @@ Rectangle {
                     property bool hovered: false
                     property bool pressed: false
                     color: {
-                        if (pressed) return "#c1d9ef"
-                        if (hovered) return "#eaf2fb"
-                        return "transparent"
+                        if (pressed)
+                            return "#c1d9ef";
+                        if (hovered)
+                            return "#eaf2fb";
+                        return "transparent";
                     }
-                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 150
+                        }
+                    }
 
                     Row {
                         anchors.left: parent.left
@@ -288,17 +294,17 @@ Rectangle {
                                 visible: card.isEditingDescription
 
                                 onPaint: {
-                                    var ctx = getContext("2d")
-                                    ctx.reset()
-                                    ctx.strokeStyle = Theme.Colors.primary
-                                    ctx.lineWidth = 2
-                                    ctx.lineCap = "round"
-                                    ctx.lineJoin = "round"
-                                    ctx.beginPath()
-                                    ctx.moveTo(3, 8)
-                                    ctx.lineTo(6, 11)
-                                    ctx.lineTo(13, 4)
-                                    ctx.stroke()
+                                    var ctx = getContext("2d");
+                                    ctx.reset();
+                                    ctx.strokeStyle = Theme.Colors.primary;
+                                    ctx.lineWidth = 2;
+                                    ctx.lineCap = "round";
+                                    ctx.lineJoin = "round";
+                                    ctx.beginPath();
+                                    ctx.moveTo(3, 8);
+                                    ctx.lineTo(6, 11);
+                                    ctx.lineTo(13, 4);
+                                    ctx.stroke();
                                 }
                             }
                         }
@@ -319,23 +325,34 @@ Rectangle {
                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                         onEntered: parent.hovered = true
                         onExited: parent.hovered = false
-                        onPressed: { parent.pressed = true; if (card.isEditingDescription) card._savingFromButton = true }
-                        onReleased: { parent.pressed = false; card._savingFromButton = false }
-                        onCanceled: { parent.pressed = false; card._savingFromButton = false }
+                        onPressed: {
+                            parent.pressed = true;
+                            if (card.isEditingDescription)
+                                card._savingFromButton = true;
+                        }
+                        onReleased: {
+                            parent.pressed = false;
+                            card._savingFromButton = false;
+                        }
+                        onCanceled: {
+                            parent.pressed = false;
+                            card._savingFromButton = false;
+                        }
                         onClicked: {
-                            if (card.isDomainReadOnly || card.isDescriptionSaving) return
+                            if (card.isDomainReadOnly || card.isDescriptionSaving)
+                                return;
                             if (card.isEditingDescription) {
                                 if ((card.editedDescription || "").length > card.descriptionMaxLength) {
-                                    card.descriptionErrorMessage = qsTr("Description cannot exceed 500 characters")
-                                    return
+                                    card.descriptionErrorMessage = qsTr("Description cannot exceed 500 characters");
+                                    return;
                                 }
-                                card.descriptionErrorMessage = ""
-                                card.saveDescriptionRequested(card.editedDescription)
+                                card.descriptionErrorMessage = "";
+                                card.saveDescriptionRequested(card.editedDescription);
                             } else {
-                                card._originalDescription = card.domainData.description || ""
-                                card.editedDescription = card._originalDescription
-                                card.descriptionErrorMessage = ""
-                                card.editDescriptionRequested()
+                                card._originalDescription = card.domainData.description || "";
+                                card.editedDescription = card._originalDescription;
+                                card.descriptionErrorMessage = "";
+                                card.editDescriptionRequested();
                             }
                         }
                     }
@@ -351,22 +368,28 @@ Rectangle {
 
                 height: {
                     if (card.isEditingDescription) {
-                        var textAreaHeight = descriptionTextArea.contentHeight > 0 ? descriptionTextArea.contentHeight : 25
-                        return Math.max(minHeight, textAreaHeight + padding + 4)
+                        var textAreaHeight = descriptionTextArea.contentHeight > 0 ? descriptionTextArea.contentHeight : 25;
+                        return Math.max(minHeight, textAreaHeight + padding + 4);
                     } else {
-                        return Math.max(minHeight, descriptionText.implicitHeight + padding)
+                        return Math.max(minHeight, descriptionText.implicitHeight + padding);
                     }
                 }
                 radius: 8
                 color: {
-                    if (!card.isEditingDescription) return Theme.Colors.inputBackground
-                    if (descriptionTextArea.activeFocus) return Theme.Colors.backgroundWhite
-                    return descriptionHoverArea.containsMouse ? "#e9eef6" : Theme.Colors.backgroundWhite
+                    if (!card.isEditingDescription)
+                        return Theme.Colors.inputBackground;
+                    if (descriptionTextArea.activeFocus)
+                        return Theme.Colors.backgroundWhite;
+                    return descriptionHoverArea.containsMouse ? "#e9eef6" : Theme.Colors.backgroundWhite;
                 }
                 border.color: "#cad5e2"
                 border.width: card.isEditingDescription ? 1 : 0
                 antialiasing: true
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
 
                 SelectableText {
                     id: descriptionText
@@ -406,30 +429,31 @@ Rectangle {
                     visible: card.isEditingDescription
 
                     onTextChanged: {
-                        card.editedDescription = text
+                        card.editedDescription = text;
                         if ((text || "").length > card.descriptionMaxLength) {
-                            card.descriptionErrorMessage = qsTr("Description cannot exceed 500 characters")
+                            card.descriptionErrorMessage = qsTr("Description cannot exceed 500 characters");
                         } else {
-                            card.descriptionErrorMessage = ""
+                            card.descriptionErrorMessage = "";
                         }
                     }
 
                     Keys.onEscapePressed: {
-                        card.editedDescription = card._originalDescription
-                        card.descriptionErrorMessage = ""
-                        card.cancelDescriptionRequested()
+                        card.editedDescription = card._originalDescription;
+                        card.descriptionErrorMessage = "";
+                        card.cancelDescriptionRequested();
                     }
 
                     onActiveFocusChanged: {
                         if (!activeFocus && card.isEditingDescription && !card._savingFromButton) {
-                            card.editedDescription = card._originalDescription
-                            card.descriptionErrorMessage = ""
-                            card.cancelDescriptionRequested()
+                            card.editedDescription = card._originalDescription;
+                            card.descriptionErrorMessage = "";
+                            card.cancelDescriptionRequested();
                         }
                     }
 
                     Component.onCompleted: {
-                        if (card.isEditingDescription) forceActiveFocus()
+                        if (card.isEditingDescription)
+                            forceActiveFocus();
                     }
                 }
 
@@ -458,8 +482,8 @@ Rectangle {
                     target: card
                     function onIsEditingDescriptionChanged() {
                         if (card.isEditingDescription) {
-                            descriptionTextArea.forceActiveFocus()
-                            descriptionTextArea.selectAll()
+                            descriptionTextArea.forceActiveFocus();
+                            descriptionTextArea.selectAll();
                         }
                     }
                 }

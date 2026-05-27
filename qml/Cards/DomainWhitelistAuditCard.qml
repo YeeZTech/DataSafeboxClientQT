@@ -12,7 +12,9 @@ Rectangle {
     property int actionTextWeight: Font.Medium
 
     signal viewAuditRequested(var auditData)
-    function resetPage() { currentPage = 1 }
+    function resetPage() {
+        currentPage = 1;
+    }
 
     property int auditCount: audits ? audits.length : 0
     property int currentPage: 1
@@ -28,9 +30,17 @@ Rectangle {
     }
 
     function normalizeCurrentPage() {
-        if (totalPages <= 0) { if (currentPage !== 1) currentPage = 1; return }
-        if (currentPage < 1) { currentPage = 1; return }
-        if (currentPage > totalPages) currentPage = totalPages
+        if (totalPages <= 0) {
+            if (currentPage !== 1)
+                currentPage = 1;
+            return;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+            return;
+        }
+        if (currentPage > totalPages)
+            currentPage = totalPages;
     }
     onAuditCountChanged: normalizeCurrentPage()
     onTotalPagesChanged: normalizeCurrentPage()
@@ -203,9 +213,9 @@ Rectangle {
 
                 Repeater {
                     model: {
-                        var list = card.audits || []
-                        var start = (card.currentPage - 1) * card.itemsPerPage
-                        return list.slice(start, Math.min(start + card.itemsPerPage, list.length))
+                        var list = card.audits || [];
+                        var start = (card.currentPage - 1) * card.itemsPerPage;
+                        return list.slice(start, Math.min(start + card.itemsPerPage, list.length));
                     }
 
                     Rectangle {
@@ -342,8 +352,9 @@ Rectangle {
                                         active: statusText.truncated && wlStatusHover.containsMouse
                                         sourceComponent: wlStatusTooltipComp
                                         onLoaded: {
-                                            var win = whitelistStatusBadge.Window.window
-                                            if (win && item) item.parent = win.contentItem
+                                            var win = whitelistStatusBadge.Window.window;
+                                            if (win && item)
+                                                item.parent = win.contentItem;
                                         }
                                     }
                                     Component {
@@ -352,23 +363,26 @@ Rectangle {
                                             id: wlTip
                                             z: 99999
                                             property point cellTL: {
-                                                var win = whitelistStatusBadge.Window.window
-                                                if (!win) return Qt.point(0, 0)
-                                                return whitelistStatusBadge.mapToItem(win.contentItem, 0, 0)
+                                                var win = whitelistStatusBadge.Window.window;
+                                                if (!win)
+                                                    return Qt.point(0, 0);
+                                                return whitelistStatusBadge.mapToItem(win.contentItem, 0, 0);
                                             }
                                             property real anchorX: {
-                                                var win = whitelistStatusBadge.Window.window
-                                                if (!win) return 0
-                                                return whitelistStatusBadge.mapToItem(win.contentItem, whitelistStatusBadge.width * 0.5, 0).x
+                                                var win = whitelistStatusBadge.Window.window;
+                                                if (!win)
+                                                    return 0;
+                                                return whitelistStatusBadge.mapToItem(win.contentItem, whitelistStatusBadge.width * 0.5, 0).x;
                                             }
                                             readonly property real arrowSz: 6
                                             readonly property real winW: whitelistStatusBadge.Window.window ? whitelistStatusBadge.Window.window.width : 800
                                             readonly property real winH: whitelistStatusBadge.Window.window ? whitelistStatusBadge.Window.window.height : 600
                                             readonly property rect bRect: {
-                                                var win = whitelistStatusBadge.Window.window
-                                                if (!win) return Qt.rect(0, 0, winW, winH)
-                                                var tl = card.mapToItem(win.contentItem, 0, 0)
-                                                return Qt.rect(tl.x, tl.y, card.width, card.height)
+                                                var win = whitelistStatusBadge.Window.window;
+                                                if (!win)
+                                                    return Qt.rect(0, 0, winW, winH);
+                                                var tl = card.mapToItem(win.contentItem, 0, 0);
+                                                return Qt.rect(tl.x, tl.y, card.width, card.height);
                                             }
                                             readonly property real bW: Math.min(400, wlTipText.implicitWidth + 18)
                                             readonly property real bH: wlTipText.implicitHeight + 16
@@ -381,29 +395,58 @@ Rectangle {
                                             y: (wlTip.flip ? (cellTL.y + whitelistStatusBadge.height) : (cellTL.y - bH - arrowSz)) + 5
                                             opacity: 0
                                             Component.onCompleted: opacity = 1
-                                            Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                                            Behavior on opacity {
+                                                NumberAnimation {
+                                                    duration: 120
+                                                    easing.type: Easing.OutCubic
+                                                }
+                                            }
                                             Rectangle {
                                                 id: wlBubble
-                                                x: 0; y: wlTip.flip ? wlTip.arrowSz : 0
-                                                width: wlTip.bW; height: wlTip.bH
-                                                color: "#1e5a8e"; radius: 4
+                                                x: 0
+                                                y: wlTip.flip ? wlTip.arrowSz : 0
+                                                width: wlTip.bW
+                                                height: wlTip.bH
+                                                color: "#1e5a8e"
+                                                radius: 4
                                                 Text {
                                                     id: wlTipText
-                                                    anchors { left: parent.left; leftMargin: 9; right: parent.right; rightMargin: 9; top: parent.top; topMargin: 8 }
+                                                    anchors {
+                                                        left: parent.left
+                                                        leftMargin: 9
+                                                        right: parent.right
+                                                        rightMargin: 9
+                                                        top: parent.top
+                                                        topMargin: 8
+                                                    }
                                                     text: Theme.Colors.translateStatus(modelData.status || "")
-                                                    color: "white"; font.pixelSize: 13
-                                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere; maximumLineCount: 999
+                                                    color: "white"
+                                                    font.pixelSize: 13
+                                                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                                                    maximumLineCount: 999
                                                 }
                                             }
                                             Canvas {
-                                                width: wlTip.arrowSz * 2; height: wlTip.arrowSz
-                                                x: wlTip.arrX; y: wlTip.flip ? 0 : wlTip.bH
+                                                width: wlTip.arrowSz * 2
+                                                height: wlTip.arrowSz
+                                                x: wlTip.arrX
+                                                y: wlTip.flip ? 0 : wlTip.bH
                                                 onPaint: {
-                                                    var ctx = getContext("2d"); ctx.reset()
-                                                    ctx.fillStyle = "#1e5a8e"; ctx.beginPath()
-                                                    if (wlTip.flip) { ctx.moveTo(width*0.5,0); ctx.lineTo(0,height); ctx.lineTo(width,height) }
-                                                    else { ctx.moveTo(0,0); ctx.lineTo(width*0.5,height); ctx.lineTo(width,0) }
-                                                    ctx.closePath(); ctx.fill()
+                                                    var ctx = getContext("2d");
+                                                    ctx.reset();
+                                                    ctx.fillStyle = "#1e5a8e";
+                                                    ctx.beginPath();
+                                                    if (wlTip.flip) {
+                                                        ctx.moveTo(width * 0.5, 0);
+                                                        ctx.lineTo(0, height);
+                                                        ctx.lineTo(width, height);
+                                                    } else {
+                                                        ctx.moveTo(0, 0);
+                                                        ctx.lineTo(width * 0.5, height);
+                                                        ctx.lineTo(width, 0);
+                                                    }
+                                                    ctx.closePath();
+                                                    ctx.fill();
                                                 }
                                                 Component.onCompleted: requestPaint()
                                             }

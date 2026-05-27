@@ -1,26 +1,26 @@
 ﻿#ifndef ARREARSMANAGER_H
 #define ARREARSMANAGER_H
 
+#include "AppConfig.h"
 #include <QObject>
 #include <QString>
 #include <QVariantMap>
-#include "AppConfig.h"
 
 class QNetworkAccessManager;
 
 class ArrearsManager : public QObject
 {
     Q_OBJECT
-public:
+  public:
     explicit ArrearsManager(QObject *parent = nullptr);
 
     Q_INVOKABLE void getArrearsOverview(const QString &token);
 
-signals:
+  signals:
     void arrearsOverviewFetched(const QVariantMap &result);
     void arrearsOverviewFetchFailed(const QString &error);
 
-private:
+  private:
     QNetworkAccessManager *m_network;
 };
 

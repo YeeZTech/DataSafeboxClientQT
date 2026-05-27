@@ -1,4 +1,4 @@
-﻿import QtQuick
+import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
@@ -11,10 +11,10 @@ Dialog {
     standardButtons: Dialog.NoButton
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     padding: 0
-    
+
     width: 448
     height: bgRect.height
-    
+
     background: Rectangle {
         id: bgRect
         color: "white"
@@ -35,11 +35,11 @@ Dialog {
     signal importSuccess(string filePath)
 
     function openForInstance(targetInstance, privateKey, basePath) {
-        instanceName = targetInstance || ""
-        domainPrivateKey = privateKey || ""
-        instanceBasePath = basePath || ""
-        selectedFile = ""
-        open()
+        instanceName = targetInstance || "";
+        domainPrivateKey = privateKey || "";
+        instanceBasePath = basePath || "";
+        selectedFile = "";
+        open();
     }
 
     FileDialog {
@@ -47,31 +47,31 @@ Dialog {
         title: qsTr("Select file to import")
         fileMode: FileDialog.OpenFile
         onAccepted: {
-            var url = selectedFile.toString()
+            var url = selectedFile.toString();
             if (url.startsWith("file:///")) {
-                root.selectedFile = decodeURIComponent(url.substring(8))
+                root.selectedFile = decodeURIComponent(url.substring(8));
             } else if (url.startsWith("file://")) {
-                root.selectedFile = decodeURIComponent(url.substring(7))
+                root.selectedFile = decodeURIComponent(url.substring(7));
             } else {
-                root.selectedFile = decodeURIComponent(url)
+                root.selectedFile = decodeURIComponent(url);
             }
         }
     }
 
     contentItem: Item {
         anchors.fill: parent
-        
+
         Column {
             id: mainLayout
             anchors.centerIn: parent
             width: parent.width - 50 // 25 left + 25 right padding
             spacing: 0
-            
+
             // Header with Title and Close button
             Item {
                 width: parent.width
                 height: 24
-                
+
                 SelectableText {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
@@ -115,7 +115,10 @@ Dialog {
             }
 
             // Margin after header
-            Item { width: parent.width; height: 16 }
+            Item {
+                width: parent.width
+                height: 16
+            }
 
             // Content Area - File Selection
             Column {
@@ -194,7 +197,10 @@ Dialog {
             }
 
             // Margin before buttons
-            Item { width: parent.width; height: 24 }
+            Item {
+                width: parent.width
+                height: 24
+            }
 
             // Bottom Buttons
             Item {
@@ -211,18 +217,30 @@ Dialog {
                         height: 36
                         radius: 8
                         color: {
-                            if (cancelArea.pressed) return "#bedbff"
-                            if (cancelArea.containsMouse) return "#e8f8ff"
-                            return "white"
+                            if (cancelArea.pressed)
+                                return "#bedbff";
+                            if (cancelArea.containsMouse)
+                                return "#e8f8ff";
+                            return "white";
                         }
                         border.width: 1
                         border.color: {
-                            if (cancelArea.pressed) return "#add3e6"
-                            if (cancelArea.containsMouse) return "#79aecd"
-                            return "#cad5e2"
+                            if (cancelArea.pressed)
+                                return "#add3e6";
+                            if (cancelArea.containsMouse)
+                                return "#79aecd";
+                            return "#cad5e2";
                         }
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
 
                         Text {
                             anchors.centerIn: parent
@@ -231,7 +249,7 @@ Dialog {
                             font.weight: Font.Medium
                             color: "#314158"
                         }
-                        
+
                         MouseArea {
                             id: cancelArea
                             anchors.fill: parent
@@ -258,10 +276,10 @@ Dialog {
                             cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                             onClicked: {
                                 if (root.selectedFile.length > 0) {
-                                    progressDialog.progressTitle = qsTr("Importing...")
-                                    progressDialog.progress = 0
-                                    progressDialog.open()
-                                    root.importStarted(root.selectedFile)
+                                    progressDialog.progressTitle = qsTr("Importing...");
+                                    progressDialog.progress = 0;
+                                    progressDialog.open();
+                                    root.importStarted(root.selectedFile);
                                 }
                             }
                         }
@@ -278,7 +296,7 @@ Dialog {
             }
         }
     }
-    
+
     // Progress dialog for decryption
     Popup {
         id: progressDialog
@@ -288,10 +306,10 @@ Dialog {
         closePolicy: Popup.NoAutoClose
         x: (root.width - width) / 2
         y: (root.height - height) / 2
-        
+
         property int progress: 0
         property string progressTitle: qsTr("Importing...")
-        
+
         Timer {
             id: progressPollTimer
             interval: 200
@@ -299,38 +317,38 @@ Dialog {
             repeat: true
             onTriggered: {
                 if (progressDialog.progress < 100) {
-                    progressDialog.progress = Math.min(100, progressDialog.progress + 20)
+                    progressDialog.progress = Math.min(100, progressDialog.progress + 20);
                 } else {
-                    progressPollTimer.stop()
-                    progressDialog.close()
-                    successDialog.message = qsTr("Import successful")
-                    successDialog.open()
+                    progressPollTimer.stop();
+                    progressDialog.close();
+                    successDialog.message = qsTr("Import successful");
+                    successDialog.open();
                 }
             }
         }
-        
+
         onOpened: {
-            progress = 0
-            progressPollTimer.start()
+            progress = 0;
+            progressPollTimer.start();
         }
-        
+
         onClosed: {
-            progressPollTimer.stop()
-            progress = 0
+            progressPollTimer.stop();
+            progress = 0;
         }
-        
+
         background: Rectangle {
             radius: 10
             color: "white"
             border.color: Qt.rgba(0, 0, 0, 0.1)
             border.width: 1
         }
-        
+
         Column {
             anchors.fill: parent
             anchors.margins: 20
             spacing: 16
-            
+
             SelectableText {
                 width: parent.width
                 text: progressDialog.progressTitle
@@ -339,7 +357,7 @@ Dialog {
                 color: "#0f172b"
                 horizontalAlignment: Text.AlignHCenter
             }
-            
+
             ProgressBar {
                 id: progressBar
                 width: Math.min(parent.width, 320)
@@ -348,7 +366,7 @@ Dialog {
                 to: 100
                 value: progressDialog.progress
             }
-            
+
             SelectableText {
                 width: parent.width
                 text: progressDialog.progress + "%"
@@ -358,7 +376,7 @@ Dialog {
             }
         }
     }
-    
+
     // Success dialog
     Popup {
         id: successDialog
@@ -367,16 +385,16 @@ Dialog {
         modal: true
         x: (root.width - width) / 2
         y: (root.height - height) / 2
-        
+
         property string message: ""
-        
+
         background: Rectangle {
             radius: 10
             color: "white"
             border.color: Qt.rgba(0, 0, 0, 0.1)
             border.width: 1
         }
-        
+
         Column {
             id: successDialogContent
             anchors.left: parent.left
@@ -384,7 +402,7 @@ Dialog {
             anchors.top: parent.top
             anchors.margins: 20
             spacing: 16
-            
+
             SelectableText {
                 width: parent.width
                 text: qsTr("Import Successful")
@@ -392,7 +410,7 @@ Dialog {
                 font.weight: Font.Medium
                 color: "#0f172b"
             }
-            
+
             SelectableText {
                 id: successMessageText
                 width: parent.width
@@ -401,19 +419,23 @@ Dialog {
                 color: "#314158"
                 wrapMode: TextEdit.Wrap
             }
-            
+
             Row {
                 anchors.right: parent.right
                 spacing: 8
-                
+
                 Rectangle {
                     width: 60
                     height: 36
                     radius: 8
                     property bool hovered: false
                     color: hovered ? Qt.darker("#0f4c81", 1.3) : "#0f4c81"
-                    Behavior on color { ColorAnimation { duration: 120 } }
-                    
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 120
+                        }
+                    }
+
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("OK")
@@ -421,7 +443,7 @@ Dialog {
                         font.weight: Font.Medium
                         color: "white"
                     }
-                    
+
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
@@ -429,16 +451,16 @@ Dialog {
                         onEntered: parent.hovered = true
                         onExited: parent.hovered = false
                         onClicked: {
-                            successDialog.close()
-                            root.importSuccess(root.selectedFile)
-                            root.close()
-                            }
+                            successDialog.close();
+                            root.importSuccess(root.selectedFile);
+                            root.close();
                         }
                     }
                 }
             }
+        }
     }
-    
+
     // Error dialog
     Popup {
         id: errorDialog
@@ -447,21 +469,21 @@ Dialog {
         modal: true
         x: (root.width - width) / 2
         y: (root.height - height) / 2
-        
+
         property string text: ""
-        
+
         background: Rectangle {
             radius: 10
             color: "white"
             border.color: Qt.rgba(0, 0, 0, 0.1)
             border.width: 1
         }
-        
+
         Column {
             anchors.fill: parent
             anchors.margins: 20
             spacing: 16
-            
+
             SelectableText {
                 width: parent.width
                 text: qsTr("Error")
@@ -469,7 +491,7 @@ Dialog {
                 font.weight: Font.Medium
                 color: "#0f172b"
             }
-            
+
             SelectableText {
                 width: parent.width
                 text: errorDialog.text
@@ -477,17 +499,17 @@ Dialog {
                 color: "#314158"
                 wrapMode: TextEdit.Wrap
             }
-            
+
             Row {
                 anchors.right: parent.right
                 spacing: 8
-                
+
                 Rectangle {
                     width: 60
                     height: 36
                     radius: 8
                     color: "#0f4c81"
-                    
+
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("OK")
@@ -495,12 +517,12 @@ Dialog {
                         font.weight: Font.Medium
                         color: "white"
                     }
-                    
+
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            errorDialog.close()
+                            errorDialog.close();
                         }
                     }
                 }
