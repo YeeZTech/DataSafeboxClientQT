@@ -475,9 +475,9 @@ Item {
                     // Delete button (visible on hover, above the main MouseArea)
                     Rectangle {
                         visible: messageItem.hovered
-                        width: 28
-                        height: 28
-                        radius: 14
+                        width: 24
+                        height: 24
+                        radius: 12
                         color: deleteArea.containsMouse ? "#fee2e2" : "transparent"
                         anchors.right: parent.right
                         anchors.rightMargin: 17

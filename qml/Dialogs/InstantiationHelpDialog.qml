@@ -61,9 +61,9 @@ Popup {
                     anchors.right: parent.right
                     anchors.rightMargin: 16
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 28
-                    height: 28
-                    radius: 14
+                    width: 24
+                    height: 24
+                    radius: 12
                     color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
 
                     Text {
