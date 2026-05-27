@@ -1268,7 +1268,7 @@ Popup {
                     text: qsTr("View Encrypted File Guide")
                     font.pixelSize: 14
                     font.underline: true
-                    color: guideLink.containsMouse ? Qt.lighter("#1d4ed8", 1.2) : "#1d4ed8"
+                    color: guideLink.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : guideLink.containsMouse ? "#2A6A9A" : Theme.Colors.primary
                     Behavior on color { ColorAnimation { duration: 120 } }
                     MouseArea {
                         id: guideLink

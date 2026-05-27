@@ -658,7 +658,7 @@ Item {
                             text: qsTr("View Feature Guide")
                             font.pixelSize: 14
                             font.underline: true
-                            color: guideArea.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : guideArea.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.3) : Theme.Colors.primary
+                            color: guideArea.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : guideArea.containsMouse ? "#2A6A9A" : Theme.Colors.primary
                             Behavior on color {
                                 ColorAnimation {
                                     duration: 120

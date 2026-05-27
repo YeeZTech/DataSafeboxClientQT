@@ -241,7 +241,8 @@ Popup {
                     text: qsTr("What is Dianshu ID?")
                     font.pixelSize: 13
                     font.underline: true
-                    color: linkHover.containsMouse ? "#0f4c81" : "#1566c0"
+                    color: linkHover.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : linkHover.containsMouse ? "#2A6A9A" : Theme.Colors.primary
+                    Behavior on color { ColorAnimation { duration: 120 } }
 
                     MouseArea {
                         id: linkHover

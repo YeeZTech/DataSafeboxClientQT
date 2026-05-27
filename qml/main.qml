@@ -743,7 +743,8 @@ ApplicationWindow {
                         Text {
                             text: qsTr("Change Path")
                             font.pixelSize: 16
-                            color: settingsChangePathMouse.containsMouse ? "#4a59cf" : "#5b67d6"
+                            color: settingsChangePathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsChangePathMouse.containsMouse ? "#2A6A9A" : Theme.Colors.primary
+                            Behavior on color { ColorAnimation { duration: 120 } }
                             MouseArea {
                                 id: settingsChangePathMouse
                                 anchors.fill: parent
@@ -762,7 +763,8 @@ ApplicationWindow {
                         Text {
                             text: qsTr("Open Path")
                             font.pixelSize: 16
-                            color: settingsOpenPathMouse.containsMouse ? "#4a59cf" : "#5b67d6"
+                            color: settingsOpenPathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsOpenPathMouse.containsMouse ? "#2A6A9A" : Theme.Colors.primary
+                            Behavior on color { ColorAnimation { duration: 120 } }
                             MouseArea {
                                 id: settingsOpenPathMouse
                                 anchors.fill: parent
@@ -788,7 +790,8 @@ ApplicationWindow {
                         Text {
                             text: qsTr("Clear Cache")
                             font.pixelSize: 16
-                            color: settingsClearCacheMouse.containsMouse ? "#4a59cf" : "#5b67d6"
+                            color: settingsClearCacheMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsClearCacheMouse.containsMouse ? "#2A6A9A" : Theme.Colors.primary
+                            Behavior on color { ColorAnimation { duration: 120 } }
                             MouseArea {
                                 id: settingsClearCacheMouse
                                 anchors.fill: parent
