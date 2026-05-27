@@ -712,7 +712,7 @@ Popup {
                     spacing: 8
 
                     SelectableText {
-                        text: qsTr("Output Path for Encrypted Files")
+                        text: qsTr("Save Path for Encrypted Files")
                         font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "#314158"
@@ -764,7 +764,7 @@ Popup {
                                     anchors.leftMargin: 2
                                     anchors.rightMargin: 2
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: root.selectedOutputPath ? root.selectedOutputPath : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("Select output path"))
+                                    text: root.selectedOutputPath ? root.selectedOutputPath : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("Select save path"))
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
                                     color: (root.selectedOutputPath || root.selectedFilePath) ? "#0f172b" : "#94a3b8"

@@ -648,8 +648,8 @@
     </message>
     <message>
         <location line="+10"/>
-        <source>Select Output Path</source>
-        <translation>选择输出路径</translation>
+        <source>Select Save Path</source>
+        <translation>选择保存路径</translation>
     </message>
     <message>
         <location line="+43"/>
@@ -673,13 +673,13 @@
     </message>
     <message>
         <location line="+26"/>
-        <source>Output Path for Encrypted Files</source>
-        <translation>加密文件输出路径</translation>
+        <source>Save Path for Encrypted Files</source>
+        <translation>加密文件保存路径</translation>
     </message>
     <message>
         <location line="+45"/>
-        <source>Select output path</source>
-        <translation>选择输出路径</translation>
+        <source>Select save path</source>
+        <translation>选择保存路径</translation>
     </message>
     <message>
         <location line="+63"/>
