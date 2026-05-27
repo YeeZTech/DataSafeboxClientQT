@@ -202,7 +202,7 @@ Popup {
         }
         // Backward compat
         if (pathListModel.count > 0) {
-            root.selectedFilePath = pathListModel.get(0).path;
+            root.selectedFilePath = pathListModel.get(pathListModel.count - 1).path;
         }
         // Show duplicate warning
         if (duplicates.length > 0) {
