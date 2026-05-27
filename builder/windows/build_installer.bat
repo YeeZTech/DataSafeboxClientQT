@@ -22,7 +22,7 @@ rem Configurable paths (env vars take priority over defaults below)
 rem ------------------------------------------------------------------
 if not defined QT_VERSION  set "QT_VERSION=6.7.3"
 if not defined IFW_VERSION set "IFW_VERSION=4.10"
-if not defined USE_TEST_ENV set "USE_TEST_ENV=0"
+if not defined USE_TEST_ENV set "USE_TEST_ENV=1"
 
 if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
     if not defined QT_ARCH       set "QT_ARCH=msvc2022_arm64"
