@@ -610,7 +610,9 @@ Popup {
                             visible: root.whitelistApps && root.whitelistApps.length > 0
                             currentPage: root.currentPage
                             totalPages: root.getTotalPages()
-                            onPageChanged: root.currentPage = page
+                            onPageChanged: function (page) {
+                                root.currentPage = page;
+                            }
                         }
                     }
                 }

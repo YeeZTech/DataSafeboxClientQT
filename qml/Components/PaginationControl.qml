@@ -43,6 +43,16 @@ Item {
         return pages;
     }
 
+    function requestPage(targetPage) {
+        var page = Math.floor(targetPage);
+        if (isNaN(page) || page < 1 || page > paginationRoot.totalPages || page === paginationRoot.currentPage)
+            return;
+        var control = paginationRoot;
+        Qt.callLater(function () {
+            control.pageChanged(page);
+        });
+    }
+
     Row {
         anchors.centerIn: parent
         anchors.verticalCenterOffset: 10
@@ -87,10 +97,7 @@ Item {
                 }
                 onPressed: parent.pressed = true
                 onReleased: parent.pressed = false
-                onClicked: {
-                    paginationRoot.currentPage--;
-                    paginationRoot.pageChanged(paginationRoot.currentPage);
-                }
+                onClicked: paginationRoot.requestPage(paginationRoot.currentPage - 1)
             }
         }
 
@@ -135,10 +142,7 @@ Item {
                         parent.pressed = true
                     onReleased: parent.pressed = false
                     onClicked: {
-                        if (!parent.isCurrent) {
-                            paginationRoot.currentPage = parent.pageNum;
-                            paginationRoot.pageChanged(paginationRoot.currentPage);
-                        }
+                        paginationRoot.requestPage(parent.pageNum);
                     }
                 }
             }
@@ -183,10 +187,7 @@ Item {
                 }
                 onPressed: parent.pressed = true
                 onReleased: parent.pressed = false
-                onClicked: {
-                    paginationRoot.currentPage++;
-                    paginationRoot.pageChanged(paginationRoot.currentPage);
-                }
+                onClicked: paginationRoot.requestPage(paginationRoot.currentPage + 1)
             }
         }
     }

@@ -458,7 +458,7 @@ Item {
             height: parent.height
             currentPage: root.currentPage
             totalPages: root.serverTotalPages
-            onPageChanged: {
+            onPageChanged: function (page) {
                 root.currentPage = page;
                 root._applyFilterAndPaginate();
             }

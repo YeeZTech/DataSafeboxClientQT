@@ -351,7 +351,9 @@ Rectangle {
             PaginationControl {
                 currentPage: card.currentPage
                 totalPages: card.totalPages
-                onPageChanged: card.currentPage = page
+                onPageChanged: function (page) {
+                    card.currentPage = page;
+                }
             }
         }
     }

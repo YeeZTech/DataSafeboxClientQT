@@ -522,7 +522,9 @@ Rectangle {
                 visible: card.auditCount > 0 && card.totalPages > 1
                 currentPage: card.currentPage
                 totalPages: card.totalPages
-                onPageChanged: card.currentPage = page
+                onPageChanged: function (page) {
+                    card.currentPage = page;
+                }
             }
         }
     }
