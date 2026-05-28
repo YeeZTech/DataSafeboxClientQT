@@ -7,7 +7,7 @@ win32:CONFIG -= depend_includepath
 
 # ── USE_TEST_ENV 编译期校验（0 = 正式环境，1 = 测试环境）──
 isEmpty(USE_TEST_ENV) {
-    error("USE_TEST_ENV is not set. Pass USE_TEST_ENV=0 (production) or USE_TEST_ENV=1 (test) on the qmake command line.")
+    USE_TEST_ENV = 0
 }
 !equals(USE_TEST_ENV, 0):!equals(USE_TEST_ENV, 1) {
     error("USE_TEST_ENV=$$USE_TEST_ENV is invalid. Only 0 (production) or 1 (test) is accepted.")
@@ -18,25 +18,22 @@ message("USE_TEST_ENV=$$USE_TEST_ENV")
 # Application name
 TARGET = DataSafebox
 
-# Version automation: Read version from installer/config/config.xml as the Single Source of Truth
-# Trying to detect OS and use appropriate command
-win32 {
-    # Windows: Use PowerShell to extract version
-    VERSION_FROM_XML = $$system("powershell -NoProfile -Command \"(Select-Xml -Path '$$PWD/installer/config/config.xml' -XPath '/Installer/Version').Node.InnerText\"")
-} else {
-    # macOS/Linux: Use sed/grep to extract version
-    VERSION_FROM_XML = $$system("grep -oPm1 '(?<=<Version>)[^<]+' $$PWD/installer/config/config.xml 2>/dev/null || sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' $$PWD/installer/config/config.xml")
-}
-
-# Fallback if detection fails
-isEmpty(VERSION_FROM_XML) {
-    message("Warning: Could not read version from installer/config/config.xml, falling back to 1.0.0")
-    VERSION_FROM_XML = "1.0.0"
-}
+# Application version — Single Source of Truth
+# Change this value to update all installer XML files and the C++ APP_VERSION macro.
+VERSION = 1.0.3
 
 # Inject into C++ code
-DEFINES += APP_VERSION=\\\"$$VERSION_FROM_XML\\\"
-message("Building version: $$VERSION_FROM_XML")
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+
+# Sync version to installer XML files at qmake time
+CONFIG_XML = $$PWD/installer/config/config.xml
+PKG_XML    = $$PWD/installer/packages/com.datasafebox.client/meta/package.xml
+win32 {
+    DUMMY = $$system("powershell -NoProfile -Command \"$e=New-Object Text.UTF8Encoding($false); foreach($p in @('$$CONFIG_XML','$$PKG_XML')){$c=[IO.File]::ReadAllText($p,$e); $c=$c -replace '<Version>[^<]*</Version>','<Version>$$VERSION</Version>'; [IO.File]::WriteAllText($p,$c,$e)}\"")
+} else {
+    DUMMY = $$system("perl -i -pe 's|<Version>[^<]*</Version>|<Version>$$VERSION</Version>|' '$$CONFIG_XML' '$$PKG_XML'")
+}
+message("Building version: $$VERSION")
 
 # The following defines are for the application itself.
 SOURCES += \

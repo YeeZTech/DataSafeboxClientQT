@@ -12,9 +12,9 @@ rem Override any path via environment variable before running:
 rem   set QT_VERSION=6.7.3
 rem   set QT_BIN=C:\Qt\6.7.3\msvc2022_64\bin
 rem   set IFW_BIN=C:\Qt\Tools\QtInstallerFramework\4.10\bin
-rem   set VCPKG_DIR=D:\vcpkg
-rem   set SENTRY_ROOT_DIR=D:\vcpkg\installed\x64-windows
-rem   set DSCC_DIR=D:\DSCC
+rem   set VCPKG_DIR=C:\vcpkg
+rem   set SENTRY_ROOT_DIR=C:\vcpkg\installed\x64-windows
+rem   set DSCC_DIR=C:\Program Files\DSCC
 rem ===========================================================================
 
 rem ------------------------------------------------------------------
@@ -22,7 +22,7 @@ rem Configurable paths (env vars take priority over defaults below)
 rem ------------------------------------------------------------------
 if not defined QT_VERSION  set "QT_VERSION=6.7.3"
 if not defined IFW_VERSION set "IFW_VERSION=4.10"
-if not defined USE_TEST_ENV set "USE_TEST_ENV=1"
+rem USE_TEST_ENV is optional here; defaults to 0 (production) in .pro if not set
 
 if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
     if not defined QT_ARCH       set "QT_ARCH=msvc2022_arm64"
@@ -32,7 +32,10 @@ if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
     if not defined VCPKG_TRIPLET set "VCPKG_TRIPLET=x64-windows"
 )
 
+if not defined QT_BIN for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$c = Get-Command qmake -EA SilentlyContinue; if ($c) { Split-Path $c.Source -Parent }"`) do if not "%%i"=="" set "QT_BIN=%%i"
+if not defined QT_BIN for %%d in (C D E F) do if not defined QT_BIN for /d %%v in ("%%d:\Qt\6.*") do if not defined QT_BIN if exist "%%v\%QT_ARCH%\bin\qmake.exe" set "QT_BIN=%%v\%QT_ARCH%\bin"
 if not defined QT_BIN  set "QT_BIN=C:\Qt\%QT_VERSION%\%QT_ARCH%\bin"
+if not defined IFW_BIN for %%d in (C D E F) do if not defined IFW_BIN for /d %%v in ("%%d:\Qt\Tools\QtInstallerFramework\*") do if not defined IFW_BIN if exist "%%v\bin\binarycreator.exe" set "IFW_BIN=%%v\bin"
 if not defined IFW_BIN set "IFW_BIN=C:\Qt\Tools\QtInstallerFramework\%IFW_VERSION%\bin"
 
 set "SCRIPT_DIR=%~dp0"
@@ -56,8 +59,13 @@ set "BINARYCREATOR=%IFW_BIN%\binarycreator.exe"
 set "WINDEPLOYQT=%QT_BIN%\windeployqt.exe"
 set "QMAKE=%QT_BIN%\qmake.exe"
 
-if not defined SENTRY_ROOT_DIR if defined VCPKG_DIR set "SENTRY_ROOT_DIR=%VCPKG_DIR%\installed\%VCPKG_TRIPLET%"
-if not defined SENTRY_ROOT_DIR set "SENTRY_ROOT_DIR=D:\trammel\vcpkg\installed\%VCPKG_TRIPLET%"
+if not defined SENTRY_ROOT_DIR if defined VCPKG_DIR  set "SENTRY_ROOT_DIR=%VCPKG_DIR%\installed\%VCPKG_TRIPLET%"
+if not defined SENTRY_ROOT_DIR if defined VCPKG_ROOT set "SENTRY_ROOT_DIR=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%"
+if not defined SENTRY_ROOT_DIR for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$c = Get-Command vcpkg -EA SilentlyContinue; if ($c) { Split-Path $c.Source -Parent }"`) do if not "%%i"=="" set "SENTRY_ROOT_DIR=%%i\installed\%VCPKG_TRIPLET%"
+if not defined SENTRY_ROOT_DIR if exist "%LOCALAPPDATA%\vcpkg\vcpkg.path.txt" for /f "usebackq delims=" %%i in ("%LOCALAPPDATA%\vcpkg\vcpkg.path.txt") do if not defined SENTRY_ROOT_DIR set "SENTRY_ROOT_DIR=%%i\installed\%VCPKG_TRIPLET%"
+if not defined SENTRY_ROOT_DIR for %%d in (C D E F) do if not defined SENTRY_ROOT_DIR if exist "%%d:\vcpkg\installed\%VCPKG_TRIPLET%" set "SENTRY_ROOT_DIR=%%d:\vcpkg\installed\%VCPKG_TRIPLET%"
+if not defined SENTRY_ROOT_DIR for %%d in (C D E F) do if not defined SENTRY_ROOT_DIR for /d %%s in ("%%d:\*") do if not defined SENTRY_ROOT_DIR if exist "%%s\vcpkg\installed\%VCPKG_TRIPLET%" set "SENTRY_ROOT_DIR=%%s\vcpkg\installed\%VCPKG_TRIPLET%"
+if not defined SENTRY_ROOT_DIR if exist "%USERPROFILE%\vcpkg\installed\%VCPKG_TRIPLET%" set "SENTRY_ROOT_DIR=%USERPROFILE%\vcpkg\installed\%VCPKG_TRIPLET%"
 if not defined DSCC_DIR set "DSCC_DIR=C:\Program Files\DSCC"
 
 echo.
@@ -72,20 +80,19 @@ echo ==================================================
 echo.
 
 rem ==================================================================
-rem USE_TEST_ENV VALIDATION
+rem USE_TEST_ENV VALIDATION (optional; defaults to 0 in .pro)
 rem ==================================================================
-if not defined USE_TEST_ENV (
-    echo [Error] USE_TEST_ENV is not set.
-    echo         Set USE_TEST_ENV=0 ^(production^) or USE_TEST_ENV=1 ^(test^) before running this script.
-    echo         Example: set USE_TEST_ENV=0
-    goto :fail_no_msg
+if defined USE_TEST_ENV (
+    if not "%USE_TEST_ENV%"=="0" if not "%USE_TEST_ENV%"=="1" (
+        echo [Error] USE_TEST_ENV=%USE_TEST_ENV% is invalid. Only 0 or 1 is accepted.
+        goto :fail_no_msg
+    )
+    echo [INFO] USE_TEST_ENV=%USE_TEST_ENV%
+    set "QMAKE_USE_TEST_ENV=USE_TEST_ENV=%USE_TEST_ENV%"
+) else (
+    echo [INFO] USE_TEST_ENV not set, defaulting to 0 ^(production^) via .pro
+    set "QMAKE_USE_TEST_ENV="
 )
-if "%USE_TEST_ENV%"=="0" goto :env_ok
-if "%USE_TEST_ENV%"=="1" goto :env_ok
-echo [Error] USE_TEST_ENV=%USE_TEST_ENV% is invalid. Only 0 or 1 is accepted.
-goto :fail_no_msg
-:env_ok
-echo [INFO] USE_TEST_ENV=%USE_TEST_ENV%
 
 rem ==================================================================
 rem PRE-FLIGHT CHECK
@@ -115,8 +122,8 @@ echo.
 echo   Required environment variables (if not using defaults):
 echo     QT_BIN=C:\Qt\6.7.3\msvc2022_64\bin
 echo     IFW_BIN=C:\Qt\Tools\QtInstallerFramework\4.10\bin
-echo     SENTRY_ROOT_DIR=D:\vcpkg\installed\x64-windows
-echo     DSCC_DIR=D:\DSCC
+echo     SENTRY_ROOT_DIR=C:\vcpkg\installed\x64-windows
+echo     DSCC_DIR=C:\Program Files\DSCC
 echo ==================================================
 echo.
 goto :fail_no_msg
@@ -159,7 +166,7 @@ cd /d "%PROJECT_ROOT%"
 if exist "%BUILD_DIR%" rd /s /q "%BUILD_DIR%"
 if exist "%PROJECT_ROOT%\resources_qmlcache.qrc" del /Q "%PROJECT_ROOT%\resources_qmlcache.qrc"
 
-"%QMAKE%" datasafebox-qt-client.pro CONFIG+=release CONFIG-=qtquickcompiler USE_TEST_ENV=%USE_TEST_ENV% SENTRY_ROOT_DIR="%SENTRY_ROOT_DIR:\=/%" DSCC_DIR="%DSCC_DIR%"
+"%QMAKE%" datasafebox-qt-client.pro CONFIG+=release CONFIG-=qtquickcompiler %QMAKE_USE_TEST_ENV% SENTRY_ROOT_DIR="%SENTRY_ROOT_DIR:\=/%" DSCC_DIR="%DSCC_DIR%"
 if errorlevel 1 goto :fail
 nmake release
 if errorlevel 1 goto :fail
@@ -215,7 +222,7 @@ if exist "%DATA_DIR%\translations" (
 )
 
 rem --- Strip files that are definitively not needed ---
-echo [4b] Stripping unnecessary files...
+echo [OK] Stripping unnecessary files...
 
 rem WebEngine DevTools pak -- only used when DevTools is explicitly enabled in code.
 rem Never needed in production builds (saves ~9 MB).
@@ -408,9 +415,9 @@ if not defined SENTRY_ROOT_DIR (
     echo   [MISSING] SENTRY_ROOT_DIR
     echo             Fix: set SENTRY_ROOT_DIR to the vcpkg installed triplet root.
     echo             Example:
-    echo               set SENTRY_ROOT_DIR=D:\vcpkg\installed\%VCPKG_TRIPLET%
+    echo               set SENTRY_ROOT_DIR=C:\vcpkg\installed\%VCPKG_TRIPLET%
     echo             Or set VCPKG_DIR before running this script:
-    echo               set VCPKG_DIR=D:\vcpkg
+    echo               set VCPKG_DIR=C:\vcpkg
     echo.
     exit /b 0
 )
@@ -421,11 +428,11 @@ echo   [MISSING] sentry-native via vcpkg
 echo             Expected : %SENTRY_H%
 echo             Fix:
 echo               1. Clone vcpkg:
-echo                  git clone https://github.com/microsoft/vcpkg.git D:\vcpkg
-echo                  D:\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+echo                  git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+echo                  C:\vcpkg\bootstrap-vcpkg.bat -disableMetrics
 echo               2. Install sentry-native:
 echo                  vcpkg install sentry-native --triplet %VCPKG_TRIPLET%
-echo               Or set env var: set SENTRY_ROOT_DIR=D:\vcpkg\installed\%VCPKG_TRIPLET%
+echo               Or set env var: set SENTRY_ROOT_DIR=C:\vcpkg\installed\%VCPKG_TRIPLET%
 echo.
 exit /b 0
 :check_sentry_found
@@ -451,7 +458,7 @@ if not defined DSCC_DIR (
     echo   [MISSING] DSCC_DIR
     echo             Fix: set DSCC_DIR to the DSCC SDK/runtime root before running this script.
     echo             Example:
-    echo               set DSCC_DIR=D:\DSCC
+    echo               set DSCC_DIR=C:\Program Files\DSCC
     echo.
     goto :check_dscc_vcredist
 )
@@ -465,7 +472,7 @@ if "%DSCC_OK%"=="1" (
     echo             Expected : %DSCC_DIR%\include\dscc\core\common\active_notify.h
     echo                        %DSCC_DIR%\bin\dscc_core.dll
     echo             Fix: set DSCC_DIR to the DSCC SDK/runtime root, for example:
-    echo               set DSCC_DIR=D:\DSCC
+    echo               set DSCC_DIR=C:\Program Files\DSCC
     echo.
 )
 :check_dscc_vcredist
@@ -473,17 +480,14 @@ if exist "%DATA_DIR%\..\vc_redist.x64.exe" (
     echo   [OK]      vc_redist.x64.exe found in installer data
     exit /b 0
 )
-set "VC_REDIST_SRC=D:\visual stuido\VC\Redist\MSVC\14.42.34433\vc_redist.x64.exe"
-if exist "%VC_REDIST_SRC%" (
-    echo   [INFO]    Copying vc_redist.x64.exe from Visual Studio installation...
-    copy /Y "%VC_REDIST_SRC%" "%DATA_DIR%\..\" >nul
-    echo   [OK]      vc_redist.x64.exe copied
-    exit /b 0
+set "VSWHERE_EXE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+if not exist "%VSWHERE_EXE%" set "VSWHERE_EXE=%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe"
+if exist "%VSWHERE_EXE%" (
+    for /f "usebackq delims=" %%i in (`"%VSWHERE_EXE%" -latest -products * -find VC\Redist\MSVC\*\vc_redist.x64.exe`) do set "VC_REDIST_SRC=%%i"
 )
-set "VC_REDIST_SRC=D:\visual stuido\VC\Redist\MSVC\v143\vc_redist.x64.exe"
-if exist "%VC_REDIST_SRC%" (
+if defined VC_REDIST_SRC if exist "!VC_REDIST_SRC!" (
     echo   [INFO]    Copying vc_redist.x64.exe from Visual Studio installation...
-    copy /Y "%VC_REDIST_SRC%" "%DATA_DIR%\..\" >nul
+    copy /Y "!VC_REDIST_SRC!" "%DATA_DIR%\..\" >nul
     echo   [OK]      vc_redist.x64.exe copied
     exit /b 0
 )
@@ -492,7 +496,7 @@ echo   [MISSING] vc_redist.x64.exe in installer data dir
 echo             Expected : %PACKAGES_DIR%\com.datasafebox.client\data\vc_redist.x64.exe
 echo             Fix: Download VC++ 2015-2022 x64 Runtime and place it there:
 echo               https://aka.ms/vs/17/release/vc_redist.x64.exe
-echo             Or ensure Visual Studio is installed at: D:\visual stuido
+echo             Or ensure Visual Studio 2022 is installed with C++ workload.
 echo             Without it, target machines lacking VC++ Runtime will fail to start.
 echo.
 exit /b 0
@@ -524,7 +528,7 @@ exit /b 0
 :check_sentry_optional
 if not defined SENTRY_ROOT_DIR (
     echo   [WARN]    SENTRY_ROOT_DIR not set - crash reporting disabled
-    echo             To enable: set SENTRY_ROOT_DIR=D:\vcpkg\installed\x64-windows
+    echo             To enable: set SENTRY_ROOT_DIR=C:\vcpkg\installed\x64-windows
     exit /b 0
 )
 set "SENTRY_H=%SENTRY_ROOT_DIR%\include\sentry.h"
@@ -538,7 +542,7 @@ exit /b 0
 :check_dscc_optional
 if not defined DSCC_DIR (
     echo   [WARN]    DSCC_DIR not set - some features may be disabled
-    echo             To enable: set DSCC_DIR=D:\DSCC
+    echo             To enable: set DSCC_DIR=C:\Program Files\DSCC
     exit /b 0
 )
 set "DSCC_OK=0"
