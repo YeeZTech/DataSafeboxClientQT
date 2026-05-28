@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
 
 Popup {
     id: root
@@ -116,7 +117,7 @@ Popup {
                         id: warningIcon
                         width: 20
                         height: 20
-                        source: Qt.resolvedUrl("icons/icon-warning.svg")
+                        source: "qrc:/icons/icon-warning.svg"
                         sourceSize: Qt.size(20, 20)
                     }
 
@@ -160,93 +161,18 @@ Popup {
                 anchors.right: parent.right
                 spacing: 16
                 height: 36
-                Rectangle {
-                    width: 60
-                    height: 36  // 与确认按钮统一高度
-                    radius: 8
-                    color: {
-                        if (cancelArea.pressed)
-                            return "#bedbff";
-                        if (cancelArea.containsMouse)
-                            return "#e8f8ff";
-                        return "white";  // 默认状态
-                    }
-                    border.width: 1
-                    border.color: {
-                        if (cancelArea.pressed)
-                            return "#add3e6";
-                        if (cancelArea.containsMouse)
-                            return "#79aecd";
-                        return "#cad5e2";
-                    }
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                    Behavior on border.color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-
-                    SelectableText {
-                        anchors.centerIn: parent
-                        text: qsTr("Cancel")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "#314158"
-                        font.letterSpacing: -0.15
-                    }
-
-                    MouseArea {
-                        id: cancelArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            root.close();
-                            root.cancelClicked();
-                        }
+                SecondaryButton {
+                    text: qsTr("Cancel")
+                    onClicked: {
+                        root.close();
+                        root.cancelClicked();
                     }
                 }
-                Rectangle {
-                    width: 88
-                    height: 36
-                    radius: 8
-                    color: {
-                        if (confirmArea.pressed)
-                            return "#A40E20";  // 点击状态
-                        if (confirmArea.containsMouse)
-                            return "#FD7977";  // 悬停状态
-                        return "#FB2C36";  // 默认状态
-                    }
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-
-                    SelectableText {
-                        anchors.centerIn: parent
-                        text: root.confirmButtonText
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "white"
-                        font.letterSpacing: -0.15
-                    }
-
-                    MouseArea {
-                        id: confirmArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            root.confirmClicked();
-                            root.close();
-                        }
+                DangerButton {
+                    text: root.confirmButtonText
+                    onClicked: {
+                        root.confirmClicked();
+                        root.close();
                     }
                 }
             }

@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
 
 Dialog {
     id: root

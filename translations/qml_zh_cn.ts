@@ -334,7 +334,7 @@
 <context>
     <name>DomainBasicInfoCard</name>
     <message>
-        <location filename="../qml/Cards/DomainBasicInfoCard.qml" line="+49"/>
+        <location filename="../qml/Pages/DomainBasicInfoCard.qml" line="+49"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
@@ -388,7 +388,7 @@
 <context>
     <name>DomainExportAuditCard</name>
     <message>
-        <location filename="../qml/Cards/DomainExportAuditCard.qml" line="+61"/>
+        <location filename="../qml/Pages/DomainExportAuditCard.qml" line="+61"/>
         <source>File Export Review</source>
         <translation>文件导出审核</translation>
     </message>
@@ -442,7 +442,7 @@
 <context>
     <name>DomainInstancesCard</name>
     <message>
-        <location filename="../qml/Cards/DomainInstancesCard.qml" line="+58"/>
+        <location filename="../qml/Pages/DomainInstancesCard.qml" line="+58"/>
         <location line="+1"/>
         <source> days</source>
         <translation> 天</translation>
@@ -487,7 +487,7 @@
 <context>
     <name>DomainVisibleUsersCard</name>
     <message>
-        <location filename="../qml/Cards/DomainVisibleUsersCard.qml" line="+54"/>
+        <location filename="../qml/Pages/DomainVisibleUsersCard.qml" line="+54"/>
         <source>Visible Users</source>
         <translation>可见用户</translation>
     </message>
@@ -520,7 +520,7 @@
 <context>
     <name>DomainWhitelistAuditCard</name>
     <message>
-        <location filename="../qml/Cards/DomainWhitelistAuditCard.qml" line="+57"/>
+        <location filename="../qml/Pages/DomainWhitelistAuditCard.qml" line="+57"/>
         <source>App Whitelist Review</source>
         <translation>应用白名单审核</translation>
     </message>
@@ -603,8 +603,8 @@
     </message>
     <message>
         <location line="+25"/>
-        <source>Failed to generate encrypted file output path</source>
-        <translation>无法生成加密文件输出路径</translation>
+        <source>Failed to generate encrypted file save path</source>
+        <translation>无法生成加密文件保存路径</translation>
     </message>
     <message>
         <location line="+20"/>
@@ -2431,6 +2431,303 @@ Location: %1</source>
     <message>
         <source>Ended</source>
         <translation type="vanished">已结束</translation>
+    </message>
+</context>
+<context>
+    <name>PrimaryButton</name>
+    <message>
+        <location filename="../qml/Components/PrimaryButton.qml" line="+39"/>
+        <source>Loading...</source>
+        <translation>加载中...</translation>
+    </message>
+</context>
+<context>
+    <name>SidebarNav</name>
+    <message>
+        <location filename="../qml/Components/SidebarNav.qml" line="+363"/>
+        <source>User Info</source>
+        <translation>用户信息</translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>My Bills</source>
+        <translation>我的账单</translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>Message</source>
+        <translation>消息</translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>Settings</source>
+        <translation>设置</translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>Help</source>
+        <translation>帮助</translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Check for Updates</source>
+        <translation>检查更新</translation>
+    </message>
+    <message>
+        <location line="+52"/>
+        <source>Logout</source>
+        <translation>退出登录</translation>
+    </message>
+</context>
+<context>
+    <name>EncryptFailurePopup</name>
+    <message>
+        <location filename="../qml/Dialogs/EncryptFailurePopup.qml" line="+46"/>
+        <location line="+51"/>
+        <source>Encryption Failed</source>
+        <translation>加密失败</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>File encryption failed. Reason: </source>
+        <translation>文件加密失败，失败原因：</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source> You may try encrypting again or contact support for help.</source>
+        <translation> 您可尝试重新加密文件或联系客服寻求帮助。</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Contact Support</source>
+        <translation>联系客服</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Retry</source>
+        <translation>重试</translation>
+    </message>
+</context>
+<context>
+    <name>EncryptSuccessPopup</name>
+    <message>
+        <location filename="../qml/Dialogs/EncryptSuccessPopup.qml" line="+43"/>
+        <location line="+51"/>
+        <source>Encryption Successful</source>
+        <translation>加密成功</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>File encryption successful! You can send the encrypted file to the recipient. After importing it into their security domain instance, they will be able to use it normally.</source>
+        <translation>文件加密成功！您可将加密文件发送给使用方，对方将加密文件导入至安全域实例后即可正常使用。</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>View Encrypted File Guide</source>
+        <translation>查看加密文件使用说明</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Open File Save Directory</source>
+        <translation>打开文件保存目录</translation>
+    </message>
+</context>
+<context>
+    <name>DomainInfoHeader</name>
+    <message>
+        <location filename="../qml/Pages/DomainInfoHeader.qml" line="+63"/>
+        <source>View Feature Guide</source>
+        <translation>查看功能介绍</translation>
+    </message>
+    <message>
+        <location line="+61"/>
+        <source>How to Instantiate Security Domain?</source>
+        <translation>如何实例化安全域？</translation>
+    </message>
+    <message>
+        <location line="+70"/>
+        <source>Encrypt Files to This Security Domain</source>
+        <translation>加密文件到此安全域</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Security domain public key not found</source>
+        <translation>未找到安全域公钥</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Encrypt File</source>
+        <translation>加密文件</translation>
+    </message>
+</context>
+<context>
+    <name>DomainTabView</name>
+    <message>
+        <location filename="../qml/Pages/DomainTabView.qml" line="+142"/>
+        <source>Disable This Security Domain</source>
+        <translation>停用此安全域</translation>
+    </message>
+</context>
+<context>
+    <name>InstanceExportCard</name>
+    <message>
+        <location filename="../qml/Pages/InstanceExportCard.qml" line="+42"/>
+        <source>Export Requests</source>
+        <translation>导出申请</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Export File</source>
+        <translation>导出文件</translation>
+    </message>
+    <message>
+        <location line="+105"/>
+        <source>Request ID</source>
+        <translation>申请ID</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>File Count</source>
+        <translation>文件数量</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Total Size</source>
+        <translation>总大小</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Status</source>
+        <translation>状态</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Request Time</source>
+        <translation>申请时间</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Actions</source>
+        <translation>操作</translation>
+    </message>
+    <message>
+        <location line="+162"/>
+        <source>View</source>
+        <translation>查看</translation>
+    </message>
+</context>
+<context>
+    <name>InstanceInfoCard</name>
+    <message>
+        <location filename="../qml/Pages/InstanceInfoCard.qml" line="+31"/>
+        <source>Instance ID</source>
+        <translation>实例ID</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Status</source>
+        <translation>状态</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Belongs To Security Domain</source>
+        <translation>所属安全域</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Path</source>
+        <translation>路径</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Created At</source>
+        <translation>创建时间</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Expires At</source>
+        <translation>到期时间</translation>
+    </message>
+</context>
+<context>
+    <name>InstanceWhitelistCard</name>
+    <message>
+        <location filename="../qml/Pages/InstanceWhitelistCard.qml" line="+34"/>
+        <source>App Whitelist</source>
+        <translation>应用白名单</translation>
+    </message>
+    <message>
+        <location line="+70"/>
+        <source>Program Name</source>
+        <translation>程序名称</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Program Path</source>
+        <translation>程序路径</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsPage</name>
+    <message>
+        <location filename="../qml/Pages/SettingsPage.qml" line="+29"/>
+        <source>Settings</source>
+        <translation>设置</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Default Cache Path:</source>
+        <translation>默认缓存路径：</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Change Path</source>
+        <translation>更改路径</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Open Path</source>
+        <translation>打开路径</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Failed to open directory, please check if path is accessible</source>
+        <translation>打开目录失败，请检查路径是否可访问</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Clear Cache</source>
+        <translation>清除缓存</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Cache cleared:</source>
+        <translation>已清除缓存：</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>approx.</source>
+        <translation>约</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Select Cache Directory</source>
+        <translation>选择缓存目录</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Cache directory updated, new tasks will use it immediately</source>
+        <translation>缓存目录已更新，新任务立即生效</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Failed to set path, please check directory permissions</source>
+        <translation>路径设置失败，请检查目录权限</translation>
     </message>
 </context>
 </TS>

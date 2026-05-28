@@ -1,6 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
+import DataSafebox.Dialogs 1.0
 
 Rectangle {
     id: card
@@ -282,7 +284,7 @@ Rectangle {
                                 width: 16
                                 height: 16
                                 anchors.centerIn: parent
-                                source: Qt.resolvedUrl("icons/icon-edit.svg")
+                                source: "qrc:/icons/icon-edit.svg"
                                 fillMode: Image.PreserveAspectFit
                                 visible: !card.isEditingDescription
                             }
@@ -515,7 +517,7 @@ Rectangle {
                 Image {
                     width: 16
                     height: 16
-                    source: "icons/icon-error.svg"
+                    source: "qrc:/icons/icon-error.svg"
                     sourceSize: Qt.size(16, 16)
                     fillMode: Image.PreserveAspectFit
                     smooth: true

@@ -2,7 +2,8 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Dialogs
 import Qt.labs.platform 1.1 as Platform
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
 
 Popup {
     id: root
@@ -183,7 +184,7 @@ Popup {
 
                             Image {
                                 id: browseIcon
-                                source: Qt.resolvedUrl("icons/icon-export-upload.svg")
+                                source: "qrc:/icons/icon-export-upload.svg"
                                 width: 16
                                 height: 16
                                 anchors.left: parent.left

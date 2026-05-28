@@ -1,7 +1,9 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
+import DataSafebox.Dialogs 1.0
 
 Item {
     id: root
@@ -322,7 +324,7 @@ Item {
                                         anchors.centerIn: parent
                                         width: 16
                                         height: 16
-                                        source: Qt.resolvedUrl("icons/icon-help.svg")
+                                        source: "qrc:/icons/icon-help.svg"
                                         sourceSize: Qt.size(16, 16)
                                         fillMode: Image.PreserveAspectFit
                                         smooth: true

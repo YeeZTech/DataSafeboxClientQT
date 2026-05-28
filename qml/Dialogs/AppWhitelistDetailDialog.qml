@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
 
 Popup {
     id: root
@@ -210,7 +211,7 @@ Popup {
                             Text {
                                 id: statusBadgeText
                                 anchors.centerIn: parent
-                                text: Colors.translateStatus(root.status) || "-"
+                                text: Theme.Colors.translateStatus(root.status) || "-"
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: root.statusStyle.text

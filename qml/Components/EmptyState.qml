@@ -15,7 +15,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             width: 16
             height: 16
-            source: Qt.resolvedUrl("icons/icon-empty-state.svg")
+            source: "qrc:/icons/icon-empty-state.svg"
             sourceSize: Qt.size(16, 16)
             fillMode: Image.PreserveAspectFit
             smooth: true

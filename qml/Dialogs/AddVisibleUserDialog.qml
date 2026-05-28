@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
 
 Popup {
     id: root
@@ -208,7 +209,7 @@ Popup {
 
                     Image {
                         anchors.fill: parent
-                        source: "icons/icon-error.svg"
+                        source: "qrc:/icons/icon-error.svg"
                         sourceSize: Qt.size(16, 16)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
@@ -242,7 +243,11 @@ Popup {
                     font.pixelSize: 13
                     font.underline: true
                     color: linkHover.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : linkHover.containsMouse ? "#2A6A9A" : Theme.Colors.primary
-                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 120
+                        }
+                    }
 
                     MouseArea {
                         id: linkHover

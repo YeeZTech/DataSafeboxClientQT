@@ -1,6 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
+import DataSafebox.Dialogs 1.0
 import "DomainUtils.js" as DomainUtils
 import "DateTimeUtils.js" as DateTimeUtils
 
@@ -297,27 +299,11 @@ Rectangle {
                                 Layout.maximumWidth: card.middleColumnWidth
                                 Layout.fillHeight: true
 
-                                Rectangle {
+                                StatusBadge {
                                     anchors.left: parent.left
                                     anchors.leftMargin: 31
                                     anchors.verticalCenter: parent.verticalCenter
-                                    implicitWidth: instanceStatusText.implicitWidth + 12
-                                    implicitHeight: 24
-                                    radius: 6
-                                    property var instanceStatusStyle: Theme.Colors.getStatusColor(modelData.status || "")
-                                    color: instanceStatusStyle.bg
-                                    border.color: instanceStatusStyle.border
-                                    border.width: 1
-
-                                    Text {
-                                        id: instanceStatusText
-                                        anchors.centerIn: parent
-                                        text: Theme.Colors.translateStatus(modelData.status || "")
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: parent.instanceStatusStyle.text
-                                        horizontalAlignment: Text.AlignHCenter
-                                    }
+                                    status: modelData.status || ""
                                 }
                             }
 

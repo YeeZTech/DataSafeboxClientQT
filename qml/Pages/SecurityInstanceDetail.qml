@@ -1,7 +1,9 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
+import DataSafebox.Dialogs 1.0
 import "DateTimeUtils.js" as DateTimeUtils
 
 Item {
@@ -19,7 +21,7 @@ Item {
     readonly property bool isInstanceActive: instanceData && instanceData.status !== "已关闭"
     // Only "运行中" instances can import/export files
     readonly property bool canImportExportFiles: instanceData && instanceData.status === "运行中"
-    // "已授权" 实例用于显示“实例化此安全域”按钮
+    // "已授权" 实例用于显示"实例化此安全域"按钮
     readonly property bool isAuthorizedInstance: instanceData && instanceData.status === "已授权"
     readonly property bool isPendingInstance: instanceData && instanceData.status === "待审核"
     readonly property bool showManagementPanels: !(isPendingInstance || isAuthorizedInstance)
@@ -104,7 +106,7 @@ Item {
         instanceData = _emptyInstanceData();
     }
 
-    // 根据实例大小（MB）、实例时长（月）和计费规则（如“30元/GB/月”）计算预计费用
+    // 根据实例大小（MB）、实例时长（月）和计费规则（如"30元/GB/月"）计算预计费用
     function calculateEstimatedFee(sizeValue, durationText, billingRule) {
         // 解析月份
         var months = 0;
@@ -163,7 +165,7 @@ Item {
         contentHeight: contentArea.height + 64
 
         background: Rectangle {
-            color: "#e8edf3"  // 与安全域详情界面相同的灰色背景
+            color: "#e8edf3"
         }
 
         ScrollBar.horizontal: ScrollBar {
@@ -211,7 +213,7 @@ Item {
                             spacing: 8
 
                             Image {
-                                source: "icons/icon-import-file.svg"
+                                source: "qrc:/icons/icon-import-file.svg"
                                 width: 16
                                 height: 16
                             }
@@ -238,38 +240,36 @@ Item {
                     Rectangle {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        width: startInstanceRow.width + 26   // 动态宽度
+                        width: startInstanceRow.width + 26
                         height: 36
                         radius: 8
                         property bool hovered: false
-                        color: hovered ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary  // 蓝色背景
-                        border.color: Theme.Colors.primary    // 同色描边
+                        color: hovered ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
+                        border.color: Theme.Colors.primary
                         border.width: 1
                         visible: root.isAuthorizedInstance
 
                         Row {
                             id: startInstanceRow
                             anchors.left: parent.left
-                            anchors.leftMargin: 13   // 与安全域详情页按钮的 leftMargin 保持一致
+                            anchors.leftMargin: 13
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 8
 
-                            // 图标（使用白色版本 icon-domain-instance-white.svg，略微缩小以与安全域页面视觉一致）
                             Image {
                                 width: 14
                                 height: 14
                                 anchors.verticalCenter: parent.verticalCenter
-                                source: Qt.resolvedUrl("icons/icon-domain-instance-white.svg")
+                                source: "qrc:/icons/icon-domain-instance-white.svg"
                                 fillMode: Image.PreserveAspectFit
                             }
 
-                            // 文案
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: qsTr("Encrypt File to This Security Domain")
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
-                                color: Theme.Colors.primaryText   // 白色文字
+                                color: Theme.Colors.primaryText
                             }
                         }
 
@@ -278,22 +278,13 @@ Item {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
-                                // 直接打开付款确认弹窗，使用创建实例时设置的时长（存储在 duration 中）
                                 var durationText = instanceData.duration ? instanceData.duration.toString() : "1";
                                 instantiationPaymentDialog.durationText = durationText;
-
-                                // 显示用的实例大小（人类可读）
                                 var rawSize = instanceData.volumnSize || instanceData.size;
                                 var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(rawSize);
                                 instantiationPaymentDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes);
-
-                                // 显示的实例时长文案
                                 instantiationPaymentDialog.instanceFee = (durationText && durationText.length > 0 ? (durationText + qsTr(" months")) : "-");
-
-                                // 当前计费规则
                                 instantiationPaymentDialog.billingRule = qsTr("30 CNY/GB/Month");
-
-                                // 计算预计费用
                                 instantiationPaymentDialog.estimatedFee = calculateEstimatedFee(rawSize, durationText, instantiationPaymentDialog.billingRule);
                                 instantiationPaymentDialog.open();
                             }
@@ -302,191 +293,30 @@ Item {
                         }
                     }
                 }
-                Rectangle {
+
+                InstanceInfoCard {
                     id: basicInfoCard
                     anchors.left: parent.left
                     anchors.leftMargin: 32
                     anchors.top: parent.top
                     anchors.topMargin: 92
                     width: 778
-                    height: 314
-                    color: "white"
-                    border.color: "#e2e8f0"  // border-slate-200
-                    border.width: 1
-                    radius: 14
-
-                    Item {
-                        anchors.fill: parent
-                        anchors.leftMargin: 25
-                        anchors.topMargin: 25
-                        anchors.rightMargin: 1
-                        anchors.bottomMargin: 25
-                        Column {
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            width: 427
-                            spacing: 4
-
-                            SelectableText {
-                                text: qsTr("Instance ID")
-                                color: "#62748e"
-                            }
-
-                            SelectableText {
-                                text: instanceData.id || "-"
-                                font.pixelSize: 16
-                                color: "#0f172b"
-                            }
-                        }
-                        Column {
-                            anchors.left: parent.left
-                            anchors.leftMargin: 451
-                            anchors.top: parent.top
-                            width: 427
-                            spacing: 4
-
-                            SelectableText {
-                                text: qsTr("Status")
-                                color: "#62748e"
-                            }
-
-                            Rectangle {
-                                width: 54
-                                height: 22
-                                radius: 8
-                                property var statusBadgeStyle: Theme.Colors.getStatusColor(instanceData.status || "运行中")
-                                color: statusBadgeStyle.bg
-                                border.color: statusBadgeStyle.border
-                                border.width: 1
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: Theme.Colors.translateStatus(instanceData.status || "运行中")
-                                    font.pixelSize: 12
-                                    font.weight: Font.Medium
-                                    color: parent.statusBadgeStyle.text
-                                }
-                            }
-                        }
-                        Column {
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            anchors.topMargin: 72
-                            width: 427
-                            spacing: 4
-
-                            SelectableText {
-                                text: qsTr("Name")
-                                color: "#62748e"
-                            }
-
-                            SelectableText {
-                                text: instanceData.name || "-"
-                                font.pixelSize: 16
-                                color: "#0f172b"
-                            }
-                        }
-                        Column {
-                            anchors.left: parent.left
-                            anchors.leftMargin: 451
-                            anchors.top: parent.top
-                            anchors.topMargin: 72
-                            width: 427
-                            spacing: 4
-
-                            SelectableText {
-                                text: qsTr("Belongs To Security Domain")
-                                color: "#62748e"
-                            }
-
-                            SelectableText {
-                                text: "-"
-                                font.pixelSize: 16
-                                color: "#0f172b"
-                            }
-                        }
-                        Column {
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            anchors.topMargin: 144
-                            width: 427
-                            spacing: 4
-
-                            SelectableText {
-                                text: qsTr("Path")
-                                color: "#62748e"
-                            }
-
-                            Row {
-                                spacing: 4
-
-                                SelectableText {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: instanceData.diskPartition || "-"
-                                    font.pixelSize: 16
-                                    color: "#0f4c81"
-                                }
-
-                                Image {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    source: "icons/icon-directory.svg"
-                                    width: 12
-                                    height: 12
-                                }
-                            }
-                        }
-                        Column {
-                            anchors.left: parent.left
-                            anchors.leftMargin: 451
-                            anchors.top: parent.top
-                            anchors.topMargin: 144
-                            width: 427
-                            spacing: 4
-
-                            SelectableText {
-                                text: qsTr("Created At")
-                                color: "#62748e"
-                            }
-
-                            SelectableText {
-                                text: instanceData.createdAt || "-"
-                                font.pixelSize: 16
-                                color: "#0f172b"
-                            }
-                        }
-                        Column {
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            anchors.topMargin: 216
-                            width: 427
-                            spacing: 4
-
-                            SelectableText {
-                                text: qsTr("Expires At")
-                                color: "#62748e"
-                            }
-
-                            SelectableText {
-                                text: displayExpiredTime(instanceData)
-                                font.pixelSize: 16
-                                color: "#0f172b"
-                            }
-                        }
-                    }
+                    instanceData: root.instanceData
+                    expiryText: displayExpiredTime(root.instanceData)
                 }
 
-                // Authorized Instance Notification Card - shown only for authorized instances
+                // Authorized Instance Notification Card
                 Rectangle {
                     id: authorizedNotificationCard
                     anchors.left: parent.left
                     anchors.leftMargin: 32
                     anchors.top: basicInfoCard.bottom
-                    anchors.topMargin: 25  // Spacing between Basic Info Card and notification card
+                    anchors.topMargin: 25
                     width: 778
-                    height: isAuthorizedInstance ? 73 : 0  // Height based on content (24.651px padding top + 24px content + 24.651px padding bottom)
+                    height: isAuthorizedInstance ? 73 : 0
                     visible: root.isAuthorizedInstance
-                    color: "#E6F7FF"  // bg-blue-50 equivalent
-                    border.color: "#BEDBFF"  // Light blue border
+                    color: "#E6F7FF"
+                    border.color: "#BEDBFF"
                     border.width: 1
                     radius: 14
 
@@ -496,16 +326,14 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: 12
 
-                        // Info icon
                         Image {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 20
                             height: 20
-                            source: Qt.resolvedUrl("icons/icon-info.svg")
+                            source: "qrc:/icons/icon-info.svg"
                             fillMode: Image.PreserveAspectFit
                         }
 
-                        // Notification text
                         SelectableText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Application approved. Click \"Start Domain\" to proceed.")
@@ -518,709 +346,55 @@ Item {
                     }
                 }
 
-                // Process Whitelist Card - dynamic height based on table rows
-                Rectangle {
+                InstanceWhitelistCard {
                     id: whitelistCard
                     anchors.left: parent.left
                     anchors.leftMargin: 32
                     anchors.top: root.isAuthorizedInstance ? authorizedNotificationCard.bottom : basicInfoCard.bottom
-                    anchors.topMargin: root.showManagementPanels ? 25 : 0  // Spacing between Basic Info Card and Process Whitelist Card
+                    anchors.topMargin: root.showManagementPanels ? 25 : 0
                     width: 778
-                    property int whitelistCount: instanceData.processWhitelist ? instanceData.processWhitelist.length : 0
-                    property bool hasWhitelist: whitelistCount > 0
-
-                    height: root.showManagementPanels ? (20 + 16 + (hasWhitelist ? whitelistTable.height : 24) + 48) : 0  // Title + spacing + (table or "无") + margins
-                    color: "white"
-                    border.color: "#e2e8f0"
-                    border.width: 1
-                    radius: 14
                     visible: root.showManagementPanels
-
-                    Item {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.topMargin: 24
-                        anchors.leftMargin: 24
-                        anchors.rightMargin: 24
-                        anchors.bottomMargin: 24
-
-                        SelectableText {
-                            id: whitelistTitle
-                            anchors.left: parent.left
-                            anchors.top: parent.top
-                            text: qsTr("App Whitelist")
-                            font.pixelSize: 14
-                            color: "#62748e"
-                        }
-
-                        Item {
-                            id: whitelistEmptyState
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: whitelistTitle.bottom
-                            anchors.topMargin: 16
-                            height: 24
-                            visible: !whitelistCard.hasWhitelist
-
-                            SelectableText {
-                                anchors.left: parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: ""
-                                font.pixelSize: 16
-                                font.weight: Font.Medium
-                                color: "#0f172b"
-                            }
-                        }
-
-                        Rectangle {
-                            id: whitelistTable
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: whitelistTitle.bottom
-                            anchors.topMargin: 16
-                            height: whitelistCard.hasWhitelist ? (40 + whitelistCard.whitelistCount * 36) : 0  // Header (40) + rows (36 each)
-                            radius: 10
-                            border.color: "#1a000000"
-                            border.width: 1
-                            color: "white"
-                            visible: whitelistCard.hasWhitelist
-
-                            // Inner Rectangle for clipping content while preserving border visibility
-                            Rectangle {
-                                anchors.fill: parent
-                                anchors.margins: 1
-                                radius: parent.radius - 1  // Slightly smaller radius for inner clipping
-                                color: "transparent"
-                                clip: true
-
-                                Item {
-                                    id: whitelistHeader
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.top: parent.top
-                                    height: 40
-                                    visible: whitelistCard.hasWhitelist
-
-                                    Rectangle {
-                                        anchors.left: parent.left
-                                        width: 130
-                                        height: parent.height
-                                        color: "transparent"
-
-                                        Rectangle {
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.bottom: parent.bottom
-                                            height: 1
-                                            color: "#1a000000"
-                                        }
-
-                                        SelectableText {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 8
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: qsTr("Program Name")
-                                            font.pixelSize: 14
-                                            font.weight: Font.Medium
-                                            color: "#0f172b"
-                                        }
-                                    }
-
-                                    Rectangle {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: 130
-                                        anchors.right: parent.right
-                                        height: parent.height
-                                        color: "transparent"
-
-                                        Rectangle {
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.bottom: parent.bottom
-                                            height: 1
-                                            color: "#1a000000"
-                                        }
-
-                                        SelectableText {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 8
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: qsTr("Program Path")
-                                            font.pixelSize: 14
-                                            font.weight: Font.Medium
-                                            color: "#0f172b"
-                                        }
-                                    }
-                                }
-
-                                // Dynamic rows based on processWhitelist data
-                                Repeater {
-                                    model: instanceData.processWhitelist || []
-                                    visible: whitelistCard.hasWhitelist
-
-                                    Rectangle {
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.top: whitelistHeader.bottom
-                                        anchors.topMargin: index * 36
-                                        height: 36
-                                        color: "white"
-
-                                        Rectangle {
-                                            anchors.left: parent.left
-                                            width: 130
-                                            height: parent.height
-                                            color: "transparent"
-
-                                            SelectableText {
-                                                anchors.left: parent.left
-                                                anchors.leftMargin: 8
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: modelData.name || ""
-                                                font.pixelSize: 14
-                                                color: "#0f172b"
-                                                width: parent.width - 16
-                                                clip: true
-                                            }
-                                        }
-
-                                        Rectangle {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 130
-                                            anchors.right: parent.right
-                                            height: parent.height
-                                            color: "transparent"
-
-                                            SelectableText {
-                                                anchors.left: parent.left
-                                                anchors.leftMargin: 8
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                text: modelData.diskPartition || ""
-                                                font.pixelSize: 14
-                                                color: "#0f172b"
-                                                width: parent.width - 16
-                                                clip: true
-
-                                                MouseArea {
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                    acceptedButtons: Qt.NoButton
-                                                    cursorShape: Qt.IBeamCursor
-
-                                                    ToolTip.delay: 500
-                                                    ToolTip.visible: containsMouse
-                                                    ToolTip.text: modelData.diskPartition || ""
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    processWhitelist: root.instanceData.processWhitelist || []
                 }
 
-                // File Export Application Card - positioned below Process Whitelist Card
-                Rectangle {
+                InstanceExportCard {
                     id: exportApplicationCard
                     anchors.left: parent.left
                     anchors.leftMargin: 32
                     anchors.top: whitelistCard.bottom
-                    anchors.topMargin: root.showManagementPanels ? 25 : 0  // Spacing between Process Whitelist and File Export Application cards
+                    anchors.topMargin: root.showManagementPanels ? 25 : 0
                     width: 778
-                    property int exportRequestCount: instanceData.exportRequests ? instanceData.exportRequests.length : 0
-                    property bool hasExportRequests: exportRequestCount > 0
-                    height: root.showManagementPanels ? (24 + 36 + 16 + (hasExportRequests ? exportTable.height : 24) + 25) : 0  // Header + spacing + table or "无" + margins
-                    color: "white"
-                    border.color: "#e2e8f0"  // border-slate-200
-                    border.width: 1
-                    radius: 14
                     visible: root.showManagementPanels
+                    exportRequests: root.instanceData.exportRequests || []
+                    canImportExportFiles: root.canImportExportFiles
 
-                    Item {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.topMargin: 24
-                        anchors.leftMargin: 24
-                        anchors.rightMargin: 24
-                        anchors.bottomMargin: 25
+                    onExportFileClicked: {
+                        var exportBasePath = root.instanceData && root.instanceData.diskPartition ? root.instanceData.diskPartition : "";
+                        exportFileDialog.allowedDirectory = exportBasePath;
+                        exportFileDialog.resetForm();
+                        exportFileDialog.open();
+                    }
 
-                        Item {
-                            id: exportHeader
-                            width: parent.width
-                            height: 36
-
-                            SelectableText {
-                                anchors.left: parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: qsTr("Export Requests")
-                                font.pixelSize: 14
-                                color: "#62748e"
-                            }
-
-                            Rectangle {
-                                anchors.right: parent.right
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: exportFileRow.width + 24  // Dynamic width
-                                height: 36
-                                radius: 8
-                                property bool hovered: false
-                                color: hovered ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
-                                visible: root.canImportExportFiles
-
-                                Row {
-                                    id: exportFileRow
-                                    anchors.centerIn: parent
-                                    spacing: 8
-
-                                    Image {
-                                        source: "icons/icon-export-file.svg"
-                                        width: 16
-                                        height: 16
-                                    }
-
-                                    Text {
-                                        text: qsTr("Export File")
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: Theme.Colors.primaryText
-                                    }
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onEntered: parent.hovered = true
-                                    onExited: parent.hovered = false
-                                    onClicked: {
-                                        var exportBasePath = root.instanceData && root.instanceData.diskPartition ? root.instanceData.diskPartition : "";
-                                        exportFileDialog.allowedDirectory = exportBasePath;
-                                        exportFileDialog.resetForm();
-                                        exportFileDialog.open();
-                                    }
-                                }
-                            }
-                        }
-
-                        Item {
-                            id: exportEmptyState
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: exportHeader.bottom
-                            anchors.topMargin: 16
-                            height: 24
-                            visible: !exportApplicationCard.hasExportRequests
-
-                            SelectableText {
-                                anchors.left: parent.left
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: ""
-                                font.pixelSize: 16
-                                font.weight: Font.Medium
-                                color: "#0f172b"
-                            }
-                        }
-
-                        // Table
-                        Rectangle {
-                            id: exportTable
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: exportHeader.bottom
-                            anchors.topMargin: 16
-                            height: exportApplicationCard.hasExportRequests ? (40 + exportApplicationCard.exportRequestCount * 38) : 0  // Header (40) + rows (38 each)
-                            border.color: "#1a000000"
-                            border.width: 1
-                            radius: 10
-                            color: "white"
-                            visible: exportApplicationCard.hasExportRequests
-
-                            // Inner Rectangle for clipping content while preserving border visibility
-                            Rectangle {
-                                anchors.fill: parent
-                                anchors.margins: 1
-                                radius: parent.radius - 1  // Slightly smaller radius for inner clipping
-                                color: "transparent"
-                                clip: true
-
-                                Item {
-                                    anchors.fill: parent
-                                    visible: exportApplicationCard.hasExportRequests
-
-                                    // Table Header
-                                    Rectangle {
-                                        anchors.top: parent.top
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        height: 40
-                                        property bool hovered: false
-                                        property real headerCornerRadius: Math.max(0, exportTable.radius - 1)
-                                        color: hovered ? "#f2f7fd" : "transparent"
-                                        radius: hovered ? headerCornerRadius : 0
-
-                                        HoverHandler {
-                                            acceptedDevices: PointerDevice.Mouse
-                                            onHoveredChanged: parent.hovered = hovered
-                                        }
-
-                                        // Maintain rounded top corners but keep bottom corners square
-                                        Rectangle {
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            anchors.bottom: parent.bottom
-                                            height: parent.headerCornerRadius
-                                            color: parent.color
-                                            visible: parent.hovered && parent.headerCornerRadius > 0
-                                        }
-
-                                        Row {
-                                            anchors.fill: parent
-
-                                            Rectangle {
-                                                width: 160
-                                                height: parent.height
-                                                color: "transparent"
-
-                                                Rectangle {
-                                                    anchors.bottom: parent.bottom
-                                                    anchors.left: parent.left
-                                                    anchors.right: parent.right
-                                                    height: 1
-                                                    color: "#1a000000"
-                                                }
-
-                                                SelectableText {
-                                                    anchors.left: parent.left
-                                                    anchors.leftMargin: 8
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: qsTr("Request ID")
-                                                    font.pixelSize: 14
-                                                    font.weight: Font.Medium
-                                                    color: "#0f172b"
-                                                }
-                                            }
-
-                                            Rectangle {
-                                                width: 100
-                                                height: parent.height
-                                                color: "transparent"
-
-                                                Rectangle {
-                                                    anchors.bottom: parent.bottom
-                                                    anchors.left: parent.left
-                                                    anchors.right: parent.right
-                                                    height: 1
-                                                    color: "#1a000000"
-                                                }
-
-                                                SelectableText {
-                                                    anchors.left: parent.left
-                                                    anchors.leftMargin: 8
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: qsTr("File Count")
-                                                    font.pixelSize: 14
-                                                    font.weight: Font.Medium
-                                                    color: "#0f172b"
-                                                }
-                                            }
-
-                                            Rectangle {
-                                                width: 100
-                                                height: parent.height
-                                                color: "transparent"
-
-                                                Rectangle {
-                                                    anchors.bottom: parent.bottom
-                                                    anchors.left: parent.left
-                                                    anchors.right: parent.right
-                                                    height: 1
-                                                    color: "#1a000000"
-                                                }
-
-                                                SelectableText {
-                                                    anchors.left: parent.left
-                                                    anchors.leftMargin: 8
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: qsTr("Total Size")
-                                                    font.pixelSize: 14
-                                                    font.weight: Font.Medium
-                                                    color: "#0f172b"
-                                                }
-                                            }
-
-                                            Rectangle {
-                                                width: 100
-                                                height: parent.height
-                                                color: "transparent"
-
-                                                Rectangle {
-                                                    anchors.bottom: parent.bottom
-                                                    anchors.left: parent.left
-                                                    anchors.right: parent.right
-                                                    height: 1
-                                                    color: "#1a000000"
-                                                }
-
-                                                SelectableText {
-                                                    anchors.left: parent.left
-                                                    anchors.leftMargin: 8
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: qsTr("Status")
-                                                    font.pixelSize: 14
-                                                    font.weight: Font.Medium
-                                                    color: "#0f172b"
-                                                }
-                                            }
-
-                                            Rectangle {
-                                                width: 160
-                                                height: parent.height
-                                                color: "transparent"
-
-                                                Rectangle {
-                                                    anchors.bottom: parent.bottom
-                                                    anchors.left: parent.left
-                                                    anchors.right: parent.right
-                                                    height: 1
-                                                    color: "#1a000000"
-                                                }
-
-                                                SelectableText {
-                                                    anchors.left: parent.left
-                                                    anchors.leftMargin: 8
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: qsTr("Request Time")
-                                                    font.pixelSize: 14
-                                                    font.weight: Font.Medium
-                                                    color: "#0f172b"
-                                                }
-                                            }
-
-                                            Rectangle {
-                                                width: parent.parent.width - 160 - 100 - 100 - 100 - 160
-                                                height: parent.height
-                                                color: "transparent"
-
-                                                Rectangle {
-                                                    anchors.bottom: parent.bottom
-                                                    anchors.left: parent.left
-                                                    anchors.right: parent.right
-                                                    height: 1
-                                                    color: "#1a000000"
-                                                }
-
-                                                SelectableText {
-                                                    anchors.left: parent.left
-                                                    anchors.leftMargin: 8
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: qsTr("Actions")
-                                                    font.pixelSize: 14
-                                                    font.weight: Font.Medium
-                                                    color: "#0f172b"
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    // Table Body - Use absolute positioning for rows
-                                    Repeater {
-                                        id: exportRequestRepeater
-                                        model: instanceData.exportRequests || []
-                                        visible: exportApplicationCard.hasExportRequests
-
-                                        Item {
-                                            anchors.top: parent.top
-                                            anchors.topMargin: 40 + index * 38  // 40 (header) + row index * 38
-                                            anchors.left: parent.left
-                                            anchors.right: parent.right
-                                            height: 38
-                                            property bool hovered: false
-                                            property bool isLastRow: exportRequestRepeater.count > 0 && index === exportRequestRepeater.count - 1
-                                            property real hoverCornerRadius: Math.max(0, exportTable.radius - 1)
-                                            property bool showRoundedHover: hovered && isLastRow
-
-                                            Rectangle {
-                                                id: rowHoverBackground
-                                                anchors {
-                                                    left: parent.left
-                                                    right: parent.right
-                                                    top: parent.top
-                                                    bottom: parent.bottom
-                                                    bottomMargin: showRoundedHover ? 1 : 0
-                                                }
-                                                color: hovered ? "#f2f7fd" : "transparent"
-                                                radius: showRoundedHover ? hoverCornerRadius : 0
-                                                antialiasing: showRoundedHover
-                                            }
-
-                                            // Mask to keep the top edge square when rounding the bottom corners
-                                            Rectangle {
-                                                anchors.left: rowHoverBackground.left
-                                                anchors.right: rowHoverBackground.right
-                                                anchors.top: rowHoverBackground.top
-                                                height: showRoundedHover ? rowHoverBackground.radius : 0
-                                                color: rowHoverBackground.color
-                                                visible: showRoundedHover && rowHoverBackground.radius > 0
-                                            }
-
-                                            Rectangle {
-                                                anchors.bottom: parent.bottom
-                                                anchors.left: parent.left
-                                                anchors.right: parent.right
-                                                height: index < exportRequestRepeater.count - 1 ? 1 : 0
-                                                color: "#1a000000"
-                                                visible: index < exportRequestRepeater.count - 1
-                                            }
-
-                                            HoverHandler {
-                                                acceptedDevices: PointerDevice.Mouse
-                                                onHoveredChanged: parent.hovered = hovered
-                                            }
-
-                                            Row {
-                                                anchors.fill: parent
-
-                                                Rectangle {
-                                                    width: 160
-                                                    height: parent.height
-                                                    color: "transparent"
-
-                                                    SelectableText {
-                                                        anchors.left: parent.left
-                                                        anchors.leftMargin: 8
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        text: modelData.id || "-"
-                                                        font.pixelSize: 14
-                                                        color: "#0f172b"
-                                                    }
-                                                }
-
-                                                Rectangle {
-                                                    width: 100
-                                                    height: parent.height
-                                                    color: "transparent"
-
-                                                    SelectableText {
-                                                        anchors.left: parent.left
-                                                        anchors.leftMargin: 8
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        text: modelData.fileCount || "-"
-                                                        font.pixelSize: 14
-                                                        color: "#0f172b"
-                                                    }
-                                                }
-
-                                                Rectangle {
-                                                    width: 100
-                                                    height: parent.height
-                                                    color: "transparent"
-
-                                                    SelectableText {
-                                                        anchors.left: parent.left
-                                                        anchors.leftMargin: 8
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        text: Theme.Utils.formatSize(modelData.fileSize)
-                                                        font.pixelSize: 14
-                                                        color: "#0f172b"
-                                                    }
-                                                }
-
-                                                Rectangle {
-                                                    width: 100
-                                                    height: parent.height
-                                                    color: "transparent"
-
-                                                    Rectangle {
-                                                        anchors.left: parent.left
-                                                        anchors.leftMargin: 8
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        width: 54
-                                                        height: 22
-                                                        radius: 8
-                                                        property var auditStatusStyle: Theme.Colors.getStatusColor(modelData.status || "已授权")
-                                                        color: auditStatusStyle.bg
-                                                        border.color: auditStatusStyle.border
-                                                        border.width: 1
-
-                                                        SelectableText {
-                                                            anchors.centerIn: parent
-                                                            text: Theme.Colors.translateStatus(modelData.status || "已授权")
-                                                            font.pixelSize: 12
-                                                            font.weight: Font.Medium
-                                                            color: parent.auditStatusStyle.text
-                                                        }
-                                                    }
-                                                }
-
-                                                Rectangle {
-                                                    width: 160
-                                                    height: parent.height
-                                                    color: "transparent"
-
-                                                    SelectableText {
-                                                        anchors.left: parent.left
-                                                        anchors.leftMargin: 8
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        text: modelData.applyTime || "-"
-                                                        font.pixelSize: 14
-                                                        color: "#0f172b"
-                                                    }
-                                                }
-
-                                                Rectangle {
-                                                    width: parent.parent.width - 160 - 100 - 100 - 100 - 160
-                                                    height: parent.height
-                                                    color: "transparent"
-                                                    property bool hovered: false
-
-                                                    SelectableText {
-                                                        anchors.left: parent.left
-                                                        anchors.leftMargin: 8
-                                                        anchors.verticalCenter: parent.verticalCenter
-                                                        text: qsTr("View")
-                                                        font.pixelSize: 14
-                                                        color: "#0f4c81"
-                                                        font.underline: parent.hovered
-                                                    }
-
-                                                    MouseArea {
-                                                        anchors.fill: parent
-                                                        cursorShape: Qt.PointingHandCursor
-                                                        hoverEnabled: true
-                                                        onEntered: parent.hovered = true
-                                                        onExited: parent.hovered = false
-                                                        onClicked: {
-                                                            exportDetailDialog.exportId = modelData.applyCode || "";
-                                                            exportDetailDialog.applicant = modelData.applicantUserName || modelData.applicant || root.instanceData.creatorUserName || root.instanceData.creator || "-";
-                                                            exportDetailDialog.fileSize = Number(modelData.fileSize) || 0;
-                                                            exportDetailDialog.status = modelData.status || "待审核";
-                                                            exportDetailDialog.applyTime = modelData.applyTime || "";
-                                                            exportDetailDialog.instanceName = root.instanceData.name || "";
-                                                            exportDetailDialog.files = modelData.files || [];
-                                                            exportDetailDialog.reason = modelData.reason || "";
-                                                            exportDetailDialog.fileCode = modelData.fileCode || "";
-                                                            exportDetailDialog.fileHash = modelData.fileHash || "";
-                                                            exportDetailDialog.open();
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    onViewExportClicked: function (rowData) {
+                        exportDetailDialog.exportId = rowData.applyCode || "";
+                        exportDetailDialog.applicant = rowData.applicantUserName || rowData.applicant || root.instanceData.creatorUserName || root.instanceData.creator || "-";
+                        exportDetailDialog.fileSize = Number(rowData.fileSize) || 0;
+                        exportDetailDialog.status = rowData.status || "待审核";
+                        exportDetailDialog.applyTime = rowData.applyTime || "";
+                        exportDetailDialog.instanceName = root.instanceData.name || "";
+                        exportDetailDialog.files = rowData.files || [];
+                        exportDetailDialog.reason = rowData.reason || "";
+                        exportDetailDialog.fileCode = rowData.fileCode || "";
+                        exportDetailDialog.fileHash = rowData.fileHash || "";
+                        exportDetailDialog.open();
                     }
                 }
 
-                // Delete Button - positioned below File Export Application Card
+                // Delete Button
                 Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: exportApplicationCard.bottom
-                    anchors.topMargin: (root.isInstanceActive && root.showManagementPanels) ? 25 : 0  // Spacing between File Export Application Card and Delete Button
+                    anchors.topMargin: (root.isInstanceActive && root.showManagementPanels) ? 25 : 0
                     width: 155
                     height: (root.isInstanceActive && root.showManagementPanels) ? 36 : 0
                     radius: 8
@@ -1233,7 +407,7 @@ Item {
                         spacing: 8
 
                         Image {
-                            source: "icons/icon-delete.svg"
+                            source: "qrc:/icons/icon-delete.svg"
                             width: 16
                             height: 16
                         }
@@ -1266,21 +440,12 @@ Item {
             id: setDurationDialog
 
             onConfirmClicked: function (durationText) {
-                // 打开付款确认弹窗并传入展示数据
                 instantiationPaymentDialog.durationText = durationText;
-
-                // 显示用的实例大小（人类可读）
                 var rawSize = instanceData.volumnSize || instanceData.size;
                 var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(rawSize);
                 instantiationPaymentDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes);
-
-                // 显示的实例时长文案
                 instantiationPaymentDialog.instanceFee = (durationText && durationText.length > 0 ? (durationText + qsTr(" months")) : "-");
-
-                // 当前计费规则（可根据实际配置调整）
                 instantiationPaymentDialog.billingRule = qsTr("30 CNY/GB/Month");
-
-                // 按照：实例大小(GB) × 实例时长(月) × 计费单价(元/GB/月) 计算预计费用
                 instantiationPaymentDialog.estimatedFee = calculateEstimatedFee(rawSize, durationText, instantiationPaymentDialog.billingRule);
                 instantiationPaymentDialog.open();
             }
@@ -1293,11 +458,8 @@ Item {
             id: instantiationPaymentDialog
 
             onConfirmClicked: function (durationText) {
-                // 关闭付款确认弹窗
                 instantiationPaymentDialog.close();
-                // 打开支付成功弹窗
                 paymentSuccessDialog.open();
-                // 将运行时长回传给上层，由上层决定如何真正执行实例化/扣费
                 root.instantiateRequested(durationText);
             }
 
@@ -1344,7 +506,7 @@ Item {
         ExportDetailDialog {
             id: exportDetailDialog
             isCreator: root.currentUser && root.instanceData && root.currentUser.userName === root.instanceData.creator
-            allowApproveReject: false  // From SecurityInstanceDetail, always show close button
+            allowApproveReject: false
 
             onApproveClicked: {}
 

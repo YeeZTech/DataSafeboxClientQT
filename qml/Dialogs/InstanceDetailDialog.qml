@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
 
 Popup {
     id: root
@@ -89,53 +90,6 @@ Popup {
             result.push(whitelistApps[i]);
         }
         return result;
-    }
-
-    // Get page numbers to display (with ellipsis support)
-    function getVisiblePages() {
-        var total = getTotalPages();
-        if (total <= 7) {
-            // Show all pages if 7 or less
-            var pages = [];
-            for (var i = 1; i <= total; i++) {
-                pages.push(i);
-            }
-            return pages;
-        }
-
-        // Show first, last, current and adjacent pages with ellipsis
-        var pages = [];
-        if (currentPage <= 3) {
-            // Near start: 1 2 3 4 ... last
-            for (var i = 1; i <= Math.min(4, total); i++) {
-                pages.push(i);
-            }
-            if (total > 5) {
-                pages.push(-1); // -1 means ellipsis
-                pages.push(total);
-            } else if (total === 5) {
-                pages.push(5);
-            }
-        } else if (currentPage >= total - 2) {
-            // Near end: 1 ... last-3 last-2 last-1 last
-            pages.push(1);
-            if (total > 5) {
-                pages.push(-1);
-            }
-            for (var i = Math.max(total - 3, 2); i <= total; i++) {
-                pages.push(i);
-            }
-        } else {
-            // Middle: 1 ... current-1 current current+1 ... last
-            pages.push(1);
-            pages.push(-1);
-            pages.push(currentPage - 1);
-            pages.push(currentPage);
-            pages.push(currentPage + 1);
-            pages.push(-2); // -2 means second ellipsis
-            pages.push(total);
-        }
-        return pages;
     }
 
     signal approveClicked
@@ -313,7 +267,7 @@ Popup {
                             SelectableText {
                                 id: instanceStatusText
                                 anchors.centerIn: parent
-                                text: Colors.translateStatus(root.status)
+                                text: Theme.Colors.translateStatus(root.status)
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: statusStyle.text
@@ -439,7 +393,7 @@ Popup {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     width: 36
                                     height: 36
-                                    source: Qt.resolvedUrl("icons/icon-empty-state.svg")
+                                    source: "qrc:/icons/icon-empty-state.svg"
                                     sourceSize: Qt.size(36, 36)
                                     fillMode: Image.PreserveAspectFit
                                     smooth: true
@@ -652,116 +606,11 @@ Popup {
                         }
 
                         // Pagination - only show when whitelist is not empty
-                        Item {
-                            width: parent.width
-                            height: 32
+                        PaginationControl {
                             visible: root.whitelistApps && root.whitelistApps.length > 0
-
-                            Row {
-                                id: paginationRow
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: 6
-                                property int totalPages: root.getTotalPages()
-                                property var visiblePages: root.getVisiblePages()
-
-                                // Previous button
-                                Rectangle {
-                                    width: 22
-                                    height: 22
-                                    radius: 3
-                                    visible: parent.totalPages > 0
-                                    color: "transparent"
-                                    opacity: root.currentPage > 1 ? 1 : 0.6
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "<"
-                                        font.pixelSize: 11
-                                        font.weight: Font.Medium
-                                        color: root.currentPage > 1 ? "#212b36" : "#90a1b9"
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        enabled: root.currentPage > 1
-                                        hoverEnabled: true
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        onClicked: {
-                                            if (root.currentPage > 1) {
-                                                root.currentPage--;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Dynamic page buttons with ellipsis support
-                                Repeater {
-                                    model: parent.visiblePages
-
-                                    Rectangle {
-                                        width: 22
-                                        height: 22
-                                        radius: 3
-                                        property int pageNum: modelData
-                                        property bool isEllipsis: pageNum < 0
-                                        property bool isCurrentPage: pageNum === root.currentPage
-                                        color: pageMouseArea.pressed ? "#1b5fa8" : (pageMouseArea.containsMouse && !isEllipsis ? "#e3f2fd" : (isCurrentPage ? "transparent" : "white"))
-                                        border.color: isCurrentPage ? "#2b7fff" : "#d5dce5"
-                                        border.width: 1
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: isEllipsis ? "..." : pageNum.toString()
-                                            font.pixelSize: 11
-                                            font.weight: Font.Medium
-                                            color: pageMouseArea.pressed ? "#ffffff" : (isCurrentPage ? "#2b7fff" : "#212b36")
-                                        }
-
-                                        MouseArea {
-                                            id: pageMouseArea
-                                            anchors.fill: parent
-                                            enabled: !isEllipsis
-                                            hoverEnabled: true
-                                            cursorShape: isCurrentPage ? Qt.ArrowCursor : Qt.PointingHandCursor
-                                            onClicked: {
-                                                if (!isEllipsis && !isCurrentPage) {
-                                                    root.currentPage = pageNum;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Next button
-                                Rectangle {
-                                    width: 22
-                                    height: 22
-                                    radius: 3
-                                    visible: parent.totalPages > 0
-                                    color: "transparent"
-                                    opacity: root.currentPage < paginationRow.totalPages ? 1 : 0.6
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: ">"
-                                        font.pixelSize: 11
-                                        font.weight: Font.Medium
-                                        color: root.currentPage < paginationRow.totalPages ? "#212b36" : "#90a1b9"
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        enabled: root.currentPage < paginationRow.totalPages
-                                        hoverEnabled: true
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        onClicked: {
-                                            if (root.currentPage < paginationRow.totalPages) {
-                                                root.currentPage++;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            currentPage: root.currentPage
+                            totalPages: root.getTotalPages()
+                            onPageChanged: root.currentPage = page
                         }
                     }
                 }
@@ -836,52 +685,16 @@ Popup {
                     }
                 }
 
-                // Approve button
-                Rectangle {
+                PrimaryButton {
                     id: approveButton
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 60
-                    height: 36
-                    radius: 8
-                    opacity: root.allowApproveReject ? 1.0 : 0.5
-                    color: {
-                        if (approveArea.pressed)
-                            return "#0a3d6b";
-                        if (approveArea.containsMouse)
-                            return "#0d5a95";
-                        return "#0f4c81";
-                    }
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 150
-                        }
-                    }
+                    text: qsTr("Approve")
+                    enabled: root.allowApproveReject
                     visible: shouldShowActionButtons
-
-                    SelectableText {
-                        anchors.centerIn: parent
-                        text: qsTr("Approve")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "white"
-                    }
-
-                    MouseArea {
-                        id: approveArea
-                        anchors.fill: parent
-                        enabled: root.allowApproveReject
-                        hoverEnabled: true
-                        cursorShape: root.allowApproveReject ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                        onClicked: {
-                            root.approveClicked();
-                            root.close();
-                        }
+                    onClicked: {
+                        root.approveClicked();
+                        root.close();
                     }
                 }
             }

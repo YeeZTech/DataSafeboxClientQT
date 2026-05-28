@@ -1,5 +1,7 @@
 import QtQuick 2.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
+import DataSafebox.Dialogs 1.0
 
 Rectangle {
     id: card
@@ -99,7 +101,7 @@ Rectangle {
                         width: 16
                         height: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        source: Qt.resolvedUrl("icons/icon-add-user-blue.svg")
+                        source: "qrc:/icons/icon-add-user-blue.svg"
                         fillMode: Image.PreserveAspectFit
                     }
 

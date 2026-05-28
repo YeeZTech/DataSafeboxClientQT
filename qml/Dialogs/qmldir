@@ -1,0 +1,18 @@
+module DataSafebox.Dialogs
+AddVisibleUserDialog 1.0 AddVisibleUserDialog.qml
+AppWhitelistDetailDialog 1.0 AppWhitelistDetailDialog.qml
+CustomerServiceDialog 1.0 CustomerServiceDialog.qml
+DeactivateConfirmDialog 1.0 DeactivateConfirmDialog.qml
+EncryptFileDialog 1.0 EncryptFileDialog.qml
+ExportDetailDialog 1.0 ExportDetailDialog.qml
+ExportFileDialog 1.0 ExportFileDialog.qml
+ImportFileDialog 1.0 ImportFileDialog.qml
+InstanceDetailDialog 1.0 InstanceDetailDialog.qml
+InstantiationHelpDialog 1.0 InstantiationHelpDialog.qml
+InstantiationPaymentDialog 1.0 InstantiationPaymentDialog.qml
+PaymentSuccessDialog 1.0 PaymentSuccessDialog.qml
+PausedReminderDialog 1.0 PausedReminderDialog.qml
+SetDurationDialog 1.0 SetDurationDialog.qml
+UpdateDialog 1.0 UpdateDialog.qml
+EncryptSuccessPopup 1.0 EncryptSuccessPopup.qml
+EncryptFailurePopup 1.0 EncryptFailurePopup.qml

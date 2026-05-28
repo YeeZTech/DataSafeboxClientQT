@@ -2,8 +2,11 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
 import QtQuick.Layouts 1.15
-import Qt.labs.platform 1.1 as Platform
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
+import DataSafebox.Pages 1.0
+import DataSafebox.Dialogs 1.0
+import DataSafebox.Auth 1.0
 
 ApplicationWindow {
     id: window
@@ -33,7 +36,6 @@ ApplicationWindow {
     property string currentPage: "home"  // "home", "createSecurityDomain", "securityDomainDetail", "instantiateForm", or "securityInstanceDetail"
 
     property bool hasUpdateNotification: false
-    property string settingsStatusText: ""
     property int loginRetryCount: 0
     property bool showLoginError: false
     property string loginErrorMessage: ""
@@ -113,22 +115,6 @@ ApplicationWindow {
         if (casdoorLoginWebView && casdoorLoginWebView.startLogin) {
             casdoorLoginWebView.startLogin();
         }
-    }
-
-    function formatByteSize(bytes) {
-        var value = Number(bytes || 0);
-        if (value <= 0)
-            return "0 B";
-        var units = ["B", "KB", "MB", "GB", "TB"];
-        var idx = 0;
-        while (value >= 1024 && idx < units.length - 1) {
-            value = value / 1024;
-            idx++;
-        }
-        if (idx === 0) {
-            return Math.round(value) + " " + units[idx];
-        }
-        return value.toFixed(2) + " " + units[idx];
     }
 
     function switchToSecurityDomain(domainCode, pubKey, domainName) {
@@ -507,11 +493,6 @@ ApplicationWindow {
                 DsccBridge.loadDomainList();
             }
             onPageRequested: function (page) {
-                if (page === "settings") {
-                    window.settingsStatusText = "";
-                    if (PathManager && PathManager.refreshCacheSize)
-                        PathManager.refreshCacheSize();
-                }
                 window.currentPage = page;
             }
             onLogoutRequested: dataManager.logoutUser()
@@ -615,6 +596,10 @@ ApplicationWindow {
                     else
                         customerServiceDialog.open();
                 }
+
+                onErrorOccurred: function (message, title) {
+                    window.showError(message, title);
+                }
             }
 
             // Instantiation Help Dialog
@@ -694,7 +679,7 @@ ApplicationWindow {
             }
 
             // Settings page
-            Item {
+            SettingsPage {
                 id: settingsPage
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -702,124 +687,6 @@ ApplicationWindow {
                 anchors.top: parent.top
                 anchors.topMargin: mainContentArea.contentTopOffset
                 visible: window.currentPage === "settings"
-
-                Column {
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.margins: 20
-                    spacing: 14
-
-                    Text {
-                        text: qsTr("Settings")
-                        font.pixelSize: 24
-                        font.weight: Font.Bold
-                        color: "#303542"
-                    }
-
-                    Row {
-                        width: parent.width
-                        spacing: 10
-
-                        Text {
-                            text: qsTr("Default Cache Path:")
-                            font.pixelSize: 16
-                            color: "#7f8793"
-                        }
-
-                        Text {
-                            width: parent.width - 130
-                            text: PathManager && PathManager.cacheDir ? PathManager.cacheDir : ""
-                            font.pixelSize: 16
-                            color: "#687180"
-                            wrapMode: Text.WrapAnywhere
-                        }
-                    }
-
-                    Flow {
-                        width: parent.width
-                        spacing: 10
-
-                        Text {
-                            text: qsTr("Change Path")
-                            font.pixelSize: 16
-                            color: settingsChangePathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsChangePathMouse.containsMouse ? "#2A6A9A" : Theme.Colors.primary
-                            Behavior on color { ColorAnimation { duration: 120 } }
-                            MouseArea {
-                                id: settingsChangePathMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: tempFolderDialog.open()
-                            }
-                        }
-
-                        Text {
-                            text: "|"
-                            font.pixelSize: 16
-                            color: "#c6ccd4"
-                        }
-
-                        Text {
-                            text: qsTr("Open Path")
-                            font.pixelSize: 16
-                            color: settingsOpenPathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsOpenPathMouse.containsMouse ? "#2A6A9A" : Theme.Colors.primary
-                            Behavior on color { ColorAnimation { duration: 120 } }
-                            MouseArea {
-                                id: settingsOpenPathMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    if (PathManager && PathManager.openTempDir) {
-                                        var opened = PathManager.openTempDir();
-                                        if (!opened) {
-                                            window.settingsStatusText = qsTr("Failed to open directory, please check if path is accessible");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        Text {
-                            text: "|"
-                            font.pixelSize: 16
-                            color: "#c6ccd4"
-                        }
-
-                        Text {
-                            text: qsTr("Clear Cache")
-                            font.pixelSize: 16
-                            color: settingsClearCacheMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsClearCacheMouse.containsMouse ? "#2A6A9A" : Theme.Colors.primary
-                            Behavior on color { ColorAnimation { duration: 120 } }
-                            MouseArea {
-                                id: settingsClearCacheMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    if (PathManager && PathManager.clearCache) {
-                                        var cleaned = PathManager.clearCache();
-                                        window.settingsStatusText = qsTr("Cache cleared:") + window.formatByteSize(cleaned);
-                                    }
-                                }
-                            }
-                        }
-
-                        Text {
-                            text: "(" + qsTr("approx.") + " " + window.formatByteSize(PathManager && PathManager.cacheSizeBytes ? PathManager.cacheSizeBytes : 0) + ")"
-                            font.pixelSize: 16
-                            color: "#8f96a1"
-                        }
-                    }
-
-                    Text {
-                        text: window.settingsStatusText
-                        font.pixelSize: 14
-                        color: "#3b4ed6"
-                        visible: window.settingsStatusText.length > 0
-                    }
-                }
             }
 
             // 未读消息计数器驱动：监听 MessageCenter 的三种事件
@@ -892,7 +759,7 @@ ApplicationWindow {
             anchors.centerIn: parent
             width: 18
             height: 18
-            source: Qt.resolvedUrl("icons/icon-customer-service-white.svg")
+            source: "qrc:/icons/icon-customer-service-white.svg"
             fillMode: Image.PreserveAspectFit
         }
 
@@ -917,33 +784,6 @@ ApplicationWindow {
         parent: Overlay.overlay
         x: parent.width - width - 15
         y: Math.max(8, parent.height - height - 93)
-    }
-
-    Platform.FolderDialog {
-        id: tempFolderDialog
-        title: qsTr("Select Cache Directory")
-        onAccepted: {
-            var selectedPath = "";
-            if (tempFolderDialog.folder) {
-                if (typeof tempFolderDialog.folder.toLocalFile === "function") {
-                    selectedPath = tempFolderDialog.folder.toLocalFile();
-                } else {
-                    var rawUrl = tempFolderDialog.folder.toString();
-                    if (rawUrl.indexOf("file:///") === 0) {
-                        selectedPath = decodeURIComponent(rawUrl.substring(8));
-                        if (Qt.platform.os === "windows" && selectedPath.length > 0 && selectedPath[0] === "/") {
-                            selectedPath = selectedPath.substring(1);
-                        }
-                    } else if (rawUrl.indexOf("file://") === 0) {
-                        selectedPath = decodeURIComponent(rawUrl.substring(7));
-                    }
-                }
-            }
-            if (selectedPath && PathManager && PathManager.setTempDir) {
-                var ok = PathManager.setTempDir(selectedPath);
-                window.settingsStatusText = ok ? qsTr("Cache directory updated, new tasks will use it immediately") : qsTr("Failed to set path, please check directory permissions");
-            }
-        }
     }
 
     UpdateDialog {
@@ -1263,65 +1103,18 @@ ApplicationWindow {
                 spacing: 12
                 Layout.alignment: Qt.AlignBottom
 
-                Rectangle {
+                SecondaryButton {
                     Layout.fillWidth: true
-                    height: 36
-                    radius: 8
-                    color: laterMa.pressed ? Qt.darker("#f1f5f9", 1.08) : (laterMa.containsMouse ? Qt.lighter("#f1f5f9", 1.04) : "#f1f5f9")
-                    border.color: laterMa.containsMouse ? "#cbd5e1" : "transparent"
-                    border.width: 1
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 120
-                        }
-                    }
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: qsTr("Later")
-                        font.pixelSize: 14
-                        color: "#62748e"
-                    }
-
-                    MouseArea {
-                        id: laterMa
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            pendingInstallWarningDialog.close();
-                        }
-                    }
+                    text: qsTr("Later")
+                    onClicked: pendingInstallWarningDialog.close()
                 }
 
-                Rectangle {
+                PrimaryButton {
                     Layout.fillWidth: true
-                    height: 36
-                    radius: 8
-                    color: installMa.pressed ? Qt.darker("#0f4c81", 1.2) : (installMa.containsMouse ? Qt.lighter("#0f4c81", 1.08) : "#0f4c81")
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 120
-                        }
-                    }
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: qsTr("Install Now")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "white"
-                    }
-
-                    MouseArea {
-                        id: installMa
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            pendingInstallWarningDialog.close();
-                            UpdateManager.installUpdate();
-                        }
+                    text: qsTr("Install Now")
+                    onClicked: {
+                        pendingInstallWarningDialog.close();
+                        UpdateManager.installUpdate();
                     }
                 }
             }

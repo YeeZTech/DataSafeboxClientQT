@@ -1,6 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
+import DataSafebox.Dialogs 1.0
 import "DomainUtils.js" as DomainUtils
 
 Rectangle {
@@ -313,34 +315,13 @@ Rectangle {
                             Item {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
-                                Rectangle {
+                                StatusBadge {
                                     id: whitelistStatusBadge
                                     anchors.left: parent.left
                                     anchors.leftMargin: 54
                                     anchors.verticalCenter: parent.verticalCenter
-                                    width: Math.min(statusText.implicitWidth + 12, parent.width - 54)
-                                    height: 24
-                                    radius: 6
-                                    property var auditStatusStyle: Theme.Colors.getStatusColor(modelData.status || "")
-                                    color: auditStatusStyle.bg
-                                    border.color: auditStatusStyle.border
-                                    border.width: 1
-                                    clip: true
-                                    Text {
-                                        id: statusText
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.leftMargin: 6
-                                        anchors.rightMargin: 6
-                                        text: Theme.Colors.translateStatus(modelData.status || "")
-                                        font.pixelSize: 14
-                                        font.weight: Font.Medium
-                                        color: parent.auditStatusStyle.text
-                                        horizontalAlignment: Text.AlignHCenter
-                                        elide: Text.ElideMiddle
-                                        wrapMode: Text.NoWrap
-                                    }
+                                    width: Math.min(implicitWidth, parent.width - 54)
+                                    status: modelData.status || ""
                                     MouseArea {
                                         id: wlStatusHover
                                         anchors.fill: parent
@@ -349,7 +330,7 @@ Rectangle {
                                         cursorShape: Qt.ArrowCursor
                                     }
                                     Loader {
-                                        active: statusText.truncated && wlStatusHover.containsMouse
+                                        active: whitelistStatusBadge.truncated && wlStatusHover.containsMouse
                                         sourceComponent: wlStatusTooltipComp
                                         onLoaded: {
                                             var win = whitelistStatusBadge.Window.window;

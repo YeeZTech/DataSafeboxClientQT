@@ -1,7 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
 
 Item {
     id: root
@@ -26,37 +26,6 @@ Item {
     signal allMessagesMarkedRead
     signal domainMessageClicked(string domainCode)
 
-    function getVisiblePages() {
-        var total = root.serverTotalPages;
-        var current = root.currentPage;
-        var pages = [];
-        if (total <= 7) {
-            for (var i = 1; i <= total; i++)
-                pages.push(i);
-        } else {
-            if (current <= 4) {
-                for (var i = 1; i <= 5; i++)
-                    pages.push(i);
-                pages.push(-1);
-                pages.push(total);
-            } else if (current >= total - 3) {
-                pages.push(1);
-                pages.push(-1);
-                for (var i = total - 4; i <= total; i++)
-                    pages.push(i);
-            } else {
-                pages.push(1);
-                pages.push(-1);
-                for (var i = current - 1; i <= current + 1; i++)
-                    pages.push(i);
-                pages.push(-1);
-                pages.push(total);
-            }
-        }
-        return pages;
-    }
-
-    // Signals
     signal backRequested
 
     function _applyFilterAndPaginate() {
@@ -283,7 +252,7 @@ Item {
                 Image {
                     width: 16
                     height: 16
-                    source: Qt.resolvedUrl("icons/icon-check-double.svg")
+                    source: "qrc:/icons/icon-check-double.svg"
                     anchors.verticalCenter: parent.verticalCenter
                 }
 
@@ -448,7 +417,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: 64
                         height: 64
-                        source: Qt.resolvedUrl("icons/icon-empty-state.svg")
+                        source: "qrc:/icons/icon-empty-state.svg"
                         sourceSize: Qt.size(51, 50)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
@@ -484,167 +453,14 @@ Item {
             color: "#e6e6e6"
         }
 
-        Row {
-            anchors.centerIn: parent
-            spacing: 6
-            visible: root.serverTotalPages > 1
-
-            // Previous
-            Text {
-                text: "<"
-                font.pixelSize: 14
-                property bool hovered: false
-                property bool pressed: false
-                color: {
-                    if (root.currentPage <= 1)
-                        return "#919eab";
-                    if (pressed)
-                        return "white";
-                    if (hovered)
-                        return "#1b5fa8";
-                    return "#212b36";
-                }
-                anchors.verticalCenter: parent.verticalCenter
-
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: 22
-                    height: 22
-                    radius: 3
-                    visible: root.currentPage > 1 && (parent.hovered || parent.pressed)
-                    color: parent.pressed ? "#1b5fa8" : "#e3f2fd"
-                    z: -1
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    anchors.margins: -4
-                    enabled: root.currentPage > 1
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    hoverEnabled: true
-                    onEntered: parent.hovered = true
-                    onExited: {
-                        parent.hovered = false;
-                        parent.pressed = false;
-                    }
-                    onPressed: parent.pressed = true
-                    onReleased: parent.pressed = false
-                    onClicked: {
-                        var mc = root;
-                        var targetPage = mc.currentPage - 1;
-                        Qt.callLater(function () {
-                            mc.currentPage = targetPage;
-                            mc._applyFilterAndPaginate();
-                        });
-                    }
-                }
-            }
-
-            // Page numbers with ellipsis
-            Repeater {
-                model: root.getVisiblePages()
-                Rectangle {
-                    width: 22
-                    height: 22
-                    radius: 3
-                    property int pageNum: modelData
-                    property bool isEllipsis: pageNum === -1
-                    property bool hovered: false
-                    property bool pressed: false
-                    property bool isCurrent: pageNum === root.currentPage
-                    color: {
-                        if (pressed && !isCurrent)
-                            return "#1b5fa8";
-                        if (hovered && !isEllipsis)
-                            return "#e3f2fd";
-                        return "white";
-                    }
-                    border.color: isCurrent ? "#1b5fa8" : "#dfe3e8"
-                    border.width: 1
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: isEllipsis ? "..." : pageNum
-                        font.pixelSize: 12
-                        color: parent.pressed && !parent.isCurrent ? "white" : "#212b36"
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        enabled: !isEllipsis
-                        cursorShape: !isEllipsis ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        hoverEnabled: true
-                        onEntered: parent.hovered = true
-                        onExited: {
-                            parent.hovered = false;
-                            parent.pressed = false;
-                        }
-                        onPressed: if (!parent.isCurrent)
-                            parent.pressed = true
-                        onReleased: parent.pressed = false
-                        onClicked: {
-                            if (!parent.isCurrent) {
-                                var mc = root;
-                                var targetPage = pageNum;
-                                Qt.callLater(function () {
-                                    mc.currentPage = targetPage;
-                                    mc._applyFilterAndPaginate();
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Next
-            Text {
-                text: ">"
-                font.pixelSize: 14
-                property bool hovered: false
-                property bool pressed: false
-                color: {
-                    if (root.currentPage >= root.serverTotalPages)
-                        return "#919eab";
-                    if (pressed)
-                        return "white";
-                    if (hovered)
-                        return "#1b5fa8";
-                    return "#212b36";
-                }
-                anchors.verticalCenter: parent.verticalCenter
-
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: 22
-                    height: 22
-                    radius: 3
-                    visible: root.currentPage < root.serverTotalPages && (parent.hovered || parent.pressed)
-                    color: parent.pressed ? "#1b5fa8" : "#e3f2fd"
-                    z: -1
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    anchors.margins: -4
-                    enabled: root.currentPage < root.serverTotalPages
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    hoverEnabled: true
-                    onEntered: parent.hovered = true
-                    onExited: {
-                        parent.hovered = false;
-                        parent.pressed = false;
-                    }
-                    onPressed: parent.pressed = true
-                    onReleased: parent.pressed = false
-                    onClicked: {
-                        var mc = root;
-                        var targetPage = mc.currentPage + 1;
-                        Qt.callLater(function () {
-                            mc.currentPage = targetPage;
-                            mc._applyFilterAndPaginate();
-                        });
-                    }
-                }
+        PaginationControl {
+            width: parent.width
+            height: parent.height
+            currentPage: root.currentPage
+            totalPages: root.serverTotalPages
+            onPageChanged: {
+                root.currentPage = page;
+                root._applyFilterAndPaginate();
             }
         }
     }
@@ -743,72 +559,16 @@ Item {
                     spacing: 16
                     height: 36
 
-                    Rectangle {
-                        width: 60
-                        height: 36
-                        radius: 8
-                        color: {
-                            if (deleteCancelArea.pressed)
-                                return "#bedbff";
-                            if (deleteCancelArea.containsMouse)
-                                return "#e8f8ff";
-                            return "white";
-                        }
-                        border.width: 1
-                        border.color: {
-                            if (deleteCancelArea.pressed)
-                                return "#add3e6";
-                            if (deleteCancelArea.containsMouse)
-                                return "#79aecd";
-                            return "#cad5e2";
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: qsTr("Cancel")
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: "#314158"
-                        }
-
-                        MouseArea {
-                            id: deleteCancelArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: deleteConfirmDialog.close()
-                        }
+                    SecondaryButton {
+                        text: qsTr("Cancel")
+                        onClicked: deleteConfirmDialog.close()
                     }
 
-                    Rectangle {
-                        width: 88
-                        height: 36
-                        radius: 8
-                        color: {
-                            if (deleteConfirmArea.pressed)
-                                return "#fb2c36";
-                            if (deleteConfirmArea.containsMouse)
-                                return "#fe9a98";
-                            return "#fd7977";
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: qsTr("Delete")
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: "white"
-                        }
-
-                        MouseArea {
-                            id: deleteConfirmArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                DsccBridge.deleteMessage(deleteConfirmDialog.targetMessageCode);
-                                deleteConfirmDialog.close();
-                            }
+                    DangerButton {
+                        text: qsTr("Delete")
+                        onClicked: {
+                            DsccBridge.deleteMessage(deleteConfirmDialog.targetMessageCode);
+                            deleteConfirmDialog.close();
                         }
                     }
                 }

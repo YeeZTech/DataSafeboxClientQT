@@ -1,0 +1,5 @@
+module DataSafebox.Theme
+singleton Colors 1.0 Colors.qml
+singleton DataManager 1.0 DataManager.qml
+singleton Utils 1.0 Utils.qml
+singleton Typography 1.0 Typography.qml

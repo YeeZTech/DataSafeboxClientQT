@@ -1,7 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import Qt.labs.platform 1.1
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
 
 Popup {
     id: root
@@ -293,7 +294,7 @@ Popup {
             root._markModelItemStatus(next.modelIndex, "failed");
             root._encryptDone++;
             root._encryptFailed++;
-            root._resultMessage = qsTr("Failed to generate encrypted file output path");
+            root._resultMessage = qsTr("Failed to generate encrypted file save path");
             root._resultType = "error";
             root._beginNextEncryption();
             return;
@@ -525,7 +526,7 @@ Popup {
 
     FolderDialog {
         id: folderDialog
-        title: qsTr("Select Output Path")
+        title: qsTr("Select Save Path")
 
         onAccepted: {
             root.selectedOutputPath = root.urlToLocalPath(folderDialog.folder);
@@ -693,7 +694,7 @@ Popup {
                                 width: 16
                                 height: 16
                                 anchors.verticalCenter: parent.verticalCenter
-                                source: Qt.resolvedUrl("icons/icon-directory.svg")
+                                source: "qrc:/icons/icon-directory.svg"
                                 fillMode: Image.PreserveAspectFit
                             }
 
@@ -771,7 +772,7 @@ Popup {
                                 width: 16
                                 height: 16
                                 anchors.verticalCenter: parent.verticalCenter
-                                source: Qt.resolvedUrl("icons/icon-directory.svg")
+                                source: "qrc:/icons/icon-directory.svg"
                                 fillMode: Image.PreserveAspectFit
                             }
 
@@ -1155,354 +1156,21 @@ Popup {
         }
     }
 
-    // ---- Encrypt success popup ----
-    Popup {
+    EncryptSuccessPopup {
         id: encryptSuccessPopup
-        parent: Overlay.overlay
-        width: 420
-        height: successContent.implicitHeight + 48
-        modal: true
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-        x: Overlay.overlay ? (Overlay.overlay.width - width) / 2 : 0
-        y: Overlay.overlay ? (Overlay.overlay.height - height) / 2 : 0
-
-        background: Rectangle {
-            radius: 12
-            color: "#ffffff"
-            border.color: "#e2e8f0"
-            border.width: 1
-            layer.enabled: true
-        }
-
-        Column {
-            id: successContent
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.topMargin: 16
-            anchors.leftMargin: 24
-            anchors.rightMargin: 24
-            anchors.bottomMargin: 24
-            spacing: 16
-
-            // Title row
-            Item {
-                width: parent.width
-                height: 24
-                Text {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("Encryption Successful")
-                    font.pixelSize: 18
-                    font.weight: Font.DemiBold
-                    color: "#0f172b"
-                }
-                Rectangle {
-                    width: 24
-                    height: 24
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    radius: 12
-                    color: successCloseBtnArea.containsMouse ? "#f0f4fa" : "transparent"
-                    Text {
-                        anchors.centerIn: parent
-                        text: "×"
-                        font.pixelSize: 20
-                        color: successCloseBtnArea.containsMouse ? "#0f4c81" : "#314158"
-                    }
-                    MouseArea {
-                        id: successCloseBtnArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: encryptSuccessPopup.close()
-                    }
-                }
-            }
-
-            // Icon
-            Item {
-                width: parent.width
-                height: 72
-                Rectangle {
-                    width: 56
-                    height: 56
-                    anchors.centerIn: parent
-                    radius: 28
-                    color: "#dcfce7"
-                    border.color: "transparent"
-                    border.width: 0
-                    Text {
-                        anchors.centerIn: parent
-                        text: "\u2713"
-                        font.pixelSize: 28
-                        font.weight: Font.Bold
-                        color: "#22c55e"
-                    }
-                }
-            }
-
-            // Subtitle
-            Text {
-                width: parent.width
-                text: qsTr("Encryption Successful")
-                font.pixelSize: 16
-                font.weight: Font.Medium
-                color: "#0f172b"
-                horizontalAlignment: Text.AlignHCenter
-            }
-
-            // Body
-            Text {
-                width: parent.width
-                text: qsTr("File encryption successful! You can send the encrypted file to the recipient. After importing it into their security domain instance, they will be able to use it normally.")
-                font.pixelSize: 14
-                color: "#475569"
-                wrapMode: Text.WordWrap
-                horizontalAlignment: Text.AlignHCenter
-            }
-
-            // Buttons row
-            Row {
-                anchors.right: parent.right
-                spacing: 12
-                topPadding: 4
-
-                // Text link: 查看加密文件使用说明
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("View Encrypted File Guide")
-                    font.pixelSize: 14
-                    font.underline: true
-                    color: guideLink.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : guideLink.containsMouse ? "#2A6A9A" : Theme.Colors.primary
-                    Behavior on color { ColorAnimation { duration: 120 } }
-                    MouseArea {
-                        id: guideLink
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: Qt.openUrlExternally("https://help.yeez.tech/docs/bu-zhou-5-mai-fang-jia-mi-yuan-shi-shu-ju")
-                    }
-                }
-
-                // Blue button: 打开文件保存目录
-                Rectangle {
-                    width: openFolderText.implicitWidth + 24
-                    height: 36
-                    radius: 8
-                    color: openFolderArea.pressed ? Qt.darker("#0f4c81", 1.2) : openFolderArea.containsMouse ? Qt.lighter("#0f4c81", 1.15) : "#0f4c81"
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    Text {
-                        id: openFolderText
-                        anchors.centerIn: parent
-                        text: qsTr("Open File Save Directory")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "white"
-                    }
-                    MouseArea {
-                        id: openFolderArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            var p = root._encryptOutputDir;
-                            if (p) {
-                                var url = p.replace(/\\/g, "/");
-                                if (!url.startsWith("file:"))
-                                    url = "file:///" + url;
-                                Qt.openUrlExternally(url);
-                            }
-                            encryptSuccessPopup.close();
-                        }
-                    }
-                }
-            }
-        }
+        encryptOutputDir: root._encryptOutputDir
     }
 
-    // ---- Encrypt failure popup ----
-    Popup {
+    EncryptFailurePopup {
         id: encryptFailurePopup
-        parent: Overlay.overlay
-        width: 420
-        height: failureContent.implicitHeight + 48
-        modal: true
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-        x: Overlay.overlay ? (Overlay.overlay.width - width) / 2 : 0
-        y: Overlay.overlay ? (Overlay.overlay.height - height) / 2 : 0
 
-        property string errorText: ""
-
-        background: Rectangle {
-            radius: 12
-            color: "#ffffff"
-            border.color: "#e2e8f0"
-            border.width: 1
-            layer.enabled: true
+        onRetryRequested: {
+            root._retrying = true;
+            root.open();
         }
 
-        Column {
-            id: failureContent
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.topMargin: 16
-            anchors.leftMargin: 24
-            anchors.rightMargin: 24
-            anchors.bottomMargin: 24
-            spacing: 16
-
-            // Title row
-            Item {
-                width: parent.width
-                height: 24
-                Text {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("Encryption Failed")
-                    font.pixelSize: 18
-                    font.weight: Font.DemiBold
-                    color: "#0f172b"
-                }
-                Rectangle {
-                    width: 24
-                    height: 24
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    radius: 12
-                    color: failureCloseBtnArea.containsMouse ? "#f0f4fa" : "transparent"
-                    Text {
-                        anchors.centerIn: parent
-                        text: "×"
-                        font.pixelSize: 20
-                        color: failureCloseBtnArea.containsMouse ? "#0f4c81" : "#314158"
-                    }
-                    MouseArea {
-                        id: failureCloseBtnArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: encryptFailurePopup.close()
-                    }
-                }
-            }
-
-            // Icon
-            Item {
-                width: parent.width
-                height: 72
-                Rectangle {
-                    width: 56
-                    height: 56
-                    anchors.centerIn: parent
-                    radius: 28
-                    color: "#fee2e2"
-                    border.color: "transparent"
-                    border.width: 0
-                    Text {
-                        anchors.centerIn: parent
-                        text: "\u00d7"
-                        font.pixelSize: 28
-                        font.weight: Font.Bold
-                        color: "#ef4444"
-                    }
-                }
-            }
-
-            // Subtitle
-            Text {
-                width: parent.width
-                text: qsTr("Encryption Failed")
-                font.pixelSize: 16
-                font.weight: Font.Medium
-                color: "#0f172b"
-                horizontalAlignment: Text.AlignHCenter
-            }
-
-            // Body
-            Text {
-                width: parent.width
-                textFormat: Text.RichText
-                text: qsTr("File encryption failed. Reason: ") +
-                      "<a href='https://help.yeez.tech/docs/bu-zhou-5-mai-fang-jia-mi-yuan-shi-shu-ju' style='color:#ef4444;text-decoration:underline;'>" +
-                      encryptFailurePopup.errorText +
-                      "</a>，" +
-                      qsTr(" You may try encrypting again or contact support for help.")
-                font.pixelSize: 14
-                color: "#475569"
-                wrapMode: Text.WordWrap
-                horizontalAlignment: Text.AlignHCenter
-                onLinkActivated: Qt.openUrlExternally(link)
-            }
-
-            // Buttons row
-            Row {
-                anchors.right: parent.right
-                spacing: 12
-                topPadding: 4
-
-                // Outlined button: 联系客服
-                Rectangle {
-                    width: contactSupportText.implicitWidth + 24
-                    height: 36
-                    radius: 8
-                    color: contactSupportArea.pressed ? "#dce8f5" : contactSupportArea.containsMouse ? "#eef4fb" : "white"
-                    border.color: contactSupportArea.containsMouse ? "#1d4ed8" : "#94a3b8"
-                    border.width: 1
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
-                    Text {
-                        id: contactSupportText
-                        anchors.centerIn: parent
-                        text: qsTr("Contact Support")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "#334155"
-                    }
-                    MouseArea {
-                        id: contactSupportArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            encryptFailurePopup.close();
-                            root.contactSupportRequested();
-                        }
-                    }
-                }
-
-                // Blue button: 重试
-                Rectangle {
-                    width: retryBtnText.implicitWidth + 32
-                    height: 36
-                    radius: 8
-                    color: retryArea.pressed ? Qt.darker("#0f4c81", 1.2) : retryArea.containsMouse ? Qt.lighter("#0f4c81", 1.15) : "#0f4c81"
-                    Behavior on color { ColorAnimation { duration: 150 } }
-                    Text {
-                        id: retryBtnText
-                        anchors.centerIn: parent
-                        text: qsTr("Retry")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "white"
-                    }
-                    MouseArea {
-                        id: retryArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            encryptFailurePopup.close();
-                            root._retrying = true;
-                            root.open();
-                        }
-                    }
-                }
-            }
-        }
+        onContactSupportRequested: root.contactSupportRequested()
     }
-
     // Signals
     signal cancelClicked
     signal encryptClicked

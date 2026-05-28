@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import "." as Theme
+import DataSafebox.Theme 1.0 as Theme
+import DataSafebox.Components 1.0
 
 Popup {
     id: root
@@ -218,7 +219,7 @@ Popup {
                             SelectableText {
                                 id: exportStatusText
                                 anchors.centerIn: parent
-                                text: Colors.translateStatus(root.status)
+                                text: Theme.Colors.translateStatus(root.status)
                                 font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: statusStyle.text
@@ -361,7 +362,7 @@ Popup {
                                             width: 16
                                             height: 16
                                             anchors.verticalCenter: parent.verticalCenter
-                                            source: "icons/icon-file-generic.svg"
+                                            source: "qrc:/icons/icon-file-generic.svg"
                                             sourceSize.width: 16
                                             sourceSize.height: 16
                                         }

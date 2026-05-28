@@ -1,0 +1,16 @@
+module DataSafebox.Pages
+SecurityDomainForm 1.0 SecurityDomainForm.qml
+SecurityDomainDetail 1.0 SecurityDomainDetail.qml
+InstantiateForm 1.0 InstantiateForm.qml
+SecurityInstanceDetail 1.0 SecurityInstanceDetail.qml
+SettingsPage 1.0 SettingsPage.qml
+DomainInfoHeader 1.0 DomainInfoHeader.qml
+DomainTabView 1.0 DomainTabView.qml
+InstanceInfoCard 1.0 InstanceInfoCard.qml
+InstanceWhitelistCard 1.0 InstanceWhitelistCard.qml
+InstanceExportCard 1.0 InstanceExportCard.qml
+DomainBasicInfoCard 1.0 DomainBasicInfoCard.qml
+DomainVisibleUsersCard 1.0 DomainVisibleUsersCard.qml
+DomainInstancesCard 1.0 DomainInstancesCard.qml
+DomainWhitelistAuditCard 1.0 DomainWhitelistAuditCard.qml
+DomainExportAuditCard 1.0 DomainExportAuditCard.qml
