@@ -108,4 +108,6 @@ icons/SafeLogo_256.png
 icons/SafeLogo.iconset/
 
 mocinclude.opt
-safebox_resource.rc
+DataSafebox_resource.rc
+CLAUDE.md
+.omc/

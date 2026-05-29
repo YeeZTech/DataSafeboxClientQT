@@ -10,12 +10,14 @@ Rectangle {
     property bool loading: false
     property int fontSize: Theme.Typography.body
     property int fontWeight: buttonStyle === "primary" ? Font.Normal : Font.Medium
+    property url iconSource: ""
+    property int iconSize: 16
 
     signal clicked
 
     width: implicitWidth
     height: 36
-    implicitWidth: Math.max(88, buttonText.implicitWidth + 32)
+    implicitWidth: Math.max(88, contentRow.implicitWidth + 32)
     radius: 8
     opacity: enabled ? 1.0 : 0.6
 
@@ -67,20 +69,38 @@ Rectangle {
         }
     }
 
-    Text {
-        id: buttonText
+    Row {
+        id: contentRow
         anchors.centerIn: parent
-        text: root.loading ? qsTr("Loading...") : root.text
-        font.pixelSize: root.fontSize
-        font.weight: root.fontWeight
-        color: {
-            if (!root.enabled)
-                return Theme.Colors.buttonTextDisabled;
-            if (root._isSecondary)
-                return Theme.Colors.textLabel;
-            return Theme.Colors.primaryText;
+        spacing: 8
+
+        Image {
+            id: buttonIcon
+            visible: root.iconSource.toString() !== "" && !root.loading
+            anchors.verticalCenter: parent.verticalCenter
+            source: root.iconSource
+            sourceSize.width: root.iconSize
+            sourceSize.height: root.iconSize
+            width: root.iconSize
+            height: root.iconSize
+            fillMode: Image.PreserveAspectFit
         }
-        font.letterSpacing: -0.15
+
+        Text {
+            id: buttonText
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.loading ? qsTr("Loading...") : root.text
+            font.pixelSize: root.fontSize
+            font.weight: root.fontWeight
+            color: {
+                if (!root.enabled)
+                    return Theme.Colors.buttonTextDisabled;
+                if (root._isSecondary)
+                    return Theme.Colors.textLabel;
+                return Theme.Colors.primaryText;
+            }
+            font.letterSpacing: -0.15
+        }
     }
 
     MouseArea {

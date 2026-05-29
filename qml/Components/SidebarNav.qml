@@ -352,8 +352,8 @@ Item {
                     spacing: 12
 
                     Image {
-                        width: 20
-                        height: 20
+                        width: 16
+                        height: 16
                         anchors.verticalCenter: parent.verticalCenter
                         source: "qrc:/icons/icon-user-avatar.svg"
                         fillMode: Image.PreserveAspectFit

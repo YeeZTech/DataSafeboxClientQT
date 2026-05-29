@@ -74,6 +74,7 @@ Item {
             readonly property bool disabled: root.isDomainReadOnly || root.encryptButtonBusy
             visible: true
             enabled: !disabled
+            iconSource: "qrc:/icons/icon-encrypt-to-domain.svg"
             text: qsTr("Encrypt Files to This Security Domain")
             onClicked: {
                 if (!root.domainPubKey) {
