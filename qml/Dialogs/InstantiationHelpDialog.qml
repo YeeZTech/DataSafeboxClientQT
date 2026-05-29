@@ -18,12 +18,12 @@ BaseDialog {
         spacing: 0
 
         ScrollView {
-            width: parent.width
+            // Extend into BaseDialog's 24px right content margin so the vertical
+            // scrollbar hugs the dialog's right edge instead of overlapping content.
+            width: parent.width + 24
             height: Math.min(bodyCol.implicitHeight + 32, 520)
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-            ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
-            }
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
             clip: true
 
             Column {

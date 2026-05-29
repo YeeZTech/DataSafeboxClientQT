@@ -309,12 +309,8 @@ Item {
                                         anchors.topMargin: 8
                                         anchors.bottomMargin: 24
                                         clip: true
-                                        ScrollBar.vertical: ScrollBar {
-                                            policy: ScrollBar.AsNeeded
-                                        }
-                                        ScrollBar.horizontal: ScrollBar {
-                                            policy: ScrollBar.AlwaysOff
-                                        }
+                                        ScrollBar.vertical.policy: ScrollBar.AsNeeded
+                                        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
                                         TextArea {
                                             id: descriptionArea

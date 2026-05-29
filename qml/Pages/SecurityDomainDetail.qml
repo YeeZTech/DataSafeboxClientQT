@@ -496,13 +496,8 @@ Item {
             color: "#e8edf3"  // 稍微加深的灰色背景，增强与白色卡片的对比
         }
 
-        ScrollBar.horizontal: ScrollBar {
-            policy: ScrollBar.AlwaysOff
-        }
-
-        ScrollBar.vertical: ScrollBar {
-            policy: ScrollBar.AsNeeded
-        }
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+        ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
         // Transparent MouseArea to detect clicks outside descriptionBox for cancel editing
         MouseArea {

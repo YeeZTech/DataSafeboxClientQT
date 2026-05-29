@@ -72,7 +72,9 @@ Row {
             selected: root.selectedPayer === root.creatorValue
             fontFamily: root.fontFamily
             fontSizeBody: root.fontSizeBody
-            onOptionClicked: root.payerSelected(value)
+            onOptionClicked: function (value) {
+                root.payerSelected(value);
+            }
         }
 
         PayerOption {
@@ -81,7 +83,9 @@ Row {
             selected: root.selectedPayer === root.userValue
             fontFamily: root.fontFamily
             fontSizeBody: root.fontSizeBody
-            onOptionClicked: root.payerSelected(value)
+            onOptionClicked: function (value) {
+                root.payerSelected(value);
+            }
         }
     }
 

@@ -168,9 +168,7 @@ Item {
             color: "#e8edf3"
         }
 
-        ScrollBar.horizontal: ScrollBar {
-            policy: ScrollBar.AlwaysOff
-        }
+        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
         Item {
             id: contentArea
