@@ -62,7 +62,6 @@ Item {
             visible: true
             enabled: !root.isDomainReadOnly
             text: qsTr("How to Instantiate Security Domain?")
-            fontSize: Theme.Typography.h3
             onClicked: {
                 if (root.isDomainReadOnly)
                     return;

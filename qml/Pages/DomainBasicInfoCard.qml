@@ -221,6 +221,24 @@ Card {
                     color: Theme.Colors.textHeading
                 }
             }
+
+            Column {
+                width: (parent.width - 24) / 2
+                spacing: 10
+                visible: card.domainData.status === Theme.Colors.statusClosed
+
+                SelectableText {
+                    text: qsTr("Deactivation Time")
+                    font.pixelSize: 14
+                    color: Theme.Colors.textCaption
+                }
+
+                SelectableText {
+                    text: Theme.Utils.formatDateTime(card.domainData.updatedAt)
+                    font.pixelSize: 16
+                    color: Theme.Colors.textHeading
+                }
+            }
         }
 
         Column {

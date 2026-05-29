@@ -359,6 +359,10 @@
         <translation>费用承担方</translation>
     </message>
     <message>
+        <source>Deactivation Time</source>
+        <translation>停用时间</translation>
+    </message>
+    <message>
         <location line="+65"/>
         <source>Who pays the costs incurred after security domain instantiation</source>
         <translation>安全域实例化后产生的费用由谁支付</translation>
