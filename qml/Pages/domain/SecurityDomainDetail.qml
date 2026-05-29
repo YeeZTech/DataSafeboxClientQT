@@ -416,7 +416,6 @@ Item {
     // Instance Detail Dialog (shared for all statuses, including pending)
     InstanceDetailDialog {
         id: instanceDetailDialog
-        parent: Overlay.overlay  // Use application overlay as parent for proper sizing
         allowApproveReject: !root.isDomainReadOnly && !root.instanceAuditPending
 
         onApproveClicked: {
@@ -443,7 +442,6 @@ Item {
     // App Whitelist Audit Detail Dialog
     AppWhitelistDetailDialog {
         id: appWhitelistDetailDialog
-        parent: Overlay.overlay
         showActionButtons: !root.isDomainReadOnly && !root.auditRequestPending
 
         onApproveClicked: {
