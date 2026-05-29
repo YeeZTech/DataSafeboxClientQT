@@ -5,16 +5,8 @@ import DataSafebox.Components 1.0
 
 BaseDialog {
     id: root
-    dialogWidth: {
-        var preferredWidth = 510;
-        var maxWidth = parentWidth * 0.85;
-        var minWidth = 400;
-        return Math.max(minWidth, Math.min(preferredWidth, maxWidth));
-    }
+    dialogWidth: 500
     title: root.status === "待审核" ? qsTr("App Whitelist Application") : qsTr("App Whitelist Details")
-
-    property real parentWidth: parent ? parent.width : 800
-    property real parentHeight: parent ? parent.height : 600
 
     // ── data properties ──────────────────────────────────────────
     property string instanceCode: ""            // 实例编号
@@ -38,17 +30,6 @@ BaseDialog {
     // ── signals ──────────────────────────────────────────────────
     signal approveClicked
     signal rejectClicked
-
-    // ── parent resize ─────────────────────────────────────────────
-    Connections {
-        target: root.parent
-        function onWidthChanged() {
-            root.parentWidth = root.parent.width;
-        }
-        function onHeightChanged() {
-            root.parentHeight = root.parent.height;
-        }
-    }
 
     readonly property var statusStyle: Theme.Colors.getStatusColor(status)
 
@@ -90,11 +71,6 @@ BaseDialog {
     Column {
         width: parent.width
         spacing: 0
-
-        Item {
-            width: parent.width
-            height: 12
-        }
 
         // ── Fields area ────────────────────────────────────────
         Column {

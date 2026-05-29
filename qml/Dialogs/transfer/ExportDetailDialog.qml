@@ -5,7 +5,7 @@ import DataSafebox.Components 1.0
 
 BaseDialog {
     id: root
-    dialogWidth: 510
+    dialogWidth: 500
     title: qsTr("File Export Details")
 
     // Properties for export detail data
@@ -100,11 +100,6 @@ BaseDialog {
         width: parent.width
         spacing: 0
 
-        // Spacing between title and content
-        Item {
-            width: parent.width
-            height: 28
-        }
         Column {
             width: parent.width
             spacing: 16
@@ -418,11 +413,6 @@ BaseDialog {
                     }
                 }
             }
-        }
-
-        Item {
-            width: parent.width
-            height: 12
         }
     }
 }

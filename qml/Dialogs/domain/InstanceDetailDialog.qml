@@ -5,36 +5,11 @@ import DataSafebox.Components 1.0
 
 BaseDialog {
     id: root
-    dialogWidth: {
-        var preferredWidth = 520;
-        var maxWidth = parentWidth * 0.8;
-        var minWidth = 460;
-        return Math.max(minWidth, Math.min(preferredWidth, maxWidth));
-    }
+    dialogWidth: 500
     title: isApproverView ? qsTr("Security Domain Instance Application Details") : qsTr("Security Domain Instance Details")
-    height: {
-        var titleHeight = 18;
-        var topMargin = 20;
-        var bottomMargin = 20;
-        var afterTitleSpace = 10;
-        var costFieldHeight = 0;
-        var afterCostSpace = 0;
-        var fieldsHeight = fieldsContainer ? fieldsContainer.implicitHeight : 150;
-        var beforeWhitelistSpace = 0;
-        var whitelistLabelHeight = 0;
-        var afterWhitelistLabelSpace = 0;
-        var whitelistTableHeight = 0;
-        var buttonsSpace = shouldShowActionButtons ? 8 : 0;
-        var buttonsHeight = shouldShowActionButtons ? 36 : 0;
-        var totalHeight = topMargin + titleHeight + afterTitleSpace + costFieldHeight + afterCostSpace + fieldsHeight + beforeWhitelistSpace + whitelistLabelHeight + afterWhitelistLabelSpace + whitelistTableHeight + buttonsSpace + buttonsHeight + bottomMargin;
-        var maxHeight = parentHeight * 0.9;
-        return Math.min(totalHeight, maxHeight);
-    }
+    // Height is intentionally left to BaseDialog's content-driven implicitHeight
+    // so the dialog always grows to fit its fields (see BaseDialog dialogBg.implicitHeight).
     onCloseRequested: cancelClicked()
-
-    // Use separate properties to trigger re-evaluation
-    property real parentWidth: parent ? parent.width : 800
-    property real parentHeight: parent ? parent.height : 600
 
     property string instanceId: ""
     property string status: ""
@@ -91,25 +66,9 @@ BaseDialog {
     signal rejectClicked
     signal cancelClicked
 
-    // Monitor parent size changes
-    Connections {
-        target: root.parent
-        function onWidthChanged() {
-            root.parentWidth = root.parent.width;
-        }
-        function onHeightChanged() {
-            root.parentHeight = root.parent.height;
-        }
-    }
-
     Column {
         width: parent.width
         spacing: 0
-
-        Item {
-            width: parent.width
-            height: 12
-        }
 
         // Instance cost field - only show for approval dialog
         Column {

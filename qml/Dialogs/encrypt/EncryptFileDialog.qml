@@ -9,7 +9,6 @@ BaseDialog {
     id: root
     dialogWidth: 500
     title: qsTr("Encrypt Files to This Security Domain")
-    height: Math.min(contentColumn.implicitHeight + 48 + 48 + 36, 560)
     closePolicy: root._encrypting ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
     showCloseButton: !root._encrypting
     onCloseRequested: cancelClicked()

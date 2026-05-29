@@ -5,7 +5,7 @@ import DataSafebox.Components 1.0
 
 BaseDialog {
     id: root
-    dialogWidth: 520
+    dialogWidth: 500
     showCloseButton: true
     title: qsTr("Security Domain Instantiation")
 
@@ -137,7 +137,7 @@ BaseDialog {
 
             Row {
                 anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.bottom: parent.bottom
                 spacing: 12
 
                 SecondaryButton {

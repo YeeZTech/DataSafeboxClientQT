@@ -5,9 +5,8 @@ import DataSafebox.Components 1.0
 
 BaseDialog {
     id: root
-    dialogWidth: 446
+    dialogWidth: 500
     title: qsTr("Add Visible User")
-    height: hasError ? 244 : 216
     onCloseRequested: cancelClicked()
 
     property string account: ""

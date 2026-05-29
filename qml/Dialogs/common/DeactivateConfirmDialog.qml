@@ -5,7 +5,7 @@ import DataSafebox.Components 1.0
 
 BaseDialog {
     id: root
-    dialogWidth: 446
+    dialogWidth: 500
     title: titleText
     onCloseRequested: cancelClicked()
 
@@ -23,11 +23,6 @@ BaseDialog {
         id: contentColumn
         width: parent.width
         spacing: 0
-
-        Item {
-            width: parent.width
-            height: 32
-        }
 
         // Warning message area
         Rectangle {
