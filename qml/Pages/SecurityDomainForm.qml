@@ -150,7 +150,7 @@ Item {
                             fieldSpacing: formContent.spacingRow
 
                             Rectangle {
-                                width: parent.width - formContent.labelWidth - formContent.spacingRow
+                                width: parent.width
                                 height: 36
                                 radius: 8
                                 antialiasing: true
@@ -278,7 +278,7 @@ Item {
 
                             // Text area
                             Item {
-                                width: parent.width - formContent.labelWidth - formContent.spacingRow
+                                width: parent.width
                                 height: descriptionRow.height  // 与 FormField 高度一致，自动调整
 
                                 Rectangle {

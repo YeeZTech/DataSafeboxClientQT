@@ -1422,10 +1422,6 @@
         <translation>未找到安全域公钥</translation>
     </message>
     <message>
-        <source>File Encryption</source>
-        <translation type="vanished">文件加密</translation>
-    </message>
-    <message>
         <location line="+42"/>
         <location line="+405"/>
         <source>Create Security Domain Instance</source>
@@ -1436,85 +1432,9 @@
         <translation>如何实例化安全域？</translation>
     </message>
     <message>
-        <source>Name</source>
-        <translation type="vanished">名称</translation>
-    </message>
-    <message>
-        <source>Status</source>
-        <translation type="vanished">状态</translation>
-    </message>
-    <message>
-        <source>Normal</source>
-        <translation type="vanished">正常</translation>
-    </message>
-    <message>
-        <source>Creation Time</source>
-        <translation type="vanished">创建时间</translation>
-    </message>
-    <message>
-        <source>Fee Payer</source>
-        <translation type="vanished">费用承担方</translation>
-    </message>
-    <message>
-        <source>Who pays the costs incurred after security domain instantiation</source>
-        <translation type="vanished">安全域实例化后产生的费用由谁支付</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation type="vanished">描述</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="vanished">保存</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="vanished">编辑</translation>
-    </message>
-    <message>
-        <source>Visible Users</source>
-        <translation type="vanished">可见用户</translation>
-    </message>
-    <message>
-        <source>Add</source>
-        <translation type="vanished">添加</translation>
-    </message>
-    <message>
-        <source>No Data</source>
-        <translation type="vanished">暂无数据</translation>
-    </message>
-    <message>
-        <source>Account</source>
-        <translation type="vanished">账号</translation>
-    </message>
-    <message>
-        <source>Actions</source>
-        <translation type="vanished">操作</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="vanished">移除</translation>
-    </message>
-    <message>
         <location line="+10"/>
         <source>Related Security Domain Instances</source>
         <translation>相关安全域实例</translation>
-    </message>
-    <message>
-        <source>Applicant</source>
-        <translation type="vanished">申请人</translation>
-    </message>
-    <message>
-        <source>Instance Name</source>
-        <translation type="vanished">实例名称</translation>
-    </message>
-    <message>
-        <source>View</source>
-        <translation type="vanished">查看</translation>
-    </message>
-    <message>
-        <source>Application ID</source>
-        <translation type="vanished">申请ID</translation>
     </message>
     <message>
         <location line="-273"/>
@@ -1522,21 +1442,9 @@
         <translation>应用名称</translation>
     </message>
     <message>
-        <source>Application Time</source>
-        <translation type="vanished">申请时间</translation>
-    </message>
-    <message>
         <location line="-3"/>
         <source> months</source>
         <translation> 个月</translation>
-    </message>
-    <message>
-        <source>File Name</source>
-        <translation type="vanished">文件名称</translation>
-    </message>
-    <message>
-        <source>File Size</source>
-        <translation type="vanished">文件大小</translation>
     </message>
     <message>
         <location line="+52"/>
@@ -1669,10 +1577,6 @@ Status:
         <source>Encrypt File</source>
         <translation>加密文件</translation>
     </message>
-    <message>
-        <source>Description cannot exceed 500 characters</source>
-        <translation type="vanished">描述最多可输入500个字符</translation>
-    </message>
 </context>
 <context>
     <name>SecurityDomainForm</name>
@@ -1703,56 +1607,6 @@ Status:
         <translation>请输入安全域名称</translation>
     </message>
     <message>
-        <location line="+69"/>
-        <source>Cost Bearer:</source>
-        <translation>费用承担方：</translation>
-    </message>
-    <message>
-        <location line="+51"/>
-        <source>Creating a security domain instance will incur fees (1 CNY/GB/Month). The fees can be borne by the security domain creator or the instance user.</source>
-        <translation>创建安全域实例将产生费用（1元/GB/月）。费用可由安全域创建者或实例使用者承担。</translation>
-    </message>
-    <message>
-        <location line="+82"/>
-        <source>Creator</source>
-        <translation>创建方</translation>
-    </message>
-    <message>
-        <location line="+57"/>
-        <source>User</source>
-        <translation>使用方</translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>Visible Users:</source>
-        <translation>可见用户：</translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Add Visible User</source>
-        <translation>添加可见用户</translation>
-    </message>
-    <message>
-        <location line="+72"/>
-        <source>Account</source>
-        <translation>账号</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Name</source>
-        <translation>名称</translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>Actions</source>
-        <translation>操作</translation>
-    </message>
-    <message>
-        <location line="+77"/>
-        <source>Remove</source>
-        <translation>移除</translation>
-    </message>
-    <message>
         <location line="+50"/>
         <source>Description:</source>
         <translation>描述：</translation>
@@ -1766,6 +1620,52 @@ Status:
         <location line="+92"/>
         <source>Creating...</source>
         <translation>创建中...</translation>
+    </message>
+</context>
+<context>
+    <name>PayerSelector</name>
+    <message>
+        <source>Cost Bearer:</source>
+        <translation>费用承担方：</translation>
+    </message>
+    <message>
+        <source>Creating a security domain instance will incur fees (1 CNY/GB/Month). The fees can be borne by the security domain creator or the instance user.</source>
+        <translation>创建安全域实例将产生费用（1元/GB/月）。费用可由安全域创建者或实例使用者承担。</translation>
+    </message>
+    <message>
+        <source>Creator</source>
+        <translation>创建方</translation>
+    </message>
+    <message>
+        <source>User</source>
+        <translation>使用方</translation>
+    </message>
+</context>
+<context>
+    <name>VisibleUserTable</name>
+    <message>
+        <source>Visible Users:</source>
+        <translation>可见用户：</translation>
+    </message>
+    <message>
+        <source>Add Visible User</source>
+        <translation>添加可见用户</translation>
+    </message>
+    <message>
+        <source>Account</source>
+        <translation>账号</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <source>Actions</source>
+        <translation>操作</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation>移除</translation>
     </message>
 </context>
 <context>
@@ -1808,10 +1708,6 @@ Status:
         <location line="+623"/>
         <source>Status</source>
         <translation>状态</translation>
-    </message>
-    <message>
-        <source>Normal</source>
-        <translation type="vanished">正常</translation>
     </message>
     <message>
         <location line="-593"/>
@@ -2236,26 +2132,6 @@ Location: %1</source>
         <translation>重新登录</translation>
     </message>
     <message>
-        <source>Create Security Domain</source>
-        <translation type="vanished">创建安全域</translation>
-    </message>
-    <message>
-        <source>Security Domain</source>
-        <translation type="vanished">安全域</translation>
-    </message>
-    <message>
-        <source>Security Domain Instance</source>
-        <translation type="vanished">安全域实例</translation>
-    </message>
-    <message>
-        <source>User Info</source>
-        <translation type="vanished">用户信息</translation>
-    </message>
-    <message>
-        <source>My Bills</source>
-        <translation type="vanished">我的账单</translation>
-    </message>
-    <message>
         <location line="+245"/>
         <source>Settings</source>
         <translation>设置</translation>
@@ -2266,18 +2142,6 @@ Location: %1</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <source>Checking...</source>
-        <translation type="vanished">检查中...</translation>
-    </message>
-    <message>
-        <source>Check for Updates</source>
-        <translation type="vanished">检查更新</translation>
-    </message>
-    <message>
-        <source>Checking update, please wait</source>
-        <translation type="vanished">正在检查更新，请稍候</translation>
-    </message>
-    <message>
         <location line="-350"/>
         <source>Update is downloading, please install later</source>
         <translation>更新正在下载中，请稍后安装</translation>
@@ -2286,10 +2150,6 @@ Location: %1</source>
         <location line="+4"/>
         <source>Current version: v</source>
         <translation>当前版本：v</translation>
-    </message>
-    <message>
-        <source>Logout</source>
-        <translation type="vanished">退出登录</translation>
     </message>
     <message>
         <location line="+26"/>
@@ -2395,42 +2255,6 @@ Location: %1</source>
         <location line="+29"/>
         <source>Already up to date, current version is v</source>
         <translation>当前已是最新版本 v</translation>
-    </message>
-    <message>
-        <source>Normal</source>
-        <translation type="vanished">正常</translation>
-    </message>
-    <message>
-        <source>Running</source>
-        <translation type="vanished">运行中</translation>
-    </message>
-    <message>
-        <source>Closed</source>
-        <translation type="vanished">已关闭</translation>
-    </message>
-    <message>
-        <source>Creation Failed</source>
-        <translation type="vanished">创建失败</translation>
-    </message>
-    <message>
-        <source>Suspended</source>
-        <translation type="vanished">已停用</translation>
-    </message>
-    <message>
-        <source>Pending Review</source>
-        <translation type="vanished">待审核</translation>
-    </message>
-    <message>
-        <source>Authorized</source>
-        <translation type="vanished">已授权</translation>
-    </message>
-    <message>
-        <source>Rejected</source>
-        <translation type="vanished">已拒绝</translation>
-    </message>
-    <message>
-        <source>Ended</source>
-        <translation type="vanished">已结束</translation>
     </message>
 </context>
 <context>
