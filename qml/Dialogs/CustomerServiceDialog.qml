@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtWebEngine
 import DataSafebox.Components 1.0
+import DataSafebox.Theme 1.0 as Theme
 
 // 客服聊天弹窗：可拖动、可缩放、无右边框、仅底部阴影
 Popup {

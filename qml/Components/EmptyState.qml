@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import DataSafebox.Theme 1.0 as Theme
 
 Item {
     id: emptyRoot

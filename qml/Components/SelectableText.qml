@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import DataSafebox.Theme 1.0 as Theme
 
 // A selectable and copyable text component
 // Usage: SelectableText { text: "some text"; font.pixelSize: 14; color: Theme.Colors.textHeading }

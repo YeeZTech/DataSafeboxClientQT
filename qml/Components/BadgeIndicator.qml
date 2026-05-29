@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import DataSafebox.Theme 1.0 as Theme
 
 // 红色数字角标 — 项目内统一样式
 // 用法: BadgeIndicator { count: 5; x: 161 }
