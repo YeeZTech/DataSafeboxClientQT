@@ -4,7 +4,7 @@
 <context>
     <name>AddVisibleUserDialog</name>
     <message>
-        <location filename="../qml/Dialogs/AddVisibleUserDialog.qml" line="+16"/>
+        <location filename="../qml/Dialogs/domain/AddVisibleUserDialog.qml" line="+16"/>
         <location line="+11"/>
         <location line="+5"/>
         <source>User not found</source>
@@ -62,7 +62,7 @@
 <context>
     <name>AppWhitelistDetailDialog</name>
     <message>
-        <location filename="../qml/Dialogs/AppWhitelistDetailDialog.qml" line="+121"/>
+        <location filename="../qml/Dialogs/domain/AppWhitelistDetailDialog.qml" line="+121"/>
         <source>App Whitelist Application</source>
         <translation>应用白名单申请</translation>
     </message>
@@ -293,7 +293,7 @@
 <context>
     <name>CustomerServiceDialog</name>
     <message>
-        <location filename="../qml/Dialogs/CustomerServiceDialog.qml" line="+142"/>
+        <location filename="../qml/Dialogs/common/CustomerServiceDialog.qml" line="+142"/>
         <source>Contact Customer Service</source>
         <translation>联系客服</translation>
     </message>
@@ -301,7 +301,7 @@
 <context>
     <name>DeactivateConfirmDialog</name>
     <message>
-        <location filename="../qml/Dialogs/DeactivateConfirmDialog.qml" line="+16"/>
+        <location filename="../qml/Dialogs/common/DeactivateConfirmDialog.qml" line="+16"/>
         <source>Confirm Deactivate Security Domain</source>
         <translation>确认停用安全域</translation>
     </message>
@@ -334,7 +334,7 @@
 <context>
     <name>DomainBasicInfoCard</name>
     <message>
-        <location filename="../qml/Pages/DomainBasicInfoCard.qml" line="+49"/>
+        <location filename="../qml/Pages/domain/DomainBasicInfoCard.qml" line="+49"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
@@ -392,7 +392,7 @@
 <context>
     <name>DomainExportAuditCard</name>
     <message>
-        <location filename="../qml/Pages/DomainExportAuditCard.qml" line="+61"/>
+        <location filename="../qml/Pages/domain/DomainExportAuditCard.qml" line="+61"/>
         <source>File Export Review</source>
         <translation>文件导出审核</translation>
     </message>
@@ -446,7 +446,7 @@
 <context>
     <name>DomainInstancesCard</name>
     <message>
-        <location filename="../qml/Pages/DomainInstancesCard.qml" line="+58"/>
+        <location filename="../qml/Pages/domain/DomainInstancesCard.qml" line="+58"/>
         <location line="+1"/>
         <source> days</source>
         <translation> 天</translation>
@@ -491,7 +491,7 @@
 <context>
     <name>DomainVisibleUsersCard</name>
     <message>
-        <location filename="../qml/Pages/DomainVisibleUsersCard.qml" line="+54"/>
+        <location filename="../qml/Pages/domain/DomainVisibleUsersCard.qml" line="+54"/>
         <source>Visible Users</source>
         <translation>可见用户</translation>
     </message>
@@ -524,7 +524,7 @@
 <context>
     <name>DomainWhitelistAuditCard</name>
     <message>
-        <location filename="../qml/Pages/DomainWhitelistAuditCard.qml" line="+57"/>
+        <location filename="../qml/Pages/domain/DomainWhitelistAuditCard.qml" line="+57"/>
         <source>App Whitelist Review</source>
         <translation>应用白名单审核</translation>
     </message>
@@ -583,7 +583,7 @@
 <context>
     <name>EmptyState</name>
     <message>
-        <location filename="../qml/Components/EmptyState.qml" line="+8"/>
+        <location filename="../qml/Components/display/EmptyState.qml" line="+8"/>
         <source>No Data</source>
         <translation>暂无数据</translation>
     </message>
@@ -591,7 +591,7 @@
 <context>
     <name>EncryptFileDialog</name>
     <message>
-        <location filename="../qml/Dialogs/EncryptFileDialog.qml" line="+177"/>
+        <location filename="../qml/Dialogs/encrypt/EncryptFileDialog.qml" line="+177"/>
         <source> (encrypted)</source>
         <translation>（已加密）</translation>
     </message>
@@ -765,7 +765,7 @@
 <context>
     <name>ExportDetailDialog</name>
     <message>
-        <location filename="../qml/Dialogs/ExportDetailDialog.qml" line="+128"/>
+        <location filename="../qml/Dialogs/transfer/ExportDetailDialog.qml" line="+128"/>
         <source>File Export Details</source>
         <translation>文件导出详情</translation>
     </message>
@@ -823,7 +823,7 @@
 <context>
     <name>ExportFileDialog</name>
     <message>
-        <location filename="../qml/Dialogs/ExportFileDialog.qml" line="+69"/>
+        <location filename="../qml/Dialogs/transfer/ExportFileDialog.qml" line="+69"/>
         <source>Export Files</source>
         <translation>导出文件</translation>
     </message>
@@ -881,7 +881,7 @@
 <context>
     <name>ImportFileDialog</name>
     <message>
-        <location filename="../qml/Dialogs/ImportFileDialog.qml" line="+47"/>
+        <location filename="../qml/Dialogs/transfer/ImportFileDialog.qml" line="+47"/>
         <source>Select file to import</source>
         <translation>选择要导入的文件</translation>
     </message>
@@ -946,7 +946,7 @@
 <context>
     <name>InputContextMenu</name>
     <message>
-        <location filename="../qml/Components/InputContextMenu.qml" line="+65"/>
+        <location filename="../qml/Components/inputs/InputContextMenu.qml" line="+65"/>
         <source>Paste</source>
         <translation>粘贴</translation>
     </message>
@@ -964,7 +964,7 @@
 <context>
     <name>InstanceDetailDialog</name>
     <message>
-        <location filename="../qml/Dialogs/InstanceDetailDialog.qml" line="+187"/>
+        <location filename="../qml/Dialogs/domain/InstanceDetailDialog.qml" line="+187"/>
         <source>Security Domain Instance Application Details</source>
         <translation>安全域实例申请详情</translation>
     </message>
@@ -1042,7 +1042,7 @@
 <context>
     <name>InstantiateForm</name>
     <message>
-        <location filename="../qml/Pages/InstantiateForm.qml" line="+459"/>
+        <location filename="../qml/Pages/instantiate/InstantiateForm.qml" line="+459"/>
         <source>Local Disk (C:)</source>
         <translation>本地磁盘 (C:)</translation>
     </message>
@@ -1125,7 +1125,7 @@
 <context>
     <name>InstantiationHelpDialog</name>
     <message>
-        <location filename="../qml/Dialogs/InstantiationHelpDialog.qml" line="+53"/>
+        <location filename="../qml/Dialogs/instantiation/InstantiationHelpDialog.qml" line="+53"/>
         <source>Security Domain Instantiation</source>
         <translation>安全域实例化</translation>
     </message>
@@ -1188,7 +1188,7 @@
 <context>
     <name>InstantiationPaymentDialog</name>
     <message>
-        <location filename="../qml/Dialogs/InstantiationPaymentDialog.qml" line="+51"/>
+        <location filename="../qml/Dialogs/instantiation/InstantiationPaymentDialog.qml" line="+51"/>
         <source>Security Domain Instance Payment Confirmation</source>
         <translation>安全域实例支付确认</translation>
     </message>
@@ -1236,7 +1236,7 @@
 <context>
     <name>MessageCenter</name>
     <message>
-        <location filename="../qml/Components/MessageCenter.qml" line="+163"/>
+        <location filename="../qml/Components/feedback/MessageCenter.qml" line="+163"/>
         <source>Messages</source>
         <translation>消息</translation>
     </message>
@@ -1289,7 +1289,7 @@
 <context>
     <name>OnboardingGuide</name>
     <message>
-        <location filename="../qml/Components/OnboardingGuide.qml" line="+467"/>
+        <location filename="../qml/Components/feedback/OnboardingGuide.qml" line="+467"/>
         <source>Don&apos;t show again</source>
         <translation>不再显示</translation>
     </message>
@@ -1312,7 +1312,7 @@
 <context>
     <name>PausedReminderDialog</name>
     <message>
-        <location filename="../qml/Dialogs/PausedReminderDialog.qml" line="+13"/>
+        <location filename="../qml/Dialogs/common/PausedReminderDialog.qml" line="+13"/>
         <source>Account overdue. Please recharge on the &lt;a href=&quot;bill&quot;&gt;&lt;u&gt;&lt;b&gt;My Bills&lt;/b&gt;&lt;/u&gt;&lt;/a&gt; page to continue.</source>
         <translation>账户已欠费。请在&lt;a href=&quot;bill&quot;&gt;&lt;u&gt;&lt;b&gt;我的账单&lt;/b&gt;&lt;/u&gt;&lt;/a&gt;页面充值后继续使用。</translation>
     </message>
@@ -1340,7 +1340,7 @@
 <context>
     <name>PaymentSuccessDialog</name>
     <message>
-        <location filename="../qml/Dialogs/PaymentSuccessDialog.qml" line="+43"/>
+        <location filename="../qml/Dialogs/instantiation/PaymentSuccessDialog.qml" line="+43"/>
         <source>Security Domain Instance Payment Confirmation</source>
         <translation>安全域实例支付确认</translation>
     </message>
@@ -1358,7 +1358,7 @@
 <context>
     <name>SecurityDomainDetail</name>
     <message>
-        <location filename="../qml/Pages/SecurityDomainDetail.qml" line="+196"/>
+        <location filename="../qml/Pages/domain/SecurityDomainDetail.qml" line="+196"/>
         <source>Creator</source>
         <translation>创建方</translation>
     </message>
@@ -1585,7 +1585,7 @@ Status:
 <context>
     <name>SecurityDomainForm</name>
     <message>
-        <location filename="../qml/Pages/SecurityDomainForm.qml" line="+24"/>
+        <location filename="../qml/Pages/domain/SecurityDomainForm.qml" line="+24"/>
         <source>Name must be between 2 and 32 characters</source>
         <translation>名称必须介于2到32个字符之间</translation>
     </message>
@@ -1675,7 +1675,7 @@ Status:
 <context>
     <name>SecurityInstanceDetail</name>
     <message>
-        <location filename="../qml/Pages/SecurityInstanceDetail.qml" line="+61"/>
+        <location filename="../qml/Pages/instance/SecurityInstanceDetail.qml" line="+61"/>
         <location line="+223"/>
         <location line="+989"/>
         <source> months</source>
@@ -1822,7 +1822,7 @@ Status:
 <context>
     <name>SelectableText</name>
     <message>
-        <location filename="../qml/Components/SelectableText.qml" line="+70"/>
+        <location filename="../qml/Components/inputs/SelectableText.qml" line="+70"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
@@ -1835,7 +1835,7 @@ Status:
 <context>
     <name>SetDurationDialog</name>
     <message>
-        <location filename="../qml/Dialogs/SetDurationDialog.qml" line="+56"/>
+        <location filename="../qml/Dialogs/instantiation/SetDurationDialog.qml" line="+56"/>
         <source>Duration Settings</source>
         <translation>时长设置</translation>
     </message>
@@ -1873,7 +1873,7 @@ Status:
 <context>
     <name>Sidebar</name>
     <message>
-        <location filename="../qml/Components/Sidebar.qml" line="+84"/>
+        <location filename="../qml/Components/navigation/Sidebar.qml" line="+84"/>
         <source>Create Security Domain</source>
         <translation>创建安全域</translation>
     </message>
@@ -1926,7 +1926,7 @@ Status:
 <context>
     <name>UpdateDialog</name>
     <message>
-        <location filename="../qml/Dialogs/UpdateDialog.qml" line="+72"/>
+        <location filename="../qml/Dialogs/common/UpdateDialog.qml" line="+72"/>
         <source>Update Available</source>
         <translation>有可用更新</translation>
     </message>
@@ -2264,7 +2264,7 @@ Location: %1</source>
 <context>
     <name>PrimaryButton</name>
     <message>
-        <location filename="../qml/Components/PrimaryButton.qml" line="+39"/>
+        <location filename="../qml/Components/buttons/PrimaryButton.qml" line="+39"/>
         <source>Loading...</source>
         <translation>加载中...</translation>
     </message>
@@ -2272,7 +2272,7 @@ Location: %1</source>
 <context>
     <name>SidebarNav</name>
     <message>
-        <location filename="../qml/Components/SidebarNav.qml" line="+363"/>
+        <location filename="../qml/Components/navigation/SidebarNav.qml" line="+363"/>
         <source>User Info</source>
         <translation>用户信息</translation>
     </message>
@@ -2310,7 +2310,7 @@ Location: %1</source>
 <context>
     <name>EncryptFailurePopup</name>
     <message>
-        <location filename="../qml/Dialogs/EncryptFailurePopup.qml" line="+46"/>
+        <location filename="../qml/Dialogs/encrypt/EncryptFailurePopup.qml" line="+46"/>
         <location line="+51"/>
         <source>Encryption Failed</source>
         <translation>加密失败</translation>
@@ -2339,7 +2339,7 @@ Location: %1</source>
 <context>
     <name>EncryptSuccessPopup</name>
     <message>
-        <location filename="../qml/Dialogs/EncryptSuccessPopup.qml" line="+43"/>
+        <location filename="../qml/Dialogs/encrypt/EncryptSuccessPopup.qml" line="+43"/>
         <location line="+51"/>
         <source>Encryption Successful</source>
         <translation>加密成功</translation>
@@ -2363,7 +2363,7 @@ Location: %1</source>
 <context>
     <name>DomainInfoHeader</name>
     <message>
-        <location filename="../qml/Pages/DomainInfoHeader.qml" line="+63"/>
+        <location filename="../qml/Pages/domain/DomainInfoHeader.qml" line="+63"/>
         <source>View Feature Guide</source>
         <translation>查看功能介绍</translation>
     </message>
@@ -2391,7 +2391,7 @@ Location: %1</source>
 <context>
     <name>DomainTabView</name>
     <message>
-        <location filename="../qml/Pages/DomainTabView.qml" line="+142"/>
+        <location filename="../qml/Pages/domain/DomainTabView.qml" line="+142"/>
         <source>Disable This Security Domain</source>
         <translation>停用此安全域</translation>
     </message>
@@ -2399,7 +2399,7 @@ Location: %1</source>
 <context>
     <name>InstanceExportCard</name>
     <message>
-        <location filename="../qml/Pages/InstanceExportCard.qml" line="+42"/>
+        <location filename="../qml/Pages/instance/InstanceExportCard.qml" line="+42"/>
         <source>Export Requests</source>
         <translation>导出申请</translation>
     </message>
@@ -2447,7 +2447,7 @@ Location: %1</source>
 <context>
     <name>InstanceInfoCard</name>
     <message>
-        <location filename="../qml/Pages/InstanceInfoCard.qml" line="+31"/>
+        <location filename="../qml/Pages/instance/InstanceInfoCard.qml" line="+31"/>
         <source>Instance ID</source>
         <translation>实例ID</translation>
     </message>
@@ -2485,7 +2485,7 @@ Location: %1</source>
 <context>
     <name>InstanceWhitelistCard</name>
     <message>
-        <location filename="../qml/Pages/InstanceWhitelistCard.qml" line="+34"/>
+        <location filename="../qml/Pages/instance/InstanceWhitelistCard.qml" line="+34"/>
         <source>App Whitelist</source>
         <translation>应用白名单</translation>
     </message>
@@ -2503,7 +2503,7 @@ Location: %1</source>
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/Pages/SettingsPage.qml" line="+29"/>
+        <location filename="../qml/Pages/settings/SettingsPage.qml" line="+29"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>

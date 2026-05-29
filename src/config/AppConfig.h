@@ -31,7 +31,7 @@ inline constexpr const char *WEBSITE_URL = "https://test-dsbox.dianshudata.com";
 inline constexpr const char *WALLET_URL = "https://test-dsbox.dianshudata.com/wallet";
 
 // 用户中心
-inline constexpr const char *USER_CENTER_URL = "https://dianshudata.com/userCenter/userInfo";
+inline constexpr const char *USER_CENTER_URL = "https://test.dianshudata.com/userCenter/userInfo";
 
 // 厂商官网 & 帮助文档（与正式环境相同）
 inline constexpr const char *VENDOR_URL = "https://yeez.tech/";
