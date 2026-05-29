@@ -127,7 +127,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
-            color: "#e6e6e6"
+            color: Theme.Colors.border
         }
 
         // Title
@@ -138,7 +138,7 @@ Item {
             text: qsTr("Messages")
             font.pixelSize: 24
             font.weight: Font.Medium
-            color: "#030213"
+            color: Theme.Colors.textPrimary
         }
     }
 
@@ -196,7 +196,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 text: "/"
                 font.pixelSize: 16
-                color: "#e6e6e6"
+                color: Theme.Colors.border
             }
 
             // "未读" tab
@@ -322,7 +322,7 @@ Item {
                             width: 8
                             height: 8
                             radius: 4
-                            color: "#d4183d"
+                            color: Theme.Colors.notificationRed
                             Layout.alignment: Qt.AlignVCenter
                         }
 
@@ -344,7 +344,7 @@ Item {
                                 id: messageText
                                 text: messageItem.messageData.message || ""
                                 font.pixelSize: 16
-                                color: "#030213"
+                                color: Theme.Colors.textPrimary
                                 elide: Text.ElideRight
                                 maximumLineCount: 1
                                 Layout.fillWidth: true
@@ -385,7 +385,7 @@ Item {
                             anchors.centerIn: parent
                             text: "×"
                             font.pixelSize: 18
-                            color: deleteArea.containsMouse ? "#dc2626" : "#90A1B9"
+                            color: deleteArea.containsMouse ? "#dc2626" : Theme.Colors.textCounter
                         }
 
                         MouseArea {
@@ -428,7 +428,7 @@ Item {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: root.currentFilter === "unread" ? qsTr("No unread messages") : qsTr("No messages")
                         font.pixelSize: 14
-                        color: "#90A1B9"
+                        color: Theme.Colors.textCounter
                     }
                 }
             }
@@ -450,7 +450,7 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 1
-            color: "#e6e6e6"
+            color: Theme.Colors.border
         }
 
         PaginationControl {
@@ -508,7 +508,7 @@ Item {
                         text: qsTr("Delete Message")
                         font.pixelSize: 18
                         font.weight: Font.DemiBold
-                        color: "#0f172b"
+                        color: Theme.Colors.textHeading
                     }
 
                     Rectangle {
@@ -517,7 +517,7 @@ Item {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         radius: 12
-                        color: deleteCloseArea.containsMouse ? "#f0f4fa" : "transparent"
+                        color: deleteCloseArea.containsMouse ? Theme.Colors.backgroundGray : "transparent"
 
                         MouseArea {
                             id: deleteCloseArea
@@ -531,7 +531,7 @@ Item {
                             anchors.centerIn: parent
                             text: "×"
                             font.pixelSize: 18
-                            color: deleteCloseArea.containsMouse ? "#0f4c81" : "#314158"
+                            color: deleteCloseArea.containsMouse ? Theme.Colors.primary : Theme.Colors.textLabel
                         }
                     }
                 }
@@ -545,7 +545,7 @@ Item {
                     width: parent.width
                     text: qsTr("Are you sure you want to delete this message?")
                     font.pixelSize: 14
-                    color: "#314158"
+                    color: Theme.Colors.textLabel
                     wrapMode: Text.WordWrap
                 }
 

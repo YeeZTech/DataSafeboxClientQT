@@ -4,20 +4,16 @@ import Qt.labs.platform 1.1
 import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 
-Popup {
+BaseDialog {
     id: root
+    dialogWidth: 500
+    title: qsTr("Encrypt Files to This Security Domain")
+    height: Math.min(contentColumn.implicitHeight + 48 + 48 + 36, 560)
+    closePolicy: root._encrypting ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+    showCloseButton: !root._encrypting
+    onCloseRequested: cancelClicked()
 
     signal encryptionStateChanged(bool encrypting)
-
-    width: 500
-    height: Math.min(contentColumn.implicitHeight + 48 + 48 + 36, 560)
-    modal: true
-    closePolicy: root._encrypting ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
-    background: null
-    padding: 0
-
-    x: (parent ? (parent.width - width) / 2 : 0)
-    y: (parent ? (parent.height - height) / 2 : 0)
 
     // Properties (backward compatible)
     property string selectedFilePath: ""
@@ -575,456 +571,312 @@ Popup {
     }
 
     // ---- Main content ----
-    Rectangle {
-        id: mainRect
-        anchors.fill: parent
-        radius: 10
-        color: Theme.Colors.backgroundWhite
-        border.color: "white"
-        border.width: 1
+    Column {
+        id: contentColumn
+        width: parent.width
+        spacing: 16
 
-        Item {
-            anchors.fill: parent
-            anchors.leftMargin: 24
-            anchors.rightMargin: 24
-            anchors.topMargin: 24
-            anchors.bottomMargin: 24
+        // ---- Unified file/folder selector box ----
+        Column {
+            width: parent.width
+            spacing: 8
 
-            Column {
-                id: contentColumn
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                spacing: 16
-
-                // Header
-                Item {
-                    width: parent.width
-                    height: 18
-
-                    SelectableText {
-                        anchors.left: parent.left
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: qsTr("Encrypt Files to This Security Domain")
-                        font.pixelSize: 18
-                        font.weight: Font.DemiBold
-                        color: "#0f172b"
-                    }
-
-                    Rectangle {
-                        width: 24
-                        height: 24
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        radius: 12
-                        color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
-
-                        MouseArea {
-                            id: closeArea
-                            anchors.fill: parent
-                            enabled: !root._encrypting
-                            hoverEnabled: true
-                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                            onClicked: {
-                                root.close();
-                                root.cancelClicked();
-                            }
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "×"
-                            font.pixelSize: 20
-                            color: "#314158"
-                            opacity: 0.7
-                        }
-                    }
+            Row {
+                spacing: 4
+                SelectableText {
+                    text: qsTr("Files to Encrypt")
+                    font.pixelSize: 14
+                    font.weight: Font.Medium
+                    color: Theme.Colors.textLabel
                 }
-
-                // ---- Unified file/folder selector box ----
-                Column {
-                    width: parent.width
-                    spacing: 8
-
-                    Row {
-                        spacing: 4
-                        SelectableText {
-                            text: qsTr("Files to Encrypt")
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: "#314158"
-                        }
-                        SelectableText {
-                            text: "*"
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: Theme.Colors.requiredMarker
-                        }
-                    }
-
-                    // File selector box
-                    Rectangle {
-                        width: parent.width
-                        height: 36
-                        radius: 8
-                        color: addFileBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
-                        border.color: addFileBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
-                        border.width: 1
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 150
-                            }
-                        }
-                        Behavior on border.color {
-                            ColorAnimation {
-                                duration: 150
-                            }
-                        }
-
-                        Row {
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 12
-
-                            Image {
-                                width: 16
-                                height: 16
-                                anchors.verticalCenter: parent.verticalCenter
-                                source: "qrc:/icons/icon-directory.svg"
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            Item {
-                                width: parent.width - 16 - 12
-                                height: parent.height
-                                clip: true
-
-                                Text {
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.leftMargin: 2
-                                    anchors.rightMargin: 2
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: root.selectedFilePath ? root.selectedFilePath : qsTr("Please select files to encrypt")
-                                    font.pixelSize: 14
-                                    font.weight: Font.Medium
-                                    color: root.selectedFilePath ? "#0f172b" : "#94a3b8"
-                                    elide: Text.ElideMiddle
-                                }
-                            }
-                        }
-
-                        MouseArea {
-                            id: addFileBtnArea
-                            anchors.fill: parent
-                            enabled: !root._encrypting
-                            hoverEnabled: true
-                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                            onClicked: fileDialog.open()
-                        }
-                    }
-                }
-
-                // Output path section
-                Column {
-                    width: parent.width
-                    spacing: 8
-
-                    SelectableText {
-                        text: qsTr("Save Path for Encrypted Files")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "#314158"
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: 36
-                        radius: 8
-                        color: outputBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
-                        border.color: outputBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
-                        border.width: 1
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 150
-                            }
-                        }
-                        Behavior on border.color {
-                            ColorAnimation {
-                                duration: 150
-                            }
-                        }
-
-                        Row {
-                            anchors.left: parent.left
-                            anchors.right: outputClearBtn.left
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 12
-
-                            Image {
-                                width: 16
-                                height: 16
-                                anchors.verticalCenter: parent.verticalCenter
-                                source: "qrc:/icons/icon-directory.svg"
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            Item {
-                                width: parent.width - 16 - 12
-                                height: parent.height
-                                clip: true
-
-                                Text {
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.leftMargin: 2
-                                    anchors.rightMargin: 2
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: root.selectedOutputPath ? root.selectedOutputPath : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("Select save path"))
-                                    font.pixelSize: 14
-                                    font.weight: Font.Medium
-                                    color: (root.selectedOutputPath || root.selectedFilePath) ? "#0f172b" : "#94a3b8"
-                                    elide: Text.ElideMiddle
-                                }
-                            }
-                        }
-
-                        // Clear output path button
-                        Rectangle {
-                            id: outputClearBtn
-                            width: root.selectedOutputPath ? 20 : 0
-                            height: 20
-                            anchors.right: parent.right
-                            anchors.rightMargin: 8
-                            anchors.verticalCenter: parent.verticalCenter
-                            radius: 10
-                            visible: root.selectedOutputPath !== ""
-                            color: outputClearArea.containsMouse ? "#fee2e2" : "transparent"
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "×"
-                                font.pixelSize: 12
-                                color: outputClearArea.containsMouse ? "#ef4444" : "#94a3b8"
-                            }
-
-                            MouseArea {
-                                id: outputClearArea
-                                anchors.fill: parent
-                                enabled: !root._encrypting
-                                hoverEnabled: true
-                                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                                onClicked: root.selectedOutputPath = ""
-                            }
-                        }
-
-                        MouseArea {
-                            id: outputBtnArea
-                            anchors.left: parent.left
-                            anchors.right: outputClearBtn.left
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            enabled: !root._encrypting
-                            hoverEnabled: true
-                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                            onClicked: folderDialog.open()
-                        }
-                    }
-                }
-
-                // ---- Inline progress bar ----
-                Column {
-                    width: parent.width
-                    spacing: 6
-                    visible: root._encrypting || ((root._encryptProgress > 0 || root._resultMessage !== "") && !root._encryptProgressDismissed)
-
-                    Row {
-                        width: parent.width
-                        Text {
-                            text: root._encrypting ? (root._encryptTotal > 1 ? qsTr("Encrypting (") + (root._encryptDone + 1) + "/" + root._encryptTotal + ")" : qsTr("Encrypting...")) : (root._resultType === "error" ? qsTr("Encryption failed") : root._resultType === "warning" ? qsTr("Partially completed") : qsTr("Encryption completed"))
-                            font.pixelSize: 12
-                            font.weight: Font.Medium
-                            color: root._encrypting ? "#314158" : (root._resultType === "error" ? "#ef4444" : root._resultType === "warning" ? "#f59e0b" : "#22c55e")
-                        }
-                        Item {
-                            width: parent.width - parent.children[0].width - parent.children[2].width
-                            height: 1
-                        }
-                        Text {
-                            text: root._encrypting ? root._encryptProgress + "%" : ""
-                            font.pixelSize: 12
-                            color: "#62748e"
-                        }
-                    }
-
-                    ProgressBar {
-                        id: inlineProgressBar
-                        width: parent.width
-                        from: 0
-                        to: 100
-                        value: root._encryptProgress
-
-                        background: Rectangle {
-                            implicitWidth: inlineProgressBar.width
-                            implicitHeight: 6
-                            radius: 3
-                            color: "#e2e8f0"
-                        }
-
-                        contentItem: Item {
-                            implicitWidth: inlineProgressBar.width
-                            implicitHeight: 6
-
-                            Rectangle {
-                                width: inlineProgressBar.visualPosition * parent.width
-                                height: parent.height
-                                radius: 3
-                                color: root._resultType === "error" ? "#ef4444" : root._resultType === "warning" ? "#f59e0b" : "#22c55e"
-                                Behavior on width {
-                                    NumberAnimation {
-                                        duration: 150
-                                        easing.type: Easing.OutQuad
-                                    }
-                                }
-
-                                Rectangle {
-                                    anchors.fill: parent
-                                    radius: 3
-                                    gradient: Gradient {
-                                        orientation: Gradient.Vertical
-                                        GradientStop {
-                                            position: 0.0
-                                            color: Qt.rgba(1, 1, 1, 0.25)
-                                        }
-                                        GradientStop {
-                                            position: 0.5
-                                            color: "transparent"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Result message
-                    Text {
-                        width: parent.width
-                        visible: !root._encrypting && root._resultMessage !== ""
-                        text: root._resultMessage
-                        font.pixelSize: 12
-                        color: root._resultType === "error" ? "#ef4444" : "#314158"
-                        wrapMode: Text.WrapAnywhere
-                    }
+                SelectableText {
+                    text: "*"
+                    font.pixelSize: 14
+                    font.weight: Font.Medium
+                    color: Theme.Colors.requiredMarker
                 }
             }
 
-            // Footer buttons
-            Row {
-                anchors.bottom: parent.bottom
-                anchors.right: parent.right
-                spacing: 8
+            // File selector box
+            Rectangle {
+                width: parent.width
+                height: 36
+                radius: 8
+                color: addFileBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
+                border.color: addFileBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
+                border.width: 1
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
+                Behavior on border.color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
 
+                Row {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
+                    spacing: 12
+
+                    Image {
+                        width: 16
+                        height: 16
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "qrc:/icons/icon-directory.svg"
+                        fillMode: Image.PreserveAspectFit
+                    }
+
+                    Item {
+                        width: parent.width - 16 - 12
+                        height: parent.height
+                        clip: true
+
+                        Text {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.leftMargin: 2
+                            anchors.rightMargin: 2
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: root.selectedFilePath ? root.selectedFilePath : qsTr("Please select files to encrypt")
+                            font.pixelSize: 14
+                            font.weight: Font.Medium
+                            color: root.selectedFilePath ? Theme.Colors.textHeading : "#94a3b8"
+                            elide: Text.ElideMiddle
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: addFileBtnArea
+                    anchors.fill: parent
+                    enabled: !root._encrypting
+                    hoverEnabled: true
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                    onClicked: fileDialog.open()
+                }
+            }
+        }
+
+        // Output path section
+        Column {
+            width: parent.width
+            spacing: 8
+
+            SelectableText {
+                text: qsTr("Save Path for Encrypted Files")
+                font.pixelSize: 14
+                font.weight: Font.Medium
+                color: Theme.Colors.textLabel
+            }
+
+            Rectangle {
+                width: parent.width
+                height: 36
+                radius: 8
+                color: outputBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
+                border.color: outputBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
+                border.width: 1
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
+                Behavior on border.color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+                }
+
+                Row {
+                    anchors.left: parent.left
+                    anchors.right: outputClearBtn.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
+                    spacing: 12
+
+                    Image {
+                        width: 16
+                        height: 16
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "qrc:/icons/icon-directory.svg"
+                        fillMode: Image.PreserveAspectFit
+                    }
+
+                    Item {
+                        width: parent.width - 16 - 12
+                        height: parent.height
+                        clip: true
+
+                        Text {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.leftMargin: 2
+                            anchors.rightMargin: 2
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: root.selectedOutputPath ? root.selectedOutputPath : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("Select save path"))
+                            font.pixelSize: 14
+                            font.weight: Font.Medium
+                            color: (root.selectedOutputPath || root.selectedFilePath) ? Theme.Colors.textHeading : "#94a3b8"
+                            elide: Text.ElideMiddle
+                        }
+                    }
+                }
+
+                // Clear output path button
                 Rectangle {
-                    width: 61
-                    height: 36
-                    radius: 8
-                    color: {
-                        if (cancelArea.pressed)
-                            return "#bedbff";
-                        if (cancelArea.containsMouse)
-                            return "#e8f8ff";
-                        return "white";
-                    }
-                    border.width: 1
-                    border.color: {
-                        if (cancelArea.pressed)
-                            return "#add3e6";
-                        if (cancelArea.containsMouse)
-                            return "#79aecd";
-                        return "#cad5e2";
-                    }
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                    Behavior on border.color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
+                    id: outputClearBtn
+                    width: root.selectedOutputPath ? 20 : 0
+                    height: 20
+                    anchors.right: parent.right
+                    anchors.rightMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    radius: 10
+                    visible: root.selectedOutputPath !== ""
+                    color: outputClearArea.containsMouse ? "#fee2e2" : "transparent"
 
                     Text {
                         anchors.centerIn: parent
-                        text: qsTr("Cancel")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "#314158"
+                        text: "×"
+                        font.pixelSize: 12
+                        color: outputClearArea.containsMouse ? "#ef4444" : "#94a3b8"
                     }
 
                     MouseArea {
-                        id: cancelArea
+                        id: outputClearArea
                         anchors.fill: parent
                         enabled: !root._encrypting
                         hoverEnabled: true
                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                        onClicked: {
-                            root.close();
-                            root.cancelClicked();
-                        }
+                        onClicked: root.selectedOutputPath = ""
                     }
                 }
 
-                Rectangle {
-                    width: encryptBtnText.implicitWidth + 24
-                    height: 36
-                    radius: 8
-                    color: {
-                        if (root._pendingCount === 0)
-                            return "#0f4c81";
-                        if (encryptArea.pressed)
-                            return "#0f4c81";
-                        if (encryptArea.containsMouse)
-                            return Qt.lighter("#0f4c81", 1.15);
-                        return "#0f4c81";
-                    }
-                    opacity: root._pendingCount > 0 && !root._encrypting ? 1.0 : 0.5
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 200
-                        }
-                    }
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
+                MouseArea {
+                    id: outputBtnArea
+                    anchors.left: parent.left
+                    anchors.right: outputClearBtn.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    enabled: !root._encrypting
+                    hoverEnabled: true
+                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                    onClicked: folderDialog.open()
+                }
+            }
+        }
 
-                    Text {
-                        id: encryptBtnText
-                        anchors.centerIn: parent
-                        text: qsTr("Encrypt Files")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: "white"
-                    }
+        // ---- Inline progress bar ----
+        Column {
+            width: parent.width
+            spacing: 6
+            visible: root._encrypting || ((root._encryptProgress > 0 || root._resultMessage !== "") && !root._encryptProgressDismissed)
 
-                    MouseArea {
-                        id: encryptArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        enabled: root._pendingCount > 0 && !root._encrypting
-                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onClicked: root.startEncryption()
+            Row {
+                width: parent.width
+                Text {
+                    text: root._encrypting ? (root._encryptTotal > 1 ? qsTr("Encrypting (") + (root._encryptDone + 1) + "/" + root._encryptTotal + ")" : qsTr("Encrypting...")) : (root._resultType === "error" ? qsTr("Encryption failed") : root._resultType === "warning" ? qsTr("Partially completed") : qsTr("Encryption completed"))
+                    font.pixelSize: 12
+                    font.weight: Font.Medium
+                    color: root._encrypting ? Theme.Colors.textLabel : (root._resultType === "error" ? "#ef4444" : root._resultType === "warning" ? "#f59e0b" : "#22c55e")
+                }
+                Item {
+                    width: parent.width - parent.children[0].width - parent.children[2].width
+                    height: 1
+                }
+                Text {
+                    text: root._encrypting ? root._encryptProgress + "%" : ""
+                    font.pixelSize: 12
+                    color: Theme.Colors.textCaption
+                }
+            }
+
+            ProgressBar {
+                id: inlineProgressBar
+                width: parent.width
+                from: 0
+                to: 100
+                value: root._encryptProgress
+
+                background: Rectangle {
+                    implicitWidth: inlineProgressBar.width
+                    implicitHeight: 6
+                    radius: 3
+                    color: Theme.Colors.borderSeparator
+                }
+
+                contentItem: Item {
+                    implicitWidth: inlineProgressBar.width
+                    implicitHeight: 6
+
+                    Rectangle {
+                        width: inlineProgressBar.visualPosition * parent.width
+                        height: parent.height
+                        radius: 3
+                        color: root._resultType === "error" ? "#ef4444" : root._resultType === "warning" ? "#f59e0b" : "#22c55e"
+                        Behavior on width {
+                            NumberAnimation {
+                                duration: 150
+                                easing.type: Easing.OutQuad
+                            }
+                        }
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: 3
+                            gradient: Gradient {
+                                orientation: Gradient.Vertical
+                                GradientStop {
+                                    position: 0.0
+                                    color: Qt.rgba(1, 1, 1, 0.25)
+                                }
+                                GradientStop {
+                                    position: 0.5
+                                    color: "transparent"
+                                }
+                            }
+                        }
                     }
                 }
+            }
+
+            // Result message
+            Text {
+                width: parent.width
+                visible: !root._encrypting && root._resultMessage !== ""
+                text: root._resultMessage
+                font.pixelSize: 12
+                color: root._resultType === "error" ? "#ef4444" : Theme.Colors.textLabel
+                wrapMode: Text.WrapAnywhere
+            }
+        }
+
+        // Footer buttons
+        Row {
+            anchors.right: parent.right
+            spacing: 8
+
+            SecondaryButton {
+                text: qsTr("Cancel")
+                enabled: !root._encrypting
+                onClicked: {
+                    root.close();
+                    root.cancelClicked();
+                }
+            }
+
+            PrimaryButton {
+                text: qsTr("Encrypt Files")
+                enabled: root._pendingCount > 0 && !root._encrypting
+                onClicked: root.startEncryption()
             }
         }
     }
@@ -1060,14 +912,14 @@ Popup {
                 text: qsTr("The following files are already in the list")
                 font.pixelSize: 16
                 font.weight: Font.Medium
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
 
             SelectableText {
                 width: parent.width
                 text: duplicateDialog.text
                 font.pixelSize: 13
-                color: "#314158"
+                color: Theme.Colors.textLabel
                 wrapMode: TextEdit.Wrap
             }
 

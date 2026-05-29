@@ -74,7 +74,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("File Export Review")
                 font.pixelSize: 14
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
         }
 

@@ -7,9 +7,13 @@ Popup {
 
     property string title: ""
     property int dialogWidth: 500
+    property bool showCloseButton: true
     default property alias content: contentContainer.data
 
+    signal closeRequested
+
     width: dialogWidth
+    implicitHeight: dialogBg.implicitHeight
     modal: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     x: parent ? (parent.width - width) / 2 : 0
@@ -19,7 +23,10 @@ Popup {
     padding: 0
 
     Rectangle {
-        anchors.fill: parent
+        id: dialogBg
+        width: root.dialogWidth
+        height: root.height
+        implicitHeight: dialogLayout.implicitHeight + 48
         radius: 10
         color: Theme.Colors.backgroundWhite
         border.color: Qt.rgba(0, 0, 0, 0.1)
@@ -27,22 +34,60 @@ Popup {
 
         Column {
             id: dialogLayout
-            anchors.fill: parent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
             anchors.margins: 24
             spacing: 16
 
-            Text {
+            Item {
                 visible: root.title !== ""
-                text: root.title
-                font.pixelSize: Theme.Typography.h2
-                font.weight: Font.Bold
-                color: Theme.Colors.textHeading
+                width: parent.width
+                height: visible ? 28 : 0
+
+                Text {
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.title
+                    font.pixelSize: Theme.Typography.h2
+                    font.weight: Font.Bold
+                    color: Theme.Colors.textHeading
+                }
+
+                Rectangle {
+                    visible: root.showCloseButton
+                    width: 24
+                    height: 24
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    radius: 12
+                    color: closeBtnHover.containsMouse ? Theme.Colors.backgroundGray : "transparent"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "×"
+                        font.pixelSize: 18
+                        color: closeBtnHover.containsMouse ? Theme.Colors.primary : Theme.Colors.textLabel
+                    }
+
+                    MouseArea {
+                        id: closeBtnHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            root.closeRequested();
+                            root.close();
+                        }
+                    }
+                }
             }
 
             Item {
                 id: contentContainer
                 width: parent.width
-                height: parent.height - (root.title !== "" ? 40 : 0)
+                implicitHeight: childrenRect.height
+                height: implicitHeight
             }
         }
     }

@@ -31,7 +31,7 @@ Item {
         text: root.domainName
         font.pixelSize: 24
         font.weight: Font.Medium
-        color: "#0f172b"
+        color: Theme.Colors.textHeading
         elide: Text.ElideRight
 
         ToolTip.visible: truncated && headerTitleHover.containsMouse
@@ -147,72 +147,18 @@ Item {
             }
         }
 
-        Rectangle {
+        PrimaryButton {
             id: encryptFileButton
             readonly property bool disabled: root.isDomainReadOnly || root.encryptButtonBusy
-            width: encryptRow.width + 24
-            height: 36
-            radius: 8
-            color: {
-                if (encryptFileButton.disabled)
-                    return "#9fb0c3";
-                if (encryptMouseArea.pressed)
-                    return Qt.darker("#0f4c81", 1.2);
-                if (encryptMouseArea.containsMouse)
-                    return Qt.lighter("#0f4c81", 1.15);
-                return "#0f4c81";
-            }
             visible: true
-            opacity: encryptFileButton.disabled ? 0.55 : 1.0
-            Behavior on color {
-                ColorAnimation {
-                    duration: 150
+            enabled: !disabled
+            text: qsTr("Encrypt Files to This Security Domain")
+            onClicked: {
+                if (!root.domainPubKey) {
+                    root.errorOccurred(qsTr("Security domain public key not found"), qsTr("Encrypt File"));
+                    return;
                 }
-            }
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: 150
-                }
-            }
-
-            Row {
-                id: encryptRow
-                anchors.left: parent.left
-                anchors.leftMargin: 12
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 8
-                Image {
-                    width: 16
-                    height: 16
-                    anchors.verticalCenter: parent.verticalCenter
-                    source: "qrc:/icons/icon-encrypt-to-domain.svg"
-                    fillMode: Image.PreserveAspectFit
-                }
-
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("Encrypt Files to This Security Domain")
-                    font.pixelSize: 16
-                    font.weight: Font.Medium
-                    color: "white"
-                }
-            }
-
-            MouseArea {
-                id: encryptMouseArea
-                anchors.fill: parent
-                enabled: !encryptFileButton.disabled
-                hoverEnabled: true
-                cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                onClicked: {
-                    if (encryptFileButton.disabled)
-                        return;
-                    if (!root.domainPubKey) {
-                        root.errorOccurred(qsTr("Security domain public key not found"), qsTr("Encrypt File"));
-                        return;
-                    }
-                    root.encryptRequested();
-                }
+                root.encryptRequested();
             }
         }
     }

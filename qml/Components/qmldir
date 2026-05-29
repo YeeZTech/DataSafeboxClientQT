@@ -1,4 +1,5 @@
 module DataSafebox.Components
+BaseButton 1.0 BaseButton.qml
 PrimaryButton 1.0 PrimaryButton.qml
 SecondaryButton 1.0 SecondaryButton.qml
 DangerButton 1.0 DangerButton.qml

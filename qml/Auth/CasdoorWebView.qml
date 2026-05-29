@@ -4,7 +4,7 @@ import QtWebEngine
 
 Rectangle {
     id: root
-    color: "#f5f8fb"
+    color: Theme.Colors.backgroundSidebar
 
     signal authCodeReceived(string code, string state)
     signal loadError(string errorMsg)

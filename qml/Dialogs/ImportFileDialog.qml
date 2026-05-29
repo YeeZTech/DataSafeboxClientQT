@@ -1,29 +1,13 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQuick.Dialogs
 import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 
-Dialog {
+BaseDialog {
     id: root
-    modal: true
-    focus: true
-    standardButtons: Dialog.NoButton
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    padding: 0
-
-    width: 448
-    height: bgRect.height
-
-    background: Rectangle {
-        id: bgRect
-        color: "white"
-        radius: 10
-        border.color: Qt.rgba(0, 0, 0, 0.1)
-        border.width: 1
-        height: mainLayout.height + 48 // 24 top + 24 bottom padding
-    }
+    dialogWidth: 448
+    title: qsTr("Import File")
 
     property string instanceName: ""
     property string selectedFile: ""
@@ -59,239 +43,187 @@ Dialog {
         }
     }
 
-    contentItem: Item {
-        anchors.fill: parent
+    Column {
+        id: mainLayout
+        width: parent.width
+        spacing: 0
 
+        // Margin after header
+        Item {
+            width: parent.width
+            height: 16
+        }
+
+        // Content Area - File Selection
         Column {
-            id: mainLayout
-            anchors.centerIn: parent
-            width: parent.width - 50 // 25 left + 25 right padding
-            spacing: 0
+            width: parent.width
+            spacing: 8
 
-            // Header with Title and Close button
-            Item {
+            SelectableText {
                 width: parent.width
-                height: 24
+                text: qsTr("Select file:")
+                font.pixelSize: 14
+                font.weight: Font.Medium
+                color: Theme.Colors.textLabel
+            }
 
-                SelectableText {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("Import File")
-                    font.pixelSize: 18
-                    font.weight: Font.DemiBold
-                    color: "#0f172b"
-                }
+            Row {
+                width: parent.width
+                spacing: 8
+                height: 36
 
+                // Input field
                 Rectangle {
-                    width: 24
-                    height: 24
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    radius: 12
-                    color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
+                    id: fileInputRect
+                    width: parent.width - browseButton.width - 8
+                    height: 36
+                    radius: 8
+                    color: fileInputArea.containsMouse ? "#e9eef6" : Theme.Colors.inputBackground
+                    border.color: Theme.Colors.borderField
+                    border.width: 1
+
+                    Text {
+                        x: 12
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - 24
+                        text: root.selectedFile || qsTr("No file selected")
+                        font.pixelSize: 14
+                        color: root.selectedFile ? Theme.Colors.textHeading : (fileInputArea.containsMouse ? Theme.Colors.primary : "#5a7c9b")
+                        elide: Text.ElideMiddle
+                    }
 
                     MouseArea {
-                        id: closeArea
+                        id: fileInputArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: fileDialog.open()
+                    }
+                }
+
+                // Browse button
+                Rectangle {
+                    id: browseButton
+                    width: 62
+                    height: 36
+                    radius: 8
+                    color: browseArea.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
+                    border.color: Theme.Colors.primary
+                    border.width: 1
+
+                    MouseArea {
+                        id: browseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: fileDialog.open()
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: qsTr("Browse")
+                        font.pixelSize: 14
+                        font.weight: Font.Medium
+                        color: Theme.Colors.primaryText
+                    }
+                }
+            }
+        }
+
+        // Margin before buttons
+        Item {
+            width: parent.width
+            height: 24
+        }
+
+        // Bottom Buttons
+        Item {
+            width: parent.width
+            height: 36
+
+            Row {
+                anchors.centerIn: parent
+                spacing: 8
+
+                // Cancel button
+                Rectangle {
+                    width: 128
+                    height: 36
+                    radius: 8
+                    color: {
+                        if (cancelArea.pressed)
+                            return "#bedbff";
+                        if (cancelArea.containsMouse)
+                            return "#e8f8ff";
+                        return "white";
+                    }
+                    border.width: 1
+                    border.color: {
+                        if (cancelArea.pressed)
+                            return "#add3e6";
+                        if (cancelArea.containsMouse)
+                            return "#79aecd";
+                        return Theme.Colors.borderField;
+                    }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: qsTr("Cancel")
+                        font.pixelSize: 14
+                        font.weight: Font.Medium
+                        color: Theme.Colors.textLabel
+                    }
+
+                    MouseArea {
+                        id: cancelArea
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: root.close()
                     }
-
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: 12
-                        height: 1.5
-                        rotation: 45
-                        color: closeArea.containsMouse ? "#0f4c81" : "#0f172b"
-                    }
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: 12
-                        height: 1.5
-                        rotation: -45
-                        color: closeArea.containsMouse ? "#0f4c81" : "#0f172b"
-                    }
-                }
-            }
-
-            // Margin after header
-            Item {
-                width: parent.width
-                height: 16
-            }
-
-            // Content Area - File Selection
-            Column {
-                width: parent.width
-                spacing: 8
-
-                SelectableText {
-                    width: parent.width
-                    text: qsTr("Select file:")
-                    font.pixelSize: 14
-                    font.weight: Font.Medium
-                    color: "#314158"
                 }
 
-                Row {
-                    width: parent.width
-                    spacing: 8
+                // Import button
+                Rectangle {
+                    id: importButton
+                    width: 128
                     height: 36
+                    radius: 8
+                    color: (importArea.containsMouse && root.selectedFile.length > 0) ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
+                    opacity: root.selectedFile.length > 0 ? 1.0 : 0.5
 
-                    // Input field
-                    Rectangle {
-                        id: fileInputRect
-                        width: parent.width - browseButton.width - 8
-                        height: 36
-                        radius: 8
-                        color: fileInputArea.containsMouse ? "#e9eef6" : Theme.Colors.inputBackground
-                        border.color: "#cad5e2"
-                        border.width: 1
-
-                        Text {
-                            x: 12
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 24
-                            text: root.selectedFile || qsTr("No file selected")
-                            font.pixelSize: 14
-                            color: root.selectedFile ? "#0f172b" : (fileInputArea.containsMouse ? "#0f4c81" : "#5a7c9b")
-                            elide: Text.ElideMiddle
-                        }
-
-                        MouseArea {
-                            id: fileInputArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: fileDialog.open()
+                    MouseArea {
+                        id: importArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        enabled: root.selectedFile.length > 0
+                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        onClicked: {
+                            if (root.selectedFile.length > 0) {
+                                progressDialog.progressTitle = qsTr("Importing...");
+                                progressDialog.progress = 0;
+                                progressDialog.open();
+                                root.importStarted(root.selectedFile);
+                            }
                         }
                     }
 
-                    // Browse button
-                    Rectangle {
-                        id: browseButton
-                        width: 62
-                        height: 36
-                        radius: 8
-                        color: browseArea.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
-                        border.color: Theme.Colors.primary
-                        border.width: 1
-
-                        MouseArea {
-                            id: browseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: fileDialog.open()
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: qsTr("Browse")
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: Theme.Colors.primaryText
-                        }
-                    }
-                }
-            }
-
-            // Margin before buttons
-            Item {
-                width: parent.width
-                height: 24
-            }
-
-            // Bottom Buttons
-            Item {
-                width: parent.width
-                height: 36
-
-                Row {
-                    anchors.centerIn: parent
-                    spacing: 8
-
-                    // Cancel button
-                    Rectangle {
-                        width: 128
-                        height: 36
-                        radius: 8
-                        color: {
-                            if (cancelArea.pressed)
-                                return "#bedbff";
-                            if (cancelArea.containsMouse)
-                                return "#e8f8ff";
-                            return "white";
-                        }
-                        border.width: 1
-                        border.color: {
-                            if (cancelArea.pressed)
-                                return "#add3e6";
-                            if (cancelArea.containsMouse)
-                                return "#79aecd";
-                            return "#cad5e2";
-                        }
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 150
-                            }
-                        }
-                        Behavior on border.color {
-                            ColorAnimation {
-                                duration: 150
-                            }
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: qsTr("Cancel")
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: "#314158"
-                        }
-
-                        MouseArea {
-                            id: cancelArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.close()
-                        }
-                    }
-
-                    // Import button
-                    Rectangle {
-                        id: importButton
-                        width: 128
-                        height: 36
-                        radius: 8
-                        color: (importArea.containsMouse && root.selectedFile.length > 0) ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
-                        opacity: root.selectedFile.length > 0 ? 1.0 : 0.5
-
-                        MouseArea {
-                            id: importArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            enabled: root.selectedFile.length > 0
-                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                            onClicked: {
-                                if (root.selectedFile.length > 0) {
-                                    progressDialog.progressTitle = qsTr("Importing...");
-                                    progressDialog.progress = 0;
-                                    progressDialog.open();
-                                    root.importStarted(root.selectedFile);
-                                }
-                            }
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: qsTr("Import")
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: Theme.Colors.primaryText
-                        }
+                    Text {
+                        anchors.centerIn: parent
+                        text: qsTr("Import")
+                        font.pixelSize: 14
+                        font.weight: Font.Medium
+                        color: Theme.Colors.primaryText
                     }
                 }
             }
@@ -355,7 +287,7 @@ Dialog {
                 text: progressDialog.progressTitle
                 font.pixelSize: 16
                 font.weight: Font.Medium
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
                 horizontalAlignment: Text.AlignHCenter
             }
 
@@ -372,7 +304,7 @@ Dialog {
                 width: parent.width
                 text: progressDialog.progress + "%"
                 font.pixelSize: 14
-                color: "#62748e"
+                color: Theme.Colors.textCaption
                 horizontalAlignment: Text.AlignHCenter
             }
         }
@@ -409,7 +341,7 @@ Dialog {
                 text: qsTr("Import Successful")
                 font.pixelSize: 16
                 font.weight: Font.Medium
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
 
             SelectableText {
@@ -417,7 +349,7 @@ Dialog {
                 width: parent.width
                 text: successDialog.message
                 font.pixelSize: 14
-                color: "#314158"
+                color: Theme.Colors.textLabel
                 wrapMode: TextEdit.Wrap
             }
 
@@ -430,7 +362,7 @@ Dialog {
                     height: 36
                     radius: 8
                     property bool hovered: false
-                    color: hovered ? Qt.darker("#0f4c81", 1.3) : "#0f4c81"
+                    color: hovered ? Qt.darker(Theme.Colors.primary, 1.3) : Theme.Colors.primary
                     Behavior on color {
                         ColorAnimation {
                             duration: 120
@@ -490,14 +422,14 @@ Dialog {
                 text: qsTr("Error")
                 font.pixelSize: 16
                 font.weight: Font.Medium
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
 
             SelectableText {
                 width: parent.width
                 text: errorDialog.text
                 font.pixelSize: 14
-                color: "#314158"
+                color: Theme.Colors.textLabel
                 wrapMode: TextEdit.Wrap
             }
 
@@ -509,7 +441,7 @@ Dialog {
                     width: 60
                     height: 36
                     radius: 8
-                    color: "#0f4c81"
+                    color: Theme.Colors.primary
 
                     Text {
                         anchors.centerIn: parent

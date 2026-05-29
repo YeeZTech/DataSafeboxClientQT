@@ -2,14 +2,14 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 // A selectable and copyable text component
-// Usage: SelectableText { text: "some text"; font.pixelSize: 14; color: "#0f172b" }
+// Usage: SelectableText { text: "some text"; font.pixelSize: 14; color: Theme.Colors.textHeading }
 TextEdit {
     id: root
 
     readOnly: true
     selectByMouse: true
     selectionColor: "#d4e4f1"
-    selectedTextColor: "#0f172b"
+    selectedTextColor: Theme.Colors.textHeading
 
     // Disable editing features
     activeFocusOnPress: true
@@ -61,7 +61,7 @@ TextEdit {
             background: Rectangle {
                 implicitWidth: 92
                 implicitHeight: 32
-                color: menuItem.highlighted ? "#e2e8f0" : "transparent"
+                color: menuItem.highlighted ? Theme.Colors.borderSeparator : "transparent"
                 radius: 6
             }
         }

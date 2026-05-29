@@ -65,7 +65,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Visible Users")
                 font.pixelSize: 14
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
 
             Rectangle {

@@ -25,7 +25,7 @@ Dialog {
 
     background: Rectangle {
         color: "white"
-        border.color: "#e2e8f0"
+        border.color: Theme.Colors.borderSeparator
         border.width: 1
         radius: 12
         antialiasing: true
@@ -73,7 +73,7 @@ Dialog {
                 text: qsTr("Update Available")
                 font.pixelSize: 16
                 font.weight: Font.Bold
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
 
             Item {
@@ -90,7 +90,7 @@ Dialog {
                     anchors.centerIn: parent
                     text: "\u00d7"
                     font.pixelSize: 20
-                    color: root.forceUpdate ? "#d1d5db" : "#62748e"
+                    color: root.forceUpdate ? "#d1d5db" : Theme.Colors.textCaption
                 }
 
                 MouseArea {
@@ -260,7 +260,7 @@ Dialog {
                 width: 100
                 height: 38
                 radius: 6
-                color: btnMa.pressed ? Qt.darker("#0f4c81", 1.2) : (btnMa.containsMouse ? Qt.lighter("#0f4c81", 1.1) : "#0f4c81")
+                color: btnMa.pressed ? Qt.darker(Theme.Colors.primary, 1.2) : (btnMa.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.1) : Theme.Colors.primary)
                 Behavior on color {
                     ColorAnimation {
                         duration: 120

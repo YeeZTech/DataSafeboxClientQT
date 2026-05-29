@@ -18,7 +18,7 @@ Rectangle {
 
     height: visible ? (24 + 36 + 16 + (hasExportRequests ? exportTable.height : 24) + 25) : 0
     color: "white"
-    border.color: "#e2e8f0"
+    border.color: Theme.Colors.borderSeparator
     border.width: 1
     radius: 14
 
@@ -41,46 +41,15 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Export Requests")
                 font.pixelSize: 14
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
 
-            Rectangle {
+            PrimaryButton {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                width: exportFileRow.width + 24
-                height: 36
-                radius: 8
-                property bool hovered: false
-                color: hovered ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
                 visible: root.canImportExportFiles
-
-                Row {
-                    id: exportFileRow
-                    anchors.centerIn: parent
-                    spacing: 8
-
-                    Image {
-                        source: "qrc:/icons/icon-export-file.svg"
-                        width: 16
-                        height: 16
-                    }
-
-                    Text {
-                        text: qsTr("Export File")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: Theme.Colors.primaryText
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onEntered: parent.hovered = true
-                    onExited: parent.hovered = false
-                    onClicked: root.exportFileClicked()
-                }
+                text: qsTr("Export File")
+                onClicked: root.exportFileClicked()
             }
         }
 
@@ -99,7 +68,7 @@ Rectangle {
                 text: ""
                 font.pixelSize: 16
                 font.weight: Font.Medium
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
         }
 
@@ -174,7 +143,7 @@ Rectangle {
                                     text: qsTr("Request ID")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
-                                    color: "#0f172b"
+                                    color: Theme.Colors.textHeading
                                 }
                             }
 
@@ -198,7 +167,7 @@ Rectangle {
                                     text: qsTr("File Count")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
-                                    color: "#0f172b"
+                                    color: Theme.Colors.textHeading
                                 }
                             }
 
@@ -222,7 +191,7 @@ Rectangle {
                                     text: qsTr("Total Size")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
-                                    color: "#0f172b"
+                                    color: Theme.Colors.textHeading
                                 }
                             }
 
@@ -246,7 +215,7 @@ Rectangle {
                                     text: qsTr("Status")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
-                                    color: "#0f172b"
+                                    color: Theme.Colors.textHeading
                                 }
                             }
 
@@ -270,7 +239,7 @@ Rectangle {
                                     text: qsTr("Request Time")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
-                                    color: "#0f172b"
+                                    color: Theme.Colors.textHeading
                                 }
                             }
 
@@ -294,7 +263,7 @@ Rectangle {
                                     text: qsTr("Actions")
                                     font.pixelSize: 14
                                     font.weight: Font.Medium
-                                    color: "#0f172b"
+                                    color: Theme.Colors.textHeading
                                 }
                             }
                         }
@@ -367,7 +336,7 @@ Rectangle {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.id || "-"
                                         font.pixelSize: 14
-                                        color: "#0f172b"
+                                        color: Theme.Colors.textHeading
                                     }
                                 }
 
@@ -382,7 +351,7 @@ Rectangle {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.fileCount || "-"
                                         font.pixelSize: 14
-                                        color: "#0f172b"
+                                        color: Theme.Colors.textHeading
                                     }
                                 }
 
@@ -397,7 +366,7 @@ Rectangle {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: Theme.Utils.formatSize(modelData.fileSize)
                                         font.pixelSize: 14
-                                        color: "#0f172b"
+                                        color: Theme.Colors.textHeading
                                     }
                                 }
 
@@ -439,7 +408,7 @@ Rectangle {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.applyTime || "-"
                                         font.pixelSize: 14
-                                        color: "#0f172b"
+                                        color: Theme.Colors.textHeading
                                     }
                                 }
 
@@ -455,7 +424,7 @@ Rectangle {
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("View")
                                         font.pixelSize: 14
-                                        color: "#0f4c81"
+                                        color: Theme.Colors.primary
                                         font.underline: parent.hovered
                                     }
 

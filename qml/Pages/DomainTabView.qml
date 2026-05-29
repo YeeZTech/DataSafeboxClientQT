@@ -142,7 +142,7 @@ Column {
             text: qsTr("Disable This Security Domain")
             font.pixelSize: 14
             font.weight: Font.Medium
-            color: parent.pressed ? "#900006" : (parent.hovered ? "#c50009" : "#e7000b")
+            color: parent.pressed ? "#900006" : (parent.hovered ? "#c50009" : Theme.Colors.textError)
         }
 
         MouseArea {

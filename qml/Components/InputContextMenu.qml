@@ -56,7 +56,7 @@ Item {
             background: Rectangle {
                 implicitWidth: 92
                 implicitHeight: 32
-                color: menuItem.highlighted ? "#e2e8f0" : "transparent"
+                color: menuItem.highlighted ? Theme.Colors.borderSeparator : "transparent"
                 radius: 6
             }
         }

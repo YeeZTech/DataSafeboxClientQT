@@ -8,7 +8,7 @@ Rectangle {
     id: root
     height: 314
     color: "white"
-    border.color: "#e2e8f0"
+    border.color: Theme.Colors.borderSeparator
     border.width: 1
     radius: 14
 
@@ -29,13 +29,13 @@ Rectangle {
 
             SelectableText {
                 text: qsTr("Instance ID")
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
 
             SelectableText {
                 text: root.instanceData.id || "-"
                 font.pixelSize: 16
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
         }
         Column {
@@ -47,7 +47,7 @@ Rectangle {
 
             SelectableText {
                 text: qsTr("Status")
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
 
             Rectangle {
@@ -77,13 +77,13 @@ Rectangle {
 
             SelectableText {
                 text: qsTr("Name")
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
 
             SelectableText {
                 text: root.instanceData.name || "-"
                 font.pixelSize: 16
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
         }
         Column {
@@ -96,13 +96,13 @@ Rectangle {
 
             SelectableText {
                 text: qsTr("Belongs To Security Domain")
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
 
             SelectableText {
                 text: "-"
                 font.pixelSize: 16
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
         }
         Column {
@@ -114,7 +114,7 @@ Rectangle {
 
             SelectableText {
                 text: qsTr("Path")
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
 
             Row {
@@ -124,7 +124,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.instanceData.diskPartition || "-"
                     font.pixelSize: 16
-                    color: "#0f4c81"
+                    color: Theme.Colors.primary
                 }
 
                 Image {
@@ -145,13 +145,13 @@ Rectangle {
 
             SelectableText {
                 text: qsTr("Created At")
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
 
             SelectableText {
                 text: root.instanceData.createdAt || "-"
                 font.pixelSize: 16
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
         }
         Column {
@@ -163,13 +163,13 @@ Rectangle {
 
             SelectableText {
                 text: qsTr("Expires At")
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
 
             SelectableText {
                 text: root.expiryText
                 font.pixelSize: 16
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
         }
     }

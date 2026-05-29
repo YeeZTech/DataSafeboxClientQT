@@ -13,6 +13,7 @@
 
         <!-- Module: DataSafebox.Components -->
         <file alias="DataSafebox/Components/qmldir">../qml/Components/qmldir</file>
+        <file alias="DataSafebox/Components/BaseButton.qml">../qml/Components/BaseButton.qml</file>
         <file alias="DataSafebox/Components/PrimaryButton.qml">../qml/Components/PrimaryButton.qml</file>
         <file alias="DataSafebox/Components/SecondaryButton.qml">../qml/Components/SecondaryButton.qml</file>
         <file alias="DataSafebox/Components/DangerButton.qml">../qml/Components/DangerButton.qml</file>

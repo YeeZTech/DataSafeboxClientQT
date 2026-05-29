@@ -9,7 +9,7 @@ Rectangle {
     width: count > 99 ? 32 : (count > 9 ? 24 : 16)
     height: 16
     radius: 8
-    color: "#D4183D"
+    color: Theme.Colors.notificationRed
     z: 10
 
     Text {

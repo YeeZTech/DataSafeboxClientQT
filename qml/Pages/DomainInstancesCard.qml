@@ -94,7 +94,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Related Security Domain Instances")
                 font.pixelSize: 14
-                color: "#62748e"
+                color: Theme.Colors.textCaption
             }
         }
 

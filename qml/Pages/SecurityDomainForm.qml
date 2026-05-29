@@ -137,133 +137,83 @@ Item {
                                 root.forceActiveFocus();
                             }
                         }
-                        Row {
+                        FormField {
                             id: nameRow
                             anchors.top: parent.top
                             anchors.topMargin: 0
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            spacing: formContent.spacingRow
-                            height: nameFieldColumn.implicitHeight
+                            label: qsTr("Name:")
+                            required: true
+                            errorText: root.domainNameError
+                            labelWidth: formContent.labelWidth
+                            fieldSpacing: formContent.spacingRow
 
-                            // Label
-                            Item {
-                                width: formContent.labelWidth
+                            Rectangle {
+                                width: parent.width - formContent.labelWidth - formContent.spacingRow
                                 height: 36
+                                radius: 8
+                                antialiasing: true
+                                smooth: true
+                                clip: true
+                                color: {
+                                    if (nameInput.activeFocus)
+                                        return Theme.Colors.backgroundWhite;
+                                    if (nameInput.text.length > 0)
+                                        return Theme.Colors.backgroundWhite;
+                                    return nameInputMouseArea.containsMouse ? "#e9eef6" : Theme.Colors.backgroundWhite;
+                                }
+                                border.color: root.domainNameError.length > 0 ? Theme.Colors.requiredMarker : Theme.Colors.borderField
+                                border.width: 1
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 180
+                                    }
+                                }
 
-                                Row {
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: -4
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    spacing: 0
+                                TextInput {
+                                    id: nameInput
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 12
+                                    anchors.rightMargin: 12
+                                    anchors.topMargin: 4
+                                    anchors.bottomMargin: 4
+                                    verticalAlignment: TextInput.AlignVCenter
+                                    font.family: root.fontFamily
+                                    font.pixelSize: root.fontSizeBody
+                                    color: Theme.Colors.textLabel
+                                    selectByMouse: true
+                                    selectionColor: "#d4e4f1"
+                                    selectedTextColor: Theme.Colors.textHeading
+
+                                    onTextChanged: {
+                                        root.domainName = text;
+                                    }
 
                                     Text {
-                                        text: "*"
-                                        font.family: root.fontFamily
-                                        font.pixelSize: root.fontSizeLabel
-                                        color: "#fb2c36"
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-
-                                    SelectableText {
-                                        id: nameLabel
-                                        text: qsTr("Name:")
-                                        font.family: root.fontFamily
-                                        font.pixelSize: root.fontSizeLabel
-                                        color: "#314158"
-                                        anchors.verticalCenter: parent.verticalCenter
-                                    }
-                                }
-                            }
-
-                            // Input field + error message column
-                            Column {
-                                id: nameFieldColumn
-                                width: formContent.fieldWidth
-                                spacing: 4
-
-                                Rectangle {
-                                    width: parent.width
-                                    height: 36
-                                    radius: 8
-                                    antialiasing: true
-                                    smooth: true
-                                    clip: true
-                                    color: {
-                                        if (nameInput.activeFocus)
-                                            return Theme.Colors.backgroundWhite;
-                                        if (nameInput.text.length > 0)
-                                            return Theme.Colors.backgroundWhite;
-                                        return nameInputMouseArea.containsMouse ? "#e9eef6" : Theme.Colors.backgroundWhite;
-                                    }
-                                    border.color: domainNameErrorText.visible ? "#fb2c36" : "#cad5e2"  // 灰色边框
-                                    border.width: 1
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: 180
-                                        }
-                                    }
-
-                                    TextInput {
-                                        id: nameInput
                                         anchors.fill: parent
-                                        anchors.leftMargin: 12
-                                        anchors.rightMargin: 12
-                                        anchors.topMargin: 4
-                                        anchors.bottomMargin: 4
-                                        verticalAlignment: TextInput.AlignVCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: qsTr("Please enter security domain name")
                                         font.family: root.fontFamily
                                         font.pixelSize: root.fontSizeBody
-                                        color: "#314158"  // 输入文字颜色
-                                        selectByMouse: true
-                                        selectionColor: "#d4e4f1"
-                                        selectedTextColor: "#0f172b"
-
-                                        onTextChanged: {
-                                            root.domainName = text;
-                                        }
-
-                                        Text {
-                                            anchors.fill: parent
-                                            anchors.leftMargin: 0
-                                            anchors.rightMargin: 0
-                                            anchors.topMargin: 0
-                                            anchors.bottomMargin: 0
-                                            verticalAlignment: Text.AlignVCenter
-                                            text: qsTr("Please enter security domain name")
-                                            font.family: root.fontFamily
-                                            font.pixelSize: root.fontSizeBody
-                                            color: "#5a7c9b"
-                                            visible: !nameInput.text && !nameInput.activeFocus
-                                        }
-                                    }
-
-                                    // Right-click context menu for name input
-                                    InputContextMenu {
-                                        anchors.fill: parent
-                                        target: nameInput
-                                    }
-
-                                    // Hover detection area
-                                    MouseArea {
-                                        id: nameInputMouseArea
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        acceptedButtons: Qt.NoButton
-                                        cursorShape: Qt.IBeamCursor
+                                        color: "#5a7c9b"
+                                        visible: !nameInput.text && !nameInput.activeFocus
                                     }
                                 }
 
-                                Text {
-                                    id: domainNameErrorText
-                                    width: parent.width - 12
-                                    x: 12
-                                    visible: root.domainNameError.length > 0
-                                    text: root.domainNameError
-                                    font.family: root.fontFamily
-                                    font.pixelSize: 12
-                                    color: "#fb2c36"
-                                    wrapMode: Text.WordWrap
+                                // Right-click context menu for name input
+                                InputContextMenu {
+                                    anchors.fill: parent
+                                    target: nameInput
+                                }
+
+                                // Hover detection area
+                                MouseArea {
+                                    id: nameInputMouseArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    acceptedButtons: Qt.NoButton
+                                    cursorShape: Qt.IBeamCursor
                                 }
                             }
                         }
@@ -303,7 +253,7 @@ Item {
                                         text: qsTr("Cost Bearer:")
                                         font.family: root.fontFamily
                                         font.pixelSize: root.fontSizeLabel
-                                        color: "#314158"
+                                        color: Theme.Colors.textLabel
                                         anchors.verticalCenter: parent.verticalCenter
                                     }
                                 }
@@ -407,7 +357,7 @@ Item {
                                         radius: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         property bool hovered: false
-                                        border.color: root.payer === "创建者" ? Theme.Colors.primary : (hovered ? Qt.darker(Theme.Colors.primary, 1.1) : "#cad5e2")
+                                        border.color: root.payer === "创建者" ? Theme.Colors.primary : (hovered ? Qt.darker(Theme.Colors.primary, 1.1) : Theme.Colors.borderField)
                                         border.width: 1
                                         color: "transparent"
 
@@ -438,7 +388,7 @@ Item {
                                         font.pixelSize: root.fontSizeBody
                                         font.weight: Font.Normal
                                         font.letterSpacing: -0.3125
-                                        color: "#314158"
+                                        color: Theme.Colors.textLabel
                                         anchors.verticalCenter: parent.verticalCenter
 
                                         MouseArea {
@@ -462,7 +412,7 @@ Item {
                                         radius: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         property bool hovered: false
-                                        border.color: root.payer === "使用者" ? Theme.Colors.primary : (hovered ? Qt.darker(Theme.Colors.primary, 1.1) : "#cad5e2")
+                                        border.color: root.payer === "使用者" ? Theme.Colors.primary : (hovered ? Qt.darker(Theme.Colors.primary, 1.1) : Theme.Colors.borderField)
                                         border.width: 1
                                         color: "transparent"
 
@@ -493,7 +443,7 @@ Item {
                                         font.pixelSize: root.fontSizeBody
                                         font.weight: Font.Normal
                                         font.letterSpacing: -0.3125
-                                        color: "#314158"
+                                        color: Theme.Colors.textLabel
                                         anchors.verticalCenter: parent.verticalCenter
 
                                         MouseArea {
@@ -533,7 +483,7 @@ Item {
                                         text: qsTr("Visible Users:")
                                         font.family: root.fontFamily
                                         font.pixelSize: root.fontSizeLabel
-                                        color: "#314158"
+                                        color: Theme.Colors.textLabel
                                     }
                                 }
                                 Column {
@@ -548,7 +498,7 @@ Item {
                                         smooth: true
                                         clip: true
                                         color: addUserMouseArea.containsMouse ? "#e9eef6" : Theme.Colors.backgroundWhite
-                                        border.color: "#cad5e2"
+                                        border.color: Theme.Colors.borderField
                                         border.width: 1
                                         Behavior on color {
                                             ColorAnimation {
@@ -599,7 +549,7 @@ Item {
                                         smooth: true
                                         clip: true
                                         color: Theme.Colors.backgroundWhite
-                                        border.color: "#cad5e2"
+                                        border.color: Theme.Colors.borderField
                                         border.width: 1
                                         visible: root.visibleUsers.length > 0
 
@@ -790,35 +740,22 @@ Item {
                         }
 
                         // Description field - dynamically positioned below user list
-                        Row {
+                        FormField {
                             id: descriptionRow
                             anchors.top: visibleUsersColumn.bottom
                             anchors.topMargin: 40  // 与其他字段间距保持一致
                             anchors.left: parent.left
                             anchors.right: parent.right
-                            spacing: formContent.spacingRow
+                            label: qsTr("Description:")
+                            required: false
+                            labelWidth: formContent.labelWidth
+                            fieldSpacing: formContent.spacingRow
                             height: Math.max(140, Math.min(280, scrollView.height - y - 50))  // 动态计算高度，最小140，最大280，50为底部留白
-
-                            // Label
-                            Item {
-                                width: formContent.labelWidth
-                                height: 34
-
-                                SelectableText {
-                                    id: descLabel
-                                    anchors.right: parent.right
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: qsTr("Description:")
-                                    font.family: root.fontFamily
-                                    font.pixelSize: root.fontSizeLabel
-                                    color: "#314158"
-                                }
-                            }
 
                             // Text area
                             Item {
                                 width: parent.width - formContent.labelWidth - formContent.spacingRow
-                                height: parent.height  // 与 Row 高度一致，自动调整
+                                height: descriptionRow.height  // 与 FormField 高度一致，自动调整
 
                                 Rectangle {
                                     anchors.fill: parent
@@ -833,7 +770,7 @@ Item {
                                             return Theme.Colors.backgroundWhite;
                                         return descriptionHoverArea.containsMouse ? "#e9eef6" : Theme.Colors.backgroundWhite;
                                     }
-                                    border.color: "#cad5e2"
+                                    border.color: Theme.Colors.borderField
                                     border.width: 1
                                     Behavior on color {
                                         ColorAnimation {
@@ -860,12 +797,12 @@ Item {
                                             width: parent.width
                                             font.family: root.fontFamily
                                             font.pixelSize: root.fontSizeBody
-                                            color: "#314158"  // 输入文字颜色
+                                            color: Theme.Colors.textLabel  // 输入文字颜色
                                             background: null
                                             wrapMode: TextArea.Wrap
                                             selectByMouse: true
                                             selectionColor: "#d4e4f1"
-                                            selectedTextColor: "#0f172b"
+                                            selectedTextColor: Theme.Colors.textHeading
 
                                             // Remove default padding to align with placeholder
                                             leftPadding: 0

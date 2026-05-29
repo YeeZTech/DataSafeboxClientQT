@@ -6,7 +6,7 @@ Item {
     id: root
 
     property string value: ""
-    property color textColor: "#0f172b"
+    property color textColor: Theme.Colors.textHeading
     property int textPixelSize: 14
     property int textWeight: Font.Normal
     property int leftMargin: 6

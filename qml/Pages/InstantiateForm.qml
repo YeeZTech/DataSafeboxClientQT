@@ -132,7 +132,7 @@ Rectangle {
                             anchors.rightMargin: 0
                             text: qsTr("Security Domain:")
                             font.pixelSize: 16
-                            color: "#314158"
+                            color: Theme.Colors.textLabel
                         }
                     }
 
@@ -145,38 +145,16 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             text: root.domainName
                             font.pixelSize: 16
-                            color: "#0f172b"
+                            color: Theme.Colors.textHeading
                         }
                     }
                 }
-                Row {
-                    spacing: 24
-                    height: 44
+                FormField {
                     width: parent.width
-
-                    Item {
-                        width: 176
-                        height: 34
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        SelectableText {
-                            id: instanceNameLabel
-                            anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: qsTr("Instance Name:")
-                            font.pixelSize: 16
-                            color: "#314158"
-                        }
-
-                        Text {
-                            anchors.right: instanceNameLabel.left
-                            anchors.rightMargin: 6
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: "*"
-                            font.pixelSize: 16
-                            color: "#fb2c36"
-                        }
-                    }
+                    label: qsTr("Instance Name:")
+                    required: true
+                    labelWidth: 176
+                    fieldSpacing: 24
 
                     Rectangle {
                         width: 448
@@ -189,7 +167,7 @@ Rectangle {
                                 return Theme.Colors.backgroundWhite;
                             return instanceNameMouseArea.containsMouse ? "#e9eef6" : Theme.Colors.backgroundWhite;
                         }
-                        border.color: "#79aecd"
+                        border.color: Theme.Colors.borderField
                         border.width: 1.3
                         Behavior on color {
                             ColorAnimation {
@@ -206,10 +184,10 @@ Rectangle {
                             anchors.bottomMargin: 4
                             verticalAlignment: TextInput.AlignVCenter
                             font.pixelSize: 14
-                            color: "#0f172b"
+                            color: Theme.Colors.textHeading
                             selectByMouse: true
                             selectionColor: "#d4e4f1"
-                            selectedTextColor: "#0f172b"
+                            selectedTextColor: Theme.Colors.textHeading
 
                             onTextChanged: {
                                 root.instanceName = text;
@@ -256,7 +234,7 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Instance Duration:")
                             font.pixelSize: 16
-                            color: "#314158"
+                            color: Theme.Colors.textLabel
                         }
 
                         Text {
@@ -305,10 +283,10 @@ Rectangle {
                                 anchors.bottomMargin: 4
                                 verticalAlignment: TextInput.AlignVCenter
                                 font.pixelSize: 14
-                                color: "#0f172b"
+                                color: Theme.Colors.textHeading
                                 selectByMouse: true
                                 selectionColor: "#d4e4f1"
-                                selectedTextColor: "#0f172b"
+                                selectedTextColor: Theme.Colors.textHeading
                                 validator: IntValidator {
                                     bottom: 1
                                     top: 999
@@ -350,7 +328,7 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: qsTr("months")
                                 font.pixelSize: 16
-                                color: "#62748e"
+                                color: Theme.Colors.textCaption
                             }
                         }
                     }
@@ -374,7 +352,7 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Instance Disk Partition:")
                             font.pixelSize: 16
-                            color: "#314158"
+                            color: Theme.Colors.textLabel
                         }
 
                         Text {
@@ -423,7 +401,7 @@ Rectangle {
                                     anchors.rightMargin: 96
                                     text: root.selectedDiskDisplay || qsTr("Please select a disk partition")
                                     font.pixelSize: 14
-                                    color: root.selectedDiskDisplay ? "#0f172b" : "#5a7c9b"
+                                    color: root.selectedDiskDisplay ? Theme.Colors.textHeading : "#5a7c9b"
                                     elide: Text.ElideRight
                                 }
                             }
@@ -440,40 +418,16 @@ Rectangle {
                         }
 
                         // Select Disk button - overlays on top of input (absolute positioned inside)
-                        Rectangle {
+                        PrimaryButton {
                             z: 2  // Ensure button is above input field
                             anchors.right: parent.right
                             anchors.rightMargin: 4
                             anchors.top: parent.top
                             anchors.topMargin: 4
-                            width: 80
-                            height: 36
-                            radius: 8
-
-                            color: selectDiskArea.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: 300
-                                }
-                            }
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: qsTr("Select Disk")
-                                font.pixelSize: 14
-                                font.weight: Font.Medium
-                                color: "white"
-                            }
-
-                            MouseArea {
-                                id: selectDiskArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-
-                                onClicked: {
-                                    diskCombo.popup.open();
-                                }
+                            implicitWidth: 80
+                            text: qsTr("Select Disk")
+                            onClicked: {
+                                diskCombo.popup.open();
                             }
                         }
 
@@ -560,7 +514,7 @@ Rectangle {
                                         contentItem: Rectangle {
                                             implicitWidth: 6
                                             radius: 3
-                                            color: parent.pressed ? "#5a7c9b" : (parent.hovered ? "#79aecd" : "#cad5e2")
+                                            color: parent.pressed ? "#5a7c9b" : (parent.hovered ? "#79aecd" : Theme.Colors.borderField)
                                             opacity: parent.active ? 1.0 : 0.6
                                         }
                                     }
@@ -604,7 +558,7 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: qsTr("App Whitelist:")
                                 font.pixelSize: 16
-                                color: "#314158"
+                                color: Theme.Colors.textLabel
                             }
                         }
 
@@ -613,49 +567,16 @@ Rectangle {
                             width: parent.width - 176 - 24
                             height: parent.height
 
-                            Rectangle {
-                                id: addProcessBtn
+                            PrimaryButton {
                                 anchors.left: parent.left
                                 anchors.verticalCenter: parent.verticalCenter
-                                width: addProcessText.contentWidth + 32
-                                height: 36
-                                radius: 8
-                                color: {
-                                    if (addProcessArea.pressed)
-                                        return Qt.darker("#0f4c81", 1.2);  // 点击时颜色加深
-                                    if (addProcessArea.containsMouse)
-                                        return Qt.lighter("#0f4c81", 1.15);  // 悬停时颜色变浅
-                                    return "#0f4c81";  // 正常状态主题色
-                                }
-                                border.color: addProcessBtn.color
-                                border.width: 1
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: 150
+                                text: qsTr("Add")
+                                onClicked: {
+                                    // 设置默认目录：优先上次目录
+                                    if (root.lastProcessFolder && root.lastProcessFolder.length > 0) {
+                                        processFileDialog.folder = root.lastProcessFolder;
                                     }
-                                }
-
-                                Text {
-                                    id: addProcessText
-                                    anchors.centerIn: parent
-                                    text: qsTr("Add")
-                                    font.pixelSize: 14
-                                    font.weight: Font.Medium
-                                    color: "white"
-                                }
-
-                                MouseArea {
-                                    id: addProcessArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        // 设置默认目录：优先上次目录
-                                        if (root.lastProcessFolder && root.lastProcessFolder.length > 0) {
-                                            processFileDialog.folder = root.lastProcessFolder;
-                                        }
-                                        processFileDialog.open();
-                                    }
+                                    processFileDialog.open();
                                 }
                             }
                         }
@@ -670,7 +591,7 @@ Rectangle {
                         height: processRows.height + 2  // border width adjustment
                         radius: 8
                         color: "transparent"
-                        border.color: "#cad5e2"
+                        border.color: Theme.Colors.borderField
                         border.width: 1
 
                         // We use a Column inside
@@ -689,7 +610,7 @@ Rectangle {
                                         visible: index > 0
                                         width: parent.width
                                         height: 1
-                                        color: "#e2e8f0"
+                                        color: Theme.Colors.borderSeparator
                                         anchors.top: parent.top
                                     }
 
@@ -709,7 +630,7 @@ Rectangle {
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: model.name || ""
                                                 font.pixelSize: 14
-                                                color: "#0f172b"
+                                                color: Theme.Colors.textHeading
                                                 horizontalAlignment: Text.AlignRight
                                                 // Ensure text respects the width and aligns right
                                                 width: parent.width

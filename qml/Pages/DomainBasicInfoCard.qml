@@ -50,7 +50,7 @@ Rectangle {
                 SelectableText {
                     text: qsTr("Name")
                     font.pixelSize: 14
-                    color: "#62748e"
+                    color: Theme.Colors.textCaption
                 }
 
                 Text {
@@ -58,7 +58,7 @@ Rectangle {
                     width: parent.width
                     text: card.domainData.name || ""
                     font.pixelSize: 16
-                    color: "#0f172b"
+                    color: Theme.Colors.textHeading
                     elide: Text.ElideRight
 
                     ToolTip.visible: truncated && basicInfoNameHover.containsMouse
@@ -79,13 +79,13 @@ Rectangle {
                 SelectableText {
                     text: qsTr("Creator Dianshu ID")
                     font.pixelSize: 14
-                    color: "#62748e"
+                    color: Theme.Colors.textCaption
                 }
 
                 SelectableText {
                     text: card.domainCreatorText
                     font.pixelSize: 16
-                    color: "#0f172b"
+                    color: Theme.Colors.textHeading
                 }
             }
 
@@ -96,7 +96,7 @@ Rectangle {
                 SelectableText {
                     text: qsTr("Status")
                     font.pixelSize: 14
-                    color: "#62748e"
+                    color: Theme.Colors.textCaption
                 }
 
                 Rectangle {
@@ -128,13 +128,13 @@ Rectangle {
                 SelectableText {
                     text: qsTr("Creation Time")
                     font.pixelSize: 14
-                    color: "#62748e"
+                    color: Theme.Colors.textCaption
                 }
 
                 SelectableText {
                     text: Theme.Utils.formatDateTime(card.domainData.createdAt)
                     font.pixelSize: 16
-                    color: "#0f172b"
+                    color: Theme.Colors.textHeading
                 }
             }
 
@@ -148,7 +148,7 @@ Rectangle {
                     SelectableText {
                         text: qsTr("Fee Payer")
                         font.pixelSize: 14
-                        color: "#62748e"
+                        color: Theme.Colors.textCaption
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
@@ -224,7 +224,7 @@ Rectangle {
                 SelectableText {
                     text: card.payerText
                     font.pixelSize: 16
-                    color: "#0f172b"
+                    color: Theme.Colors.textHeading
                 }
             }
         }
@@ -243,7 +243,7 @@ Rectangle {
                     anchors.verticalCenterOffset: 1
                     text: qsTr("Description")
                     font.pixelSize: 14
-                    color: "#62748e"
+                    color: Theme.Colors.textCaption
                 }
 
                 Rectangle {
@@ -384,7 +384,7 @@ Rectangle {
                         return Theme.Colors.backgroundWhite;
                     return descriptionHoverArea.containsMouse ? "#e9eef6" : Theme.Colors.backgroundWhite;
                 }
-                border.color: "#cad5e2"
+                border.color: Theme.Colors.borderField
                 border.width: card.isEditingDescription ? 1 : 0
                 antialiasing: true
                 Behavior on color {
@@ -402,7 +402,7 @@ Rectangle {
                     width: parent.width
                     text: (card.domainData.description && card.domainData.description.length > 0) ? card.domainData.description : ""
                     font.pixelSize: 16
-                    color: "#0f172b"
+                    color: Theme.Colors.textHeading
                     wrapMode: TextEdit.Wrap
                     visible: !card.isEditingDescription
                 }
@@ -418,8 +418,8 @@ Rectangle {
                     height: contentHeight > 0 ? contentHeight : 25
                     text: card.editedDescription
                     font.pixelSize: 16
-                    color: "#0f172b"
-                    selectedTextColor: "#0f172b"
+                    color: Theme.Colors.textHeading
+                    selectedTextColor: Theme.Colors.textHeading
                     selectionColor: "#d4e4f1"
                     wrapMode: TextArea.Wrap
                     selectByMouse: true
@@ -504,7 +504,7 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         text: (card.editedDescription || "").length + "/" + card.descriptionMaxLength
                         font.pixelSize: 13
-                        color: (card.editedDescription || "").length > card.descriptionMaxLength ? "#e7000b" : "#64748b"
+                        color: (card.editedDescription || "").length > card.descriptionMaxLength ? Theme.Colors.textError : "#64748b"
                     }
                 }
             }
@@ -527,7 +527,7 @@ Rectangle {
                 Text {
                     text: card.descriptionErrorMessage
                     font.pixelSize: 14
-                    color: "#e7000b"
+                    color: Theme.Colors.textError
                 }
             }
         }

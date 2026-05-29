@@ -94,7 +94,7 @@ Item {
             }
             font.pixelSize: 14
             font.weight: Font.Normal
-            color: "#314158"
+            color: Theme.Colors.textLabel
             lineHeight: 20
             lineHeightMode: Text.FixedHeight
             maximumLineCount: 1
@@ -186,7 +186,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         color: "white"
-        border.color: "#e2e8f0"
+        border.color: Theme.Colors.borderSeparator
         border.width: 1
 
         Column {
@@ -337,7 +337,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 1
-                color: "#e2e8f0"
+                color: Theme.Colors.borderSeparator
             }
 
             Rectangle {
@@ -595,7 +595,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 1
-                color: "#e2e8f0"
+                color: Theme.Colors.borderSeparator
             }
 
             Rectangle {

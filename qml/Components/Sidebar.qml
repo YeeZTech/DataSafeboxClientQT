@@ -325,7 +325,7 @@ Rectangle {
                                         text: modelData.name
                                         font.pixelSize: 14
                                         font.weight: parent.isSelected ? Font.Medium : Font.Normal
-                                        color: parent.isSelected ? Theme.Colors.primary : (parent.hovered ? "#1e3a5f" : "#45556c")
+                                        color: parent.isSelected ? Theme.Colors.primary : (parent.hovered ? "#1e3a5f" : Theme.Colors.textCaption)
                                         Behavior on color {
                                             ColorAnimation {
                                                 duration: 120
@@ -412,7 +412,7 @@ Rectangle {
                                         width: auditCount > 99 ? 32 : (auditCount > 9 ? 24 : 16)
                                         height: 16
                                         radius: 8
-                                        color: "#D4183D"
+                                        color: Theme.Colors.notificationRed
                                         z: 10
                                         Text {
                                             anchors.centerIn: parent
@@ -599,7 +599,7 @@ Rectangle {
                                         text: modelData.name
                                         font.pixelSize: 14
                                         font.weight: Font.Normal
-                                        color: "#45556c"
+                                        color: Theme.Colors.textCaption
                                         maximumLineCount: 1
                                         elide: Text.ElideMiddle
                                         width: Math.max(0, parent.width - x - 8)

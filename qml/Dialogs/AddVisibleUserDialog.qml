@@ -3,14 +3,12 @@ import QtQuick.Controls 2.15
 import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 
-Popup {
+BaseDialog {
     id: root
-    width: 446
+    dialogWidth: 446
+    title: qsTr("Add Visible User")
     height: hasError ? 244 : 216
-    modal: true
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    x: (parent ? (parent.width - width) / 2 : 0)
-    y: (parent ? (parent.height - height) / 2 : 0)
+    onCloseRequested: cancelClicked()
 
     property string account: ""
     property bool hasError: false
@@ -59,206 +57,154 @@ Popup {
         }
     }
 
-    // Remove default Popup background and border
-    background: null
-    padding: 0
-
     Overlay.modal: Rectangle {
         color: "#80000000"
     }
 
-    Rectangle {
-        id: bgRect
-        width: root.width
-        height: root.height
-        radius: 10
-        color: Theme.Colors.backgroundWhite
-        border.color: Qt.rgba(0, 0, 0, 0.1)
-        border.width: 1
+    Column {
+        width: parent.width
+        spacing: 8
 
         SelectableText {
-            x: 24
-            y: 24
-            text: qsTr("Add Visible User")
-            font.pixelSize: 18
-            font.weight: Font.DemiBold
-            color: "#0f172b"
+            text: qsTr("Dianshu ID:")
+            font.pixelSize: 14
+            font.weight: Font.Medium
+            color: Theme.Colors.textLabel
         }
 
         Rectangle {
-            width: 24
-            height: 24
-            x: parent.width - 44
-            y: 21
-            radius: 12
-            color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
-
-            Text {
-                anchors.centerIn: parent
-                text: "×"
-                font.pixelSize: 18
-                color: closeArea.containsMouse ? "#0f4c81" : "#314158"
+            width: parent.width
+            height: 36
+            radius: 8
+            color: accountInput.activeFocus ? "white" : (inputHoverArea.containsMouse ? "#e9eef6" : "white")
+            border.color: root.hasError ? "#c10007" : Theme.Colors.borderField
+            border.width: 1
+            Behavior on border.color {
+                ColorAnimation {
+                    duration: 180
+                }
+            }
+            Behavior on color {
+                ColorAnimation {
+                    duration: 150
+                }
             }
 
             MouseArea {
-                id: closeArea
+                id: inputHoverArea
                 anchors.fill: parent
                 hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    root.close();
-                    root.cancelClicked();
+                acceptedButtons: Qt.NoButton
+            }
+
+            TextInput {
+                id: accountInput
+                anchors.fill: parent
+                anchors.leftMargin: 12
+                anchors.rightMargin: 12
+                anchors.topMargin: 4
+                anchors.bottomMargin: 4
+                verticalAlignment: TextInput.AlignVCenter
+                font.pixelSize: 14
+                color: Theme.Colors.textPrimary
+                selectByMouse: true
+                selectionColor: "#d4e4f1"
+                selectedTextColor: Theme.Colors.textHeading
+
+                onTextChanged: {
+                    root.account = text;
+                    root.hasError = false;
                 }
+
+                Text {
+                    anchors.fill: parent
+                    verticalAlignment: Text.AlignVCenter
+                    text: qsTr("Please enter the other party's Dianshu ID to add as visible user")
+                    font.pixelSize: 14
+                    color: "#5a7c9b"
+                    visible: !accountInput.text && !accountInput.activeFocus
+                }
+
+                Keys.onPressed: function (event) {
+                    if (event.key === Qt.Key_C && (event.modifiers & Qt.ControlModifier)) {
+                        accountInput.copy();
+                        event.accepted = true;
+                    }
+                    if (event.key === Qt.Key_A && (event.modifiers & Qt.ControlModifier)) {
+                        accountInput.selectAll();
+                        event.accepted = true;
+                    }
+                }
+            }
+
+            InputContextMenu {
+                anchors.fill: parent
+                target: accountInput
             }
         }
 
-        Column {
-            x: 24
-            y: 58
-            width: 398
-            spacing: 8
+        Row {
+            width: parent.width
+            spacing: 4
+            height: 20
+            visible: root.hasError
 
-            SelectableText {
-                text: qsTr("Dianshu ID:")
-                font.pixelSize: 14
-                font.weight: Font.Medium
-                color: "#314158"
+            Item {
+                width: 16
+                height: 16
+                anchors.verticalCenter: parent.verticalCenter
+
+                Image {
+                    anchors.fill: parent
+                    source: "qrc:/icons/icon-error.svg"
+                    sourceSize: Qt.size(16, 16)
+                    fillMode: Image.PreserveAspectFit
+                    smooth: true
+                    antialiasing: true
+                }
             }
 
-            Rectangle {
-                width: parent.width
-                height: 36
-                radius: 8
-                color: accountInput.activeFocus ? "white" : (inputHoverArea.containsMouse ? "#e9eef6" : "white")
-                border.color: root.hasError ? "#c10007" : "#cad5e2"
-                border.width: 1
-                Behavior on border.color {
-                    ColorAnimation {
-                        duration: 180
-                    }
-                }
+            Text {
+                text: root.errorMessage
+                font.pixelSize: 14
+                color: Theme.Colors.textError
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
+
+        Row {
+            spacing: 4
+            height: 20
+
+            Image {
+                width: 14
+                height: 14
+                anchors.verticalCenter: parent.verticalCenter
+                source: "qrc:/icons/icon-info-dark.svg"
+                fillMode: Image.PreserveAspectFit
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("What is Dianshu ID?")
+                font.pixelSize: 13
+                font.underline: true
+                color: linkHover.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : linkHover.containsMouse ? "#2A6A9A" : Theme.Colors.primary
                 Behavior on color {
                     ColorAnimation {
-                        duration: 150
+                        duration: 120
                     }
                 }
 
                 MouseArea {
-                    id: inputHoverArea
+                    id: linkHover
                     anchors.fill: parent
                     hoverEnabled: true
-                    acceptedButtons: Qt.NoButton
-                }
-
-                TextInput {
-                    id: accountInput
-                    anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    anchors.topMargin: 4
-                    anchors.bottomMargin: 4
-                    verticalAlignment: TextInput.AlignVCenter
-                    font.pixelSize: 14
-                    color: Theme.Colors.textPrimary
-                    selectByMouse: true
-                    selectionColor: "#d4e4f1"
-                    selectedTextColor: "#0f172b"
-
-                    onTextChanged: {
-                        root.account = text;
-                        root.hasError = false;
-                    }
-
-                    Text {
-                        anchors.fill: parent
-                        verticalAlignment: Text.AlignVCenter
-                        text: qsTr("Please enter the other party's Dianshu ID to add as visible user")
-                        font.pixelSize: 14
-                        color: "#5a7c9b"
-                        visible: !accountInput.text && !accountInput.activeFocus
-                    }
-
-                    Keys.onPressed: function (event) {
-                        if (event.key === Qt.Key_C && (event.modifiers & Qt.ControlModifier)) {
-                            accountInput.copy();
-                            event.accepted = true;
-                        }
-                        if (event.key === Qt.Key_A && (event.modifiers & Qt.ControlModifier)) {
-                            accountInput.selectAll();
-                            event.accepted = true;
-                        }
-                    }
-                }
-
-                InputContextMenu {
-                    anchors.fill: parent
-                    target: accountInput
-                }
-            }
-
-            Row {
-                width: parent.width
-                spacing: 4
-                height: 20
-                visible: root.hasError
-
-                Item {
-                    width: 16
-                    height: 16
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Image {
-                        anchors.fill: parent
-                        source: "qrc:/icons/icon-error.svg"
-                        sourceSize: Qt.size(16, 16)
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
-                        antialiasing: true
-                    }
-                }
-
-                Text {
-                    text: root.errorMessage
-                    font.pixelSize: 14
-                    color: "#e7000b"
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
-
-            Row {
-                spacing: 4
-                height: 20
-
-                Image {
-                    width: 14
-                    height: 14
-                    anchors.verticalCenter: parent.verticalCenter
-                    source: "qrc:/icons/icon-info-dark.svg"
-                    fillMode: Image.PreserveAspectFit
-                }
-
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("What is Dianshu ID?")
-                    font.pixelSize: 13
-                    font.underline: true
-                    color: linkHover.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : linkHover.containsMouse ? "#2A6A9A" : Theme.Colors.primary
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 120
-                        }
-                    }
-
-                    MouseArea {
-                        id: linkHover
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            var url = "https://help.yeez.tech/docs/dian-shu-hao";
-                            if (url)
-                                Qt.openUrlExternally(url);
-                        }
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        var url = "https://help.yeez.tech/docs/dian-shu-hao";
+                        if (url)
+                            Qt.openUrlExternally(url);
                     }
                 }
             }
@@ -266,111 +212,30 @@ Popup {
 
         Row {
             anchors.right: parent.right
-            anchors.rightMargin: 24
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 16
             spacing: 8
 
-            Rectangle {
-                width: 62
-                height: 36
-                radius: 8
-                color: {
-                    if (cancelArea.pressed)
-                        return "#bedbff";
-                    if (cancelArea.containsMouse)
-                        return "#e8f8ff";
-                    return "white";
-                }
-                border.color: {
-                    if (cancelArea.pressed)
-                        return "#add3e6";
-                    if (cancelArea.containsMouse)
-                        return "#79aecd";
-                    return "#cad5e2";
-                }
-                border.width: 1
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-                Behavior on border.color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-
-                SelectableText {
-                    anchors.centerIn: parent
-                    text: qsTr("Cancel")
-                    font.pixelSize: 14
-                    font.weight: Font.Medium
-                    color: "#314158"
-                }
-
-                MouseArea {
-                    id: cancelArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        root.close();
-                        root.cancelClicked();
-                    }
+            SecondaryButton {
+                text: qsTr("Cancel")
+                onClicked: {
+                    root.close();
+                    root.cancelClicked();
                 }
             }
 
-            Rectangle {
-                width: 60
-                height: 36
-                radius: 8
-                color: {
-                    if (!addArea.enabled)
-                        return "#0f4c81";
-                    if (addArea.pressed)
-                        return Qt.darker("#0f4c81", 1.2);
-                    if (addArea.containsMouse)
-                        return Qt.lighter("#0f4c81", 1.15);
-                    return "#0f4c81";
-                }
-                opacity: addArea.enabled ? 1.0 : 0.5
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 200
+            PrimaryButton {
+                text: qsTr("Add")
+                enabled: accountInput.text.trim() !== "" && !root.isVerifying
+                loading: root.isVerifying
+                onClicked: {
+                    var trimmedAccount = accountInput.text ? accountInput.text.trim() : "";
+                    if (!trimmedAccount || root.isVerifying) {
+                        return;
                     }
-                }
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-
-                SelectableText {
-                    anchors.centerIn: parent
-                    text: qsTr("Add")
-                    font.pixelSize: 14
-                    font.weight: Font.Medium
-                    color: "white"
-                }
-
-                MouseArea {
-                    id: addArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    enabled: accountInput.text.trim() !== "" && !root.isVerifying
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    onClicked: {
-                        var trimmedAccount = accountInput.text ? accountInput.text.trim() : "";
-                        if (!trimmedAccount || root.isVerifying) {
-                            return;
-                        }
-                        root.hasError = false;
-                        root.pendingAccount = trimmedAccount;
-                        root.isVerifying = true;
-                        verifyTimeoutTimer.restart();
-                        CasdoorHelper.searchUser(trimmedAccount);
-                    }
+                    root.hasError = false;
+                    root.pendingAccount = trimmedAccount;
+                    root.isVerifying = true;
+                    verifyTimeoutTimer.restart();
+                    CasdoorHelper.searchUser(trimmedAccount);
                 }
             }
         }
@@ -446,14 +311,14 @@ Popup {
                 text: qsTr("Prompt")
                 font.pixelSize: 16
                 font.weight: Font.Medium
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
 
             SelectableText {
                 width: parent.width
                 text: userNotFoundDialog.message
                 font.pixelSize: 14
-                color: "#314158"
+                color: Theme.Colors.textLabel
                 wrapMode: TextEdit.Wrap
             }
 

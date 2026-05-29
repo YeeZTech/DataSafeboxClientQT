@@ -381,7 +381,7 @@ ApplicationWindow {
         height: 28
         radius: 14
         color: backLoginArea.containsMouse ? "#f0f4f8" : "transparent"
-        border.color: backLoginArea.containsMouse ? "#cad5e2" : "transparent"
+        border.color: backLoginArea.containsMouse ? Theme.Colors.borderField : "transparent"
         border.width: 1
         visible: window.authPage === "login" && !window.showLoginError && casdoorLoginWebView.canGoBack
         z: 202
@@ -414,7 +414,7 @@ ApplicationWindow {
         anchors.fill: parent
         visible: window.showLoginError && window.authPage === "login"
         z: 201
-        color: "#f5f8fb"
+        color: Theme.Colors.backgroundSidebar
 
         Column {
             anchors.centerIn: parent
@@ -440,28 +440,14 @@ ApplicationWindow {
                 lineHeight: 1.5
             }
 
-            Rectangle {
+            PrimaryButton {
                 width: parent.width
-                height: 40
-                radius: 6
-                color: "#0f4c81"
-
-                Text {
-                    anchors.centerIn: parent
-                    text: qsTr("Re-login")
-                    font.pixelSize: 14
-                    color: "#ffffff"
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        window.showLoginError = false;
-                        window.loginRetryCount = 0;
-                        window.loginErrorMessage = "";
-                        window.startCasdoorLoginFlow();
-                    }
+                text: qsTr("Re-login")
+                onClicked: {
+                    window.showLoginError = false;
+                    window.loginRetryCount = 0;
+                    window.loginErrorMessage = "";
+                    window.startCasdoorLoginFlow();
                 }
             }
         }
@@ -737,7 +723,7 @@ ApplicationWindow {
         width: 35
         height: 35
         radius: 17.5
-        color: csiBtnArea.pressed ? Qt.darker("#0f4c81", 1.3) : (csiBtnArea.containsMouse ? Qt.lighter("#0f4c81", 1.2) : "#0f4c81")
+        color: csiBtnArea.pressed ? Qt.darker(Theme.Colors.primary, 1.3) : (csiBtnArea.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary)
         anchors.right: parent.right
         anchors.rightMargin: 15
         anchors.bottom: parent.bottom
@@ -838,7 +824,7 @@ ApplicationWindow {
                 text: errorDialog.errorMessage
                 font.pixelSize: 13
                 font.weight: Font.Medium
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
         }
 
@@ -896,7 +882,7 @@ ApplicationWindow {
         background: Rectangle {
             color: "#ffffff"
             radius: 28
-            border.color: "#e2e8f0"
+            border.color: Theme.Colors.borderSeparator
             border.width: 1
 
             ShadowBox {
@@ -1054,7 +1040,7 @@ ApplicationWindow {
 
         background: Rectangle {
             color: "white"
-            border.color: "#e2e8f0"
+            border.color: Theme.Colors.borderSeparator
             border.width: 1
             radius: 12
         }
@@ -1075,7 +1061,7 @@ ApplicationWindow {
                 text: qsTr("Software Update")
                 font.pixelSize: 18
                 font.weight: Font.Medium
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
 
             Text {

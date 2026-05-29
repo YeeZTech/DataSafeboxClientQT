@@ -193,103 +193,30 @@ Item {
                     text: instanceData.name || qsTr("Security Domain Instance")
 
                     // Import File Button（仅运行中实例显示）
-                    Rectangle {
+                    PrimaryButton {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        width: 112
-                        height: 36
-                        radius: 8
-                        property bool hovered: false
-                        color: hovered ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 120
-                            }
-                        }
                         visible: root.canImportExportFiles
-
-                        Row {
-                            anchors.centerIn: parent
-                            spacing: 8
-
-                            Image {
-                                source: "qrc:/icons/icon-import-file.svg"
-                                width: 16
-                                height: 16
-                            }
-
-                            Text {
-                                text: qsTr("Import File")
-                                font.pixelSize: 14
-                                font.weight: Font.Medium
-                                color: Theme.Colors.primaryText
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onEntered: parent.hovered = true
-                            onExited: parent.hovered = false
-                            onClicked: root.importFileRequested()
-                        }
+                        text: qsTr("Import File")
+                        onClicked: root.importFileRequested()
                     }
 
                     // 实例化此安全域 按钮（仅已授权实例显示，使用蓝色背景、白色文字和图标）
-                    Rectangle {
+                    PrimaryButton {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        width: startInstanceRow.width + 26
-                        height: 36
-                        radius: 8
-                        property bool hovered: false
-                        color: hovered ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
-                        border.color: Theme.Colors.primary
-                        border.width: 1
                         visible: root.isAuthorizedInstance
-
-                        Row {
-                            id: startInstanceRow
-                            anchors.left: parent.left
-                            anchors.leftMargin: 13
-                            anchors.verticalCenter: parent.verticalCenter
-                            spacing: 8
-
-                            Image {
-                                width: 14
-                                height: 14
-                                anchors.verticalCenter: parent.verticalCenter
-                                source: "qrc:/icons/icon-domain-instance-white.svg"
-                                fillMode: Image.PreserveAspectFit
-                            }
-
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                text: qsTr("Encrypt File to This Security Domain")
-                                font.pixelSize: 14
-                                font.weight: Font.Medium
-                                color: Theme.Colors.primaryText
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                var durationText = instanceData.duration ? instanceData.duration.toString() : "1";
-                                instantiationPaymentDialog.durationText = durationText;
-                                var rawSize = instanceData.volumnSize || instanceData.size;
-                                var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(rawSize);
-                                instantiationPaymentDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes);
-                                instantiationPaymentDialog.instanceFee = (durationText && durationText.length > 0 ? (durationText + qsTr(" months")) : "-");
-                                instantiationPaymentDialog.billingRule = qsTr("30 CNY/GB/Month");
-                                instantiationPaymentDialog.estimatedFee = calculateEstimatedFee(rawSize, durationText, instantiationPaymentDialog.billingRule);
-                                instantiationPaymentDialog.open();
-                            }
-                            onEntered: parent.hovered = true
-                            onExited: parent.hovered = false
+                        text: qsTr("Encrypt File to This Security Domain")
+                        onClicked: {
+                            var durationText = instanceData.duration ? instanceData.duration.toString() : "1";
+                            instantiationPaymentDialog.durationText = durationText;
+                            var rawSize = instanceData.volumnSize || instanceData.size;
+                            var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(rawSize);
+                            instantiationPaymentDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes);
+                            instantiationPaymentDialog.instanceFee = (durationText && durationText.length > 0 ? (durationText + qsTr(" months")) : "-");
+                            instantiationPaymentDialog.billingRule = qsTr("30 CNY/GB/Month");
+                            instantiationPaymentDialog.estimatedFee = calculateEstimatedFee(rawSize, durationText, instantiationPaymentDialog.billingRule);
+                            instantiationPaymentDialog.open();
                         }
                     }
                 }
@@ -339,7 +266,7 @@ Item {
                             text: qsTr("Application approved. Click \"Start Domain\" to proceed.")
                             font.pixelSize: 16
                             font.weight: Font.Normal
-                            color: "#314158"
+                            color: Theme.Colors.textLabel
                             wrapMode: Text.WordWrap
                             width: 574
                         }
@@ -391,45 +318,15 @@ Item {
                 }
 
                 // Delete Button
-                Rectangle {
+                PrimaryButton {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: exportApplicationCard.bottom
                     anchors.topMargin: (root.isInstanceActive && root.showManagementPanels) ? 25 : 0
-                    width: 155
-                    height: (root.isInstanceActive && root.showManagementPanels) ? 36 : 0
-                    radius: 8
-                    property bool hovered: false
-                    color: hovered ? Qt.lighter(Theme.Colors.primary, 1.2) : Theme.Colors.primary
                     visible: root.isInstanceActive && root.showManagementPanels
-
-                    Row {
-                        anchors.centerIn: parent
-                        spacing: 8
-
-                        Image {
-                            source: "qrc:/icons/icon-delete.svg"
-                            width: 16
-                            height: 16
-                        }
-
-                        Text {
-                            text: qsTr("Delete Instance")
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: Theme.Colors.primaryText
-                        }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onEntered: parent.hovered = true
-                        onExited: parent.hovered = false
-                        onClicked: {
-                            deleteInstanceConfirmDialog.domainName = root.instanceData && root.instanceData.name ? root.instanceData.name : root.instanceName;
-                            deleteInstanceConfirmDialog.open();
-                        }
+                    text: qsTr("Delete Instance")
+                    onClicked: {
+                        deleteInstanceConfirmDialog.domainName = root.instanceData && root.instanceData.name ? root.instanceData.name : root.instanceName;
+                        deleteInstanceConfirmDialog.open();
                     }
                 }
             }

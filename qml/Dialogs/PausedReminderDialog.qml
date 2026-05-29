@@ -86,7 +86,7 @@ Popup {
             text: qsTr("Balance Reminder")
             font.pixelSize: 15
             font.weight: Font.DemiBold
-            color: "#0f172b"
+            color: Theme.Colors.textHeading
         }
 
         Rectangle {
@@ -135,7 +135,7 @@ Popup {
                 lineHeight: 20
                 lineHeightMode: Text.FixedHeight
                 wrapMode: Text.WordWrap
-                color: "#45556c"
+                color: Theme.Colors.textCaption
             }
 
             MouseArea {
@@ -169,7 +169,7 @@ Popup {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 font.pixelSize: 14
-                color: "#314158"
+                color: Theme.Colors.textLabel
                 text: qsTr("Overdue Instance Names:")
             }
 
@@ -180,7 +180,7 @@ Popup {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 font.pixelSize: 14
-                color: "#314158"
+                color: Theme.Colors.textLabel
                 text: root.instanceNamesText
                 elide: Text.ElideRight
                 wrapMode: Text.NoWrap
@@ -205,7 +205,7 @@ Popup {
             anchors.top: parent.top
             anchors.topMargin: 188
             font.pixelSize: 14
-            color: "#314158"
+            color: Theme.Colors.textLabel
             textFormat: Text.RichText
             text: qsTr("Total Overdue:") + "   <span style='color:#bb4d00;font-weight:600;'>" + root.balanceText + "</span> " + qsTr("CNY")
         }
@@ -214,7 +214,7 @@ Popup {
             width: 24
             height: 24
             radius: 12
-            color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
+            color: closeArea.containsMouse ? Theme.Colors.backgroundGray : "transparent"
             anchors.right: parent.right
             anchors.rightMargin: 12
             anchors.top: parent.top
@@ -224,7 +224,7 @@ Popup {
                 anchors.centerIn: parent
                 text: "×"
                 font.pixelSize: 18
-                color: closeArea.containsMouse ? "#0f4c81" : "#314158"
+                color: closeArea.containsMouse ? Theme.Colors.primary : Theme.Colors.textLabel
             }
 
             MouseArea {

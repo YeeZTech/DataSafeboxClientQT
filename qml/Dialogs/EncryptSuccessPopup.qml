@@ -18,7 +18,7 @@ Popup {
     background: Rectangle {
         radius: 12
         color: "#ffffff"
-        border.color: "#e2e8f0"
+        border.color: Theme.Colors.borderSeparator
         border.width: 1
         layer.enabled: true
     }
@@ -43,7 +43,7 @@ Popup {
                 text: qsTr("Encryption Successful")
                 font.pixelSize: 18
                 font.weight: Font.DemiBold
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
             Rectangle {
                 width: 24
@@ -51,12 +51,12 @@ Popup {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 radius: 12
-                color: successCloseBtnArea.containsMouse ? "#f0f4fa" : "transparent"
+                color: successCloseBtnArea.containsMouse ? Theme.Colors.backgroundGray : "transparent"
                 Text {
                     anchors.centerIn: parent
                     text: "×"
                     font.pixelSize: 20
-                    color: successCloseBtnArea.containsMouse ? "#0f4c81" : "#314158"
+                    color: successCloseBtnArea.containsMouse ? Theme.Colors.primary : Theme.Colors.textLabel
                 }
                 MouseArea {
                     id: successCloseBtnArea
@@ -94,7 +94,7 @@ Popup {
             text: qsTr("Encryption Successful")
             font.pixelSize: 16
             font.weight: Font.Medium
-            color: "#0f172b"
+            color: Theme.Colors.textHeading
             horizontalAlignment: Text.AlignHCenter
         }
 
@@ -132,39 +132,17 @@ Popup {
                 }
             }
 
-            Rectangle {
-                width: openFolderText.implicitWidth + 24
-                height: 36
-                radius: 8
-                color: openFolderArea.pressed ? Qt.darker("#0f4c81", 1.2) : openFolderArea.containsMouse ? Qt.lighter("#0f4c81", 1.15) : "#0f4c81"
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 150
+            PrimaryButton {
+                text: qsTr("Open File Save Directory")
+                onClicked: {
+                    var p = root.encryptOutputDir;
+                    if (p) {
+                        var url = p.replace(/\\/g, "/");
+                        if (!url.startsWith("file:"))
+                            url = "file:///" + url;
+                        Qt.openUrlExternally(url);
                     }
-                }
-                Text {
-                    id: openFolderText
-                    anchors.centerIn: parent
-                    text: qsTr("Open File Save Directory")
-                    font.pixelSize: 14
-                    font.weight: Font.Medium
-                    color: "white"
-                }
-                MouseArea {
-                    id: openFolderArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        var p = root.encryptOutputDir;
-                        if (p) {
-                            var url = p.replace(/\\/g, "/");
-                            if (!url.startsWith("file:"))
-                                url = "file:///" + url;
-                            Qt.openUrlExternally(url);
-                        }
-                        root.close();
-                    }
+                    root.close();
                 }
             }
         }

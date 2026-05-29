@@ -107,6 +107,15 @@ QtObject {
     readonly property color requiredMarker: "#fb2c36"
     readonly property color textCounter: "#90a1b9"
     readonly property color buttonDisabled: "#E6E6E6"  // Use border color per spec
+    readonly property color notificationRed: "#D4183D"
+
+    // Button style colors
+    readonly property color buttonSecondaryBg: "#f1f5f9"
+    readonly property color buttonSecondaryBorderHover: "#90a1b9"
+    readonly property color buttonTextDisabled: "#90a1b9"
+    readonly property color buttonDanger: "#FB2C36"
+    readonly property color buttonDangerHover: "#FD7977"
+    readonly property color buttonDangerPressed: "#A40E20"
 
     // Border colors (alias for consistency)
     readonly property color borderSlate: "#E6E6E6"  // Same as border per spec

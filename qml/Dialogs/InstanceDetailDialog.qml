@@ -3,22 +3,16 @@ import QtQuick.Controls 2.15
 import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 
-Popup {
+BaseDialog {
     id: root
-
-    // Use separate properties to trigger re-evaluation
-    property real parentWidth: parent ? parent.width : 800
-    property real parentHeight: parent ? parent.height : 600
-
-    width: {
-        // Dynamic width based on parent size, with min/max constraints
+    dialogWidth: {
         var preferredWidth = 520;
         var maxWidth = parentWidth * 0.8;
         var minWidth = 460;
         return Math.max(minWidth, Math.min(preferredWidth, maxWidth));
     }
+    title: isApproverView ? qsTr("Security Domain Instance Application Details") : qsTr("Security Domain Instance Details")
     height: {
-        // Dynamic height calculation based on actual content
         var titleHeight = 18;
         var topMargin = 20;
         var bottomMargin = 20;
@@ -36,10 +30,11 @@ Popup {
         var maxHeight = parentHeight * 0.9;
         return Math.min(totalHeight, maxHeight);
     }
-    modal: true
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    x: Math.max(0, (parentWidth - width) / 2)
-    y: Math.max(0, (parentHeight - height) / 2)
+    onCloseRequested: cancelClicked()
+
+    // Use separate properties to trigger re-evaluation
+    property real parentWidth: parent ? parent.width : 800
+    property real parentHeight: parent ? parent.height : 600
 
     property string instanceId: ""
     property string status: ""
@@ -107,597 +102,540 @@ Popup {
         }
     }
 
-    background: null
-    padding: 0
+    Column {
+        width: parent.width
+        spacing: 0
 
-    Rectangle {
-        anchors.fill: parent
-        radius: 10
-        color: "white"
-        border.color: Qt.rgba(0, 0, 0, 0.1)
-        border.width: 1
+        Item {
+            width: parent.width
+            height: 12
+        }
 
+        // Instance cost field - only show for approval dialog
         Column {
-            anchors.fill: parent
-            anchors.leftMargin: 20
-            anchors.rightMargin: 20
-            anchors.topMargin: 20
-            anchors.bottomMargin: 20
-            spacing: 0
+            width: 223
+            spacing: 2
+            visible: false
 
-            Item {
-                width: parent.width
-                height: 24
+            SelectableText {
+                text: qsTr("Instance Cost")
+                font.pixelSize: 14
+                color: Theme.Colors.textCaption
+            }
+
+            Row {
+                spacing: 0
 
                 SelectableText {
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: isApproverView ? qsTr("Security Domain Instance Application Details") : qsTr("Security Domain Instance Details")
+                    text: root.instanceCost || "0"
                     font.pixelSize: 18
                     font.weight: Font.DemiBold
-                    color: "#0f172b"
+                    color: "#ff5736"
                 }
 
-                Rectangle {
-                    width: 24
-                    height: 24
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    radius: 12
-                    color: closeArea.containsMouse ? "#f0f4fa" : "transparent"
+                SelectableText {
+                    text: qsTr(" CNY")
+                    font.pixelSize: 14
+                    font.weight: Font.DemiBold
+                    color: "#ff5736"
+                    anchors.baseline: parent.children[0].baseline
+                }
+            }
+        }
 
-                    MouseArea {
-                        id: closeArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
+        Item {
+            width: parent.width
+            height: 0
+            visible: false
+        }
 
-                        onClicked: {
-                            root.close();
-                            root.cancelClicked();
-                        }
+        // Fields container with proper flow layout
+        Column {
+            id: fieldsContainer
+            width: parent.width
+            spacing: 12
+            readonly property int twoColumnGap: 16
+            // Right column is at least 215px so the longest English label
+            // ("Security Domain Instance Size") always fits on one line.
+            readonly property int rightColumnWidth: Math.max(215, Math.floor((width - twoColumnGap) * 0.45))
+            readonly property int leftColumnWidth: Math.max(0, width - twoColumnGap - rightColumnWidth)
+
+            // Row 1: Instance ID and Status
+            Row {
+                width: parent.width
+                spacing: fieldsContainer.twoColumnGap
+
+                Column {
+                    width: fieldsContainer.leftColumnWidth
+                    spacing: 4
+
+                    SelectableText {
+                        text: qsTr("Instance No.")
+                        font.pixelSize: 14
+                        color: Theme.Colors.textCaption
                     }
 
                     Text {
-                        anchors.centerIn: parent
-                        text: "×"
-                        font.pixelSize: 18
-                        color: closeArea.containsMouse ? "#0f4c81" : "#314158"
+                        width: parent.width
+                        text: root.instanceId
+                        font.pixelSize: 16
+                        color: "#000000"
+                        elide: Text.ElideMiddle
+                        wrapMode: Text.NoWrap
+                    }
+                }
+
+                Column {
+                    width: fieldsContainer.rightColumnWidth
+                    spacing: 4
+
+                    SelectableText {
+                        text: qsTr("Status")
+                        font.pixelSize: 14
+                        color: Theme.Colors.textCaption
+                    }
+
+                    Rectangle {
+                        width: instanceStatusText.implicitWidth + 18
+                        height: 26
+                        radius: 8
+                        color: statusStyle.bg
+                        border.color: statusStyle.border
+                        border.width: 1
+
+                        SelectableText {
+                            id: instanceStatusText
+                            anchors.centerIn: parent
+                            text: Theme.Colors.translateStatus(root.status)
+                            font.pixelSize: 14
+                            font.weight: Font.Medium
+                            color: statusStyle.text
+                        }
                     }
                 }
             }
+
+            // Row 2: Creator and Instance Size
+            Row {
+                width: parent.width
+                spacing: fieldsContainer.twoColumnGap
+
+                Column {
+                    width: fieldsContainer.leftColumnWidth
+                    spacing: 4
+
+                    SelectableText {
+                        text: qsTr("Creator")
+                        font.pixelSize: 14
+                        color: Theme.Colors.textCaption
+                    }
+
+                    Text {
+                        width: parent.width
+                        text: root.creator
+                        font.pixelSize: 16
+                        color: "#000000"
+                        elide: Text.ElideMiddle
+                        wrapMode: Text.NoWrap
+                    }
+                }
+
+                Column {
+                    width: fieldsContainer.rightColumnWidth
+                    spacing: 4
+
+                    SelectableText {
+                        text: qsTr("Security Domain Instance Size")
+                        font.pixelSize: 14
+                        color: Theme.Colors.textCaption
+                        width: parent.width
+                    }
+
+                    SelectableText {
+                        text: (root.instanceSize || "").replace(/MB/g, "Mb")
+                        font.pixelSize: 16
+                        color: "#000000"
+                    }
+                }
+            }
+
+            // Row 3: Applied Time
+            Row {
+                width: parent.width
+                spacing: 0
+
+                Column {
+                    width: parent.width
+                    spacing: 4
+
+                    SelectableText {
+                        text: qsTr("Application Time")
+                        font.pixelSize: 14
+                        color: Theme.Colors.textCaption
+                    }
+
+                    SelectableText {
+                        text: Theme.Utils.formatDateTime(root.appliedTime)
+                        font.pixelSize: 16
+                        color: "#000000"
+                    }
+                }
+            }
+        }
+
+        // Application whitelist section hidden to keep all statuses' content consistent
+        Column {
+            width: parent.width
+            spacing: 4
+            visible: false
 
             Item {
                 width: parent.width
                 height: 12
             }
 
-            // Instance cost field - only show for approval dialog
-            Column {
-                width: 223
-                spacing: 2
-                visible: false
-
-                SelectableText {
-                    text: qsTr("Instance Cost")
-                    font.pixelSize: 14
-                    color: "#62748e"
-                }
-
-                Row {
-                    spacing: 0
-
-                    SelectableText {
-                        text: root.instanceCost || "0"
-                        font.pixelSize: 18
-                        font.weight: Font.DemiBold
-                        color: "#ff5736"
-                    }
-
-                    SelectableText {
-                        text: qsTr(" CNY")
-                        font.pixelSize: 14
-                        font.weight: Font.DemiBold
-                        color: "#ff5736"
-                        anchors.baseline: parent.children[0].baseline
-                    }
-                }
+            SelectableText {
+                text: qsTr("App Whitelist")
+                font.pixelSize: 14
+                color: Theme.Colors.textCaption
             }
 
             Item {
                 width: parent.width
-                height: 0
-                visible: false
+                height: 4
             }
 
-            // Fields container with proper flow layout
-            Column {
-                id: fieldsContainer
+            // Whitelist table - dynamic height based on content
+            Rectangle {
                 width: parent.width
-                spacing: 12
-                readonly property int twoColumnGap: 16
-                // Right column is at least 215px so the longest English label
-                // ("Security Domain Instance Size") always fits on one line.
-                readonly property int rightColumnWidth: Math.max(215, Math.floor((width - twoColumnGap) * 0.45))
-                readonly property int leftColumnWidth: Math.max(0, width - twoColumnGap - rightColumnWidth)
+                height: root.whitelistApps && root.whitelistApps.length > 0 ? 193 : 85
+                radius: 8
+                color: "white"
+                border.color: "#cbd5e1"
+                border.width: 1
 
-                // Row 1: Instance ID and Status
-                Row {
-                    width: parent.width
-                    spacing: fieldsContainer.twoColumnGap
+                Column {
+                    anchors.fill: parent
+                    spacing: 0
 
-                    Column {
-                        width: fieldsContainer.leftColumnWidth
-                        spacing: 4
+                    // Empty state - show icon when whitelist is empty
+                    Item {
+                        width: parent.width
+                        height: parent.height
+                        visible: !root.whitelistApps || root.whitelistApps.length === 0
 
-                        SelectableText {
-                            text: qsTr("Instance No.")
-                            font.pixelSize: 14
-                            color: "#62748e"
-                        }
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 6
 
-                        Text {
-                            width: parent.width
-                            text: root.instanceId
-                            font.pixelSize: 16
-                            color: "#000000"
-                            elide: Text.ElideMiddle
-                            wrapMode: Text.NoWrap
+                            Image {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: 36
+                                height: 36
+                                source: "qrc:/icons/icon-empty-state.svg"
+                                sourceSize: Qt.size(36, 36)
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                                antialiasing: true
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: qsTr("No data")
+                                font.pixelSize: 13
+                                color: Theme.Colors.textCounter
+                            }
                         }
                     }
 
-                    Column {
-                        width: fieldsContainer.rightColumnWidth
-                        spacing: 4
+                    // Table header - only show when whitelist is not empty
+                    Item {
+                        width: parent.width
+                        height: 40
+                        visible: root.whitelistApps && root.whitelistApps.length > 0
+                        clip: true
 
-                        SelectableText {
-                            text: qsTr("Status")
-                            font.pixelSize: 14
-                            color: "#62748e"
+                        Rectangle {
+                            width: parent.width
+                            height: parent.height + 8  // Extend below to hide bottom border
+                            radius: 8
+                            color: Theme.Colors.backgroundSidebar
+                            border.color: "#cbd5e1"
+                            border.width: 1
                         }
 
                         Rectangle {
-                            width: instanceStatusText.implicitWidth + 18
-                            height: 26
-                            radius: 8
-                            color: statusStyle.bg
-                            border.color: statusStyle.border
-                            border.width: 1
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: 0
+                            color: "transparent"
+                        }
 
-                            SelectableText {
-                                id: instanceStatusText
-                                anchors.centerIn: parent
-                                text: Theme.Colors.translateStatus(root.status)
+                        Row {
+                            anchors.fill: parent
+                            anchors.leftMargin: 8
+
+                            Text {
+                                width: (parent.width - 8) / 2
+                                height: parent.height
+                                text: qsTr("Process Path")
                                 font.pixelSize: 14
-                                font.weight: Font.Medium
-                                color: statusStyle.text
+                                color: Theme.Colors.textLabel
+                                verticalAlignment: Text.AlignVCenter
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+
+                            Text {
+                                width: (parent.width - 8) / 2
+                                height: parent.height
+                                text: qsTr("Hash")
+                                font.pixelSize: 14
+                                color: Theme.Colors.textLabel
+                                verticalAlignment: Text.AlignVCenter
+                                horizontalAlignment: Text.AlignHCenter
                             }
                         }
                     }
-                }
 
-                // Row 2: Creator and Instance Size
-                Row {
-                    width: parent.width
-                    spacing: fieldsContainer.twoColumnGap
-
-                    Column {
-                        width: fieldsContainer.leftColumnWidth
-                        spacing: 4
-
-                        SelectableText {
-                            text: qsTr("Creator")
-                            font.pixelSize: 14
-                            color: "#62748e"
-                        }
-
-                        Text {
-                            width: parent.width
-                            text: root.creator
-                            font.pixelSize: 16
-                            color: "#000000"
-                            elide: Text.ElideMiddle
-                            wrapMode: Text.NoWrap
-                        }
-                    }
-
-                    Column {
-                        width: fieldsContainer.rightColumnWidth
-                        spacing: 4
-
-                        SelectableText {
-                            text: qsTr("Security Domain Instance Size")
-                            font.pixelSize: 14
-                            color: "#62748e"
-                            width: parent.width
-                        }
-
-                        SelectableText {
-                            text: (root.instanceSize || "").replace(/MB/g, "Mb")
-                            font.pixelSize: 16
-                            color: "#000000"
-                        }
-                    }
-                }
-
-                // Row 3: Applied Time
-                Row {
-                    width: parent.width
-                    spacing: 0
-
+                    // Table body - only show when whitelist is not empty
                     Column {
                         width: parent.width
-                        spacing: 4
-
-                        SelectableText {
-                            text: qsTr("Application Time")
-                            font.pixelSize: 14
-                            color: "#62748e"
-                        }
-
-                        SelectableText {
-                            text: Theme.Utils.formatDateTime(root.appliedTime)
-                            font.pixelSize: 16
-                            color: "#000000"
-                        }
-                    }
-                }
-            }
-
-            // Application whitelist section hidden to keep all statuses' content consistent
-            Column {
-                width: parent.width
-                spacing: 4
-                visible: false
-
-                Item {
-                    width: parent.width
-                    height: 12
-                }
-
-                SelectableText {
-                    text: qsTr("App Whitelist")
-                    font.pixelSize: 14
-                    color: "#62748e"
-                }
-
-                Item {
-                    width: parent.width
-                    height: 4
-                }
-
-                // Whitelist table - dynamic height based on content
-                Rectangle {
-                    width: parent.width
-                    height: root.whitelistApps && root.whitelistApps.length > 0 ? 193 : 85
-                    radius: 8
-                    color: "white"
-                    border.color: "#cbd5e1"
-                    border.width: 1
-
-                    Column {
-                        anchors.fill: parent
+                        height: Math.max(111, 37 * Math.min(3, root.getPagedApps().length))  // Minimum height for 3 rows
                         spacing: 0
+                        visible: root.whitelistApps && root.whitelistApps.length > 0
 
-                        // Empty state - show icon when whitelist is empty
-                        Item {
-                            width: parent.width
-                            height: parent.height
-                            visible: !root.whitelistApps || root.whitelistApps.length === 0
-
-                            Column {
-                                anchors.centerIn: parent
-                                spacing: 6
-
-                                Image {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    width: 36
-                                    height: 36
-                                    source: "qrc:/icons/icon-empty-state.svg"
-                                    sourceSize: Qt.size(36, 36)
-                                    fillMode: Image.PreserveAspectFit
-                                    smooth: true
-                                    antialiasing: true
-                                }
-
-                                Text {
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    text: qsTr("No data")
-                                    font.pixelSize: 13
-                                    color: "#90A1B9"
-                                }
-                            }
-                        }
-
-                        // Table header - only show when whitelist is not empty
-                        Item {
-                            width: parent.width
-                            height: 40
-                            visible: root.whitelistApps && root.whitelistApps.length > 0
-                            clip: true
+                        Repeater {
+                            id: tableRepeater
+                            model: root.getPagedApps()
 
                             Rectangle {
                                 width: parent.width
-                                height: parent.height + 8  // Extend below to hide bottom border
-                                radius: 8
-                                color: "#f5f8fb"
-                                border.color: "#cbd5e1"
-                                border.width: 1
-                            }
-
-                            Rectangle {
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.bottom: parent.bottom
-                                height: 0
+                                height: 37
                                 color: "transparent"
-                            }
-
-                            Row {
-                                anchors.fill: parent
-                                anchors.leftMargin: 8
-
-                                Text {
-                                    width: (parent.width - 8) / 2
-                                    height: parent.height
-                                    text: qsTr("Process Path")
-                                    font.pixelSize: 14
-                                    color: "#314158"
-                                    verticalAlignment: Text.AlignVCenter
-                                    horizontalAlignment: Text.AlignHCenter
-                                }
-
-                                Text {
-                                    width: (parent.width - 8) / 2
-                                    height: parent.height
-                                    text: qsTr("Hash")
-                                    font.pixelSize: 14
-                                    color: "#314158"
-                                    verticalAlignment: Text.AlignVCenter
-                                    horizontalAlignment: Text.AlignHCenter
-                                }
-                            }
-                        }
-
-                        // Table body - only show when whitelist is not empty
-                        Column {
-                            width: parent.width
-                            height: Math.max(111, 37 * Math.min(3, root.getPagedApps().length))  // Minimum height for 3 rows
-                            spacing: 0
-                            visible: root.whitelistApps && root.whitelistApps.length > 0
-
-                            Repeater {
-                                id: tableRepeater
-                                model: root.getPagedApps()
 
                                 Rectangle {
-                                    width: parent.width
-                                    height: 37
-                                    color: "transparent"
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.bottom: parent.bottom
+                                    height: 1
+                                    color: "#e5e7eb"
+                                }
 
-                                    Rectangle {
-                                        anchors.left: parent.left
-                                        anchors.right: parent.right
-                                        anchors.bottom: parent.bottom
-                                        height: 1
-                                        color: "#e5e7eb"
-                                    }
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 8
+                                    anchors.rightMargin: 8
+                                    spacing: 0
 
-                                    Row {
-                                        anchors.fill: parent
-                                        anchors.leftMargin: 8
-                                        anchors.rightMargin: 8
-                                        spacing: 0
+                                    // Process path cell with tooltip
+                                    Item {
+                                        width: (parent.width - 8) / 2
+                                        height: parent.height
 
-                                        // Process path cell with tooltip
-                                        Item {
-                                            width: (parent.width - 8) / 2
-                                            height: parent.height
+                                        Text {
+                                            id: pathText
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 8
+                                            text: modelData.diskPartition || ""
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
+                                            verticalAlignment: Text.AlignVCenter
+                                            horizontalAlignment: Text.AlignLeft
+                                            elide: Text.ElideMiddle
+                                        }
+
+                                        Rectangle {
+                                            id: pathTooltipItem
+                                            visible: false
+                                            color: Theme.Colors.backgroundSidebar
+                                            opacity: 1
+                                            radius: 6
+                                            width: pathTooltipItemText.width + 20
+                                            height: pathTooltipItemText.height + 16
+                                            z: 1000
+                                            y: -(height + 4)
+                                            x: Math.max(0, Math.min(parent.width - width, 0))
+                                            border.color: "#cbd5e1"
+                                            border.width: 1
 
                                             Text {
-                                                id: pathText
-                                                anchors.fill: parent
-                                                anchors.leftMargin: 8
+                                                id: pathTooltipItemText
+                                                anchors.centerIn: parent
                                                 text: modelData.diskPartition || ""
-                                                font.pixelSize: 14
-                                                color: "#314158"
-                                                verticalAlignment: Text.AlignVCenter
-                                                horizontalAlignment: Text.AlignLeft
-                                                elide: Text.ElideMiddle
-                                            }
-
-                                            Rectangle {
-                                                id: pathTooltipItem
-                                                visible: false
-                                                color: "#f5f8fb"
-                                                opacity: 1
-                                                radius: 6
-                                                width: pathTooltipItemText.width + 20
-                                                height: pathTooltipItemText.height + 16
-                                                z: 1000
-                                                y: -(height + 4)
-                                                x: Math.max(0, Math.min(parent.width - width, 0))
-                                                border.color: "#cbd5e1"
-                                                border.width: 1
-
-                                                Text {
-                                                    id: pathTooltipItemText
-                                                    anchors.centerIn: parent
-                                                    text: modelData.diskPartition || ""
-                                                    font.pixelSize: 12
-                                                    color: "#314158"
-                                                    wrapMode: Text.NoWrap
-                                                }
-                                            }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-                                                onEntered: {
-                                                    pathTooltipItem.visible = true;
-                                                }
-                                                onExited: {
-                                                    pathTooltipItem.visible = false;
-                                                }
+                                                font.pixelSize: 12
+                                                color: Theme.Colors.textLabel
+                                                wrapMode: Text.NoWrap
                                             }
                                         }
 
-                                        // Hash cell with tooltip
-                                        Item {
-                                            width: (parent.width - 8) / 2
-                                            height: parent.height
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onEntered: {
+                                                pathTooltipItem.visible = true;
+                                            }
+                                            onExited: {
+                                                pathTooltipItem.visible = false;
+                                            }
+                                        }
+                                    }
+
+                                    // Hash cell with tooltip
+                                    Item {
+                                        width: (parent.width - 8) / 2
+                                        height: parent.height
+
+                                        Text {
+                                            id: hashText
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 8
+                                            text: modelData.hash || ""
+                                            font.pixelSize: 14
+                                            color: Theme.Colors.textLabel
+                                            verticalAlignment: Text.AlignVCenter
+                                            horizontalAlignment: Text.AlignLeft
+                                            elide: Text.ElideMiddle
+                                        }
+
+                                        Rectangle {
+                                            id: hashTooltipItem
+                                            visible: false
+                                            color: Theme.Colors.backgroundSidebar
+                                            opacity: 1
+                                            radius: 6
+                                            width: hashTooltipItemText.width + 20
+                                            height: hashTooltipItemText.height + 16
+                                            z: 1000
+                                            y: -(height + 4)
+                                            x: Math.max(0, Math.min(parent.width - width, 0))
+                                            border.color: "#cbd5e1"
+                                            border.width: 1
 
                                             Text {
-                                                id: hashText
-                                                anchors.fill: parent
-                                                anchors.leftMargin: 8
+                                                id: hashTooltipItemText
+                                                anchors.centerIn: parent
                                                 text: modelData.hash || ""
-                                                font.pixelSize: 14
-                                                color: "#314158"
-                                                verticalAlignment: Text.AlignVCenter
-                                                horizontalAlignment: Text.AlignLeft
-                                                elide: Text.ElideMiddle
+                                                font.pixelSize: 12
+                                                color: Theme.Colors.textLabel
+                                                wrapMode: Text.NoWrap
                                             }
+                                        }
 
-                                            Rectangle {
-                                                id: hashTooltipItem
-                                                visible: false
-                                                color: "#f5f8fb"
-                                                opacity: 1
-                                                radius: 6
-                                                width: hashTooltipItemText.width + 20
-                                                height: hashTooltipItemText.height + 16
-                                                z: 1000
-                                                y: -(height + 4)
-                                                x: Math.max(0, Math.min(parent.width - width, 0))
-                                                border.color: "#cbd5e1"
-                                                border.width: 1
-
-                                                Text {
-                                                    id: hashTooltipItemText
-                                                    anchors.centerIn: parent
-                                                    text: modelData.hash || ""
-                                                    font.pixelSize: 12
-                                                    color: "#314158"
-                                                    wrapMode: Text.NoWrap
-                                                }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onEntered: {
+                                                hashTooltipItem.visible = true;
                                             }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-                                                onEntered: {
-                                                    hashTooltipItem.visible = true;
-                                                }
-                                                onExited: {
-                                                    hashTooltipItem.visible = false;
-                                                }
+                                            onExited: {
+                                                hashTooltipItem.visible = false;
                                             }
                                         }
                                     }
                                 }
                             }
                         }
+                    }
 
-                        Item {
-                            width: parent.width
-                            height: 5
-                            visible: root.whitelistApps && root.whitelistApps.length > 0
-                        }
+                    Item {
+                        width: parent.width
+                        height: 5
+                        visible: root.whitelistApps && root.whitelistApps.length > 0
+                    }
 
-                        // Pagination - only show when whitelist is not empty
-                        PaginationControl {
-                            visible: root.whitelistApps && root.whitelistApps.length > 0
-                            currentPage: root.currentPage
-                            totalPages: root.getTotalPages()
-                            onPageChanged: function (page) {
-                                root.currentPage = page;
-                            }
+                    // Pagination - only show when whitelist is not empty
+                    PaginationControl {
+                        visible: root.whitelistApps && root.whitelistApps.length > 0
+                        currentPage: root.currentPage
+                        totalPages: root.getTotalPages()
+                        onPageChanged: function (page) {
+                            root.currentPage = page;
                         }
                     }
                 }
             }
+        }
 
-            // Spacing between content and buttons (only when buttons are shown)
-            Item {
-                width: parent.width
-                height: shouldShowActionButtons ? 12 : 0
-                visible: shouldShowActionButtons
-            }
+        // Spacing between content and buttons (only when buttons are shown)
+        Item {
+            width: parent.width
+            height: shouldShowActionButtons ? 12 : 0
+            visible: shouldShowActionButtons
+        }
 
-            // Footer buttons - only visible for pending status with actions
-            Item {
-                width: parent.width
+        // Footer buttons - only visible for pending status with actions
+        Item {
+            width: parent.width
+            height: 36
+            visible: shouldShowActionButtons
+
+            // Reject button
+            Rectangle {
+                anchors.right: approveButton.left
+                anchors.rightMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                width: 60
                 height: 36
-                visible: shouldShowActionButtons
-
-                // Reject button
-                Rectangle {
-                    anchors.right: approveButton.left
-                    anchors.rightMargin: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 60
-                    height: 36
-                    radius: 8
-                    property bool hovered: false
-                    property bool pressed: false
-                    opacity: root.allowApproveReject ? 1.0 : 0.5
-                    color: pressed ? "#ffe9e9" : (hovered ? "#fff5f5" : "#ffffff")
-                    border.color: pressed ? "#ff6b6b" : (hovered ? "#ff9090" : "#ffa2a2")
-                    border.width: 1
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
+                radius: 8
+                property bool hovered: false
+                property bool pressed: false
+                opacity: root.allowApproveReject ? 1.0 : 0.5
+                color: pressed ? "#ffe9e9" : (hovered ? "#fff5f5" : "#ffffff")
+                border.color: pressed ? "#ff6b6b" : (hovered ? "#ff9090" : "#ffa2a2")
+                border.width: 1
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
                     }
-                    Behavior on border.color {
-                        ColorAnimation {
-                            duration: 150
-                        }
+                }
+                Behavior on border.color {
+                    ColorAnimation {
+                        duration: 150
                     }
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 150
-                        }
-                    }
-
-                    SelectableText {
-                        anchors.centerIn: parent
-                        text: qsTr("Reject")
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        color: parent.pressed ? "#9f0006" : (parent.hovered ? "#c50009" : "#e7000b")
-                    }
-
-                    MouseArea {
-                        id: rejectArea
-                        anchors.fill: parent
-                        enabled: root.allowApproveReject
-                        hoverEnabled: true
-                        cursorShape: root.allowApproveReject ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                        onClicked: {
-                            root.rejectClicked();
-                            root.close();
-                        }
-                        onEntered: parent.hovered = true
-                        onExited: parent.hovered = false
-                        onPressed: parent.pressed = true
-                        onReleased: parent.pressed = false
-                        onCanceled: parent.pressed = false
+                }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 150
                     }
                 }
 
-                PrimaryButton {
-                    id: approveButton
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("Approve")
+                SelectableText {
+                    anchors.centerIn: parent
+                    text: qsTr("Reject")
+                    font.pixelSize: 14
+                    font.weight: Font.Medium
+                    color: parent.pressed ? "#9f0006" : (parent.hovered ? "#c50009" : Theme.Colors.textError)
+                }
+
+                MouseArea {
+                    id: rejectArea
+                    anchors.fill: parent
                     enabled: root.allowApproveReject
-                    visible: shouldShowActionButtons
+                    hoverEnabled: true
+                    cursorShape: root.allowApproveReject ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                     onClicked: {
-                        root.approveClicked();
+                        root.rejectClicked();
                         root.close();
                     }
+                    onEntered: parent.hovered = true
+                    onExited: parent.hovered = false
+                    onPressed: parent.pressed = true
+                    onReleased: parent.pressed = false
+                    onCanceled: parent.pressed = false
+                }
+            }
+
+            PrimaryButton {
+                id: approveButton
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Approve")
+                enabled: root.allowApproveReject
+                visible: shouldShowActionButtons
+                onClicked: {
+                    root.approveClicked();
+                    root.close();
                 }
             }
         }

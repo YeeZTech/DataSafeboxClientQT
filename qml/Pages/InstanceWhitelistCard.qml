@@ -14,7 +14,7 @@ Rectangle {
 
     height: visible ? (20 + 16 + (hasWhitelist ? whitelistTable.height : 24) + 48) : 0
     color: "white"
-    border.color: "#e2e8f0"
+    border.color: Theme.Colors.borderSeparator
     border.width: 1
     radius: 14
 
@@ -33,7 +33,7 @@ Rectangle {
             anchors.top: parent.top
             text: qsTr("App Whitelist")
             font.pixelSize: 14
-            color: "#62748e"
+            color: Theme.Colors.textCaption
         }
 
         Item {
@@ -51,7 +51,7 @@ Rectangle {
                 text: ""
                 font.pixelSize: 16
                 font.weight: Font.Medium
-                color: "#0f172b"
+                color: Theme.Colors.textHeading
             }
         }
 
@@ -104,7 +104,7 @@ Rectangle {
                             text: qsTr("Program Name")
                             font.pixelSize: 14
                             font.weight: Font.Medium
-                            color: "#0f172b"
+                            color: Theme.Colors.textHeading
                         }
                     }
 
@@ -130,7 +130,7 @@ Rectangle {
                             text: qsTr("Program Path")
                             font.pixelSize: 14
                             font.weight: Font.Medium
-                            color: "#0f172b"
+                            color: Theme.Colors.textHeading
                         }
                     }
                 }
@@ -159,7 +159,7 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.name || ""
                                 font.pixelSize: 14
-                                color: "#0f172b"
+                                color: Theme.Colors.textHeading
                                 width: parent.width - 16
                                 clip: true
                             }
@@ -178,7 +178,7 @@ Rectangle {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.diskPartition || ""
                                 font.pixelSize: 14
-                                color: "#0f172b"
+                                color: Theme.Colors.textHeading
                                 width: parent.width - 16
                                 clip: true
 

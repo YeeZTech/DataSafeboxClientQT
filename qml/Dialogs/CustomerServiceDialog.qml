@@ -101,7 +101,7 @@ Popup {
             anchors.left: parent.left
             anchors.right: parent.right
             height: 42
-            color: "#0f4c81"
+            color: Theme.Colors.primary
             radius: 12
 
             // 遮住下半圆角，与 WebView 无缝衔接
@@ -110,7 +110,7 @@ Popup {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 height: 12
-                color: "#0f4c81"
+                color: Theme.Colors.primary
             }
 
             // 拖动手柄（z=0，在关闭按钮之下）

@@ -26,7 +26,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             text: emptyRoot.message
             font.pixelSize: 11
-            color: "#90A1B9"
+            color: Theme.Colors.textCounter
         }
     }
 }
