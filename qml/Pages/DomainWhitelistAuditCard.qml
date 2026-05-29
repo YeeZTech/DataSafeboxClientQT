@@ -65,7 +65,7 @@ Card {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("App Whitelist Review")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textCaption
             }
         }
@@ -113,7 +113,7 @@ Card {
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Application ID")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -127,7 +127,7 @@ Card {
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Applicant")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -141,7 +141,7 @@ Card {
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("App Name")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -155,7 +155,7 @@ Card {
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Instance Name")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -169,7 +169,7 @@ Card {
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Application Time")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -183,7 +183,7 @@ Card {
                             anchors.leftMargin: 54
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Status")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -197,7 +197,7 @@ Card {
                             anchors.rightMargin: card.actionRightMargin
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Actions")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -305,7 +305,7 @@ Card {
                                     anchors.leftMargin: 6
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     color: Theme.Colors.textLabel
                                 }
                             }
@@ -386,7 +386,7 @@ Card {
                                                 y: wlTip.flip ? wlTip.arrowSz : 0
                                                 width: wlTip.bW
                                                 height: wlTip.bH
-                                                color: "#1e5a8e"
+                                                color: Theme.Colors.tooltipBackground
                                                 radius: 4
                                                 Text {
                                                     id: wlTipText
@@ -400,7 +400,7 @@ Card {
                                                     }
                                                     text: Theme.Colors.translateStatus(modelData.status || "")
                                                     color: "white"
-                                                    font.pixelSize: 13
+                                                    font.pixelSize: Theme.Typography.caption
                                                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                                     maximumLineCount: 999
                                                 }
@@ -413,7 +413,7 @@ Card {
                                                 onPaint: {
                                                     var ctx = getContext("2d");
                                                     ctx.reset();
-                                                    ctx.fillStyle = "#1e5a8e";
+                                                    ctx.fillStyle = Theme.Colors.tooltipBackground;
                                                     ctx.beginPath();
                                                     if (wlTip.flip) {
                                                         ctx.moveTo(width * 0.5, 0);

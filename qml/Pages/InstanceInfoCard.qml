@@ -35,7 +35,7 @@ Card {
 
             SelectableText {
                 text: root.instanceData.id || "-"
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: Theme.Colors.textHeading
             }
         }
@@ -63,7 +63,7 @@ Card {
                 Text {
                     anchors.centerIn: parent
                     text: Theme.Colors.translateStatus(root.instanceData.status || "运行中")
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.Typography.small
                     font.weight: Font.Medium
                     color: parent.statusBadgeStyle.text
                 }
@@ -83,7 +83,7 @@ Card {
 
             SelectableText {
                 text: root.instanceData.name || "-"
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: Theme.Colors.textHeading
             }
         }
@@ -102,7 +102,7 @@ Card {
 
             SelectableText {
                 text: "-"
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: Theme.Colors.textHeading
             }
         }
@@ -124,7 +124,7 @@ Card {
                 SelectableText {
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.instanceData.diskPartition || "-"
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.primary
                 }
 
@@ -151,7 +151,7 @@ Card {
 
             SelectableText {
                 text: root.instanceData.createdAt || "-"
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: Theme.Colors.textHeading
             }
         }
@@ -169,7 +169,7 @@ Card {
 
             SelectableText {
                 text: root.expiryText
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: Theme.Colors.textHeading
             }
         }

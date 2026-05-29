@@ -40,7 +40,7 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 radius: 16
-                color: "#d4e4f1"
+                color: Theme.Colors.accent
             }
 
             Image {
@@ -92,7 +92,7 @@ Item {
                     return "";
                 return root.currentUser.displayName || root.currentUser.userName || "";
             }
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             font.weight: Font.Normal
             color: Theme.Colors.textLabel
             lineHeight: 20
@@ -106,7 +106,7 @@ Item {
                 visible: parent.showTooltip
                 width: Math.min(sidebarUserNameTooltipText.implicitWidth + 16, 400)
                 height: 28
-                color: "#1e5a8e"
+                color: Theme.Colors.tooltipBackground
                 radius: 4
                 z: 1000
                 y: -height - 8
@@ -116,7 +116,7 @@ Item {
                     id: sidebarUserNameTooltipText
                     anchors.centerIn: parent
                     text: parent.parent.text
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.Typography.caption
                     color: "white"
                     maximumLineCount: 1
                     elide: Text.ElideRight
@@ -131,7 +131,7 @@ Item {
                     onPaint: {
                         var ctx = getContext("2d");
                         ctx.reset();
-                        ctx.fillStyle = "#1e5a8e";
+                        ctx.fillStyle = Theme.Colors.tooltipBackground;
                         ctx.beginPath();
                         ctx.moveTo(0, 0);
                         ctx.lineTo(5, 5);
@@ -196,7 +196,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 56
-                color: userHeaderMouseArea.containsMouse ? "#E8F1F8" : "transparent"
+                color: userHeaderMouseArea.containsMouse ? Theme.Colors.secondary : "transparent"
 
                 Row {
                     id: userMenuHeaderRow
@@ -214,7 +214,7 @@ Item {
                         Rectangle {
                             anchors.fill: parent
                             radius: 16
-                            color: "#D4E4F1"
+                            color: Theme.Colors.accent
                         }
 
                         Image {
@@ -266,8 +266,8 @@ Item {
                                 return "";
                             return root.currentUser.displayName || root.currentUser.userName || "";
                         }
-                        font.pixelSize: 14
-                        color: "#334155"
+                        font.pixelSize: Theme.Typography.body
+                        color: Theme.Colors.textMenu
                         maximumLineCount: 1
                         elide: Text.ElideMiddle
                         readonly property bool isOverflow: implicitWidth > width
@@ -277,7 +277,7 @@ Item {
                             visible: parent.showTooltip
                             width: Math.min(userMenuHeaderNameTooltipText.implicitWidth + 16, 400)
                             height: 28
-                            color: "#1e5a8e"
+                            color: Theme.Colors.tooltipBackground
                             radius: 4
                             z: 1000
                             y: -height - 8
@@ -287,7 +287,7 @@ Item {
                                 id: userMenuHeaderNameTooltipText
                                 anchors.centerIn: parent
                                 text: parent.parent.text
-                                font.pixelSize: 13
+                                font.pixelSize: Theme.Typography.caption
                                 color: "white"
                                 maximumLineCount: 1
                                 elide: Text.ElideRight
@@ -302,7 +302,7 @@ Item {
                                 onPaint: {
                                     var ctx = getContext("2d");
                                     ctx.reset();
-                                    ctx.fillStyle = "#1e5a8e";
+                                    ctx.fillStyle = Theme.Colors.tooltipBackground;
                                     ctx.beginPath();
                                     ctx.moveTo(0, 0);
                                     ctx.lineTo(5, 5);
@@ -343,7 +343,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 40
-                color: userInfoMouseArea.containsMouse ? "#E8F1F8" : "transparent"
+                color: userInfoMouseArea.containsMouse ? Theme.Colors.secondary : "transparent"
 
                 Row {
                     anchors.left: parent.left
@@ -361,8 +361,8 @@ Item {
 
                     Text {
                         text: qsTr("User Info")
-                        font.pixelSize: 14
-                        color: "#334155"
+                        font.pixelSize: Theme.Typography.body
+                        color: Theme.Colors.textMenu
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }
@@ -383,7 +383,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 40
-                color: billMenuArea.containsMouse ? "#E8F1F8" : "transparent"
+                color: billMenuArea.containsMouse ? Theme.Colors.secondary : "transparent"
 
                 Row {
                     anchors.left: parent.left
@@ -401,8 +401,8 @@ Item {
 
                     Text {
                         text: qsTr("My Bills")
-                        font.pixelSize: 14
-                        color: "#334155"
+                        font.pixelSize: Theme.Typography.body
+                        color: Theme.Colors.textMenu
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }
@@ -422,7 +422,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 40
-                color: messagesMouseArea.containsMouse ? "#E8F1F8" : "transparent"
+                color: messagesMouseArea.containsMouse ? Theme.Colors.secondary : "transparent"
 
                 Row {
                     anchors.left: parent.left
@@ -444,8 +444,8 @@ Item {
 
                         Text {
                             text: qsTr("Message")
-                            font.pixelSize: 14
-                            color: "#334155"
+                            font.pixelSize: Theme.Typography.body
+                            color: Theme.Colors.textMenu
                             anchors.verticalCenter: parent.verticalCenter
                         }
                     }
@@ -469,7 +469,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 40
-                color: settingsMouseArea.containsMouse ? "#E8F1F8" : "transparent"
+                color: settingsMouseArea.containsMouse ? Theme.Colors.secondary : "transparent"
 
                 Row {
                     anchors.left: parent.left
@@ -487,8 +487,8 @@ Item {
 
                     Text {
                         text: qsTr("Settings")
-                        font.pixelSize: 14
-                        color: "#334155"
+                        font.pixelSize: Theme.Typography.body
+                        color: Theme.Colors.textMenu
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }
@@ -508,7 +508,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 40
-                color: customerServiceMenuArea.containsMouse ? "#E8F1F8" : "transparent"
+                color: customerServiceMenuArea.containsMouse ? Theme.Colors.secondary : "transparent"
 
                 Row {
                     anchors.left: parent.left
@@ -526,8 +526,8 @@ Item {
 
                     Text {
                         text: qsTr("Help")
-                        font.pixelSize: 14
-                        color: "#334155"
+                        font.pixelSize: Theme.Typography.body
+                        color: Theme.Colors.textMenu
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }
@@ -548,7 +548,7 @@ Item {
                 id: updateMenuItem
                 width: parent.width
                 height: 40
-                color: updateMouseArea.containsMouse ? "#E8F1F8" : "transparent"
+                color: updateMouseArea.containsMouse ? Theme.Colors.secondary : "transparent"
                 opacity: 1.0
 
                 Row {
@@ -567,8 +567,8 @@ Item {
 
                     Text {
                         text: qsTr("Check for Updates")
-                        font.pixelSize: 14
-                        color: "#334155"
+                        font.pixelSize: Theme.Typography.body
+                        color: Theme.Colors.textMenu
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }
@@ -601,7 +601,7 @@ Item {
             Rectangle {
                 width: parent.width
                 height: 40
-                color: logoutMouseArea.containsMouse ? "#E8F1F8" : "transparent"
+                color: logoutMouseArea.containsMouse ? Theme.Colors.secondary : "transparent"
 
                 Row {
                     anchors.left: parent.left
@@ -619,8 +619,8 @@ Item {
 
                     Text {
                         text: qsTr("Logout")
-                        font.pixelSize: 14
-                        color: "#334155"
+                        font.pixelSize: Theme.Typography.body
+                        color: Theme.Colors.textMenu
                         anchors.verticalCenter: parent.verticalCenter
                     }
                 }

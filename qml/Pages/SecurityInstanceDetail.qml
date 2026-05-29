@@ -262,7 +262,7 @@ Item {
                         SelectableText {
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Application approved. Click \"Start Domain\" to proceed.")
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.Typography.h3
                             font.weight: Font.Normal
                             color: Theme.Colors.textLabel
                             wrapMode: Text.WordWrap

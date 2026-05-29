@@ -91,7 +91,7 @@ Card {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Related Security Domain Instances")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textCaption
             }
         }
@@ -139,7 +139,7 @@ Card {
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Applicant")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -156,7 +156,7 @@ Card {
                             anchors.leftMargin: 11
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Instance Name")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -173,7 +173,7 @@ Card {
                             anchors.leftMargin: 11
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Creation Time")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -190,7 +190,7 @@ Card {
                             anchors.leftMargin: 31
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Status")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -207,7 +207,7 @@ Card {
                             anchors.rightMargin: card.actionRightMargin
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Actions")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -286,7 +286,7 @@ Card {
                                     anchors.leftMargin: 6
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: Theme.Utils.formatDateTime(modelData.createdAt || modelData.appliedTime)
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     color: Theme.Colors.textLabel
                                 }
                             }

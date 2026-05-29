@@ -63,7 +63,7 @@ BaseDialog {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr(" months")
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.textCaption
                 }
 
@@ -98,10 +98,10 @@ BaseDialog {
                         anchors.leftMargin: 14
                         anchors.rightMargin: 14
                         verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textHeading
                         selectByMouse: true
-                        selectionColor: "#d4e4f1"
+                        selectionColor: Theme.Colors.accent
                         selectedTextColor: Theme.Colors.textHeading
                         inputMethodHints: Qt.ImhDigitsOnly
                         text: root.durationText
@@ -121,7 +121,7 @@ BaseDialog {
             width: parent.width
             wrapMode: Text.Wrap
             text: qsTr("Duration cannot be modified. The instance will be deleted upon expiration (original files unaffected).")
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             color: Theme.Colors.textCaption
         }
 

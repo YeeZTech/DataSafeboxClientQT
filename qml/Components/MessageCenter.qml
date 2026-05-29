@@ -136,7 +136,7 @@ Item {
             anchors.leftMargin: 32
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Messages")
-            font.pixelSize: 24
+            font.pixelSize: Theme.Typography.h1
             font.weight: Font.Medium
             color: Theme.Colors.textPrimary
         }
@@ -172,7 +172,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: qsTr("All")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     font.weight: (root.currentFilter === "all") ? Font.DemiBold : Font.Normal
                     color: (root.currentFilter === "all" || parent.hovered) ? Theme.Colors.primary : Theme.Colors.textSecondary
                 }
@@ -195,7 +195,7 @@ Item {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: "/"
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: Theme.Colors.border
             }
 
@@ -211,7 +211,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: qsTr("Unread")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     font.weight: (root.currentFilter === "unread") ? Font.DemiBold : Font.Normal
                     color: (root.currentFilter === "unread" || unreadTab.hovered) ? Theme.Colors.primary : Theme.Colors.textSecondary
                 }
@@ -259,7 +259,7 @@ Item {
                 Text {
                     id: markAllText
                     text: qsTr("Mark All Read")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.primary
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -334,8 +334,8 @@ Item {
                             // Date/time
                             Text {
                                 text: root.formatCreateTime(messageItem.messageData.createTime)
-                                font.pixelSize: 12
-                                color: "#5a7c9b"
+                                font.pixelSize: Theme.Typography.small
+                                color: Theme.Colors.textSecondary
                                 Layout.fillWidth: true
                             }
 
@@ -343,7 +343,7 @@ Item {
                             Text {
                                 id: messageText
                                 text: messageItem.messageData.message || ""
-                                font.pixelSize: 16
+                                font.pixelSize: Theme.Typography.h3
                                 color: Theme.Colors.textPrimary
                                 elide: Text.ElideRight
                                 maximumLineCount: 1
@@ -384,7 +384,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "×"
-                            font.pixelSize: 18
+                            font.pixelSize: Theme.Typography.h2
                             color: deleteArea.containsMouse ? "#dc2626" : Theme.Colors.textCounter
                         }
 
@@ -427,7 +427,7 @@ Item {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: root.currentFilter === "unread" ? qsTr("No unread messages") : qsTr("No messages")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCounter
                     }
                 }
@@ -506,7 +506,7 @@ Item {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
                         text: qsTr("Delete Message")
-                        font.pixelSize: 18
+                        font.pixelSize: Theme.Typography.h2
                         font.weight: Font.DemiBold
                         color: Theme.Colors.textHeading
                     }
@@ -530,7 +530,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "×"
-                            font.pixelSize: 18
+                            font.pixelSize: Theme.Typography.h2
                             color: deleteCloseArea.containsMouse ? Theme.Colors.primary : Theme.Colors.textLabel
                         }
                     }
@@ -544,7 +544,7 @@ Item {
                 Text {
                     width: parent.width
                     text: qsTr("Are you sure you want to delete this message?")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textLabel
                     wrapMode: Text.WordWrap
                 }

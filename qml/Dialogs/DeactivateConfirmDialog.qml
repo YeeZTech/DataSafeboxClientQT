@@ -69,7 +69,7 @@ BaseDialog {
                         width: parent.width
                         wrapMode: TextEdit.Wrap
                         text: root.questionPrefix + " \"" + root.domainName + "\" " + root.questionSuffix
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: Theme.Colors.textLabel
                     }
 
@@ -78,7 +78,7 @@ BaseDialog {
                         width: parent.width
                         wrapMode: TextEdit.Wrap
                         text: root.descriptionText
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                         visible: root.showDescription && root.descriptionText && root.descriptionText.length > 0
                         height: visible ? implicitHeight : 0

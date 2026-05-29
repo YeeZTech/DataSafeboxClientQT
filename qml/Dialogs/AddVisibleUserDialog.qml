@@ -67,7 +67,7 @@ BaseDialog {
 
         SelectableText {
             text: qsTr("Dianshu ID:")
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             font.weight: Font.Medium
             color: Theme.Colors.textLabel
         }
@@ -105,10 +105,10 @@ BaseDialog {
                 anchors.topMargin: 4
                 anchors.bottomMargin: 4
                 verticalAlignment: TextInput.AlignVCenter
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textPrimary
                 selectByMouse: true
-                selectionColor: "#d4e4f1"
+                selectionColor: Theme.Colors.accent
                 selectedTextColor: Theme.Colors.textHeading
 
                 onTextChanged: {
@@ -120,8 +120,8 @@ BaseDialog {
                     anchors.fill: parent
                     verticalAlignment: Text.AlignVCenter
                     text: qsTr("Please enter the other party's Dianshu ID to add as visible user")
-                    font.pixelSize: 14
-                    color: "#5a7c9b"
+                    font.pixelSize: Theme.Typography.body
+                    color: Theme.Colors.textSecondary
                     visible: !accountInput.text && !accountInput.activeFocus
                 }
 
@@ -166,7 +166,7 @@ BaseDialog {
 
             Text {
                 text: root.errorMessage
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textError
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -295,7 +295,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: qsTr("Prompt")
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
             }
@@ -303,7 +303,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: userNotFoundDialog.message
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textLabel
                 wrapMode: TextEdit.Wrap
             }
@@ -322,7 +322,7 @@ BaseDialog {
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("OK")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         font.weight: Font.Medium
                         color: Theme.Colors.primaryText
                     }

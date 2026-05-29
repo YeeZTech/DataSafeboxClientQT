@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.LocalStorage 2.15
+import DataSafebox.Theme 1.0 as Theme
 
 /**
  * OnboardingGuide — full-screen step-by-step feature tour overlay.
@@ -414,9 +415,9 @@ Item {
                         anchors.rightMargin: 8
                         anchors.verticalCenter: parent.verticalCenter
                         text: (root.steps.length > root.currentStep) ? (root.steps[root.currentStep].title || "") : ""
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.Typography.caption
                         font.weight: Font.Medium
-                        color: "#ffffff"
+                        color: Theme.Colors.primaryText
                         wrapMode: Text.WordWrap
                     }
 
@@ -570,7 +571,7 @@ Item {
                         width: nextBtnLabel.implicitWidth + 22
                         height: 26
                         radius: 6
-                        color: nextBtnArea.pressed ? "#c8d8ea" : nextBtnArea.containsMouse ? "#e8f0f8" : "#ffffff"
+                        color: nextBtnArea.pressed ? "#c8d8ea" : nextBtnArea.containsMouse ? "#e8f0f8" : Theme.Colors.backgroundWhite
                         Behavior on color {
                             ColorAnimation {
                                 duration: 120

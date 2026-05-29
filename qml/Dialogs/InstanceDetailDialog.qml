@@ -119,7 +119,7 @@ BaseDialog {
 
             SelectableText {
                 text: qsTr("Instance Cost")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textCaption
             }
 
@@ -128,14 +128,14 @@ BaseDialog {
 
                 SelectableText {
                     text: root.instanceCost || "0"
-                    font.pixelSize: 18
+                    font.pixelSize: Theme.Typography.h2
                     font.weight: Font.DemiBold
                     color: "#ff5736"
                 }
 
                 SelectableText {
                     text: qsTr(" CNY")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     font.weight: Font.DemiBold
                     color: "#ff5736"
                     anchors.baseline: parent.children[0].baseline
@@ -171,14 +171,14 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Instance No.")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
 
                     Text {
                         width: parent.width
                         text: root.instanceId
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         elide: Text.ElideMiddle
                         wrapMode: Text.NoWrap
@@ -191,7 +191,7 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Status")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
 
@@ -207,7 +207,7 @@ BaseDialog {
                             id: instanceStatusText
                             anchors.centerIn: parent
                             text: Theme.Colors.translateStatus(root.status)
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: statusStyle.text
                         }
@@ -226,14 +226,14 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Creator")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
 
                     Text {
                         width: parent.width
                         text: root.creator
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         elide: Text.ElideMiddle
                         wrapMode: Text.NoWrap
@@ -246,14 +246,14 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Security Domain Instance Size")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                         width: parent.width
                     }
 
                     SelectableText {
                         text: (root.instanceSize || "").replace(/MB/g, "Mb")
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                     }
                 }
@@ -270,13 +270,13 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Application Time")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
 
                     SelectableText {
                         text: Theme.Utils.formatDateTime(root.appliedTime)
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                     }
                 }
@@ -296,7 +296,7 @@ BaseDialog {
 
             SelectableText {
                 text: qsTr("App Whitelist")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textCaption
             }
 
@@ -342,7 +342,7 @@ BaseDialog {
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: qsTr("No data")
-                                font.pixelSize: 13
+                                font.pixelSize: Theme.Typography.caption
                                 color: Theme.Colors.textCounter
                             }
                         }
@@ -380,7 +380,7 @@ BaseDialog {
                                 width: (parent.width - 8) / 2
                                 height: parent.height
                                 text: qsTr("Process Path")
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.Typography.body
                                 color: Theme.Colors.textLabel
                                 verticalAlignment: Text.AlignVCenter
                                 horizontalAlignment: Text.AlignHCenter
@@ -390,7 +390,7 @@ BaseDialog {
                                 width: (parent.width - 8) / 2
                                 height: parent.height
                                 text: qsTr("Hash")
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.Typography.body
                                 color: Theme.Colors.textLabel
                                 verticalAlignment: Text.AlignVCenter
                                 horizontalAlignment: Text.AlignHCenter
@@ -438,7 +438,7 @@ BaseDialog {
                                             anchors.fill: parent
                                             anchors.leftMargin: 8
                                             text: modelData.diskPartition || ""
-                                            font.pixelSize: 14
+                                            font.pixelSize: Theme.Typography.body
                                             color: Theme.Colors.textLabel
                                             verticalAlignment: Text.AlignVCenter
                                             horizontalAlignment: Text.AlignLeft
@@ -463,7 +463,7 @@ BaseDialog {
                                                 id: pathTooltipItemText
                                                 anchors.centerIn: parent
                                                 text: modelData.diskPartition || ""
-                                                font.pixelSize: 12
+                                                font.pixelSize: Theme.Typography.small
                                                 color: Theme.Colors.textLabel
                                                 wrapMode: Text.NoWrap
                                             }
@@ -491,7 +491,7 @@ BaseDialog {
                                             anchors.fill: parent
                                             anchors.leftMargin: 8
                                             text: modelData.hash || ""
-                                            font.pixelSize: 14
+                                            font.pixelSize: Theme.Typography.body
                                             color: Theme.Colors.textLabel
                                             verticalAlignment: Text.AlignVCenter
                                             horizontalAlignment: Text.AlignLeft
@@ -516,7 +516,7 @@ BaseDialog {
                                                 id: hashTooltipItemText
                                                 anchors.centerIn: parent
                                                 text: modelData.hash || ""
-                                                font.pixelSize: 12
+                                                font.pixelSize: Theme.Typography.small
                                                 color: Theme.Colors.textLabel
                                                 wrapMode: Text.NoWrap
                                             }
@@ -581,7 +581,7 @@ BaseDialog {
                 property bool hovered: false
                 property bool pressed: false
                 opacity: root.allowApproveReject ? 1.0 : 0.5
-                color: pressed ? "#ffe9e9" : (hovered ? "#fff5f5" : "#ffffff")
+                color: pressed ? "#ffe9e9" : (hovered ? "#fff5f5" : Theme.Colors.backgroundWhite)
                 border.color: pressed ? "#ff6b6b" : (hovered ? "#ff9090" : "#ffa2a2")
                 border.width: 1
                 Behavior on color {
@@ -603,7 +603,7 @@ BaseDialog {
                 SelectableText {
                     anchors.centerIn: parent
                     text: qsTr("Reject")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     font.weight: Font.Medium
                     color: parent.pressed ? "#9f0006" : (parent.hovered ? "#c50009" : Theme.Colors.textError)
                 }

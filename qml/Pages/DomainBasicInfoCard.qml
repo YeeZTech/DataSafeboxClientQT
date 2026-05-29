@@ -43,7 +43,7 @@ Card {
 
                 SelectableText {
                     text: qsTr("Name")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
@@ -51,7 +51,7 @@ Card {
                     id: basicInfoNameText
                     width: parent.width
                     text: card.domainData.name || ""
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.textHeading
                     elide: Text.ElideRight
 
@@ -72,13 +72,13 @@ Card {
 
                 SelectableText {
                     text: qsTr("Creator Dianshu ID")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
                 SelectableText {
                     text: card.domainCreatorText
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.textHeading
                 }
             }
@@ -89,7 +89,7 @@ Card {
 
                 SelectableText {
                     text: qsTr("Status")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
@@ -108,7 +108,7 @@ Card {
                     Text {
                         anchors.centerIn: parent
                         text: Theme.Colors.translateStatus(card.domainData.status || "")
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         font.weight: Font.Medium
                         color: parent.domainStatusStyle.text
                     }
@@ -121,13 +121,13 @@ Card {
 
                 SelectableText {
                     text: qsTr("Creation Time")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
                 SelectableText {
                     text: Theme.Utils.formatDateTime(card.domainData.createdAt)
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.textHeading
                 }
             }
@@ -141,7 +141,7 @@ Card {
 
                     SelectableText {
                         text: qsTr("Fee Payer")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -176,7 +176,7 @@ Card {
                             visible: false
                             width: tooltipLabel.implicitWidth + 16
                             height: tooltipLabel.implicitHeight + 10
-                            color: "#1e5a8e"
+                            color: Theme.Colors.tooltipBackground
                             radius: 4
                             anchors.bottom: parent.top
                             anchors.bottomMargin: 5
@@ -193,7 +193,7 @@ Card {
                                 onPaint: {
                                     var ctx = getContext("2d");
                                     ctx.reset();
-                                    ctx.fillStyle = "#1e5a8e";
+                                    ctx.fillStyle = Theme.Colors.tooltipBackground;
                                     ctx.beginPath();
                                     ctx.moveTo(0, 0);
                                     ctx.lineTo(6, 6);
@@ -207,8 +207,8 @@ Card {
                                 id: tooltipLabel
                                 anchors.centerIn: parent
                                 text: qsTr("Who pays the costs incurred after security domain instantiation")
-                                font.pixelSize: 12
-                                color: "#ffffff"
+                                font.pixelSize: Theme.Typography.small
+                                color: Theme.Colors.primaryText
                                 wrapMode: Text.NoWrap
                             }
                         }
@@ -217,7 +217,7 @@ Card {
 
                 SelectableText {
                     text: card.payerText
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.textHeading
                 }
             }
@@ -229,13 +229,13 @@ Card {
 
                 SelectableText {
                     text: qsTr("Deactivation Time")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
                 SelectableText {
                     text: Theme.Utils.formatDateTime(card.domainData.updatedAt)
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.textHeading
                 }
             }
@@ -254,7 +254,7 @@ Card {
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.verticalCenterOffset: 1
                     text: qsTr("Description")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
@@ -326,7 +326,7 @@ Card {
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             text: card.isEditingDescription ? qsTr("Save") : qsTr("Edit")
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.Typography.h3
                             font.weight: Font.Medium
                             color: Theme.Colors.primary
                         }
@@ -413,7 +413,7 @@ Card {
                     anchors.topMargin: 4
                     width: parent.width
                     text: (card.domainData.description && card.domainData.description.length > 0) ? card.domainData.description : ""
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.textHeading
                     wrapMode: TextEdit.Wrap
                     visible: !card.isEditingDescription
@@ -429,10 +429,10 @@ Card {
                     anchors.topMargin: 4
                     height: contentHeight > 0 ? contentHeight : 25
                     text: card.editedDescription
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.textHeading
                     selectedTextColor: Theme.Colors.textHeading
-                    selectionColor: "#d4e4f1"
+                    selectionColor: Theme.Colors.accent
                     wrapMode: TextArea.Wrap
                     selectByMouse: true
                     readOnly: card.isDomainReadOnly
@@ -515,7 +515,7 @@ Card {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         text: (card.editedDescription || "").length + "/" + card.descriptionMaxLength
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.Typography.caption
                         color: (card.editedDescription || "").length > card.descriptionMaxLength ? Theme.Colors.textError : "#64748b"
                     }
                 }
@@ -538,7 +538,7 @@ Card {
 
                 Text {
                     text: card.descriptionErrorMessage
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textError
                 }
             }

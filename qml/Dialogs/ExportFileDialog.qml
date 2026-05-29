@@ -64,15 +64,15 @@ BaseDialog {
 
                     Text {
                         text: "*"
-                        color: "#FB2C36"
-                        font.pixelSize: 14
+                        color: Theme.Colors.requiredMarker
+                        font.pixelSize: Theme.Typography.body
                         font.weight: Font.Medium
                     }
 
                     SelectableText {
                         text: qsTr("Select files:")
                         color: Theme.Colors.textLabel
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         font.weight: Font.Medium
                     }
                 }
@@ -96,8 +96,8 @@ BaseDialog {
                             anchors.leftMargin: 12
                             anchors.verticalCenter: parent.verticalCenter
                             text: root.fileDisplayText.length > 0 ? root.fileDisplayText : qsTr("Please select files to export")
-                            color: root.fileDisplayText.length > 0 ? Theme.Colors.textHeading : (fileFieldArea.containsMouse ? Theme.Colors.primary : "#5A7C9B")
-                            font.pixelSize: 14
+                            color: root.fileDisplayText.length > 0 ? Theme.Colors.textHeading : (fileFieldArea.containsMouse ? Theme.Colors.primary : Theme.Colors.textSecondary)
+                            font.pixelSize: Theme.Typography.body
                             elide: Text.ElideRight
                             width: parent.width - 24
                         }
@@ -136,7 +136,7 @@ BaseDialog {
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Browse")
                             color: Theme.Colors.primaryText
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                         }
 
@@ -155,8 +155,8 @@ BaseDialog {
                 id: fileErrorText
                 width: parent.width
                 text: root.fileError
-                color: "#FB2C36"
-                font.pixelSize: 12
+                color: Theme.Colors.requiredMarker
+                font.pixelSize: Theme.Typography.small
                 visible: root.fileError && root.fileError.length > 0
             }
 
@@ -168,7 +168,7 @@ BaseDialog {
                 SelectableText {
                     text: qsTr("Export Reason:")
                     color: Theme.Colors.textLabel
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     font.weight: Font.Medium
                 }
 
@@ -198,10 +198,10 @@ BaseDialog {
                         wrapMode: TextEdit.Wrap
                         placeholderText: qsTr("Enter export reason. Visible to the security domain creator and retained as audit record.")
                         text: root.reasonText
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textHeading
                         selectByMouse: true
-                        selectionColor: "#d4e4f1"
+                        selectionColor: Theme.Colors.accent
                         selectedTextColor: Theme.Colors.textHeading
                         onTextChanged: root.reasonText = text
                         padding: 0
@@ -245,7 +245,7 @@ BaseDialog {
             Text {
                 anchors.centerIn: parent
                 text: qsTr("Submit")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 font.weight: Font.Medium
                 color: Theme.Colors.primaryText
             }

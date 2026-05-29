@@ -66,7 +66,7 @@ Popup {
                     Text {
                         anchors.centerIn: parent
                         text: "×"
-                        font.pixelSize: 18
+                        font.pixelSize: Theme.Typography.h2
                         color: closeBtnHover.containsMouse ? Theme.Colors.primary : Theme.Colors.textLabel
                     }
 

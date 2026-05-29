@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import DataSafebox.Theme 1.0 as Theme
 
 Item {
     id: paginationRoot
@@ -60,7 +61,7 @@ Item {
 
         Text {
             text: "<"
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             property bool hovered: false
             property bool pressed: false
             color: {
@@ -125,7 +126,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: parent.isEllipsis ? "..." : parent.pageNum
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.Typography.small
                     color: parent.pressed && !parent.isCurrent ? "white" : "#212b36"
                 }
                 MouseArea {
@@ -150,7 +151,7 @@ Item {
 
         Text {
             text: ">"
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             property bool hovered: false
             property bool pressed: false
             color: {

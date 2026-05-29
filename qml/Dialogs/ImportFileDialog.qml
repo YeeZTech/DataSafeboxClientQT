@@ -62,7 +62,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: qsTr("Select file:")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 font.weight: Font.Medium
                 color: Theme.Colors.textLabel
             }
@@ -87,8 +87,8 @@ BaseDialog {
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - 24
                         text: root.selectedFile || qsTr("No file selected")
-                        font.pixelSize: 14
-                        color: root.selectedFile ? Theme.Colors.textHeading : (fileInputArea.containsMouse ? Theme.Colors.primary : "#5a7c9b")
+                        font.pixelSize: Theme.Typography.body
+                        color: root.selectedFile ? Theme.Colors.textHeading : (fileInputArea.containsMouse ? Theme.Colors.primary : Theme.Colors.textSecondary)
                         elide: Text.ElideMiddle
                     }
 
@@ -122,7 +122,7 @@ BaseDialog {
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("Browse")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         font.weight: Font.Medium
                         color: Theme.Colors.primaryText
                     }
@@ -179,7 +179,7 @@ BaseDialog {
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("Cancel")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         font.weight: Font.Medium
                         color: Theme.Colors.textLabel
                     }
@@ -221,7 +221,7 @@ BaseDialog {
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("Import")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         font.weight: Font.Medium
                         color: Theme.Colors.primaryText
                     }
@@ -285,7 +285,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: progressDialog.progressTitle
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
                 horizontalAlignment: Text.AlignHCenter
@@ -303,7 +303,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: progressDialog.progress + "%"
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textCaption
                 horizontalAlignment: Text.AlignHCenter
             }
@@ -339,7 +339,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: qsTr("Import Successful")
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
             }
@@ -348,7 +348,7 @@ BaseDialog {
                 id: successMessageText
                 width: parent.width
                 text: successDialog.message
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textLabel
                 wrapMode: TextEdit.Wrap
             }
@@ -372,7 +372,7 @@ BaseDialog {
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("OK")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         font.weight: Font.Medium
                         color: "white"
                     }
@@ -420,7 +420,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: qsTr("Error")
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
             }
@@ -428,7 +428,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: errorDialog.text
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textLabel
                 wrapMode: TextEdit.Wrap
             }
@@ -446,7 +446,7 @@ BaseDialog {
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("OK")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         font.weight: Font.Medium
                         color: "white"
                     }

@@ -90,9 +90,9 @@ Rectangle {
                 anchors.leftMargin: 32
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Create Security Domain Instance")
-                font.pixelSize: 24
+                font.pixelSize: Theme.Typography.h1
                 font.weight: Font.Medium
-                color: "#1d293d"
+                color: Theme.Colors.textTitle
             }
         }
 
@@ -131,7 +131,7 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.rightMargin: 0
                             text: qsTr("Security Domain:")
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.Typography.h3
                             color: Theme.Colors.textLabel
                         }
                     }
@@ -144,7 +144,7 @@ Rectangle {
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
                             text: root.domainName
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.Typography.h3
                             color: Theme.Colors.textHeading
                         }
                     }
@@ -183,10 +183,10 @@ Rectangle {
                             anchors.topMargin: 4
                             anchors.bottomMargin: 4
                             verticalAlignment: TextInput.AlignVCenter
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             color: Theme.Colors.textHeading
                             selectByMouse: true
-                            selectionColor: "#d4e4f1"
+                            selectionColor: Theme.Colors.accent
                             selectedTextColor: Theme.Colors.textHeading
 
                             onTextChanged: {
@@ -197,8 +197,8 @@ Rectangle {
                                 anchors.fill: parent
                                 verticalAlignment: Text.AlignVCenter
                                 text: qsTr("Please enter an instance name")
-                                font.pixelSize: 14
-                                color: "#5a7c9b"
+                                font.pixelSize: Theme.Typography.body
+                                color: Theme.Colors.textSecondary
                                 visible: !instanceNameInput.text && !instanceNameInput.activeFocus
                             }
                         }
@@ -233,7 +233,7 @@ Rectangle {
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Instance Duration:")
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.Typography.h3
                             color: Theme.Colors.textLabel
                         }
 
@@ -242,8 +242,8 @@ Rectangle {
                             anchors.rightMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: "*"
-                            font.pixelSize: 16
-                            color: "#fb2c36"
+                            font.pixelSize: Theme.Typography.h3
+                            color: Theme.Colors.requiredMarker
                         }
                     }
 
@@ -282,10 +282,10 @@ Rectangle {
                                 anchors.topMargin: 4
                                 anchors.bottomMargin: 4
                                 verticalAlignment: TextInput.AlignVCenter
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.Typography.body
                                 color: Theme.Colors.textHeading
                                 selectByMouse: true
-                                selectionColor: "#d4e4f1"
+                                selectionColor: Theme.Colors.accent
                                 selectedTextColor: Theme.Colors.textHeading
                                 validator: IntValidator {
                                     bottom: 1
@@ -300,8 +300,8 @@ Rectangle {
                                     anchors.fill: parent
                                     verticalAlignment: Text.AlignVCenter
                                     text: qsTr("Please enter the instance duration")
-                                    font.pixelSize: 14
-                                    color: "#5a7c9b"
+                                    font.pixelSize: Theme.Typography.body
+                                    color: Theme.Colors.textSecondary
                                     visible: !instanceDurationInput.text && !instanceDurationInput.activeFocus
                                 }
                             }
@@ -327,7 +327,7 @@ Rectangle {
                                 anchors.rightMargin: 16
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: qsTr("months")
-                                font.pixelSize: 16
+                                font.pixelSize: Theme.Typography.h3
                                 color: Theme.Colors.textCaption
                             }
                         }
@@ -351,7 +351,7 @@ Rectangle {
                             anchors.rightMargin: 0
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Instance Disk Partition:")
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.Typography.h3
                             color: Theme.Colors.textLabel
                         }
 
@@ -361,8 +361,8 @@ Rectangle {
                             anchors.rightMargin: 6  // Same spacing as "安全域名称" and "实例费用支付方" fields
                             anchors.verticalCenter: parent.verticalCenter
                             text: "*"
-                            font.pixelSize: 16
-                            color: "#fb2c36"
+                            font.pixelSize: Theme.Typography.h3
+                            color: Theme.Colors.requiredMarker
                         }
                     }
 
@@ -400,8 +400,8 @@ Rectangle {
                                     anchors.right: parent.right
                                     anchors.rightMargin: 96
                                     text: root.selectedDiskDisplay || qsTr("Please select a disk partition")
-                                    font.pixelSize: 14
-                                    color: root.selectedDiskDisplay ? Theme.Colors.textHeading : "#5a7c9b"
+                                    font.pixelSize: Theme.Typography.body
+                                    color: root.selectedDiskDisplay ? Theme.Colors.textHeading : Theme.Colors.textSecondary
                                     elide: Text.ElideRight
                                 }
                             }
@@ -456,7 +456,7 @@ Rectangle {
 
                                 contentItem: Text {
                                     text: modelData
-                                    font.pixelSize: 14  // Same font size as placeholder "请选择磁盘分区"
+                                    font.pixelSize: Theme.Typography.body  // Same font size as placeholder "请选择磁盘分区"
                                     color: parent.highlighted ? Theme.Colors.primaryText : Theme.Colors.textPrimary
                                     verticalAlignment: Text.AlignVCenter
                                     leftPadding: 12
@@ -514,7 +514,7 @@ Rectangle {
                                         contentItem: Rectangle {
                                             implicitWidth: 6
                                             radius: 3
-                                            color: parent.pressed ? "#5a7c9b" : (parent.hovered ? "#79aecd" : Theme.Colors.borderField)
+                                            color: parent.pressed ? Theme.Colors.textSecondary : (parent.hovered ? "#79aecd" : Theme.Colors.borderField)
                                             opacity: parent.active ? 1.0 : 0.6
                                         }
                                     }
@@ -557,7 +557,7 @@ Rectangle {
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: qsTr("App Whitelist:")
-                                font.pixelSize: 16
+                                font.pixelSize: Theme.Typography.h3
                                 color: Theme.Colors.textLabel
                             }
                         }
@@ -629,7 +629,7 @@ Rectangle {
                                                 anchors.right: parent.right
                                                 anchors.verticalCenter: parent.verticalCenter
                                                 text: model.name || ""
-                                                font.pixelSize: 14
+                                                font.pixelSize: Theme.Typography.body
                                                 color: Theme.Colors.textHeading
                                                 horizontalAlignment: Text.AlignRight
                                                 // Ensure text respects the width and aligns right
@@ -658,7 +658,7 @@ Rectangle {
 
                                                 SelectableText {
                                                     text: model.path || ""
-                                                    font.pixelSize: 14
+                                                    font.pixelSize: Theme.Typography.body
                                                     color: "#64748b"
                                                     Layout.fillWidth: true
                                                     Layout.alignment: Qt.AlignVCenter
@@ -689,7 +689,7 @@ Rectangle {
                                                         anchors.centerIn: parent
                                                         text: "×"
                                                         color: removeArea.containsMouse ? "#ef4444" : "#94a3b8"
-                                                        font.pixelSize: 18
+                                                        font.pixelSize: Theme.Typography.h2
                                                         font.weight: Font.Medium
                                                         y: -1
                                                     }
@@ -750,7 +750,7 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     text: qsTr("Submit Application")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     font.weight: Font.Medium
                     color: root.isValid ? Theme.Colors.primaryText : Theme.Colors.textSecondary
                 }

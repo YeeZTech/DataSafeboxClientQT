@@ -29,7 +29,7 @@ Card {
             anchors.left: parent.left
             anchors.top: parent.top
             text: qsTr("App Whitelist")
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             color: Theme.Colors.textCaption
         }
 
@@ -46,7 +46,7 @@ Card {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: ""
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
             }
@@ -99,7 +99,7 @@ Card {
                             anchors.leftMargin: 8
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Program Name")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textHeading
                         }
@@ -125,7 +125,7 @@ Card {
                             anchors.leftMargin: 8
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Program Path")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textHeading
                         }
@@ -155,7 +155,7 @@ Card {
                                 anchors.leftMargin: 8
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.name || ""
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.Typography.body
                                 color: Theme.Colors.textHeading
                                 width: parent.width - 16
                                 clip: true
@@ -174,7 +174,7 @@ Card {
                                 anchors.leftMargin: 8
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: modelData.diskPartition || ""
-                                font.pixelSize: 14
+                                font.pixelSize: Theme.Typography.body
                                 color: Theme.Colors.textHeading
                                 width: parent.width - 16
                                 clip: true

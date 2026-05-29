@@ -556,7 +556,7 @@ BaseDialog {
                 width: parent.width
                 Text {
                     text: root._encrypting ? (root._encryptTotal > 1 ? qsTr("Encrypting (") + (root._encryptDone + 1) + "/" + root._encryptTotal + ")" : qsTr("Encrypting...")) : (root._resultType === "error" ? qsTr("Encryption failed") : root._resultType === "warning" ? qsTr("Partially completed") : qsTr("Encryption completed"))
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.Typography.small
                     font.weight: Font.Medium
                     color: root._encrypting ? Theme.Colors.textLabel : (root._resultType === "error" ? "#ef4444" : root._resultType === "warning" ? "#f59e0b" : "#22c55e")
                 }
@@ -566,7 +566,7 @@ BaseDialog {
                 }
                 Text {
                     text: root._encrypting ? root._encryptProgress + "%" : ""
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.Typography.small
                     color: Theme.Colors.textCaption
                 }
             }
@@ -625,7 +625,7 @@ BaseDialog {
                 width: parent.width
                 visible: !root._encrypting && root._resultMessage !== ""
                 text: root._resultMessage
-                font.pixelSize: 12
+                font.pixelSize: Theme.Typography.small
                 color: root._resultType === "error" ? "#ef4444" : Theme.Colors.textLabel
                 wrapMode: Text.WrapAnywhere
             }
@@ -682,7 +682,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: qsTr("The following files are already in the list")
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
             }
@@ -690,7 +690,7 @@ BaseDialog {
             SelectableText {
                 width: parent.width
                 text: duplicateDialog.text
-                font.pixelSize: 13
+                font.pixelSize: Theme.Typography.caption
                 color: Theme.Colors.textLabel
                 wrapMode: TextEdit.Wrap
             }
@@ -707,7 +707,7 @@ BaseDialog {
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("Got it")
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.Typography.caption
                         font.weight: Font.Medium
                         color: Theme.Colors.primaryText
                     }
@@ -745,7 +745,7 @@ BaseDialog {
                 id: ftBubble
                 width: floatingTooltip.bubbleWidth
                 height: Math.max(28, ftText.implicitHeight + 10)
-                color: "#1e5a8e"
+                color: Theme.Colors.tooltipBackground
                 radius: 4
 
                 Text {
@@ -753,7 +753,7 @@ BaseDialog {
                     anchors.centerIn: parent
                     width: Math.max(0, parent.width - 16)
                     text: root._tooltipText
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.Typography.caption
                     color: "white"
                     wrapMode: Text.WrapAnywhere
                     horizontalAlignment: Text.AlignHCenter
@@ -767,7 +767,7 @@ BaseDialog {
                     onPaint: {
                         var ctx = getContext("2d");
                         ctx.reset();
-                        ctx.fillStyle = "#1e5a8e";
+                        ctx.fillStyle = Theme.Colors.tooltipBackground;
                         ctx.beginPath();
                         ctx.moveTo(0, 0);
                         ctx.lineTo(5, 5);

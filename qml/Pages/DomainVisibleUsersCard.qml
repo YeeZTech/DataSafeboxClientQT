@@ -62,7 +62,7 @@ Card {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Visible Users")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textCaption
             }
 
@@ -106,7 +106,7 @@ Card {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: qsTr("Add")
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         font.weight: Font.Medium
                         color: Theme.Colors.primary
                     }
@@ -167,7 +167,7 @@ Card {
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Dianshu ID")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -182,7 +182,7 @@ Card {
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Nickname")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }
@@ -198,7 +198,7 @@ Card {
                             anchors.rightMargin: card.actionRightMargin
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Actions")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
                         }

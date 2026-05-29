@@ -37,7 +37,7 @@ Card {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Export Requests")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textCaption
             }
 
@@ -63,7 +63,7 @@ Card {
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: ""
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
             }
@@ -138,7 +138,7 @@ Card {
                                     anchors.leftMargin: 8
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Request ID")
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     font.weight: Font.Medium
                                     color: Theme.Colors.textHeading
                                 }
@@ -162,7 +162,7 @@ Card {
                                     anchors.leftMargin: 8
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("File Count")
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     font.weight: Font.Medium
                                     color: Theme.Colors.textHeading
                                 }
@@ -186,7 +186,7 @@ Card {
                                     anchors.leftMargin: 8
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Total Size")
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     font.weight: Font.Medium
                                     color: Theme.Colors.textHeading
                                 }
@@ -210,7 +210,7 @@ Card {
                                     anchors.leftMargin: 8
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Status")
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     font.weight: Font.Medium
                                     color: Theme.Colors.textHeading
                                 }
@@ -234,7 +234,7 @@ Card {
                                     anchors.leftMargin: 8
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Request Time")
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     font.weight: Font.Medium
                                     color: Theme.Colors.textHeading
                                 }
@@ -258,7 +258,7 @@ Card {
                                     anchors.leftMargin: 8
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Actions")
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     font.weight: Font.Medium
                                     color: Theme.Colors.textHeading
                                 }
@@ -332,7 +332,7 @@ Card {
                                         anchors.leftMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.id || "-"
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         color: Theme.Colors.textHeading
                                     }
                                 }
@@ -347,7 +347,7 @@ Card {
                                         anchors.leftMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.fileCount || "-"
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         color: Theme.Colors.textHeading
                                     }
                                 }
@@ -362,7 +362,7 @@ Card {
                                         anchors.leftMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: Theme.Utils.formatSize(modelData.fileSize)
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         color: Theme.Colors.textHeading
                                     }
                                 }
@@ -387,7 +387,7 @@ Card {
                                         SelectableText {
                                             anchors.centerIn: parent
                                             text: Theme.Colors.translateStatus(modelData.status || "已授权")
-                                            font.pixelSize: 12
+                                            font.pixelSize: Theme.Typography.small
                                             font.weight: Font.Medium
                                             color: parent.auditStatusStyle.text
                                         }
@@ -404,7 +404,7 @@ Card {
                                         anchors.leftMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.applyTime || "-"
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         color: Theme.Colors.textHeading
                                     }
                                 }
@@ -420,7 +420,7 @@ Card {
                                         anchors.leftMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: qsTr("View")
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         color: Theme.Colors.primary
                                         font.underline: parent.hovered
                                     }

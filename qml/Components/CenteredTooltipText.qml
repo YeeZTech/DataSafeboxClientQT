@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
+import DataSafebox.Theme 1.0 as Theme
 
 // 表格单元格文本：超出列宽时省略，悬停弹出气泡显示完整内容
 Item {
@@ -209,7 +210,7 @@ Item {
                 y: overlay.bubbleY
                 width: overlay.bubbleW
                 height: overlay.bubbleH
-                color: "#1e5a8e"
+                color: Theme.Colors.tooltipBackground
                 radius: 4
 
                 Text {
@@ -224,7 +225,7 @@ Item {
                     }
                     text: root.value
                     color: "white"
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.Typography.caption
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     maximumLineCount: 999
                 }
@@ -241,7 +242,7 @@ Item {
                 onPaint: {
                     var ctx = getContext("2d");
                     ctx.reset();
-                    ctx.fillStyle = "#1e5a8e";
+                    ctx.fillStyle = Theme.Colors.tooltipBackground;
                     ctx.beginPath();
                     if (overlay.flipDown) {
                         ctx.moveTo(width * 0.5, 0);

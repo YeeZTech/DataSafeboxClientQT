@@ -119,7 +119,7 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Application No.")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                         font.letterSpacing: -0.15
                     }
@@ -127,7 +127,7 @@ BaseDialog {
                     Text {
                         width: parent.width
                         text: root.exportId
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         font.letterSpacing: -0.31
                         elide: Text.ElideMiddle
@@ -142,7 +142,7 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Status")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                         font.letterSpacing: -0.15
                     }
@@ -158,7 +158,7 @@ BaseDialog {
                             id: exportStatusText
                             anchors.centerIn: parent
                             text: Theme.Colors.translateStatus(root.status)
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: statusStyle.text
                         }
@@ -176,7 +176,7 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Applicant")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                         font.letterSpacing: -0.15
                     }
@@ -184,7 +184,7 @@ BaseDialog {
                     Text {
                         width: parent.width
                         text: root.applicant
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         font.letterSpacing: -0.31
                         elide: Text.ElideMiddle
@@ -199,14 +199,14 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Application Time")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                         font.letterSpacing: -0.15
                     }
 
                     SelectableText {
                         text: root.formatApplyTimeToMinute(root.applyTime)
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         font.letterSpacing: -0.31
                     }
@@ -223,14 +223,14 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("File Count")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                         font.letterSpacing: -0.15
                     }
 
                     SelectableText {
                         text: root.fileCount.toString()
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         font.letterSpacing: -0.31
                     }
@@ -243,14 +243,14 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("File Size")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                         font.letterSpacing: -0.15
                     }
 
                     SelectableText {
                         text: root.formatFileSizeLowercase(root.fileSize)
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         font.letterSpacing: -0.31
                     }
@@ -262,7 +262,7 @@ BaseDialog {
 
                 SelectableText {
                     text: qsTr("Files Requested for Export")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                     font.letterSpacing: -0.15
                 }
@@ -309,7 +309,7 @@ BaseDialog {
                                         width: parent.width - 16 - 8  // subtract icon width and spacing
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: (typeof modelData === "string") ? modelData : (modelData.fileName || modelData.filePath || modelData.name || "")
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         color: "#000000"
                                         font.letterSpacing: -0.15
                                         elide: Text.ElideMiddle
@@ -339,7 +339,7 @@ BaseDialog {
             SelectableText {
                 id: reasonLabel
                 text: qsTr("Export Reason")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textCaption
                 font.letterSpacing: -0.15
             }

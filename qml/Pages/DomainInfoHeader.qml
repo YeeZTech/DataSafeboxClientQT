@@ -29,7 +29,7 @@ Item {
         anchors.rightMargin: 48
         anchors.verticalCenter: parent.verticalCenter
         text: root.domainName
-        font.pixelSize: 24
+        font.pixelSize: Theme.Typography.h1
         font.weight: Font.Medium
         color: Theme.Colors.textHeading
         elide: Text.ElideRight

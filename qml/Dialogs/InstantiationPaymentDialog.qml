@@ -57,7 +57,7 @@ BaseDialog {
                     width: 320
                     wrapMode: TextEdit.Wrap
                     text: qsTr("Instantiating this security domain requires payment of the following fees:")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textLabel
                 }
             }
@@ -80,7 +80,7 @@ BaseDialog {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Storage Space:")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
@@ -88,7 +88,7 @@ BaseDialog {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.instanceSize
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textHeading
                 }
             }
@@ -101,7 +101,7 @@ BaseDialog {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Instance Duration:")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
@@ -109,7 +109,7 @@ BaseDialog {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.instanceFee
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textHeading
                 }
             }
@@ -122,7 +122,7 @@ BaseDialog {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Billing Rule:")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
@@ -130,7 +130,7 @@ BaseDialog {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.billingRule
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textHeading
                 }
             }
@@ -149,7 +149,7 @@ BaseDialog {
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Estimated Fee:")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
 
@@ -158,7 +158,7 @@ BaseDialog {
                     anchors.leftMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
                     text: root.estimatedFee + qsTr(" CNY")
-                    font.pixelSize: 14
+                    font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textHeading
                 }
             }

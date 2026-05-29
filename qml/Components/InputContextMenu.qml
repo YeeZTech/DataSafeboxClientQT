@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import DataSafebox.Theme 1.0 as Theme
 
 // Reusable context menu component that can be attached to any text input
 // Usage: InputContextMenu { target: yourTextInput }
@@ -33,7 +34,7 @@ Item {
         background: Rectangle {
             implicitWidth: 100
             implicitHeight: 40
-            color: "#f1f5f9"
+            color: Theme.Colors.buttonSecondaryBg
             radius: 8
             border.color: "#cbd5e1"
             border.width: 1
@@ -46,8 +47,8 @@ Item {
 
             contentItem: Text {
                 text: menuItem.text
-                font.pixelSize: 14
-                color: menuItem.enabled ? "#334155" : "#94a3b8"
+                font.pixelSize: Theme.Typography.body
+                color: menuItem.enabled ? Theme.Colors.textMenu : "#94a3b8"
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 leftPadding: 8

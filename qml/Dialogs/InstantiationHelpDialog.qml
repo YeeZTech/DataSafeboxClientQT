@@ -52,7 +52,7 @@ BaseDialog {
 
                         Text {
                             text: "›"
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             color: "#3b7ec8"
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -60,7 +60,7 @@ BaseDialog {
                         Text {
                             width: parent.width - 28
                             text: qsTr("Security domain instantiation is implemented in the Linux CLI client.")
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.Typography.caption
                             color: "#1e4d8c"
                             wrapMode: Text.WordWrap
                         }
@@ -69,7 +69,7 @@ BaseDialog {
 
                 Text {
                     text: qsTr("1. Install the CLI client")
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.Typography.caption
                     font.weight: Font.Medium
                     color: Theme.Colors.textTitle
                 }
@@ -88,7 +88,7 @@ BaseDialog {
                         anchors.margins: 12
                         text: qsTr("# Add APT source") + "\necho 'deb [trusted=yes] https://repo.yeez.tech stable main' | sudo tee /etc/apt/sources.list.d/yeez-tech.list >/dev/null\n\n" + qsTr("# Update package index") + "\nsudo apt update\n\n" + qsTr("# Install client") + "\nsudo apt install -y datasafebox-cmd-cli"
                         font.family: "Consolas, Courier New, monospace"
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.Typography.small
                         color: "#e8edf3"
                         wrapMode: Text.WrapAnywhere
                         lineHeight: 1.6
@@ -97,7 +97,7 @@ BaseDialog {
 
                 Text {
                     text: qsTr("2. Security domain usage workflow")
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.Typography.caption
                     font.weight: Font.Medium
                     color: Theme.Colors.textTitle
                 }
@@ -116,7 +116,7 @@ BaseDialog {
                         anchors.margins: 12
                         text: qsTr("# Step 1: Login") + "\ndv auth login\n\n" + qsTr("# Step 2: List visible security domains") + "\ndv domain list\n\n" + qsTr("# Step 3: Apply for instance creation") + "\ndv instance create \"trade-domain-001\" -n \"instance-wangfang-01\" --disk \"/data/safebox\"\n\n" + qsTr("# Step 4: Start authorized instance") + "\ndv instance start instance-wangfang-01 --force"
                         font.family: "Consolas, Courier New, monospace"
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.Typography.small
                         color: "#e8edf3"
                         wrapMode: Text.WrapAnywhere
                         lineHeight: 1.6

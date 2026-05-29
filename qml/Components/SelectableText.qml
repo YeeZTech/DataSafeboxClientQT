@@ -3,13 +3,13 @@ import QtQuick.Controls 2.15
 import DataSafebox.Theme 1.0 as Theme
 
 // A selectable and copyable text component
-// Usage: SelectableText { text: "some text"; font.pixelSize: 14; color: Theme.Colors.textHeading }
+// Usage: SelectableText { text: "some text"; font.pixelSize: Theme.Typography.body; color: Theme.Colors.textHeading }
 TextEdit {
     id: root
 
     readOnly: true
     selectByMouse: true
-    selectionColor: "#d4e4f1"
+    selectionColor: Theme.Colors.accent
     selectedTextColor: Theme.Colors.textHeading
 
     // Disable editing features
@@ -39,7 +39,7 @@ TextEdit {
         background: Rectangle {
             implicitWidth: 100
             implicitHeight: 40
-            color: "#f1f5f9"
+            color: Theme.Colors.buttonSecondaryBg
             radius: 8
             border.color: "#cbd5e1"
             border.width: 1
@@ -52,8 +52,8 @@ TextEdit {
 
             contentItem: Text {
                 text: menuItem.text
-                font.pixelSize: 14
-                color: menuItem.enabled ? "#334155" : "#94a3b8"
+                font.pixelSize: Theme.Typography.body
+                color: menuItem.enabled ? Theme.Colors.textMenu : "#94a3b8"
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 leftPadding: 8

@@ -42,7 +42,7 @@ Rectangle {
                 anchors.centerIn: parent
                 anchors.horizontalCenterOffset: 0
                 text: AppConfig.vendorCompanyName()
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Bold
                 color: Theme.Colors.primary
             }
@@ -201,7 +201,7 @@ Rectangle {
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Security Domain")
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     font.weight: Font.Bold
                                     color: Theme.Colors.primary
                                     MouseArea {
@@ -323,7 +323,7 @@ Rectangle {
                                         x: 24
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.name
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         font.weight: parent.isSelected ? Font.Medium : Font.Normal
                                         color: parent.isSelected ? Theme.Colors.primary : (parent.hovered ? "#1e3a5f" : Theme.Colors.textCaption)
                                         Behavior on color {
@@ -367,7 +367,7 @@ Rectangle {
                                                     id: bubbleBackground
                                                     width: domainNameTooltip.bubbleWidth
                                                     height: Math.max(28, domainNameTooltipText.implicitHeight + 10)
-                                                    color: "#1e5a8e"
+                                                    color: Theme.Colors.tooltipBackground
                                                     radius: 4
 
                                                     Text {
@@ -375,7 +375,7 @@ Rectangle {
                                                         anchors.centerIn: parent
                                                         width: Math.max(0, parent.width - 16)
                                                         text: domainNameText.text
-                                                        font.pixelSize: 13
+                                                        font.pixelSize: Theme.Typography.caption
                                                         color: "white"
                                                         wrapMode: Text.WrapAnywhere
                                                         horizontalAlignment: Text.AlignHCenter
@@ -389,7 +389,7 @@ Rectangle {
                                                         onPaint: {
                                                             var ctx = getContext("2d");
                                                             ctx.reset();
-                                                            ctx.fillStyle = "#1e5a8e";
+                                                            ctx.fillStyle = Theme.Colors.tooltipBackground;
                                                             ctx.beginPath();
                                                             ctx.moveTo(0, 0);
                                                             ctx.lineTo(5, 5);
@@ -530,7 +530,7 @@ Rectangle {
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Security Domain Instance")
-                                    font.pixelSize: 14
+                                    font.pixelSize: Theme.Typography.body
                                     font.weight: Font.Bold
                                     color: Theme.Colors.primary
                                     MouseArea {
@@ -597,7 +597,7 @@ Rectangle {
                                         x: 24
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.name
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         font.weight: Font.Normal
                                         color: Theme.Colors.textCaption
                                         maximumLineCount: 1
@@ -610,7 +610,7 @@ Rectangle {
                                             visible: parent.showTooltip
                                             width: Math.min(instanceNameTooltipText.implicitWidth + 16, 400)
                                             height: 28
-                                            color: "#1e5a8e"
+                                            color: Theme.Colors.tooltipBackground
                                             radius: 4
                                             z: 1000
                                             y: -height - 8
@@ -620,7 +620,7 @@ Rectangle {
                                                 id: instanceNameTooltipText
                                                 anchors.centerIn: parent
                                                 text: parent.parent.text
-                                                font.pixelSize: 13
+                                                font.pixelSize: Theme.Typography.caption
                                                 color: "white"
                                                 maximumLineCount: 1
                                                 elide: Text.ElideRight
@@ -635,7 +635,7 @@ Rectangle {
                                                 onPaint: {
                                                     var ctx = getContext("2d");
                                                     ctx.reset();
-                                                    ctx.fillStyle = "#1e5a8e";
+                                                    ctx.fillStyle = Theme.Colors.tooltipBackground;
                                                     ctx.beginPath();
                                                     ctx.moveTo(0, 0);
                                                     ctx.lineTo(5, 5);

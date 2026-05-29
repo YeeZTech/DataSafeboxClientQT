@@ -27,7 +27,7 @@ Item {
 
         Text {
             text: qsTr("Settings")
-            font.pixelSize: 24
+            font.pixelSize: Theme.Typography.h1
             font.weight: Font.Bold
             color: "#303542"
         }
@@ -38,14 +38,14 @@ Item {
 
             Text {
                 text: qsTr("Default Cache Path:")
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: "#7f8793"
             }
 
             Text {
                 width: parent.width - 130
                 text: PathManager && PathManager.cacheDir ? PathManager.cacheDir : ""
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: "#687180"
                 wrapMode: Text.WrapAnywhere
             }
@@ -57,8 +57,8 @@ Item {
 
             Text {
                 text: qsTr("Change Path")
-                font.pixelSize: 16
-                color: settingsChangePathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsChangePathMouse.containsMouse ? "#2A6A9A" : Theme.Colors.primary
+                font.pixelSize: Theme.Typography.h3
+                color: settingsChangePathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsChangePathMouse.containsMouse ? Theme.Colors.linkHover : Theme.Colors.primary
                 Behavior on color {
                     ColorAnimation {
                         duration: 120
@@ -75,14 +75,14 @@ Item {
 
             Text {
                 text: "|"
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: "#c6ccd4"
             }
 
             Text {
                 text: qsTr("Open Path")
-                font.pixelSize: 16
-                color: settingsOpenPathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsOpenPathMouse.containsMouse ? "#2A6A9A" : Theme.Colors.primary
+                font.pixelSize: Theme.Typography.h3
+                color: settingsOpenPathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsOpenPathMouse.containsMouse ? Theme.Colors.linkHover : Theme.Colors.primary
                 Behavior on color {
                     ColorAnimation {
                         duration: 120
@@ -106,14 +106,14 @@ Item {
 
             Text {
                 text: "|"
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: "#c6ccd4"
             }
 
             Text {
                 text: qsTr("Clear Cache")
-                font.pixelSize: 16
-                color: settingsClearCacheMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsClearCacheMouse.containsMouse ? "#2A6A9A" : Theme.Colors.primary
+                font.pixelSize: Theme.Typography.h3
+                color: settingsClearCacheMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsClearCacheMouse.containsMouse ? Theme.Colors.linkHover : Theme.Colors.primary
                 Behavior on color {
                     ColorAnimation {
                         duration: 120
@@ -135,14 +135,14 @@ Item {
 
             Text {
                 text: "(" + qsTr("approx.") + " " + Theme.Utils.formatSize(PathManager && PathManager.cacheSizeBytes ? PathManager.cacheSizeBytes : 0) + ")"
-                font.pixelSize: 16
+                font.pixelSize: Theme.Typography.h3
                 color: "#8f96a1"
             }
         }
 
         Text {
             text: root.statusText
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             color: "#3b4ed6"
             visible: root.statusText.length > 0
         }

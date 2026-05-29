@@ -183,7 +183,7 @@ Item {
                                     font.pixelSize: root.fontSizeBody
                                     color: Theme.Colors.textLabel
                                     selectByMouse: true
-                                    selectionColor: "#d4e4f1"
+                                    selectionColor: Theme.Colors.accent
                                     selectedTextColor: Theme.Colors.textHeading
 
                                     onTextChanged: {
@@ -196,7 +196,7 @@ Item {
                                         text: qsTr("Please enter security domain name")
                                         font.family: root.fontFamily
                                         font.pixelSize: root.fontSizeBody
-                                        color: "#5a7c9b"
+                                        color: Theme.Colors.textSecondary
                                         visible: !nameInput.text && !nameInput.activeFocus
                                     }
                                 }
@@ -321,7 +321,7 @@ Item {
                                             background: null
                                             wrapMode: TextArea.Wrap
                                             selectByMouse: true
-                                            selectionColor: "#d4e4f1"
+                                            selectionColor: Theme.Colors.accent
                                             selectedTextColor: Theme.Colors.textHeading
 
                                             // Remove default padding to align with placeholder
@@ -351,7 +351,7 @@ Item {
                                                 text: qsTr("Please describe the security domain's purpose so other users can understand it")
                                                 font.family: root.fontFamily
                                                 font.pixelSize: root.fontSizeBody
-                                                color: "#5a7c9b"
+                                                color: Theme.Colors.textSecondary
                                                 visible: !descriptionArea.text && !descriptionArea.activeFocus
                                             }
                                         }

@@ -130,7 +130,7 @@ Column {
         radius: 8
         property bool hovered: false
         property bool pressed: false
-        color: pressed ? "#ffd5d5" : (hovered ? "#fff5f5" : "#ffffff")
+        color: pressed ? "#ffd5d5" : (hovered ? "#fff5f5" : Theme.Colors.backgroundWhite)
         border.width: 1
         border.color: pressed ? "#ff5050" : (hovered ? "#ff9090" : "#ffa2a2")
         visible: !root.isDomainReadOnly
@@ -140,7 +140,7 @@ Column {
             id: disableText
             anchors.centerIn: parent
             text: qsTr("Disable This Security Domain")
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             font.weight: Font.Medium
             color: parent.pressed ? "#900006" : (parent.hovered ? "#c50009" : Theme.Colors.textError)
         }

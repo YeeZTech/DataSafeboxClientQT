@@ -23,6 +23,6 @@ Rectangle {
         lineHeightMode: Text.FixedHeight
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        color: "#FFFFFF"
+        color: Theme.Colors.primaryText
     }
 }

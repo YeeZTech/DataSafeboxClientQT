@@ -160,8 +160,8 @@ Popup {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTr("Contact Customer Service")
-                    color: "#ffffff"
-                    font.pixelSize: 14
+                    color: Theme.Colors.primaryText
+                    font.pixelSize: Theme.Typography.body
                     font.weight: Font.Medium
                     font.letterSpacing: 0.3
                 }
@@ -187,7 +187,7 @@ Popup {
                     anchors.centerIn: parent
                     text: "✕"
                     color: "white"
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.Typography.caption
                 }
 
                 MouseArea {

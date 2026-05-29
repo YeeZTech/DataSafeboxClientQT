@@ -24,7 +24,7 @@ ApplicationWindow {
     maximumHeight: 10000
     visible: true
     title: qsTr("Data SafeBox Console")
-    color: "#f8fafc"  // slate-50 background
+    color: Theme.Colors.backgroundGray  // slate-50 background
 
     // Authentication state
     property string authPage: "login"
@@ -424,7 +424,7 @@ ApplicationWindow {
             Text {
                 width: parent.width
                 text: qsTr("Login Failed")
-                font.pixelSize: 18
+                font.pixelSize: Theme.Typography.h2
                 font.weight: Font.Medium
                 color: "#0f172a"
                 horizontalAlignment: Text.AlignHCenter
@@ -433,7 +433,7 @@ ApplicationWindow {
             Text {
                 width: parent.width
                 text: window.loginErrorMessage || qsTr("Network error, please check network and retry")
-                font.pixelSize: 13
+                font.pixelSize: Theme.Typography.caption
                 color: "#64748b"
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
@@ -519,7 +519,7 @@ ApplicationWindow {
                 Text {
                     anchors.centerIn: parent
                     text: qsTr("Welcome to DataSafeBox Console")
-                    font.pixelSize: 24
+                    font.pixelSize: Theme.Typography.h1
                     color: Theme.Colors.textSecondary
                 }
             }
@@ -794,7 +794,7 @@ ApplicationWindow {
         property string errorMessage: ""
 
         background: Rectangle {
-            color: "#ffffff"
+            color: Theme.Colors.backgroundWhite
             radius: 8
             border.color: "#fecaca"
             border.width: 1
@@ -822,7 +822,7 @@ ApplicationWindow {
             Label {
                 Layout.alignment: Qt.AlignVCenter
                 text: errorDialog.errorMessage
-                font.pixelSize: 13
+                font.pixelSize: Theme.Typography.caption
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
             }
@@ -880,7 +880,7 @@ ApplicationWindow {
         parent: Overlay.overlay
 
         background: Rectangle {
-            color: "#ffffff"
+            color: Theme.Colors.backgroundWhite
             radius: 28
             border.color: Theme.Colors.borderSeparator
             border.width: 1
@@ -907,7 +907,7 @@ ApplicationWindow {
             Label {
                 id: noUpdateLabel
                 text: qsTr("Already up to date")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 font.weight: Font.Medium
                 color: "#1e293b"
                 Layout.fillWidth: true
@@ -960,7 +960,7 @@ ApplicationWindow {
         parent: Overlay.overlay
 
         background: Rectangle {
-            color: "#ffffff"
+            color: Theme.Colors.backgroundWhite
             radius: 30
             border.color: "#fee2e2"
             border.width: 1
@@ -987,7 +987,7 @@ ApplicationWindow {
             Label {
                 id: msgLabel
                 text: qsTr("Cannot connect to server")
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 font.weight: Font.Medium
                 color: "#ef4444"
                 Layout.fillWidth: true
@@ -1059,15 +1059,15 @@ ApplicationWindow {
 
             Text {
                 text: qsTr("Software Update")
-                font.pixelSize: 18
+                font.pixelSize: Theme.Typography.h2
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
             }
 
             Text {
                 text: qsTr("New version downloaded. Install now?")
-                font.pixelSize: 14
-                color: "#334155"
+                font.pixelSize: Theme.Typography.body
+                color: Theme.Colors.textMenu
                 wrapMode: Text.WordWrap
                 lineHeight: 1.25
                 Layout.fillWidth: true
@@ -1075,7 +1075,7 @@ ApplicationWindow {
 
             Text {
                 text: qsTr("Version v") + UpdateManager.latestVersion
-                font.pixelSize: 12
+                font.pixelSize: Theme.Typography.small
                 color: "#64748b"
                 visible: UpdateManager.latestVersion !== ""
             }
@@ -1178,7 +1178,7 @@ ApplicationWindow {
                     Text {
                         anchors.centerIn: parent
                         text: "!"
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.Typography.caption
                         font.weight: Font.Bold
                         color: "#b91c1c"
                     }
@@ -1193,7 +1193,7 @@ ApplicationWindow {
                         var linkText = window.arrearsBillLinkText;
                         return raw.replace(linkText, '<a href="wallet" style="color:#b91c1c;text-decoration:underline;">' + linkText + '</a>');
                     }
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.Typography.caption
                     color: "#b91c1c"
                     onLinkActivated: Qt.openUrlExternally(window.arrearsBillUrl)
                 }

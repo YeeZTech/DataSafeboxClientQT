@@ -113,13 +113,13 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Application No.")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
                     Text {
                         width: parent.width
                         text: root.applyCode || "-"
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         elide: Text.ElideMiddle
                         wrapMode: Text.NoWrap
@@ -132,7 +132,7 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Status")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
 
@@ -149,7 +149,7 @@ BaseDialog {
                             id: statusBadgeText
                             anchors.centerIn: parent
                             text: Theme.Colors.translateStatus(root.status) || "-"
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: root.statusStyle.text
                         }
@@ -168,13 +168,13 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Applicant")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
                     Text {
                         width: parent.width
                         text: root.creator || "-"
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         elide: Text.ElideMiddle
                         wrapMode: Text.NoWrap
@@ -187,12 +187,12 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Security Domain Instance Name")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
                     Text {
                         text: root.instanceName || "-"
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         elide: Text.ElideMiddle
                         width: parent.width
@@ -210,12 +210,12 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Application Time")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
                     SelectableText {
                         text: root.appliedTime || "-"
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                     }
                 }
@@ -226,14 +226,14 @@ BaseDialog {
 
                     SelectableText {
                         text: qsTr("Application Name")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textCaption
                     }
 
                     Text {
                         width: parent.width
                         text: root.appName || "-"
-                        font.pixelSize: 16
+                        font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         elide: Text.ElideRight
                     }
@@ -252,7 +252,7 @@ BaseDialog {
 
         SelectableText {
             text: qsTr("App Whitelist Dependency Files")
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             color: Theme.Colors.textCaption
         }
 
@@ -312,7 +312,7 @@ BaseDialog {
                         Text {
                             anchors.centerIn: parent
                             text: qsTr("Executable File Name")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             color: Theme.Colors.textCaption
                         }
                     }
@@ -324,7 +324,7 @@ BaseDialog {
                         Text {
                             anchors.centerIn: parent
                             text: qsTr("Hash Value")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             color: Theme.Colors.textCaption
                         }
                     }
@@ -382,7 +382,7 @@ BaseDialog {
                         Text {
                             anchors.centerIn: parent
                             text: qsTr("No data")
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.Typography.body
                             color: Theme.Colors.textCounter
                         }
                     }
@@ -424,7 +424,7 @@ BaseDialog {
                                         anchors.rightMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.fileName || root.appName || "-"
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         color: "#000000"
                                         elide: Text.ElideMiddle
                                     }
@@ -443,7 +443,7 @@ BaseDialog {
                                         anchors.rightMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         text: modelData.fileHash || "-"
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.Typography.body
                                         color: "#000000"
                                         elide: Text.ElideMiddle
                                     }
@@ -492,7 +492,7 @@ BaseDialog {
                                                 id: hashTooltipBubble
                                                 width: hashTooltip.bubbleWidth
                                                 height: Math.max(28, hashTooltipText.implicitHeight + 10)
-                                                color: "#1e5a8e"
+                                                color: Theme.Colors.tooltipBackground
                                                 radius: 4
 
                                                 Text {
@@ -500,7 +500,7 @@ BaseDialog {
                                                     anchors.centerIn: parent
                                                     width: Math.max(0, parent.width - 16)
                                                     text: modelData.fileHash || ""
-                                                    font.pixelSize: 13
+                                                    font.pixelSize: Theme.Typography.caption
                                                     color: "white"
                                                     wrapMode: Text.WrapAnywhere
                                                     horizontalAlignment: Text.AlignHCenter
@@ -514,7 +514,7 @@ BaseDialog {
                                                     onPaint: {
                                                         var ctx = getContext("2d");
                                                         ctx.reset();
-                                                        ctx.fillStyle = "#1e5a8e";
+                                                        ctx.fillStyle = Theme.Colors.tooltipBackground;
                                                         ctx.beginPath();
                                                         ctx.moveTo(0, 0);
                                                         ctx.lineTo(5, 5);
