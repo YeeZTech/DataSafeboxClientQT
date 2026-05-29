@@ -108,7 +108,7 @@ Card {
                     Text {
                         anchors.centerIn: parent
                         text: Theme.Colors.translateStatus(card.domainData.status || "")
-                        font.pixelSize: Theme.Typography.h3
+                        font.pixelSize: Theme.Typography.body
                         font.weight: Font.Medium
                         color: parent.domainStatusStyle.text
                     }

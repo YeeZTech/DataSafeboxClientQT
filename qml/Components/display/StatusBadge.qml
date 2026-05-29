@@ -6,7 +6,7 @@ Rectangle {
     property string status: ""
     property string displayText: Theme.Colors.translateStatus(status)
     property var statusStyle: Theme.Colors.getStatusColor(status)
-    property int textPixelSize: 14
+    property int textPixelSize: Theme.Typography.small
     readonly property bool truncated: badgeText.truncated
 
     implicitWidth: badgeText.implicitWidth + 12
