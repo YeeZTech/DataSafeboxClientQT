@@ -50,100 +50,23 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: 12
 
-        Rectangle {
+        LinkText {
             anchors.verticalCenter: parent.verticalCenter
-            width: guideLinkText.implicitWidth + 12
-            height: 36
-            radius: 5
-            color: Qt.rgba(238 / 255, 244 / 255, 251 / 255, 0)
-
-            Text {
-                id: guideLinkText
-                anchors.centerIn: parent
-                text: qsTr("View Feature Guide")
-                font.pixelSize: 14
-                font.underline: true
-                color: guideArea.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : guideArea.containsMouse ? "#2A6A9A" : Theme.Colors.primary
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
-                }
-            }
-
-            MouseArea {
-                id: guideArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.guideRequested()
-            }
+            text: qsTr("View Feature Guide")
+            fontSize: Theme.Typography.body
+            onClicked: root.guideRequested()
         }
 
-        Rectangle {
+        SecondaryButton {
             id: createInstanceButton
             visible: true
-            width: instantiateRow.width + 24
-            height: 36
-            radius: 8
-            color: {
-                if (instantiateMouseArea.pressed)
-                    return "#dce8f5";
-                if (instantiateMouseArea.containsMouse)
-                    return "#eef4fb";
-                return "#ffffff";
-            }
-            border.color: instantiateMouseArea.containsMouse ? Theme.Colors.primary : Qt.lighter(Theme.Colors.primary, 1.4)
-            border.width: 1
-            opacity: !root.isDomainReadOnly ? 1.0 : 0.5
-            Behavior on color {
-                ColorAnimation {
-                    duration: 150
-                }
-            }
-            Behavior on border.color {
-                ColorAnimation {
-                    duration: 150
-                }
-            }
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: 150
-                }
-            }
-
-            Row {
-                id: instantiateRow
-                anchors.left: parent.left
-                anchors.leftMargin: 12
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 8
-
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: qsTr("How to Instantiate Security Domain?")
-                    font.pixelSize: 16
-                    font.weight: Font.Medium
-                    color: instantiateMouseArea.containsMouse ? Qt.lighter(Theme.Colors.primary, 1.3) : Theme.Colors.primary
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                }
-            }
-
-            MouseArea {
-                id: instantiateMouseArea
-                anchors.fill: parent
-                enabled: !root.isDomainReadOnly
-                hoverEnabled: true
-                cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                onClicked: {
-                    if (root.isDomainReadOnly)
-                        return;
-                    root.instantiateRequested();
-                }
+            enabled: !root.isDomainReadOnly
+            text: qsTr("How to Instantiate Security Domain?")
+            fontSize: Theme.Typography.h3
+            onClicked: {
+                if (root.isDomainReadOnly)
+                    return;
+                root.instantiateRequested();
             }
         }
 

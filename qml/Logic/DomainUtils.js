@@ -206,3 +206,39 @@ function domainCreatorDisplayText(detail) {
     return trimText(d.creatorUserName) || trimText(d.creator)
         || trimText(d.creatorUserId || d.authUserId || d.userId)
 }
+
+function emptyDomainDetail(domainName, domainPubKey) {
+    return {
+        name: domainName || "",
+        creator: "",
+        status: "",
+        createdAt: "",
+        payer: "",
+        description: "",
+        visibleUsers: [],
+        instances: [],
+        appWhitelistAudits: [],
+        exportAudits: [],
+        pubKey: domainPubKey || "",
+        isInactive: false
+    }
+}
+
+function canRenderAuditEmptyState(detail) {
+    var d = detail || {}
+    if (!d) return false
+    if (d._syncedFromBackend) return true
+    if (Array.isArray(d.appWhitelistAudits) || Array.isArray(d.exportAudits)) return true
+
+    var hasWhitelist = !!(d.appWhitelistAudits && d.appWhitelistAudits.length > 0)
+    var hasExport = !!(d.exportAudits && d.exportAudits.length > 0)
+    return hasWhitelist || hasExport
+}
+
+function formatPayerText(payerValue, creatorLabel, userLabel, emptyLabel) {
+    var text = trimText(payerValue)
+    if (!text) return emptyLabel || "-"
+    if (text === "åˆ›å»ºæ–¹" || text === "å®‰å…¨åŸŸåˆ›å»ºæ–¹" || text === "åˆ›å»ºè€…") return creatorLabel || "Creator"
+    if (text === "ä½¿ç”¨æ–¹" || text === "å®‰å…¨åŸŸä½¿ç”¨æ–¹" || text === "ä½¿ç”¨è€…") return userLabel || "User"
+    return text
+}

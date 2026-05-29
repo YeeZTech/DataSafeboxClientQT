@@ -22,6 +22,7 @@
         <file alias="DataSafebox/Components/FormField.qml">../qml/Components/FormField.qml</file>
         <file alias="DataSafebox/Components/BadgeIndicator.qml">../qml/Components/BadgeIndicator.qml</file>
         <file alias="DataSafebox/Components/CenteredTooltipText.qml">../qml/Components/CenteredTooltipText.qml</file>
+        <file alias="DataSafebox/Components/LinkText.qml">../qml/Components/LinkText.qml</file>
         <file alias="DataSafebox/Components/InputContextMenu.qml">../qml/Components/InputContextMenu.qml</file>
         <file alias="DataSafebox/Components/MessageCenter.qml">../qml/Components/MessageCenter.qml</file>
         <file alias="DataSafebox/Components/OnboardingGuide.qml">../qml/Components/OnboardingGuide.qml</file>
@@ -42,6 +43,9 @@
         <file alias="DataSafebox/Pages/SettingsPage.qml">../qml/Pages/SettingsPage.qml</file>
         <file alias="DataSafebox/Pages/DomainInfoHeader.qml">../qml/Pages/DomainInfoHeader.qml</file>
         <file alias="DataSafebox/Pages/DomainTabView.qml">../qml/Pages/DomainTabView.qml</file>
+        <file alias="DataSafebox/Pages/HelpTooltipButton.qml">../qml/Pages/HelpTooltipButton.qml</file>
+        <file alias="DataSafebox/Pages/PayerSelector.qml">../qml/Pages/PayerSelector.qml</file>
+        <file alias="DataSafebox/Pages/VisibleUserTable.qml">../qml/Pages/VisibleUserTable.qml</file>
         <file alias="DataSafebox/Pages/InstanceInfoCard.qml">../qml/Pages/InstanceInfoCard.qml</file>
         <file alias="DataSafebox/Pages/InstanceWhitelistCard.qml">../qml/Pages/InstanceWhitelistCard.qml</file>
         <file alias="DataSafebox/Pages/InstanceExportCard.qml">../qml/Pages/InstanceExportCard.qml</file>
@@ -60,6 +64,8 @@
         <file alias="DataSafebox/Dialogs/CustomerServiceDialog.qml">../qml/Dialogs/CustomerServiceDialog.qml</file>
         <file alias="DataSafebox/Dialogs/DeactivateConfirmDialog.qml">../qml/Dialogs/DeactivateConfirmDialog.qml</file>
         <file alias="DataSafebox/Dialogs/EncryptFileDialog.qml">../qml/Dialogs/EncryptFileDialog.qml</file>
+        <file alias="DataSafebox/Dialogs/EncryptFileSelector.qml">../qml/Dialogs/EncryptFileSelector.qml</file>
+        <file alias="DataSafebox/Dialogs/FileUtils.js">../qml/Logic/FileUtils.js</file>
         <file alias="DataSafebox/Dialogs/ExportDetailDialog.qml">../qml/Dialogs/ExportDetailDialog.qml</file>
         <file alias="DataSafebox/Dialogs/ExportFileDialog.qml">../qml/Dialogs/ExportFileDialog.qml</file>
         <file alias="DataSafebox/Dialogs/ImportFileDialog.qml">../qml/Dialogs/ImportFileDialog.qml</file>

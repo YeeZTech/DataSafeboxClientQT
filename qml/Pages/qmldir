@@ -6,6 +6,9 @@ SecurityInstanceDetail 1.0 SecurityInstanceDetail.qml
 SettingsPage 1.0 SettingsPage.qml
 DomainInfoHeader 1.0 DomainInfoHeader.qml
 DomainTabView 1.0 DomainTabView.qml
+HelpTooltipButton 1.0 HelpTooltipButton.qml
+PayerSelector 1.0 PayerSelector.qml
+VisibleUserTable 1.0 VisibleUserTable.qml
 InstanceInfoCard 1.0 InstanceInfoCard.qml
 InstanceWhitelistCard 1.0 InstanceWhitelistCard.qml
 InstanceExportCard 1.0 InstanceExportCard.qml

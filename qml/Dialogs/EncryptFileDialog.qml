@@ -3,6 +3,7 @@ import QtQuick.Controls 2.15
 import Qt.labs.platform 1.1
 import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
+import "FileUtils.js" as FileUtils
 
 BaseDialog {
     id: root
@@ -85,53 +86,6 @@ BaseDialog {
     }
 
     // ---- Helper functions ----
-    function getFileName(filePath) {
-        if (!filePath)
-            return "";
-        var parts = filePath.split(/[/\\]/);
-        return parts[parts.length - 1];
-    }
-
-    // 检查路径是否为目录（空实现，返回 false）
-    function _isDirectory(path) {
-        return false;
-    }
-
-    // 递归列出目录下所有文件（空实现，返回空数组）
-    function _listFilesRecursive(dirPath) {
-        return [];
-    }
-
-    function getFileDir(filePath) {
-        if (!filePath)
-            return "";
-        var parts = filePath.replace(/\\/g, "/").split("/");
-        parts.pop();
-        return parts.join("/");
-    }
-
-    function urlToLocalPath(fileUrl) {
-        if (typeof fileUrl.toLocalFile === "function") {
-            return fileUrl.toLocalFile();
-        }
-        var urlString = fileUrl.toString();
-        if (urlString.startsWith("file:///")) {
-            var path = urlString.substring(8);
-            if (Qt.platform.os === "windows" && path.length > 0 && path[0] === '/') {
-                path = path.substring(1);
-            }
-            return path;
-        } else if (urlString.startsWith("file://")) {
-            return urlString.substring(7);
-        } else if (urlString.startsWith("file:/")) {
-            var p2 = urlString.substring(6);
-            if (Qt.platform.os === "windows" && p2.length > 0 && p2[0] === '/') {
-                p2 = p2.substring(1);
-            }
-            return p2;
-        }
-        return urlString;
-    }
 
     // Find path in model, returns index or -1
     function _findPathInModel(p) {
@@ -192,16 +146,16 @@ BaseDialog {
             if (existingIdx >= 0) {
                 var existingStatus = pathListModel.get(existingIdx).status;
                 if (existingStatus === "encrypted") {
-                    duplicates.push(getFileName(p) + qsTr(" (encrypted)"));
+                    duplicates.push(FileUtils.getFileName(p) + qsTr(" (encrypted)"));
                 } else {
-                    duplicates.push(getFileName(p) + qsTr(" (already in list)"));
+                    duplicates.push(FileUtils.getFileName(p) + qsTr(" (already in list)"));
                 }
                 continue;
             }
             pathListModel.append({
                 "path": p,
-                "name": getFileName(p),
-                "isDir": _isDirectory(p),
+                "name": FileUtils.getFileName(p),
+                "isDir": FileUtils.isDirectory(p),
                 "status": "pending"  // pending | encrypted | failed
             });
         }
@@ -227,15 +181,6 @@ BaseDialog {
         root.selectedFilePath = pathListModel.count > 0 ? pathListModel.get(0).path : "";
     }
 
-    function _formatEncryptFailure(notification, fallback) {
-        if (typeof DsccBridge !== "undefined" && DsccBridge.notificationMessage) {
-            var message = DsccBridge.notificationMessage(notification, fallback);
-            if (message)
-                return message;
-        }
-        return fallback;
-    }
-
     function _operationMatches(operationId, sourceFile, targetFile) {
         if (root._currentSourceFile !== sourceFile || root._currentTargetFile !== targetFile) {
             return false;
@@ -255,7 +200,7 @@ BaseDialog {
         // Determine output directory
         var outDir = root.selectedOutputPath;
         if (!outDir && root.selectedFilePath)
-            outDir = root.getFileDir(root.selectedFilePath);
+            outDir = FileUtils.getFileDir(root.selectedFilePath);
         root._encryptOutputDir = outDir || "";
         if (root._encryptFailed === 0) {
             root._resultMessage = "";
@@ -422,19 +367,19 @@ BaseDialog {
         for (var j = 0; j < pendingItems.length; j++) {
             var pi = pendingItems[j];
             if (pi.isDir) {
-                var files = _listFilesRecursive(pi.path);
+                var files = FileUtils.listFilesRecursive(pi.path);
                 if (files.length === 0) {
                     pathListModel.setProperty(pi.modelIndex, "status", "failed");
                     continue;
                 }
                 var normalizedSource = pi.path.replace(/\\/g, "/").replace(/\/+$/, "");
                 var normalizedCustom = root.selectedOutputPath ? root.selectedOutputPath.replace(/\\/g, "/").replace(/\/+$/, "") : "";
-                var folderName = getFileName(normalizedSource);
+                var folderName = FileUtils.getFileName(normalizedSource);
                 var folderBaseOutput = "";
                 if (normalizedCustom && normalizedCustom !== normalizedSource) {
                     folderBaseOutput = normalizedCustom + "/" + folderName;
                 } else {
-                    var folderParent = getFileDir(normalizedSource);
+                    var folderParent = FileUtils.getFileDir(normalizedSource);
                     folderBaseOutput = folderParent + "/" + folderName + "_encrypted";
                 }
                 root._folderDoneMap[pi.modelIndex.toString()] = {
@@ -445,7 +390,7 @@ BaseDialog {
                 for (var k = 0; k < files.length; k++) {
                     var fileFullPath = files[k].replace(/\\/g, "/");
                     var relativePath = fileFullPath.substring(normalizedSource.length + 1);
-                    var relativeDir = getFileDir(relativePath);
+                    var relativeDir = FileUtils.getFileDir(relativePath);
                     var fileOutput = relativeDir ? (folderBaseOutput + "/" + relativeDir) : folderBaseOutput;
                     queue.push({
                         file: files[k],
@@ -454,7 +399,7 @@ BaseDialog {
                     });
                 }
             } else {
-                var fileOut = root.selectedOutputPath || getFileDir(pi.path);
+                var fileOut = root.selectedOutputPath || FileUtils.getFileDir(pi.path);
                 queue.push({
                     file: pi.path,
                     output: fileOut,
@@ -500,10 +445,10 @@ BaseDialog {
             var paths = [];
             if (fileDialog.files && fileDialog.files.length > 0) {
                 for (var i = 0; i < fileDialog.files.length; i++) {
-                    paths.push(root.urlToLocalPath(fileDialog.files[i]));
+                    paths.push(FileUtils.urlToLocalPath(fileDialog.files[i], Qt.platform.os));
                 }
             } else if (fileDialog.file) {
-                paths.push(root.urlToLocalPath(fileDialog.file));
+                paths.push(FileUtils.urlToLocalPath(fileDialog.file, Qt.platform.os));
             }
             root.addPaths(paths);
         }
@@ -514,7 +459,7 @@ BaseDialog {
         title: qsTr("Select Folder")
 
         onAccepted: {
-            var folderPath = root.urlToLocalPath(folderSelectDialog.folder);
+            var folderPath = FileUtils.urlToLocalPath(folderSelectDialog.folder, Qt.platform.os);
             if (folderPath)
                 root.addPaths([folderPath]);
         }
@@ -525,7 +470,7 @@ BaseDialog {
         title: qsTr("Select Save Path")
 
         onAccepted: {
-            root.selectedOutputPath = root.urlToLocalPath(folderDialog.folder);
+            root.selectedOutputPath = FileUtils.urlToLocalPath(folderDialog.folder, Qt.platform.os);
         }
     }
 
@@ -560,7 +505,11 @@ BaseDialog {
         function onEncryptFileFailed(operationId, sourceFile, targetFile, notification) {
             if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile))
                 return;
-            root._completeCurrentEncryption("failed", root._formatEncryptFailure(notification, qsTr("Encryption failed")));
+            root._completeCurrentEncryption("failed", FileUtils.formatEncryptFailure(notification, qsTr("Encryption failed"), function (n, fallback) {
+                if (typeof DsccBridge !== "undefined" && DsccBridge.notificationMessage)
+                    return DsccBridge.notificationMessage(n, fallback);
+                return fallback;
+            }));
         }
 
         function onEncryptFileCanceled(operationId, sourceFile, targetFile) {
@@ -576,202 +525,25 @@ BaseDialog {
         width: parent.width
         spacing: 16
 
-        // ---- Unified file/folder selector box ----
-        Column {
-            width: parent.width
-            spacing: 8
-
-            Row {
-                spacing: 4
-                SelectableText {
-                    text: qsTr("Files to Encrypt")
-                    font.pixelSize: 14
-                    font.weight: Font.Medium
-                    color: Theme.Colors.textLabel
-                }
-                SelectableText {
-                    text: "*"
-                    font.pixelSize: 14
-                    font.weight: Font.Medium
-                    color: Theme.Colors.requiredMarker
-                }
-            }
-
-            // File selector box
-            Rectangle {
-                width: parent.width
-                height: 36
-                radius: 8
-                color: addFileBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
-                border.color: addFileBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
-                border.width: 1
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-                Behavior on border.color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-
-                Row {
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    spacing: 12
-
-                    Image {
-                        width: 16
-                        height: 16
-                        anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/icons/icon-directory.svg"
-                        fillMode: Image.PreserveAspectFit
-                    }
-
-                    Item {
-                        width: parent.width - 16 - 12
-                        height: parent.height
-                        clip: true
-
-                        Text {
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.leftMargin: 2
-                            anchors.rightMargin: 2
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: root.selectedFilePath ? root.selectedFilePath : qsTr("Please select files to encrypt")
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: root.selectedFilePath ? Theme.Colors.textHeading : "#94a3b8"
-                            elide: Text.ElideMiddle
-                        }
-                    }
-                }
-
-                MouseArea {
-                    id: addFileBtnArea
-                    anchors.fill: parent
-                    enabled: !root._encrypting
-                    hoverEnabled: true
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                    onClicked: fileDialog.open()
-                }
-            }
+        EncryptFileSelector {
+            label: qsTr("Files to Encrypt")
+            required: true
+            displayText: root.selectedFilePath
+            placeholder: qsTr("Please select files to encrypt")
+            hasValue: root.selectedFilePath !== ""
+            selectorEnabled: !root._encrypting
+            onSelectClicked: fileDialog.open()
         }
 
-        // Output path section
-        Column {
-            width: parent.width
-            spacing: 8
-
-            SelectableText {
-                text: qsTr("Save Path for Encrypted Files")
-                font.pixelSize: 14
-                font.weight: Font.Medium
-                color: Theme.Colors.textLabel
-            }
-
-            Rectangle {
-                width: parent.width
-                height: 36
-                radius: 8
-                color: outputBtnArea.containsMouse ? "#e8f8ff" : Theme.Colors.backgroundWhite
-                border.color: outputBtnArea.containsMouse ? "#79aecd" : "#94a3b8"
-                border.width: 1
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-                Behavior on border.color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-
-                Row {
-                    anchors.left: parent.left
-                    anchors.right: outputClearBtn.left
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    spacing: 12
-
-                    Image {
-                        width: 16
-                        height: 16
-                        anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/icons/icon-directory.svg"
-                        fillMode: Image.PreserveAspectFit
-                    }
-
-                    Item {
-                        width: parent.width - 16 - 12
-                        height: parent.height
-                        clip: true
-
-                        Text {
-                            anchors.left: parent.left
-                            anchors.right: parent.right
-                            anchors.leftMargin: 2
-                            anchors.rightMargin: 2
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: root.selectedOutputPath ? root.selectedOutputPath : (root.selectedFilePath ? root.getFileDir(root.selectedFilePath) : qsTr("Select save path"))
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
-                            color: (root.selectedOutputPath || root.selectedFilePath) ? Theme.Colors.textHeading : "#94a3b8"
-                            elide: Text.ElideMiddle
-                        }
-                    }
-                }
-
-                // Clear output path button
-                Rectangle {
-                    id: outputClearBtn
-                    width: root.selectedOutputPath ? 20 : 0
-                    height: 20
-                    anchors.right: parent.right
-                    anchors.rightMargin: 8
-                    anchors.verticalCenter: parent.verticalCenter
-                    radius: 10
-                    visible: root.selectedOutputPath !== ""
-                    color: outputClearArea.containsMouse ? "#fee2e2" : "transparent"
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "×"
-                        font.pixelSize: 12
-                        color: outputClearArea.containsMouse ? "#ef4444" : "#94a3b8"
-                    }
-
-                    MouseArea {
-                        id: outputClearArea
-                        anchors.fill: parent
-                        enabled: !root._encrypting
-                        hoverEnabled: true
-                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                        onClicked: root.selectedOutputPath = ""
-                    }
-                }
-
-                MouseArea {
-                    id: outputBtnArea
-                    anchors.left: parent.left
-                    anchors.right: outputClearBtn.left
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    enabled: !root._encrypting
-                    hoverEnabled: true
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                    onClicked: folderDialog.open()
-                }
-            }
+        EncryptFileSelector {
+            label: qsTr("Save Path for Encrypted Files")
+            displayText: root.selectedOutputPath ? root.selectedOutputPath : (root.selectedFilePath ? FileUtils.getFileDir(root.selectedFilePath) : "")
+            placeholder: qsTr("Select save path")
+            hasValue: root.selectedOutputPath !== "" || root.selectedFilePath !== ""
+            selectorEnabled: !root._encrypting
+            showClearButton: root.selectedOutputPath !== ""
+            onSelectClicked: folderDialog.open()
+            onClearClicked: root.selectedOutputPath = ""
         }
 
         // ---- Inline progress bar ----

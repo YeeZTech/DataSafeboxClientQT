@@ -4,23 +4,24 @@ import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 import DataSafebox.Dialogs 1.0
 
-Rectangle {
+Card {
     id: root
+
     height: 314
-    color: "white"
-    border.color: Theme.Colors.borderSeparator
-    border.width: 1
-    radius: 14
+    contentMargins: 0
+    contentSpacing: 0
+    borderColor: Theme.Colors.borderSeparator
+    borderWidth: 1
 
     property var instanceData: ({})
     property string expiryText: "-"
 
     Item {
-        anchors.fill: parent
-        anchors.leftMargin: 25
-        anchors.topMargin: 25
-        anchors.rightMargin: 1
-        anchors.bottomMargin: 25
+        x: 25
+        y: 25
+        width: Math.max(0, parent.width - 26)
+        height: 264
+
         Column {
             anchors.left: parent.left
             anchors.top: parent.top

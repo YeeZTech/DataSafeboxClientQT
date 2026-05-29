@@ -4,7 +4,7 @@ import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 import DataSafebox.Dialogs 1.0
 
-Rectangle {
+Card {
     id: card
 
     property var domainData: ({})
@@ -22,19 +22,13 @@ Rectangle {
     signal saveDescriptionRequested(string text)
     signal cancelDescriptionRequested
 
-    width: parent ? parent.width : 200
-    height: 48 + basicInfoColumn.implicitHeight
-    radius: 14
-    color: Theme.Colors.backgroundWhite
-    antialiasing: true
-
     property bool _savingFromButton: false
     property string _originalDescription: ""
 
     Column {
         id: basicInfoColumn
-        anchors.fill: parent
-        anchors.margins: 24
+        width: parent.width
+        height: implicitHeight
         spacing: 24
 
         Grid {

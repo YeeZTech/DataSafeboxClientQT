@@ -4,7 +4,7 @@ import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 import DataSafebox.Dialogs 1.0
 
-Rectangle {
+Card {
     id: card
 
     property var audits: []
@@ -53,16 +53,14 @@ Rectangle {
         });
     }
 
-    height: 32 + 28 + 12 + (auditCount > 0 ? (32 + (32 * itemsPerPage) + (totalPages > 1 ? 36 : 0)) : 30)
-    radius: 14
-    color: Theme.Colors.backgroundWhite
-    antialiasing: true
+    contentMargins: 16
+    contentSpacing: 12
     smooth: true
     clip: true
 
     Column {
-        anchors.fill: parent
-        anchors.margins: 16
+        width: parent.width
+        height: implicitHeight
         spacing: 12
 
         Item {

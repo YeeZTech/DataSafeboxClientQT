@@ -3,7 +3,7 @@ import QtQuick.Controls 2.15
 import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 
-Popup {
+BaseDialog {
     id: root
 
     property var focusInstanceNames: []
@@ -58,44 +58,16 @@ Popup {
         return num.toFixed(2);
     }
 
-    parent: Overlay.overlay
-    modal: true
     focus: true
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    dialogWidth: Math.min(460, (parent ? parent.width : 460) - 24)
+    title: qsTr("Balance Reminder")
 
-    width: Math.min(460, (parent ? parent.width : 460) - 24)
-    height: Math.max(224, amountText.y + amountText.implicitHeight + 24)
-    x: ((parent ? parent.width : width) - width) / 2
-    y: ((parent ? parent.height : height) - height) / 2
-
-    background: Rectangle {
-        color: "#ffffff"
-        radius: 10
-        border.color: Qt.rgba(0, 0, 0, 0.1)
-        border.width: 1
-    }
-
-    contentItem: Item {
-        anchors.fill: parent
-
-        Text {
-            anchors.left: parent.left
-            anchors.leftMargin: 24
-            anchors.top: parent.top
-            anchors.topMargin: 24
-            text: qsTr("Balance Reminder")
-            font.pixelSize: 15
-            font.weight: Font.DemiBold
-            color: Theme.Colors.textHeading
-        }
+    Column {
+        width: parent.width
+        spacing: 16
 
         Rectangle {
-            anchors.left: parent.left
-            anchors.leftMargin: 24
-            anchors.right: parent.right
-            anchors.rightMargin: 24
-            anchors.top: parent.top
-            anchors.topMargin: 60
+            width: parent.width
             height: 77
             radius: 10
             color: "#fffbeb"
@@ -131,7 +103,7 @@ Popup {
                 anchors.verticalCenter: parent.verticalCenter
                 textFormat: Text.RichText
                 text: root.reminderMessage
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 lineHeight: 20
                 lineHeightMode: Text.FixedHeight
                 wrapMode: Text.WordWrap
@@ -156,19 +128,14 @@ Popup {
         }
 
         Item {
-            anchors.left: parent.left
-            anchors.leftMargin: 24
-            anchors.right: parent.right
-            anchors.rightMargin: 24
-            anchors.top: parent.top
-            anchors.topMargin: 155
+            width: parent.width
             height: 24
 
             Text {
                 id: instanceNamesLabel
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textLabel
                 text: qsTr("Overdue Instance Names:")
             }
@@ -179,7 +146,7 @@ Popup {
                 anchors.leftMargin: 12
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                font.pixelSize: 14
+                font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textLabel
                 text: root.instanceNamesText
                 elide: Text.ElideRight
@@ -199,41 +166,11 @@ Popup {
         }
 
         Text {
-            id: amountText
-            anchors.left: parent.left
-            anchors.leftMargin: 51
-            anchors.top: parent.top
-            anchors.topMargin: 188
-            font.pixelSize: 14
+            leftPadding: 27
+            font.pixelSize: Theme.Typography.body
             color: Theme.Colors.textLabel
             textFormat: Text.RichText
             text: qsTr("Total Overdue:") + "   <span style='color:#bb4d00;font-weight:600;'>" + root.balanceText + "</span> " + qsTr("CNY")
-        }
-
-        Rectangle {
-            width: 24
-            height: 24
-            radius: 12
-            color: closeArea.containsMouse ? Theme.Colors.backgroundGray : "transparent"
-            anchors.right: parent.right
-            anchors.rightMargin: 12
-            anchors.top: parent.top
-            anchors.topMargin: 20
-
-            Text {
-                anchors.centerIn: parent
-                text: "×"
-                font.pixelSize: 18
-                color: closeArea.containsMouse ? Theme.Colors.primary : Theme.Colors.textLabel
-            }
-
-            MouseArea {
-                id: closeArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.close()
-            }
         }
     }
 }

@@ -184,28 +184,14 @@ BaseDialog {
                 fillMode: Image.PreserveAspectFit
             }
 
-            Text {
+            LinkText {
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("What is Dianshu ID?")
-                font.pixelSize: 13
-                font.underline: true
-                color: linkHover.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : linkHover.containsMouse ? "#2A6A9A" : Theme.Colors.primary
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
-                }
-
-                MouseArea {
-                    id: linkHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        var url = "https://help.yeez.tech/docs/dian-shu-hao";
-                        if (url)
-                            Qt.openUrlExternally(url);
-                    }
+                fontSize: Theme.Typography.caption
+                onClicked: {
+                    var url = "https://help.yeez.tech/docs/dian-shu-hao";
+                    if (url)
+                        Qt.openUrlExternally(url);
                 }
             }
         }

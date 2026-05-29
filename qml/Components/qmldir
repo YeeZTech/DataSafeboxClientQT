@@ -8,6 +8,7 @@ Card 1.0 Card.qml
 FormField 1.0 FormField.qml
 BadgeIndicator 1.0 BadgeIndicator.qml
 CenteredTooltipText 1.0 CenteredTooltipText.qml
+LinkText 1.0 LinkText.qml
 InputContextMenu 1.0 InputContextMenu.qml
 MessageCenter 1.0 MessageCenter.qml
 OnboardingGuide 1.0 OnboardingGuide.qml

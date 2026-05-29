@@ -4,6 +4,7 @@ AppWhitelistDetailDialog 1.0 AppWhitelistDetailDialog.qml
 CustomerServiceDialog 1.0 CustomerServiceDialog.qml
 DeactivateConfirmDialog 1.0 DeactivateConfirmDialog.qml
 EncryptFileDialog 1.0 EncryptFileDialog.qml
+EncryptFileSelector 1.0 EncryptFileSelector.qml
 ExportDetailDialog 1.0 ExportDetailDialog.qml
 ExportFileDialog 1.0 ExportFileDialog.qml
 ImportFileDialog 1.0 ImportFileDialog.qml

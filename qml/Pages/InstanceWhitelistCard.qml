@@ -4,7 +4,7 @@ import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 import DataSafebox.Dialogs 1.0
 
-Rectangle {
+Card {
     id: root
 
     property var processWhitelist: []
@@ -13,19 +13,16 @@ Rectangle {
     property bool hasWhitelist: whitelistCount > 0
 
     height: visible ? (20 + 16 + (hasWhitelist ? whitelistTable.height : 24) + 48) : 0
-    color: "white"
-    border.color: Theme.Colors.borderSeparator
-    border.width: 1
-    radius: 14
+    contentMargins: 0
+    contentSpacing: 0
+    borderColor: Theme.Colors.borderSeparator
+    borderWidth: 1
 
     Item {
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.topMargin: 24
-        anchors.leftMargin: 24
-        anchors.rightMargin: 24
-        anchors.bottomMargin: 24
+        x: 24
+        y: 24
+        width: Math.max(0, parent.width - 48)
+        height: Math.max(0, root.height - 48)
 
         SelectableText {
             id: whitelistTitle

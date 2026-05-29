@@ -128,6 +128,7 @@ QtObject {
     readonly property color textError: "#e7000b"
     readonly property color tooltipBackground: "#1e5a8e"
     readonly property color borderSeparator: "#e2e8f0"
+    readonly property color linkHover: "#2A6A9A"
 
     function getStatusColor(status) {
         if (!statusColors || !status) {

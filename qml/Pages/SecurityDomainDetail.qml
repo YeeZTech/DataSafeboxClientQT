@@ -45,29 +45,17 @@ Item {
     // Description saving state
     property bool isDescriptionSaving: false
 
-    function domainCreatorDisplayText(detail) {
-        return DomainUtils.domainCreatorDisplayText(detail || root.domainData || {});
-    }
-
-    function isCurrentUserDomainCreator(detail) {
-        return DomainUtils.isCurrentUserDomainCreator(currentUser, detail);
-    }
-
-    function isDomainInactiveStatus(statusText) {
-        return DomainUtils.isDomainInactiveStatus(statusText);
-    }
-
     // Check if current user is the creator of this domain
     property bool isCreator: {
         if (!currentUser || !domainData)
             return false;
-        return isCurrentUserDomainCreator(domainData);
+        return DomainUtils.isCurrentUserDomainCreator(currentUser, domainData);
     }
     property bool isDomainInactive: {
         if (root.domainData && root.domainData.isInactive !== undefined) {
-            return !!root.domainData.isInactive || isDomainInactiveStatus(root.domainData.status);
+            return !!root.domainData.isInactive || DomainUtils.isDomainInactiveStatus(root.domainData.status);
         }
-        return isDomainInactiveStatus(root.domainData ? root.domainData.status : "");
+        return DomainUtils.isDomainInactiveStatus(root.domainData ? root.domainData.status : "");
     }
     property bool isDomainReadOnly: root.isDomainInactive || (!root.isCreator)
 
@@ -76,7 +64,7 @@ Item {
     property bool domainDetailLoading: false
     // 初始化为空对象，后续由 *Loaded 信号 / reloadAllData 显式赋值
     // 不要在 binding 中调用读取 root.domainData 的函数，否则形成自引用 binding loop
-    property var domainData: emptyDomainDetail()
+    property var domainData: DomainUtils.emptyDomainDetail(root.domainName, root.domainPubKey)
 
     // Signals
     signal instantiateRequested
@@ -136,64 +124,6 @@ Item {
         }
     }
 
-    function canRenderAuditEmptyState(detail) {
-        var d = detail || root.domainData;
-        if (!d) {
-            return false;
-        }
-        if (d._syncedFromBackend) {
-            return true;
-        }
-        // If backend returned audit arrays (even empty), we can render empty state
-        if (Array.isArray(d.appWhitelistAudits) || Array.isArray(d.exportAudits)) {
-            return true;
-        }
-        var hasWhitelist = !!(d.appWhitelistAudits && d.appWhitelistAudits.length > 0);
-        var hasExport = !!(d.exportAudits && d.exportAudits.length > 0);
-        return hasWhitelist || hasExport;
-    }
-
-    // Function to get domain data (called when domainName changes)
-    function emptyDomainDetail() {
-        return {
-            name: domainName || "",
-            creator: "",
-            status: "",
-            createdAt: "",
-            payer: "",
-            description: "",
-            visibleUsers: [],
-            instances: [],
-            appWhitelistAudits: [],
-            exportAudits: [],
-            pubKey: domainPubKey || "",
-            isInactive: false
-        };
-    }
-
-    function toJsArray(value) {
-        return DomainUtils.toJsArray(value);
-    }
-    function normalizeInstances(instances) {
-        return DomainUtils.normalizeInstances(instances);
-    }
-    function sortByTimeDesc(list, p, s) {
-        return DateTimeUtils.sortByTimeDesc(DomainUtils.toJsArray(list), p, s);
-    }
-    function dedupeWhitelistAudits(list) {
-        return DomainUtils.dedupeWhitelistAudits(list);
-    }
-    function dedupeExportAudits(list) {
-        return DomainUtils.dedupeExportAudits(list);
-    }
-
-    function resolveInstanceApplicantText(instance) {
-        return DomainUtils.resolveInstanceApplicantText(instance, root.domainData ? root.domainData.visibleUsers : []);
-    }
-    function resolveWhitelistProcessesByRow(row) {
-        return DomainUtils.resolveWhitelistProcessesByRow(row);
-    }
-
     function reloadAllData() {
         if (!root.currentDomainCode)
             return;
@@ -203,16 +133,6 @@ Item {
         DsccBridge.loadInstances(root.currentDomainCode);
         DsccBridge.loadAudits(root.currentDomainCode, 1);
         DsccBridge.loadAudits(root.currentDomainCode, 2);
-    }
-
-    function formatPayerText(payerValue) {
-        if (!payerValue)
-            return "-";
-        if (payerValue === "创建方" || payerValue === "安全域创建方" || payerValue === "创建者")
-            return qsTr("Creator");
-        if (payerValue === "使用方" || payerValue === "安全域使用方" || payerValue === "使用者")
-            return qsTr("User");
-        return payerValue;
     }
 
     // Update domainData when domainName changes
@@ -231,9 +151,9 @@ Item {
         clearAllPendingStates();
         resetAllPagedCardsToFirstPage();
         resetAuditDataLoading();
-        domainData = emptyDomainDetail();
+        domainData = DomainUtils.emptyDomainDetail(root.domainName, root.domainPubKey);
         reloadAllData();
-        auditDataLoaded = canRenderAuditEmptyState(domainData);
+        auditDataLoaded = DomainUtils.canRenderAuditEmptyState(domainData);
     }
 
     // Function to clear all pending operation states
@@ -304,10 +224,10 @@ Item {
         if (domainDetailLoading) {
             resetAllPagedCardsToFirstPage();
             resetAuditDataLoading();
-            domainData = emptyDomainDetail();
+            domainData = DomainUtils.emptyDomainDetail(root.domainName, root.domainPubKey);
             return;
         }
-        auditDataLoaded = canRenderAuditEmptyState(domainData);
+        auditDataLoaded = DomainUtils.canRenderAuditEmptyState(domainData);
     }
 
     onDomainDataChanged: {
@@ -317,13 +237,13 @@ Item {
         if (domainData && domainData.pubKey && domainData.pubKey !== domainPubKey) {
             domainPubKey = domainData.pubKey;
         }
-        if (!auditDataLoaded && canRenderAuditEmptyState(domainData)) {
+        if (!auditDataLoaded && DomainUtils.canRenderAuditEmptyState(domainData)) {
             auditDataLoaded = true;
         }
     }
 
     Component.onCompleted: {
-        auditDataLoaded = canRenderAuditEmptyState(domainData);
+        auditDataLoaded = DomainUtils.canRenderAuditEmptyState(domainData);
     }
 
     // removeUserState properties promoted to root for QML delegate scope access
@@ -639,8 +559,8 @@ Item {
                 editedDescription: root.editedDescription
                 isDescriptionSaving: root.isDescriptionSaving
                 descriptionErrorMessage: root.descriptionErrorMessage
-                domainCreatorText: root.domainCreatorDisplayText(root.domainData)
-                payerText: root.formatPayerText(root.domainData.payer)
+                domainCreatorText: DomainUtils.domainCreatorDisplayText(root.domainData)
+                payerText: DomainUtils.formatPayerText(root.domainData.payer, qsTr("Creator"), qsTr("User"), "-")
                 operationBusy: root.visibleUserOperationState_busy
                 pendingRemovedAccount: root.removeUserState_pendingRemovedAccount
                 actionRightMargin: root.actionRightMargin
@@ -699,7 +619,7 @@ Item {
                 onViewInstanceRequested: function (instanceData, isApprover) {
                     instanceDetailDialog.instanceId = instanceData.instanceCode || instanceData.id || "";
                     instanceDetailDialog.status = instanceData.status || "";
-                    instanceDetailDialog.creator = resolveInstanceApplicantText(instanceData);
+                    instanceDetailDialog.creator = DomainUtils.resolveInstanceApplicantText(instanceData, root.domainData ? root.domainData.visibleUsers : []);
                     var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(instanceData.volumnSize !== undefined ? instanceData.volumnSize : instanceData.size);
                     instanceDetailDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes);
                     instanceDetailDialog.appliedTime = Theme.Utils.formatDateTime(instanceData.createdAt || instanceData.appliedTime);
@@ -721,7 +641,7 @@ Item {
                     appWhitelistDetailDialog.appliedTime = Theme.Utils.formatDateTime(auditData.applyTime || "");
                     appWhitelistDetailDialog.duration = auditData.duration ? (auditData.duration + qsTr(" months")) : "-";
                     appWhitelistDetailDialog.cost = auditData.cost || "";
-                    var whlProcs = resolveWhitelistProcessesByRow(auditData);
+                    var whlProcs = DomainUtils.resolveWhitelistProcessesByRow(auditData);
                     appWhitelistDetailDialog.appName = (whlProcs.length > 0 ? (whlProcs[0].masterFileName || "") : "") || qsTr("App Name");
                     appWhitelistDetailDialog.processes = whlProcs;
                     appWhitelistDetailDialog.selectedProcessIndex = 0;
@@ -816,7 +736,7 @@ Item {
             if (domainCode !== root.currentDomainCode)
                 return;
             var updated = Object.assign({}, root.domainData);
-            updated.instances = sortByTimeDesc(normalizeInstances(instances || []), "createdAt", "appliedTime");
+            updated.instances = DateTimeUtils.sortByTimeDesc(DomainUtils.normalizeInstances(instances || []), "createdAt", "appliedTime");
             root.domainData = updated;
         }
 
@@ -825,13 +745,13 @@ Item {
                 return;
             var updated = Object.assign({}, root.domainData);
             if (applyType === 1) {
-                updated.appWhitelistAudits = sortByTimeDesc(dedupeWhitelistAudits(audits || []), "applyTime", "createdAt");
+                updated.appWhitelistAudits = DateTimeUtils.sortByTimeDesc(DomainUtils.dedupeWhitelistAudits(audits || []), "applyTime", "createdAt");
             } else if (applyType === 2) {
-                updated.exportAudits = sortByTimeDesc(dedupeExportAudits(audits || []), "applyTime", "createdAt");
+                updated.exportAudits = DateTimeUtils.sortByTimeDesc(DomainUtils.dedupeExportAudits(audits || []), "applyTime", "createdAt");
             }
             updated._syncedFromBackend = true;
             root.domainData = updated;
-            auditDataLoaded = canRenderAuditEmptyState(root.domainData);
+            auditDataLoaded = DomainUtils.canRenderAuditEmptyState(root.domainData);
         }
     }
 

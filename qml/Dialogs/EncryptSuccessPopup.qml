@@ -3,70 +3,17 @@ import QtQuick.Controls 2.15
 import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 
-Popup {
+BaseDialog {
     id: root
     parent: Overlay.overlay
-    width: 420
-    height: successContent.implicitHeight + 48
-    modal: true
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    x: Overlay.overlay ? (Overlay.overlay.width - width) / 2 : 0
-    y: Overlay.overlay ? (Overlay.overlay.height - height) / 2 : 0
+    dialogWidth: 420
+    title: qsTr("Encryption Successful")
 
     property string encryptOutputDir: ""
 
-    background: Rectangle {
-        radius: 12
-        color: "#ffffff"
-        border.color: Theme.Colors.borderSeparator
-        border.width: 1
-        layer.enabled: true
-    }
-
     Column {
-        id: successContent
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.topMargin: 16
-        anchors.leftMargin: 24
-        anchors.rightMargin: 24
-        anchors.bottomMargin: 24
+        width: parent.width
         spacing: 16
-
-        Item {
-            width: parent.width
-            height: 24
-            Text {
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                text: qsTr("Encryption Successful")
-                font.pixelSize: 18
-                font.weight: Font.DemiBold
-                color: Theme.Colors.textHeading
-            }
-            Rectangle {
-                width: 24
-                height: 24
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                radius: 12
-                color: successCloseBtnArea.containsMouse ? Theme.Colors.backgroundGray : "transparent"
-                Text {
-                    anchors.centerIn: parent
-                    text: "×"
-                    font.pixelSize: 20
-                    color: successCloseBtnArea.containsMouse ? Theme.Colors.primary : Theme.Colors.textLabel
-                }
-                MouseArea {
-                    id: successCloseBtnArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.close()
-                }
-            }
-        }
 
         Item {
             width: parent.width
@@ -77,8 +24,6 @@ Popup {
                 anchors.centerIn: parent
                 radius: 28
                 color: "#dcfce7"
-                border.color: "transparent"
-                border.width: 0
                 Text {
                     anchors.centerIn: parent
                     text: "✓"
@@ -92,7 +37,7 @@ Popup {
         Text {
             width: parent.width
             text: qsTr("Encryption Successful")
-            font.pixelSize: 16
+            font.pixelSize: Theme.Typography.h3
             font.weight: Font.Medium
             color: Theme.Colors.textHeading
             horizontalAlignment: Text.AlignHCenter
@@ -101,7 +46,7 @@ Popup {
         Text {
             width: parent.width
             text: qsTr("File encryption successful! You can send the encrypted file to the recipient. After importing it into their security domain instance, they will be able to use it normally.")
-            font.pixelSize: 14
+            font.pixelSize: Theme.Typography.body
             color: "#475569"
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
@@ -112,24 +57,10 @@ Popup {
             spacing: 12
             topPadding: 4
 
-            Text {
+            LinkText {
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("View Encrypted File Guide")
-                font.pixelSize: 14
-                font.underline: true
-                color: guideLink.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : guideLink.containsMouse ? "#2A6A9A" : Theme.Colors.primary
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
-                }
-                MouseArea {
-                    id: guideLink
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: Qt.openUrlExternally("https://help.yeez.tech/docs/bu-zhou-5-mai-fang-jia-mi-yuan-shi-shu-ju")
-                }
+                onClicked: Qt.openUrlExternally("https://help.yeez.tech/docs/bu-zhou-5-mai-fang-jia-mi-yuan-shi-shu-ju")
             }
 
             PrimaryButton {
