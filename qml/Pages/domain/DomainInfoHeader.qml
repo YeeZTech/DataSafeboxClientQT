@@ -61,6 +61,7 @@ Item {
             id: createInstanceButton
             visible: true
             enabled: !root.isDomainReadOnly
+            primaryOutline: true
             text: qsTr("How to Instantiate Security Domain?")
             onClicked: {
                 if (root.isDomainReadOnly)

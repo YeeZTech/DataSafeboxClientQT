@@ -380,7 +380,7 @@ Item {
         DeactivateConfirmDialog {
             id: deleteInstanceConfirmDialog
             titleText: qsTr("Confirm Delete Instance")
-            questionPrefix: qsTr("Are you sure you want to delete the instance")
+            questionTemplate: qsTr("Are you sure you want to delete the instance \"%1\" ?")
             confirmButtonText: qsTr("Confirm Delete")
             showDescription: false
             onConfirmClicked: {

@@ -11,9 +11,9 @@ BaseDialog {
 
     property string domainName: ""
     property string titleText: qsTr("Confirm Deactivate Security Domain")
-    property string questionPrefix: qsTr("Are you sure you want to deactivate security domain")
-    property string questionSuffix: qsTr("?")
-    property string descriptionText: qsTr("After deactivation this domain becomes read-only. Existing instances are not affected.")
+    // %1 is replaced with the domain/instance name; keeps the full sentence translatable
+    property string questionTemplate: qsTr("Are you sure you want to deactivate security domain \"%1\" ?")
+    property string descriptionText: qsTr("After deactivation, you will be unable to edit any information of this security domain, and all content will become read-only. This operation will not affect existing security domain instances.")
     property bool showDescription: true
     property string confirmButtonText: qsTr("Confirm Deactivate")
     signal confirmClicked
@@ -63,7 +63,7 @@ BaseDialog {
                     SelectableText {
                         width: parent.width
                         wrapMode: TextEdit.Wrap
-                        text: root.questionPrefix + " \"" + root.domainName + "\" " + root.questionSuffix
+                        text: root.questionTemplate.arg(root.domainName)
                         font.pixelSize: Theme.Typography.h3
                         color: Theme.Colors.textLabel
                     }

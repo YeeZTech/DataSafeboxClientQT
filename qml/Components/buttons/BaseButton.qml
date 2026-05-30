@@ -12,6 +12,11 @@ Rectangle {
     property int fontWeight: buttonStyle === "primary" ? Font.Normal : Font.Medium
     property url iconSource: ""
     property int iconSize: 16
+    // Secondary buttons only: use the blue "accent" hover/pressed variant
+    property bool accent: false
+    // Secondary buttons only: blue (primary-colored) outline + text at rest, with the
+    // accent hover/pressed fills (e.g. the "How to Instantiate Security Domain?" header button)
+    property bool primaryOutline: false
 
     signal clicked
 
@@ -19,30 +24,36 @@ Rectangle {
     height: 36
     implicitWidth: Math.max(88, contentRow.implicitWidth + 32)
     radius: 8
-    opacity: enabled ? 1.0 : 0.6
+    opacity: enabled ? 1.0 : 0.5
 
     readonly property bool _isSecondary: buttonStyle === "secondary"
     readonly property bool _isDanger: buttonStyle === "danger"
+    readonly property bool _useAccent: accent || primaryOutline
 
     color: {
-        if (!enabled)
-            return _isSecondary ? Theme.Colors.buttonSecondaryBg : Theme.Colors.buttonDisabled;
+        if (!enabled) {
+            if (_isSecondary)
+                return Theme.Colors.buttonSecondaryDefault;
+            if (_isDanger)
+                return Theme.Colors.buttonDisabled;
+            return Theme.Colors.primary;
+        }
         if (mouseArea.pressed) {
             if (_isSecondary)
-                return Qt.darker(Theme.Colors.buttonSecondaryBg, 1.05);
+                return _useAccent ? Theme.Colors.buttonSecondaryAccentPressed : Theme.Colors.buttonSecondaryPressed;
             if (_isDanger)
                 return Theme.Colors.buttonDangerPressed;
-            return Qt.darker(Theme.Colors.primary, 1.2);
+            return Theme.Colors.buttonPrimaryPressed;
         }
         if (mouseArea.containsMouse) {
             if (_isSecondary)
-                return Qt.lighter(Theme.Colors.buttonSecondaryBg, 1.02);
+                return _useAccent ? Theme.Colors.buttonSecondaryAccentHover : Theme.Colors.buttonSecondaryHover;
             if (_isDanger)
                 return Theme.Colors.buttonDangerHover;
-            return Qt.lighter(Theme.Colors.primary, 1.2);
+            return Theme.Colors.buttonPrimaryHover;
         }
         if (_isSecondary)
-            return Theme.Colors.buttonSecondaryBg;
+            return Theme.Colors.buttonSecondaryDefault;
         if (_isDanger)
             return Theme.Colors.buttonDanger;
         return Theme.Colors.primary;
@@ -51,9 +62,13 @@ Rectangle {
     border.color: {
         if (!_isSecondary)
             return "transparent";
-        if (mouseArea.containsMouse || mouseArea.pressed)
-            return Theme.Colors.buttonSecondaryBorderHover;
-        return Theme.Colors.borderField;
+        if (_useAccent) {
+            if (mouseArea.pressed)
+                return Theme.Colors.buttonSecondaryAccentBorderPressed;
+            if (mouseArea.containsMouse)
+                return Theme.Colors.buttonSecondaryAccentBorderHover;
+        }
+        return primaryOutline ? Theme.Colors.primary : Theme.Colors.borderField;
     }
     border.width: _isSecondary ? 1 : 0
 
@@ -93,10 +108,14 @@ Rectangle {
             font.pixelSize: root.fontSize
             font.weight: root.fontWeight
             color: {
-                if (!root.enabled)
+                if (!root.enabled) {
+                    // Disabled primary keeps white text on its faded-blue fill; gray bg buttons use muted text
+                    if (!root._isSecondary && !root._isDanger)
+                        return Theme.Colors.primaryText;
                     return Theme.Colors.buttonTextDisabled;
+                }
                 if (root._isSecondary)
-                    return Theme.Colors.textLabel;
+                    return root.primaryOutline ? Theme.Colors.primary : Theme.Colors.textLabel;
                 return Theme.Colors.primaryText;
             }
             font.letterSpacing: -0.15

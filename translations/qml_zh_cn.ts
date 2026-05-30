@@ -303,22 +303,17 @@
     <message>
         <location filename="../qml/Dialogs/common/DeactivateConfirmDialog.qml" line="+16"/>
         <source>Confirm Deactivate Security Domain</source>
-        <translation>确认停用安全域</translation>
+        <translation>停用安全域确认</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Are you sure you want to deactivate security domain</source>
-        <translation>确定要停用此安全域吗</translation>
+        <source>Are you sure you want to deactivate security domain &quot;%1&quot; ?</source>
+        <translation>确定要停用安全域 &quot;%1&quot; 吗？</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>?</source>
-        <translation>？</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>After deactivation this domain becomes read-only. Existing instances are not affected.</source>
-        <translation>停用后此安全域将变为只读，现有实例不受影响。</translation>
+        <source>After deactivation, you will be unable to edit any information of this security domain, and all content will become read-only. This operation will not affect existing security domain instances.</source>
+        <translation>停用后，您将无法编辑该安全域的任何信息，所有内容将变为只读状态。此操作不会影响现有的安全域实例。</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1617,8 +1612,8 @@ Status:
     </message>
     <message>
         <location line="+73"/>
-        <source>Please describe the security domain's purpose so other users can understand it</source>
-        <translation>请描述安全域的用途等信息，以便其他用户了解该安全域的用途</translation>
+        <source>Please describe the security domain's purpose so other users can understand it.</source>
+        <translation>请描述安全域的用途等信息，以便其他用户了解该安全域的用途。</translation>
     </message>
     <message>
         <location line="+92"/>
@@ -1810,8 +1805,8 @@ Status:
     </message>
     <message>
         <location line="+1"/>
-        <source>Are you sure you want to delete the instance</source>
-        <translation>确定要删除此实例吗</translation>
+        <source>Are you sure you want to delete the instance &quot;%1&quot; ?</source>
+        <translation>确定要删除实例 &quot;%1&quot; 吗？</translation>
     </message>
     <message>
         <location line="+1"/>

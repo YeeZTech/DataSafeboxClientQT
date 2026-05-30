@@ -638,6 +638,7 @@ BaseDialog {
             SecondaryButton {
                 text: qsTr("Cancel")
                 enabled: !root._encrypting
+                accent: true
                 onClicked: {
                     root.close();
                     root.cancelClicked();

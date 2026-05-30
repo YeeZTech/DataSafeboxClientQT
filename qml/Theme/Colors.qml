@@ -111,8 +111,17 @@ QtObject {
 
     // Button style colors
     readonly property color buttonSecondaryBg: "#f1f5f9"
-    readonly property color buttonSecondaryBorderHover: "#90a1b9"
+    readonly property color buttonSecondaryDefault: "#FFFFFF"
+    readonly property color buttonSecondaryHover: "#EBEBEB"
+    readonly property color buttonSecondaryPressed: "#CFCFCF"
+    // Secondary "accent" (blue) variant — used where Cancel sits beside a blue primary action
+    readonly property color buttonSecondaryAccentHover: "#E8F8FF"
+    readonly property color buttonSecondaryAccentPressed: "#BEDBFF"
+    readonly property color buttonSecondaryAccentBorderHover: "#79AECD"
+    readonly property color buttonSecondaryAccentBorderPressed: "#ADD3E6"
     readonly property color buttonTextDisabled: "#90a1b9"
+    readonly property color buttonPrimaryHover: "#2A6A9A"
+    readonly property color buttonPrimaryPressed: "#063367"
     readonly property color buttonDanger: "#FB2C36"
     readonly property color buttonDangerHover: "#FD7977"
     readonly property color buttonDangerPressed: "#A40E20"

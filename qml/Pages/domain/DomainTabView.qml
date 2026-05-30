@@ -125,16 +125,16 @@ Column {
 
     Rectangle {
         id: disableBtn
-        height: 38
+        height: 36
         anchors.horizontalCenter: parent.horizontalCenter
         radius: 8
         property bool hovered: false
         property bool pressed: false
-        color: pressed ? "#ffd5d5" : (hovered ? "#fff5f5" : Theme.Colors.backgroundWhite)
+        color: pressed ? "#ccffa2a2" : (hovered ? "#80ffd2d2" : Theme.Colors.backgroundWhite)
         border.width: 1
-        border.color: pressed ? "#ff5050" : (hovered ? "#ff9090" : "#ffa2a2")
+        border.color: "#ffa2a2"
         visible: !root.isDomainReadOnly
-        implicitWidth: disableText.implicitWidth + 40
+        implicitWidth: disableText.implicitWidth + 34
 
         Text {
             id: disableText
@@ -142,7 +142,7 @@ Column {
             text: qsTr("Disable This Security Domain")
             font.pixelSize: Theme.Typography.body
             font.weight: Font.Medium
-            color: parent.pressed ? "#900006" : (parent.hovered ? "#c50009" : Theme.Colors.textError)
+            color: Theme.Colors.textError
         }
 
         MouseArea {

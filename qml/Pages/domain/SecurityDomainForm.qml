@@ -348,7 +348,7 @@ Item {
                                                 anchors.top: parent.top
                                                 anchors.topMargin: 0  // Align with TextArea text position
                                                 verticalAlignment: Text.AlignTop
-                                                text: qsTr("Please describe the security domain's purpose so other users can understand it")
+                                                text: qsTr("Please describe the security domain's purpose so other users can understand it.")
                                                 font.family: root.fontFamily
                                                 font.pixelSize: root.fontSizeBody
                                                 color: Theme.Colors.textSecondary
