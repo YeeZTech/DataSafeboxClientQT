@@ -624,8 +624,9 @@ BaseDialog {
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 8
 
-                DangerButton {
+                SecondaryButton {
                     text: qsTr("Reject")
+                    accent: true
                     onClicked: {
                         root.rejectClicked();
                         root.close();

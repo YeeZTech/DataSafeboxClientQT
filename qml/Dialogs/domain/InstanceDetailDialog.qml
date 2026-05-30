@@ -530,58 +530,16 @@ BaseDialog {
             visible: shouldShowActionButtons
 
             // Reject button
-            Rectangle {
+            SecondaryButton {
                 anchors.right: approveButton.left
                 anchors.rightMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
-                width: 60
-                height: 36
-                radius: 8
-                property bool hovered: false
-                property bool pressed: false
-                opacity: root.allowApproveReject ? 1.0 : 0.5
-                color: pressed ? "#ffe9e9" : (hovered ? "#fff5f5" : Theme.Colors.backgroundWhite)
-                border.color: pressed ? "#ff6b6b" : (hovered ? "#ff9090" : "#ffa2a2")
-                border.width: 1
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-                Behavior on border.color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 150
-                    }
-                }
-
-                SelectableText {
-                    anchors.centerIn: parent
-                    text: qsTr("Reject")
-                    font.pixelSize: Theme.Typography.body
-                    font.weight: Font.Medium
-                    color: parent.pressed ? "#9f0006" : (parent.hovered ? "#c50009" : Theme.Colors.textError)
-                }
-
-                MouseArea {
-                    id: rejectArea
-                    anchors.fill: parent
-                    enabled: root.allowApproveReject
-                    hoverEnabled: true
-                    cursorShape: root.allowApproveReject ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                    onClicked: {
-                        root.rejectClicked();
-                        root.close();
-                    }
-                    onEntered: parent.hovered = true
-                    onExited: parent.hovered = false
-                    onPressed: parent.pressed = true
-                    onReleased: parent.pressed = false
-                    onCanceled: parent.pressed = false
+                text: qsTr("Reject")
+                accent: true
+                enabled: root.allowApproveReject
+                onClicked: {
+                    root.rejectClicked();
+                    root.close();
                 }
             }
 

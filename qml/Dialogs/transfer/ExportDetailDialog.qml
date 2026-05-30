@@ -397,8 +397,9 @@ BaseDialog {
                 spacing: 8
 
                 // Reject button - 拒绝 left, 同意 right (Figma order)
-                DangerButton {
+                SecondaryButton {
                     text: qsTr("Reject")
+                    accent: true
                     onClicked: {
                         root.rejectClicked();
                         root.close();
