@@ -4,7 +4,7 @@ import DataSafebox.Components 1.0
 
 BaseDialog {
     id: root
-    dialogWidth: 420
+    dialogWidth: 448
     title: qsTr("Encryption Successful")
 
     property string encryptOutputDir: ""
@@ -17,17 +17,19 @@ BaseDialog {
             width: parent.width
             height: 72
             Rectangle {
-                width: 56
-                height: 56
-                anchors.centerIn: parent
-                radius: 28
+                width: 64
+                height: 64
+                anchors.top: parent.top
+                anchors.topMargin: 8
+                anchors.horizontalCenter: parent.horizontalCenter
+                radius: width / 2
                 color: "#dcfce7"
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: "✓"
-                    font.pixelSize: 28
-                    font.weight: Font.Bold
-                    color: "#22c55e"
+                    width: 40
+                    height: 40
+                    source: "qrc:/icons/icon-check-success.svg"
+                    fillMode: Image.PreserveAspectFit
                 }
             }
         }
@@ -36,7 +38,6 @@ BaseDialog {
             width: parent.width
             text: qsTr("Encryption Successful")
             font.pixelSize: Theme.Typography.h3
-            font.weight: Font.Medium
             color: Theme.Colors.textHeading
             horizontalAlignment: Text.AlignHCenter
         }
@@ -45,14 +46,14 @@ BaseDialog {
             width: parent.width
             text: qsTr("File encryption successful! You can send the encrypted file to the recipient. After importing it into their security domain instance, they will be able to use it normally.")
             font.pixelSize: Theme.Typography.body
-            color: "#475569"
+            color: "#45556c"
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
         }
 
         Row {
             anchors.right: parent.right
-            spacing: 12
+            spacing: 8
             topPadding: 4
 
             LinkText {

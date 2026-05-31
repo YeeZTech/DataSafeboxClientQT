@@ -62,6 +62,7 @@ BaseDialog {
 
             SecondaryButton {
                 text: qsTr("Contact Support")
+                accent: true
                 onClicked: {
                     root.close();
                     root.contactSupportRequested();
