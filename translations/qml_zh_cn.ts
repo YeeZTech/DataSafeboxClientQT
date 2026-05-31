@@ -2288,18 +2288,46 @@ Location: %1</source>
     </message>
     <message>
         <location line="+39"/>
-        <source>Help</source>
-        <translation>帮助</translation>
+        <source>View Documentation</source>
+        <translation>查看文档</translation>
     </message>
     <message>
         <location line="+41"/>
-        <source>Check for Updates</source>
-        <translation>检查更新</translation>
+        <source>About</source>
+        <translation>关于</translation>
     </message>
     <message>
         <location line="+52"/>
         <source>Logout</source>
         <translation>退出登录</translation>
+    </message>
+</context>
+<context>
+    <name>AboutPage</name>
+    <message>
+        <location filename="../qml/Pages/about/AboutPage.qml" line="+34"/>
+        <source>About</source>
+        <translation>关于</translation>
+    </message>
+    <message>
+        <source>DataSafeBox Console</source>
+        <translation>数据安全柜控制台</translation>
+    </message>
+    <message>
+        <source>Current Version: </source>
+        <translation>当前版本：</translation>
+    </message>
+    <message>
+        <source>Check for Updates</source>
+        <translation>检查更新</translation>
+    </message>
+    <message>
+        <source>User Agreement</source>
+        <translation>用户协议</translation>
+    </message>
+    <message>
+        <source>Version History</source>
+        <translation>历史版本</translation>
     </message>
 </context>
 <context>

@@ -4,6 +4,7 @@ SecurityDomainDetail 1.0 SecurityDomainDetail.qml
 InstantiateForm 1.0 InstantiateForm.qml
 SecurityInstanceDetail 1.0 SecurityInstanceDetail.qml
 SettingsPage 1.0 SettingsPage.qml
+AboutPage 1.0 AboutPage.qml
 DomainInfoHeader 1.0 DomainInfoHeader.qml
 DomainTabView 1.0 DomainTabView.qml
 HelpTooltipButton 1.0 HelpTooltipButton.qml

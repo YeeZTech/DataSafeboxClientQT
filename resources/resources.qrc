@@ -41,6 +41,7 @@
         <file alias="DataSafebox/Pages/InstantiateForm.qml">../qml/Pages/instantiate/InstantiateForm.qml</file>
         <file alias="DataSafebox/Pages/SecurityInstanceDetail.qml">../qml/Pages/instance/SecurityInstanceDetail.qml</file>
         <file alias="DataSafebox/Pages/SettingsPage.qml">../qml/Pages/settings/SettingsPage.qml</file>
+        <file alias="DataSafebox/Pages/AboutPage.qml">../qml/Pages/about/AboutPage.qml</file>
         <file alias="DataSafebox/Pages/DomainInfoHeader.qml">../qml/Pages/domain/DomainInfoHeader.qml</file>
         <file alias="DataSafebox/Pages/DomainTabView.qml">../qml/Pages/domain/DomainTabView.qml</file>
         <file alias="DataSafebox/Pages/HelpTooltipButton.qml">../qml/Pages/shared/HelpTooltipButton.qml</file>
@@ -99,6 +100,7 @@
         <file alias="icons/icon-check-success.svg">../icons/icon-check-success.svg</file>
         <file alias="icons/icon-export-upload.svg">../icons/icon-export-upload.svg</file>
         <file alias="icons/SafeLogo.svg">../icons/SafeLogo.svg</file>
+        <file alias="icons/SafeLogoRounded.svg">../icons/SafeLogoRounded.svg</file>
         <file alias="icons/icon-security-domain.svg">../icons/icon-security-domain.svg</file>
         <file alias="icons/icon-security-instance.svg">../icons/icon-security-instance.svg</file>
         <file alias="icons/icon-user-avatar.svg">../icons/icon-user-avatar.svg</file>
@@ -113,6 +115,7 @@
         <file alias="icons/icon-export-file.svg">../icons/icon-export-file.svg</file>
         <file alias="icons/icon-check-double.svg">../icons/icon-check-double.svg</file>
         <file alias="icons/icon-update-refresh.svg">../icons/icon-update-refresh.svg</file>
+        <file alias="icons/icon-about.svg">../icons/icon-about.svg</file>
         <file alias="icons/icon-customer-service-white.svg">../icons/icon-customer-service-white.svg</file>
         <file alias="icons/icon-file-generic.svg">../icons/icon-file-generic.svg</file>
         <file alias="icons/icon-empty-state.svg">../icons/icon-empty-state.svg</file>

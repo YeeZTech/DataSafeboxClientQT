@@ -525,7 +525,7 @@ Item {
                     }
 
                     Text {
-                        text: qsTr("Help")
+                        text: qsTr("View Documentation")
                         font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textMenu
                         anchors.verticalCenter: parent.verticalCenter
@@ -561,12 +561,12 @@ Item {
                         width: 16
                         height: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/icons/icon-update-refresh.svg"
+                        source: "qrc:/icons/icon-about.svg"
                         fillMode: Image.PreserveAspectFit
                     }
 
                     Text {
-                        text: qsTr("Check for Updates")
+                        text: qsTr("About")
                         font.pixelSize: Theme.Typography.body
                         color: Theme.Colors.textMenu
                         anchors.verticalCenter: parent.verticalCenter
@@ -587,7 +587,7 @@ Item {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         userMenu.visible = false;
-                        root.checkUpdateClicked();
+                        root.pageRequested("about");
                     }
                 }
             }

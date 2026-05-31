@@ -109,6 +109,22 @@ ApplicationWindow {
         });
     }
 
+    // Manual "Check for Updates" entry point, shared by the sidebar menu and
+    // the About page button.
+    function requestManualUpdateCheck() {
+        if (UpdateManager.hasPendingInstall) {
+            pendingInstallWarningDialog.open();
+            return;
+        }
+        if (UpdateManager.isDownloading) {
+            checkFailedDialog.text = qsTr("Update is downloading, please install later");
+            checkFailedDialog.open();
+            return;
+        }
+        noUpdateLabel.text = qsTr("Current version: v") + UpdateManager.currentVersion;
+        noUpdateDialog.open();
+    }
+
     function startCasdoorLoginFlow() {
         if (window.authPage !== "login")
             return;
@@ -482,19 +498,7 @@ ApplicationWindow {
                 window.currentPage = page;
             }
             onLogoutRequested: dataManager.logoutUser()
-            onCheckUpdateClicked: {
-                if (UpdateManager.hasPendingInstall) {
-                    pendingInstallWarningDialog.open();
-                    return;
-                }
-                if (UpdateManager.isDownloading) {
-                    checkFailedDialog.text = qsTr("Update is downloading, please install later");
-                    checkFailedDialog.open();
-                    return;
-                }
-                noUpdateLabel.text = qsTr("Current version: v") + UpdateManager.currentVersion;
-                noUpdateDialog.open();
-            }
+            onCheckUpdateClicked: window.requestManualUpdateCheck()
             onMinimizeWindowRequested: window.showMinimized()
         }
 
@@ -689,6 +693,19 @@ ApplicationWindow {
                 anchors.top: parent.top
                 anchors.topMargin: mainContentArea.contentTopOffset
                 visible: window.currentPage === "settings"
+            }
+
+            // About page
+            AboutPage {
+                id: aboutPage
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.top: parent.top
+                anchors.topMargin: mainContentArea.contentTopOffset
+                visible: window.currentPage === "about"
+
+                onCheckUpdateRequested: window.requestManualUpdateCheck()
             }
 
             // 未读消息计数器驱动：监听 MessageCenter 的三种事件
