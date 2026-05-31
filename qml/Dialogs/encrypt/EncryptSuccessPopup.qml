@@ -1,11 +1,9 @@
 import QtQuick 2.15
-import QtQuick.Controls 2.15
 import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 
 BaseDialog {
     id: root
-    parent: Overlay.overlay
     dialogWidth: 420
     title: qsTr("Encryption Successful")
 

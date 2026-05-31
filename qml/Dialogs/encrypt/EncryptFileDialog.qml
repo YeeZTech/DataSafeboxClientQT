@@ -15,6 +15,11 @@ BaseDialog {
 
     signal encryptionStateChanged(bool encrypting)
 
+    // Result popups are exposed so the host page can include them in its scoped
+    // dim backdrop (they open after this dialog closes; see instantiation below).
+    property alias successPopup: encryptSuccessPopup
+    property alias failurePopup: encryptFailurePopup
+
     // Properties (backward compatible)
     property string selectedFilePath: ""
     property string selectedOutputPath: ""
@@ -782,11 +787,15 @@ BaseDialog {
 
     EncryptSuccessPopup {
         id: encryptSuccessPopup
+        parent: root.parent  // host page → page-scoped dim via the page's backdrop
+        dim: false
         encryptOutputDir: root._encryptOutputDir
     }
 
     EncryptFailurePopup {
         id: encryptFailurePopup
+        parent: root.parent  // host page → page-scoped dim via the page's backdrop
+        dim: false
 
         onRetryRequested: {
             root._retrying = true;

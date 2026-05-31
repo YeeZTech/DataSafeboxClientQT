@@ -259,6 +259,8 @@ Item {
     // Add Visible User Dialog
     AddVisibleUserDialog {
         id: addUserDialog
+        parent: root
+        dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
 
         property string pendingAccount: ""
         property var pendingVisibleUsers: []
@@ -333,6 +335,8 @@ Item {
     // Encrypt File Dialog
     EncryptFileDialog {
         id: encryptFileDialog
+        parent: root
+        dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
         domainName: root.domainName
         domainPubKey: root.domainPubKey
 
@@ -360,6 +364,8 @@ Item {
     // Deactivate Confirm Dialog
     DeactivateConfirmDialog {
         id: deactivateDialog
+        parent: root
+        dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
         domainName: root.domainData.name
 
         onConfirmClicked: {
@@ -370,6 +376,8 @@ Item {
     // Export Detail Dialog
     ExportDetailDialog {
         id: exportDetailDialog
+        parent: root
+        dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
         isCreator: root.isCreator
         allowApproveReject: !root.isDomainReadOnly && !root.auditRequestPending
 
@@ -416,6 +424,8 @@ Item {
     // Instance Detail Dialog (shared for all statuses, including pending)
     InstanceDetailDialog {
         id: instanceDetailDialog
+        parent: root
+        dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
         allowApproveReject: !root.isDomainReadOnly && !root.instanceAuditPending
 
         onApproveClicked: {
@@ -442,6 +452,8 @@ Item {
     // App Whitelist Audit Detail Dialog
     AppWhitelistDetailDialog {
         id: appWhitelistDetailDialog
+        parent: root
+        dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
         showActionButtons: !root.isDomainReadOnly && !root.auditRequestPending
 
         onApproveClicked: {
@@ -847,6 +859,44 @@ Item {
             root.errorOccurred(errorMessage || qsTr("Failed to audit request"), qsTr("Audit Request"));
             DsccBridge.loadAudits(root.currentDomainCode, 1);
             DsccBridge.loadAudits(root.currentDomainCode, 2);
+        }
+    }
+
+    // Scoped dim backdrop for all dialogs on this page.
+    // The dialogs use dim:false so Qt's default window-wide modal dim is suppressed;
+    // this rectangle fills only the detail page, keeping the left sidebar bright and
+    // interactive. A press here closes the open dialog (mirrors CloseOnPressOutside,
+    // which no longer fires once the modal dimmer is disabled).
+    Rectangle {
+        id: dialogBackdrop
+        anchors.fill: parent
+        z: 50
+        color: Qt.rgba(0, 0, 0, 0.5)
+        visible: addUserDialog.opened || encryptFileDialog.opened || deactivateDialog.opened || exportDetailDialog.opened || instanceDetailDialog.opened || appWhitelistDetailDialog.opened || encryptFileDialog.successPopup.opened || encryptFileDialog.failurePopup.opened
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                // The encrypt dialog must stay open while an encryption is running.
+                if (encryptFileDialog.opened) {
+                    if (!encryptFileDialog._encrypting)
+                        encryptFileDialog.close();
+                } else if (addUserDialog.opened) {
+                    addUserDialog.close();
+                } else if (deactivateDialog.opened) {
+                    deactivateDialog.close();
+                } else if (exportDetailDialog.opened) {
+                    exportDetailDialog.close();
+                } else if (instanceDetailDialog.opened) {
+                    instanceDetailDialog.close();
+                } else if (appWhitelistDetailDialog.opened) {
+                    appWhitelistDetailDialog.close();
+                } else if (encryptFileDialog.successPopup.opened) {
+                    encryptFileDialog.successPopup.close();
+                } else if (encryptFileDialog.failurePopup.opened) {
+                    encryptFileDialog.failurePopup.close();
+                }
+            }
         }
     }
 

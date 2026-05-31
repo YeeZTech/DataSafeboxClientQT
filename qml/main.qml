@@ -592,8 +592,24 @@ ApplicationWindow {
             InstantiationHelpDialog {
                 id: instantiationHelpDialog
                 parent: Overlay.overlay
+                dim: false  // Dimming handled by instantiationHelpBackdrop so the sidebar stays interactive
                 x: (Overlay.overlay ? (window.sidebarWidth + (Overlay.overlay.width - window.sidebarWidth - width) / 2) : 0)
                 y: (Overlay.overlay ? (Overlay.overlay.height - height) / 2 : 0)
+            }
+
+            // Scoped dim backdrop for the instantiation help dialog: covers only the
+            // main content area so the left sidebar stays bright and interactive.
+            Rectangle {
+                id: instantiationHelpBackdrop
+                anchors.fill: parent
+                z: 50
+                color: Qt.rgba(0, 0, 0, 0.5)
+                visible: instantiationHelpDialog.opened
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: instantiationHelpDialog.close()
+                }
             }
 
             // Instantiate Form Page
