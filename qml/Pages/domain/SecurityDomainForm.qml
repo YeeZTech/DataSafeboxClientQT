@@ -400,68 +400,15 @@ Item {
             border.color: Theme.Colors.borderSlate
             border.width: 0.653
 
-            Rectangle {
+            PrimaryButton {
                 id: submitButton
                 anchors.centerIn: parent
-                height: 44
-                implicitWidth: submitButtonText.implicitWidth + 40
-                radius: 6
-                antialiasing: true
-                smooth: true
-                clip: true
-                property real breatheOpacity: 1.0
-                color: (root.isValid && !root.isSubmitting) ? (submitButtonMouseArea.containsMouse ? (submitButtonMouseArea.pressed ? Qt.darker(Theme.Colors.primary, 1.2) : Qt.lighter(Theme.Colors.primary, 1.2)) : Theme.Colors.primary) : Theme.Colors.buttonDisabled
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
-                }
-                opacity: (root.isValid && !root.isSubmitting) ? breatheOpacity : 1.0
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 500
-                        easing.type: Easing.InOutCubic
-                    }
-                }
-
-                SequentialAnimation on breatheOpacity {
-                    running: root.isValid && !root.isSubmitting && !submitButtonMouseArea.containsMouse
-                    loops: Animation.Infinite
-                    NumberAnimation {
-                        from: 1.0
-                        to: 0.85
-                        duration: 1200
-                        easing.type: Easing.InOutSine
-                    }
-                    NumberAnimation {
-                        from: 0.85
-                        to: 1.0
-                        duration: 1200
-                        easing.type: Easing.InOutSine
-                    }
-                }
-
-                SelectableText {
-                    id: submitButtonText
-                    anchors.centerIn: parent
-                    text: root.isSubmitting ? qsTr("Creating...") : qsTr("Create Security Domain")
-                    font.family: root.fontFamily
-                    font.pixelSize: root.fontSizeBody
-                    font.weight: Font.Medium
-                    color: (root.isValid && !root.isSubmitting) ? Theme.Colors.primaryText : Theme.Colors.textSecondary
-                }
-
-                MouseArea {
-                    id: submitButtonMouseArea
-                    anchors.fill: parent
-                    enabled: root.isValid && !root.isSubmitting
-                    cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    hoverEnabled: true
-                    onClicked: {
-                        if (root.isValid && !root.isSubmitting && root.description.length <= 500) {
-                            root.isSubmitting = true;
-                            root.submit();
-                        }
+                text: root.isSubmitting ? qsTr("Creating...") : qsTr("Create Security Domain")
+                enabled: root.isValid && !root.isSubmitting
+                onClicked: {
+                    if (root.isValid && !root.isSubmitting && root.description.length <= 500) {
+                        root.isSubmitting = true;
+                        root.submit();
                     }
                 }
             }
