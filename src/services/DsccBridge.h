@@ -32,6 +32,7 @@ class DsccBridge : public QObject
     Q_INVOKABLE void loadAudits(const QString &domainCode, int applyType);
     Q_INVOKABLE void createDomain(const QVariantMap &info);
     Q_INVOKABLE void closeDomain(const QString &domainCode);
+    Q_INVOKABLE void deleteDomain(const QString &domainCode);
     Q_INVOKABLE void updateDomainDesc(const QString &domainCode, const QString &desc);
     Q_INVOKABLE void addUserToDomain(const QString &domainCode, const QString &userId);
     Q_INVOKABLE void removeUserFromDomain(const QString &domainCode, const QString &userId);
@@ -70,6 +71,8 @@ class DsccBridge : public QObject
     void domainCreateFailed(uint32_t operation_id, dscc::Notification notification);
     void domainClosed(uint32_t operation_id, QString domain_code);
     void domainCloseFailed(uint32_t operation_id, QString domain_code, dscc::Notification notification);
+    void domainDeleted(uint32_t operation_id, QString domain_code);
+    void domainDeleteFailed(uint32_t operation_id, QString domain_code, dscc::Notification notification);
     void domainDescUpdated(uint32_t operation_id, QString domain_code);
     void domainDescUpdateFailed(uint32_t operation_id, QString domain_code, dscc::Notification notification);
     void addUserToDomainSuccess(uint32_t operation_id, QString domain_code, QString user_id);

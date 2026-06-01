@@ -1499,6 +1499,36 @@ void DsccBridge::closeDomain(const QString &domainCode)
     Q_UNUSED(handle);
 }
 
+void DsccBridge::deleteDomain(const QString &domainCode)
+{
+    const QString trimmedDomainCode = domainCode.trimmed();
+    if (!m_assets)
+    {
+        qWarning().noquote()
+            << QStringLiteral(
+                   "[DsccBridge] deleteDomain rejected because UserAssets is not initialized domainCode=\"%1\"")
+                   .arg(trimmedDomainCode);
+        emit domainDeleteFailed(0, trimmedDomainCode, dscc::Notification());
+        return;
+    }
+
+    if (trimmedDomainCode.isEmpty())
+    {
+        qWarning().noquote() << QStringLiteral("[DsccBridge] deleteDomain rejected because domainCode is empty");
+        emit domainDeleteFailed(0, QString(), dscc::Notification());
+        return;
+    }
+
+    // TODO(PRD 1.0.4 §3.2): DSCC 核心 SDK 暂未提供删除安全域接口（dscc::UserAssets 目前仅有 CloseDomain）。
+    // 待 core 增加 DeleteDomain 后，将以下桩替换为真实调用：
+    //     const dscc::Handle handle = m_assets->DeleteDomain(trimmedDomainCode);
+    // 并在 connectAssetSignals() 中把 UserAssets 的 DeleteDomainSuccess/Failed 连接到
+    // domainDeleted / domainDeleteFailed 信号（参考 CloseDomainSuccess / CloseDomainFailed）。
+    qWarning().noquote() << QStringLiteral("[DsccBridge] deleteDomain not yet supported by core SDK domainCode=\"%1\"")
+                                .arg(trimmedDomainCode);
+    emit domainDeleteFailed(0, trimmedDomainCode, dscc::Notification());
+}
+
 void DsccBridge::auditInstanceRequest(const QString &instanceCode, bool approved)
 {
     const QString trimmedInstanceCode = instanceCode.trimmed();

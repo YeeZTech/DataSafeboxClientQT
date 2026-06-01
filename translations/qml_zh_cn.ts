@@ -327,6 +327,29 @@
     </message>
 </context>
 <context>
+    <name>RemoveDomainConfirmDialog</name>
+    <message>
+        <location filename="../qml/Dialogs/common/RemoveDomainConfirmDialog.qml" line="+8"/>
+        <source>Are you sure you want to remove this security domain?</source>
+        <translation>确定移除此安全域吗？</translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>After removal, this security domain will disappear from the list. This operation cannot be undone.</source>
+        <translation>移除后该安全域将从列表中消失，该操作不可恢复。</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Confirm</source>
+        <translation>确定</translation>
+    </message>
+</context>
+<context>
     <name>DomainBasicInfoCard</name>
     <message>
         <location filename="../qml/Pages/domain/DomainBasicInfoCard.qml" line="+49"/>
@@ -1352,6 +1375,14 @@
 </context>
 <context>
     <name>SecurityDomainDetail</name>
+    <message>
+        <source>Failed to remove security domain</source>
+        <translation>移除安全域失败</translation>
+    </message>
+    <message>
+        <source>Remove Security Domain</source>
+        <translation>移除安全域</translation>
+    </message>
     <message>
         <location filename="../qml/Pages/domain/SecurityDomainDetail.qml" line="+196"/>
         <source>Creator</source>
@@ -2476,6 +2507,11 @@ Location: %1</source>
         <location filename="../qml/Pages/domain/DomainTabView.qml" line="+142"/>
         <source>Disable This Security Domain</source>
         <translation>停用此安全域</translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>Remove This Security Domain</source>
+        <translation>移除此安全域</translation>
     </message>
 </context>
 <context>

@@ -165,6 +165,12 @@ Item {
             deactivateDomainState.pendingDomainCode = "";
         }
 
+        // Clear remove domain pending state
+        if (removeDomainState.isPending) {
+            removeDomainState.isPending = false;
+            removeDomainState.pendingDomainCode = "";
+        }
+
         // Clear remove user pending state
         if (root.removeUserState_pendingRemovedAccount) {
             root.removeUserState_pendingRemovedAccount = "";
@@ -193,6 +199,9 @@ Item {
         }
         if (deactivateDialog.opened) {
             deactivateDialog.close();
+        }
+        if (removeDomainDialog.opened) {
+            removeDomainDialog.close();
         }
     }
 
@@ -253,6 +262,13 @@ Item {
         id: deactivateDomainState
         property bool isPending: false
         property string pendingDomainPubKey: ""
+        property string pendingDomainCode: ""
+    }
+
+    // Pending state for removing (deleting) domain
+    QtObject {
+        id: removeDomainState
+        property bool isPending: false
         property string pendingDomainCode: ""
     }
 
@@ -377,6 +393,17 @@ Item {
 
         onConfirmClicked: {
             handleDeactivateDomain();
+        }
+    }
+
+    // Remove Domain Confirm Dialog (PRD 3.2)
+    RemoveDomainConfirmDialog {
+        id: removeDomainDialog
+        parent: root
+        dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
+
+        onConfirmClicked: {
+            handleDeleteDomain();
         }
     }
 
@@ -568,6 +595,8 @@ Item {
                 width: parent.width
                 domainData: root.domainData
                 isDomainReadOnly: root.isDomainReadOnly
+                isCreator: root.isCreator
+                isDomainInactive: root.isDomainInactive
                 currentUser: root.currentUser
                 isEditingDescription: root.isEditingDescription
                 editedDescription: root.editedDescription
@@ -679,6 +708,8 @@ Item {
                 }
 
                 onDeactivateRequested: deactivateDialog.open()
+
+                onRemoveDomainRequested: removeDomainDialog.open()
             }
         }
     }
@@ -704,6 +735,28 @@ Item {
 
         // 调用 DSCC 接口关闭安全域，结果在 main.qml 的 onDomainClosed / onDomainCloseFailed 中处理
         DsccBridge.closeDomain(domainCode);
+    }
+
+    // Function to handle domain removal (PRD 3.2)
+    function handleDeleteDomain() {
+        // 仅创建方可移除创建失败/已关闭状态的安全域
+        if (!root.isCreator || !root.isDomainInactive) {
+            return;
+        }
+
+        // Prevent duplicate clicks - check if already pending
+        if (removeDomainState.isPending) {
+            return;
+        }
+        var domainCode = root.currentDomainCode || "";
+        if (!domainCode) {
+            return;
+        }
+        removeDomainState.isPending = true;
+        removeDomainState.pendingDomainCode = domainCode;
+
+        // 调用 DSCC 接口移除安全域，结果在 main.qml 的 onDomainDeleted / 本页 onDomainDeleteFailed 中处理
+        DsccBridge.deleteDomain(domainCode);
     }
 
     function formatRemainingDays(instance) {
@@ -844,6 +897,17 @@ Item {
 
         // 注意：onDomainClosed 成功的导航/刷新由 main.qml 统一处理（切换至 home + 刷新列表）
 
+        function onDomainDeleteFailed(operationId, domainCode, notification) {
+            if (domainCode !== root.currentDomainCode)
+                return;
+            removeDomainState.isPending = false;
+            removeDomainState.pendingDomainCode = "";
+            var errorMessage = DsccBridge.notificationMessage(notification, qsTr("Failed to remove security domain"));
+            root.errorOccurred(errorMessage || qsTr("Failed to remove security domain"), qsTr("Remove Security Domain"));
+        }
+
+        // 注意：onDomainDeleted 成功的导航/刷新由 main.qml 统一处理（切换至 home + 刷新列表）
+
         function onAuditInstanceRequestSuccess(operationId, instanceCode) {
             root.instanceAuditPending = false;
             DsccBridge.loadInstances(root.currentDomainCode);
@@ -881,7 +945,7 @@ Item {
         anchors.fill: parent
         z: 50
         color: Qt.rgba(0, 0, 0, 0.5)
-        visible: addUserDialog.opened || encryptFileDialog.opened || userEncryptHintDialog.opened || deactivateDialog.opened || exportDetailDialog.opened || instanceDetailDialog.opened || appWhitelistDetailDialog.opened || encryptFileDialog.successPopup.opened || encryptFileDialog.failurePopup.opened
+        visible: addUserDialog.opened || encryptFileDialog.opened || userEncryptHintDialog.opened || deactivateDialog.opened || removeDomainDialog.opened || exportDetailDialog.opened || instanceDetailDialog.opened || appWhitelistDetailDialog.opened || encryptFileDialog.successPopup.opened || encryptFileDialog.failurePopup.opened
 
         MouseArea {
             anchors.fill: parent
@@ -896,6 +960,8 @@ Item {
                     addUserDialog.close();
                 } else if (deactivateDialog.opened) {
                     deactivateDialog.close();
+                } else if (removeDomainDialog.opened) {
+                    removeDomainDialog.close();
                 } else if (exportDetailDialog.opened) {
                     exportDetailDialog.close();
                 } else if (instanceDetailDialog.opened) {

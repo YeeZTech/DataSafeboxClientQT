@@ -342,6 +342,19 @@ ApplicationWindow {
             DsccBridge.loadDomainList();
         }
 
+        function onDomainDeleted(operationId, domainCode) {
+            // 安全域移除成功（PRD 3.2）：返回首页并刷新侧边栏列表
+            if (securityDomainDetail) {
+                securityDomainDetail.domainPubKey = "";
+                securityDomainDetail.domainName = "";
+                securityDomainDetail.currentDomainCode = "";
+            }
+            window.selectedDomainCode = "";
+            window.selectedDomainPubKey = "";
+            window.currentPage = "home";
+            DsccBridge.loadDomainList();
+        }
+
         function onMessageReadFailed(operationId, messageCode, notification) {
             var msg = DsccBridge.notificationMessage(notification, qsTr("Failed to mark message as read"));
             window.showError(msg, qsTr("Message"));

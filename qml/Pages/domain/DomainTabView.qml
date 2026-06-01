@@ -10,6 +10,8 @@ Column {
 
     property var domainData: ({})
     property bool isDomainReadOnly: false
+    property bool isCreator: false
+    property bool isDomainInactive: false
     property var currentUser: null
 
     property bool isEditingDescription: false
@@ -41,6 +43,7 @@ Column {
     signal viewWhitelistAuditRequested(var auditData)
     signal viewExportRequested(var auditData)
     signal deactivateRequested
+    signal removeDomainRequested
 
     DomainBasicInfoCard {
         id: basicInfoCard
@@ -151,6 +154,41 @@ Column {
             hoverEnabled: true
             cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
             onClicked: root.deactivateRequested()
+            onEntered: parent.hovered = true
+            onExited: parent.hovered = false
+            onPressed: parent.pressed = true
+            onReleased: parent.pressed = false
+        }
+    }
+
+    // Remove button (PRD 3.2): only the creator can remove a closed/failed domain.
+    Rectangle {
+        id: removeBtn
+        height: 36
+        anchors.horizontalCenter: parent.horizontalCenter
+        radius: 8
+        property bool hovered: false
+        property bool pressed: false
+        color: pressed ? "#ccffa2a2" : (hovered ? "#80ffd2d2" : Theme.Colors.backgroundWhite)
+        border.width: 1
+        border.color: "#ffa2a2"
+        visible: root.isCreator && root.isDomainInactive
+        implicitWidth: removeText.implicitWidth + 34
+
+        Text {
+            id: removeText
+            anchors.centerIn: parent
+            text: qsTr("Remove This Security Domain")
+            font.pixelSize: Theme.Typography.body
+            font.weight: Font.Medium
+            color: Theme.Colors.textError
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.removeDomainRequested()
             onEntered: parent.hovered = true
             onExited: parent.hovered = false
             onPressed: parent.pressed = true

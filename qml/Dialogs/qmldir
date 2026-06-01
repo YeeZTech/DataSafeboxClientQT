@@ -13,6 +13,7 @@ InstantiationHelpDialog 1.0 InstantiationHelpDialog.qml
 InstantiationPaymentDialog 1.0 InstantiationPaymentDialog.qml
 PaymentSuccessDialog 1.0 PaymentSuccessDialog.qml
 PausedReminderDialog 1.0 PausedReminderDialog.qml
+RemoveDomainConfirmDialog 1.0 RemoveDomainConfirmDialog.qml
 SetDurationDialog 1.0 SetDurationDialog.qml
 UpdateDialog 1.0 UpdateDialog.qml
 EncryptSuccessPopup 1.0 EncryptSuccessPopup.qml
