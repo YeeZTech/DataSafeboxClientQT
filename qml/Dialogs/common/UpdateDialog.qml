@@ -393,6 +393,7 @@ BaseDialog {
 
                 SecondaryButton {
                     text: qsTr("Contact Customer Service")
+                    accent: true
                     onClicked: root.contactCustomerServiceRequested()
                 }
 

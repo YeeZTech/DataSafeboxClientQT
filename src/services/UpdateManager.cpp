@@ -690,42 +690,29 @@ void UpdateManager::onDownloadFinished()
         m_downloadFile->close();
     }
 
-    if (m_currentReply->error() != QNetworkReply::NoError &&
-        m_currentReply->error() != QNetworkReply::OperationCanceledError)
-    {
-        emit downloadFailed(tr("Download error: %1").arg(m_currentReply->errorString()));
-        m_currentReply->deleteLater();
-        m_currentReply = nullptr;
-        return;
-    }
+    const QNetworkReply::NetworkError err = m_currentReply->error();
+    const int httpCode = m_currentReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-    // Check if truly finished (sometimes finished is called on error too)
-    if (m_currentReply->error() == QNetworkReply::NoError)
+    // A 416 (Requested Range Not Satisfiable) while resuming means the local file is
+    // already complete — the server has nothing past the bytes we already hold. Treat it
+    // as a finished download and continue to the install flow instead of reporting failure.
+    const bool finishedOk = (err == QNetworkReply::NoError) || (httpCode == 416);
+
+    if (finishedOk)
     {
         m_downloadProgress = 1.0;
         emit downloadProgressChanged(1.0);
         emit downloadFinished();
         markPendingInstall();
         emit pendingInstallReminder(m_downloadedFilePath);
-        qInfo().noquote() << QStringLiteral("[UpdateDownload] finished => file=%1, size=%2")
+        qInfo().noquote() << QStringLiteral("[UpdateDownload] finished%1 => file=%2, size=%3")
+                                 .arg(httpCode == 416 ? QStringLiteral(" (already complete)") : QString())
                                  .arg(m_downloadedFilePath)
                                  .arg(QFileInfo(m_downloadedFilePath).size());
     }
-    else
+    else if (err != QNetworkReply::OperationCanceledError)
     {
-        // Check for 416 (Range Satisfiable) which effectively means done for resume
-        int httpCode = m_currentReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        if (httpCode == 416)
-        {
-            m_downloadProgress = 1.0;
-            emit downloadProgressChanged(1.0);
-            emit downloadFinished();
-            markPendingInstall();
-            emit pendingInstallReminder(m_downloadedFilePath);
-            qInfo().noquote() << QStringLiteral("[UpdateDownload] finished (416) => file=%1, size=%2")
-                                     .arg(m_downloadedFilePath)
-                                     .arg(QFileInfo(m_downloadedFilePath).size());
-        }
+        emit downloadFailed(tr("Download error: %1").arg(m_currentReply->errorString()));
     }
 
     m_currentReply->deleteLater();

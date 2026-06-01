@@ -733,6 +733,22 @@ ApplicationWindow {
                 }
             }
 
+            // Scoped dim backdrop for the pending-install ("Software Update") dialog:
+            // covers only the main content area so the left sidebar stays bright. A press
+            // here closes the dialog (mirrors CloseOnPressOutside, off when dim is off).
+            Rectangle {
+                id: pendingInstallBackdrop
+                anchors.fill: parent
+                z: 50
+                color: Qt.rgba(0, 0, 0, 0.5)
+                visible: pendingInstallWarningDialog.opened
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: pendingInstallWarningDialog.close()
+                }
+            }
+
             // 未读消息计数器驱动：监听 MessageCenter 的三种事件
             Connections {
                 target: messageCenter
@@ -1007,7 +1023,7 @@ ApplicationWindow {
         width: 320
         height: 60
         property alias text: msgLabel.text
-        x: (parent.width - width) / 2
+        x: sidebarWidth + (mainContentArea.width - width) / 2
         y: 60
         modal: false
         focus: false
@@ -1084,7 +1100,9 @@ ApplicationWindow {
 
     Dialog {
         id: pendingInstallWarningDialog
+        parent: mainContentArea
         modal: true
+        dim: false  // Dimming is handled by pendingInstallBackdrop so the sidebar stays bright
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
         x: (parent.width - width) / 2
