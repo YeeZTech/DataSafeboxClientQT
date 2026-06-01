@@ -17,3 +17,4 @@ SetDurationDialog 1.0 SetDurationDialog.qml
 UpdateDialog 1.0 UpdateDialog.qml
 EncryptSuccessPopup 1.0 EncryptSuccessPopup.qml
 EncryptFailurePopup 1.0 EncryptFailurePopup.qml
+UserEncryptHintDialog 1.0 UserEncryptHintDialog.qml

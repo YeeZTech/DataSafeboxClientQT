@@ -361,6 +361,13 @@ Item {
         }
     }
 
+    // User (non-creator) encrypt hint dialog (PRD 3.6)
+    UserEncryptHintDialog {
+        id: userEncryptHintDialog
+        parent: root
+        dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
+    }
+
     // Deactivate Confirm Dialog
     DeactivateConfirmDialog {
         id: deactivateDialog
@@ -539,7 +546,8 @@ Item {
                 id: domainInfoHeader
                 width: parent.width
                 domainName: root.domainData.name
-                isDomainReadOnly: root.isDomainReadOnly
+                isCreator: root.isCreator
+                isDomainInactive: root.isDomainInactive
                 encryptButtonBusy: root.encryptButtonBusy
                 domainPubKey: root.domainPubKey || (root.domainData && root.domainData.pubKey ? root.domainData.pubKey : "")
 
@@ -552,6 +560,7 @@ Item {
                     root.encryptButtonBusy = true;
                     encryptFileDialog.open();
                 }
+                onEncryptUserHintRequested: userEncryptHintDialog.open()
             }
 
             DomainTabView {
@@ -872,7 +881,7 @@ Item {
         anchors.fill: parent
         z: 50
         color: Qt.rgba(0, 0, 0, 0.5)
-        visible: addUserDialog.opened || encryptFileDialog.opened || deactivateDialog.opened || exportDetailDialog.opened || instanceDetailDialog.opened || appWhitelistDetailDialog.opened || encryptFileDialog.successPopup.opened || encryptFileDialog.failurePopup.opened
+        visible: addUserDialog.opened || encryptFileDialog.opened || userEncryptHintDialog.opened || deactivateDialog.opened || exportDetailDialog.opened || instanceDetailDialog.opened || appWhitelistDetailDialog.opened || encryptFileDialog.successPopup.opened || encryptFileDialog.failurePopup.opened
 
         MouseArea {
             anchors.fill: parent
@@ -881,6 +890,8 @@ Item {
                 if (encryptFileDialog.opened) {
                     if (!encryptFileDialog._encrypting)
                         encryptFileDialog.close();
+                } else if (userEncryptHintDialog.opened) {
+                    userEncryptHintDialog.close();
                 } else if (addUserDialog.opened) {
                     addUserDialog.close();
                 } else if (deactivateDialog.opened) {

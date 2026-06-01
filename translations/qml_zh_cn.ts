@@ -2640,4 +2640,27 @@ Location: %1</source>
         <translation>路径设置失败，请检查目录权限</translation>
     </message>
 </context>
+<context>
+    <name>UserEncryptHintDialog</name>
+    <message>
+        <location filename="../qml/Dialogs/encrypt/UserEncryptHintDialog.qml" line="+11"/>
+        <source>Encrypt File</source>
+        <translation>加密文件</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Encryption can only be performed by the security domain creator. As a user, you only need to receive the encrypted files and import them into a security domain instance to use them normally.</source>
+        <translation>加密操作仅由安全域创建方执行。使用方只需接收加密文件，并将其导入安全域实例，即可正常使用。</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+</context>
 </TS>

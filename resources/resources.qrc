@@ -79,6 +79,7 @@
         <file alias="DataSafebox/Dialogs/UpdateDialog.qml">../qml/Dialogs/common/UpdateDialog.qml</file>
         <file alias="DataSafebox/Dialogs/EncryptSuccessPopup.qml">../qml/Dialogs/encrypt/EncryptSuccessPopup.qml</file>
         <file alias="DataSafebox/Dialogs/EncryptFailurePopup.qml">../qml/Dialogs/encrypt/EncryptFailurePopup.qml</file>
+        <file alias="DataSafebox/Dialogs/UserEncryptHintDialog.qml">../qml/Dialogs/encrypt/UserEncryptHintDialog.qml</file>
 
         <!-- Module: DataSafebox.Auth -->
         <file alias="DataSafebox/Auth/qmldir">../qml/Auth/qmldir</file>
