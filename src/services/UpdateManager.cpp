@@ -115,9 +115,9 @@ void UpdateManager::checkUpdate(bool manual)
     emit checkStatusChanged();
 
     QNetworkRequest request;
-    QString updateUrl = QLatin1String(AppCfg::API_BASE_URL) + QLatin1String("/api/client/update/check");
+    QString updateUrl = QLatin1String(AppCfg::API_BASE_URL) + QLatin1String("/api/appVersion/latest/info");
     request.setUrl(QUrl(updateUrl));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded;charset=utf-8");
     request.setRawHeader("Accept", "application/json");
     request.setTransferTimeout(15000);
 
@@ -127,58 +127,50 @@ void UpdateManager::checkUpdate(bool manual)
     request.setSslConfiguration(sslConfig);
 #endif
 
-    QJsonObject payload;
-    payload["version"] = currentVersion();
-    payload["clientType"] = m_clientType;
-
-    QJsonDocument doc(payload);
-
-    QNetworkReply *reply = m_networkManager->post(request, doc.toJson());
+    // This endpoint takes no request parameters; send an empty form body.
+    QNetworkReply *reply = m_networkManager->post(request, QByteArray());
 
     connect(reply, &QNetworkReply::finished, this, [this, reply, manual]() {
         m_isChecking = false;
         emit checkStatusChanged();
 
+        const QByteArray response = reply->readAll();
+        const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        qInfo().noquote()
+            << QStringLiteral("[UpdateCheck] HTTP %1, body=%2").arg(httpStatus).arg(QString::fromUtf8(response));
+
         if (reply->error() == QNetworkReply::NoError)
         {
-            QByteArray response = reply->readAll();
             QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
 
             if (jsonDoc.isObject())
             {
                 QJsonObject obj = jsonDoc.object();
-                int code = obj["code"].toInt();
+                int resultCode = obj["resultCode"].toInt();
 
-                if (code == 0)
+                if (resultCode == 200)
                 {
                     QJsonObject data = obj["data"].toObject();
-                    QString latestVersion = data["version"].toString();
-                    QString description = data["description"].toString();
-                    QString downloadUrl = data["downloadUrl"].toString();
-                    qint64 clientSize = data["size"].toVariant().toLongLong();
-                    bool forceUpdate = data["forceUpdate"].toBool();
+                    QString latestVersion = normalizeVersionString(data["versionNo"].toString());
+                    QString current = normalizeVersionString(currentVersion());
 
-                    if (isNewerVersion(latestVersion))
+                    if (latestVersion.isEmpty() || latestVersion == current)
                     {
-                        m_latestVersion = latestVersion;
-                        m_updateDescription = description;
-                        m_downloadUrl = downloadUrl;
-                        m_clientSize = clientSize;
-                        m_forceUpdate = forceUpdate;
-
-                        emit updateAvailable(latestVersion, description, forceUpdate);
-                    }
-                    else
-                    {
+                        // Same version as the client: already up to date.
                         if (manual)
                         {
                             emit noUpdateAvailable();
                         }
                     }
+                    else
+                    {
+                        // A different version is available. The update-available flow
+                        // (download URL/size, force update) is wired up in a later step.
+                    }
                 }
                 else
                 {
-                    QString message = obj["message"].toString();
+                    QString message = obj["resultDesc"].toString();
                     if (manual || !message.isEmpty())
                     {
                         emit checkUpdateFailed(message.isEmpty() ? tr("Failed to check for updates") : message);
@@ -202,12 +194,6 @@ void UpdateManager::checkUpdate(bool manual)
             {
                 QString lower = errorMsg.toLower();
                 QString friendlyMsg = errorMsg;
-
-                if (httpCode == 404)
-                {
-                    emit noUpdateAvailable();
-                    return;
-                }
 
                 if (lower.contains("host not found") || lower.contains("unable to resolve"))
                     friendlyMsg = tr("Cannot resolve server address, please check your network");

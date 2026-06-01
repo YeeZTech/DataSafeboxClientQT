@@ -2218,7 +2218,7 @@ Location: %1</source>
     <message>
         <location line="+113"/>
         <source>Already up to date</source>
-        <translation>已是最新版本</translation>
+        <translation>当前已是最新版本</translation>
     </message>
     <message>
         <location line="+61"/>
