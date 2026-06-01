@@ -108,6 +108,7 @@
         <file alias="icons/icon-bill.svg">../icons/icon-bill.svg</file>
         <file alias="icons/icon-help.svg">../icons/icon-help.svg</file>
         <file alias="icons/icon-error.svg">../icons/icon-error.svg</file>
+        <file alias="icons/icon-update-failed.svg">../icons/icon-update-failed.svg</file>
         <file alias="icons/icon-logout.svg">../icons/icon-logout.svg</file>
         <file alias="icons/icon-message.svg">../icons/icon-message.svg</file>
         <file alias="icons/icon-delete.svg">../icons/icon-delete.svg</file>

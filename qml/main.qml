@@ -714,6 +714,7 @@ ApplicationWindow {
                 id: updateDialog
                 parent: mainContentArea
                 dim: false  // Dimming is handled by updateDialogBackdrop so the sidebar stays bright
+                onContactCustomerServiceRequested: customerServiceDialog.open()
             }
 
             // Scoped dim backdrop for the update dialog: covers only the main content
@@ -1178,7 +1179,10 @@ ApplicationWindow {
         }
 
         function onPendingInstallReminder(filePath) {
-            pendingInstallWarningDialog.open();
+            // The in-dialog update flow shows its own success screen; only fall back to
+            // the standalone reminder when the update dialog isn't driving the flow.
+            if (!updateDialog.opened)
+                pendingInstallWarningDialog.open();
         }
     }
 

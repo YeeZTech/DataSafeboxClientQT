@@ -18,6 +18,7 @@ class UpdateManager : public QObject
     Q_PROPERTY(bool isDownloading READ isDownloading NOTIFY downloadingChanged)
     Q_PROPERTY(double downloadProgress READ downloadProgress NOTIFY downloadProgressChanged)
     Q_PROPERTY(QString downloadSpeed READ downloadSpeed NOTIFY downloadProgressChanged)
+    Q_PROPERTY(QString downloadEta READ downloadEta NOTIFY downloadProgressChanged)
     Q_PROPERTY(bool isChecking READ isChecking NOTIFY checkStatusChanged)
     Q_PROPERTY(bool hasPendingInstall READ hasPendingInstall NOTIFY pendingInstallChanged)
     Q_PROPERTY(qint64 clientSize READ clientSize NOTIFY updateAvailable)
@@ -33,6 +34,7 @@ class UpdateManager : public QObject
     bool isDownloading() const;
     double downloadProgress() const;
     QString downloadSpeed() const;
+    QString downloadEta() const;
     bool isChecking() const;
     bool hasPendingInstall() const;
 
@@ -92,6 +94,7 @@ class UpdateManager : public QObject
 
     double m_downloadProgress;
     QString m_downloadSpeedStr;
+    QString m_downloadEtaStr;
 
     QNetworkReply *m_currentReply;
     QFile *m_downloadFile;

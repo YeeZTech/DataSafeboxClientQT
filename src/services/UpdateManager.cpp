@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QUrl>
 
@@ -18,6 +19,46 @@ static QString normalizeVersionString(const QString &version)
         normalized.remove(0, 1);
     }
     return normalized;
+}
+
+// Parse a human-readable size string such as "285.99MB" into bytes (1024-based).
+// Falls back to MB when no unit is present; returns 0 when unparseable.
+static qint64 parseSizeToBytes(const QString &sizeText)
+{
+    const QString s = sizeText.trimmed();
+    if (s.isEmpty())
+        return 0;
+
+    static const QRegularExpression re(QStringLiteral("([0-9]+(?:\\.[0-9]+)?)\\s*(GB|MB|KB|B)?"),
+                                       QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpressionMatch m = re.match(s);
+    if (!m.hasMatch())
+        return 0;
+
+    const double value = m.captured(1).toDouble();
+    const QString unit = m.captured(2).toUpper();
+    double multiplier = 1024.0 * 1024.0; // default to MB
+    if (unit == QLatin1String("GB"))
+        multiplier = 1024.0 * 1024.0 * 1024.0;
+    else if (unit == QLatin1String("KB"))
+        multiplier = 1024.0;
+    else if (unit == QLatin1String("B"))
+        multiplier = 1.0;
+    return static_cast<qint64>(value * multiplier);
+}
+
+// Format a duration in seconds as HH:MM:SS.
+static QString formatRemainingTime(qint64 totalSeconds)
+{
+    if (totalSeconds < 0)
+        totalSeconds = 0;
+    const qint64 hours = totalSeconds / 3600;
+    const qint64 minutes = (totalSeconds % 3600) / 60;
+    const qint64 seconds = totalSeconds % 60;
+    return QStringLiteral("%1:%2:%3")
+        .arg(hours, 2, 10, QLatin1Char('0'))
+        .arg(minutes, 2, 10, QLatin1Char('0'))
+        .arg(seconds, 2, 10, QLatin1Char('0'));
 }
 
 UpdateManager::UpdateManager(QObject *parent)
@@ -88,6 +129,11 @@ double UpdateManager::downloadProgress() const
 QString UpdateManager::downloadSpeed() const
 {
     return m_downloadSpeedStr;
+}
+
+QString UpdateManager::downloadEta() const
+{
+    return m_downloadEtaStr;
 }
 
 bool UpdateManager::isChecking() const
@@ -165,10 +211,27 @@ void UpdateManager::checkUpdate(bool manual)
                     else
                     {
                         // A newer/different version is available — notify the UI so the
-                        // update dialog pops up. The download/install action is wired up
-                        // in a later step.
+                        // update dialog pops up.
                         m_latestVersion = latestVersion;
                         m_forceUpdate = data["needForceUpdate"].toBool();
+
+                        // Resolve the Windows client download URL and (approximate) size so
+                        // startDownload() has a target to fetch. The build is Windows-only.
+                        m_downloadUrl = data["downloadWin"].toString();
+                        m_clientSize = parseSizeToBytes(data["sizeWin"].toString());
+
+                        // Resolve the local installer path: <cache>/update/<filename>.
+                        if (!m_downloadUrl.isEmpty() && !m_cacheDirectory.isEmpty())
+                        {
+                            QString fileName = QUrl(m_downloadUrl).fileName();
+                            if (fileName.isEmpty())
+                                fileName = QStringLiteral("DataSafeboxSetup-%1.exe").arg(m_latestVersion);
+                            QDir updateDir(QDir(m_cacheDirectory).filePath(QStringLiteral("update")));
+                            if (!updateDir.exists())
+                                updateDir.mkpath(QStringLiteral("."));
+                            m_downloadedFilePath = updateDir.filePath(fileName);
+                        }
+
                         emit updateAvailable(m_latestVersion, m_updateDescription, m_forceUpdate);
                     }
                 }
@@ -576,12 +639,24 @@ void UpdateManager::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 
 void UpdateManager::updateSpeed()
 {
-    // Bytes per second
-    QString speed = formatSpeed(m_bytesReceivedSinceLastTimer);
-    if (m_downloadSpeedStr != speed)
+    // m_bytesReceivedSinceLastTimer holds the bytes received during the last second,
+    // i.e. the current download speed in bytes/second.
+    const qint64 bytesPerSec = m_bytesReceivedSinceLastTimer;
+    const QString speed = formatSpeed(bytesPerSec);
+
+    // Estimated remaining time, from the (approximate) total size and current speed.
+    QString eta;
+    if (bytesPerSec > 0 && m_clientSize > 0 && m_downloadProgress < 1.0)
+    {
+        const qint64 remainingBytes = static_cast<qint64>(m_clientSize * (1.0 - m_downloadProgress));
+        eta = formatRemainingTime(remainingBytes / bytesPerSec);
+    }
+
+    if (m_downloadSpeedStr != speed || m_downloadEtaStr != eta)
     {
         m_downloadSpeedStr = speed;
-        // Re-emit progress to carry the new speed value update
+        m_downloadEtaStr = eta;
+        // Re-emit progress to carry the new speed/eta values to the UI.
         emit downloadProgressChanged(m_downloadProgress);
     }
     m_bytesReceivedSinceLastTimer = 0;

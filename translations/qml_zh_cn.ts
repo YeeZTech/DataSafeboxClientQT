@@ -1982,6 +1982,58 @@ Status:
         <source>Release Notes</source>
         <translation>版本更新说明</translation>
     </message>
+    <message>
+        <source>Updating</source>
+        <translation>版本更新中</translation>
+    </message>
+    <message>
+        <source>Installing...</source>
+        <translation>安装中...</translation>
+    </message>
+    <message>
+        <source>Download Speed:</source>
+        <translation>下载速度：</translation>
+    </message>
+    <message>
+        <source>Estimated Time Remaining:</source>
+        <translation>预计剩余时间：</translation>
+    </message>
+    <message>
+        <source>Update Successful</source>
+        <translation>更新成功</translation>
+    </message>
+    <message>
+        <source>Update downloaded successfully. Please restart the client to enjoy the new features.</source>
+        <translation>版本更新成功，请您重启客户端，体验全新功能</translation>
+    </message>
+    <message>
+        <source>Update Failed</source>
+        <translation>更新失败</translation>
+    </message>
+    <message>
+        <source>Failure reason:</source>
+        <translation>失败原因：</translation>
+    </message>
+    <message>
+        <source>. You can try updating the client again or contact customer service for help.</source>
+        <translation>。您可尝试再次更新客户端或联系客服寻求帮助。</translation>
+    </message>
+    <message>
+        <source>Contact Customer Service</source>
+        <translation>联系客服</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Restart</source>
+        <translation>重启</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>重试</translation>
+    </message>
 </context>
 <context>
     <name>UpdateManager</name>
