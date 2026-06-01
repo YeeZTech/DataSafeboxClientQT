@@ -1970,6 +1970,18 @@ Status:
         <source>Update Now</source>
         <translation>立即更新</translation>
     </message>
+    <message>
+        <source>New Version Found</source>
+        <translation>发现最新版本</translation>
+    </message>
+    <message>
+        <source>Current Version</source>
+        <translation>当前版本</translation>
+    </message>
+    <message>
+        <source>Release Notes</source>
+        <translation>版本更新说明</translation>
+    </message>
 </context>
 <context>
     <name>UpdateManager</name>

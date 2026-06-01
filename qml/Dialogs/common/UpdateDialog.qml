@@ -5,163 +5,64 @@ import DataSafebox.Theme 1.0 as Theme
 
 BaseDialog {
     id: root
-    dialogWidth: 480
-    title: qsTr("Update Available")
-    showCloseButton: !root.forceUpdate && !UpdateManager.isDownloading
-    closePolicy: (root.forceUpdate || UpdateManager.isDownloading || root.startedDownloadFromDialog) ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+    dialogWidth: 400
+    title: qsTr("New Version Found") + " V" + root.latestVersion
 
-    Overlay.modal: Rectangle {
-        color: "#80000000"
-    }
-
-    property string versionStr: ""
-    property bool forceUpdate: false
-    property string fileSizeStr: ""
-    property bool startedDownloadFromDialog: false
-
-    signal immediateActionTriggered
+    property string latestVersion: ""
 
     Connections {
         target: UpdateManager
         function onUpdateAvailable(version, desc, force) {
-            root.versionStr = version;
-            root.forceUpdate = force;
-            var bytes = UpdateManager.clientSize;
-            if (bytes > 0) {
-                root.fileSizeStr = (bytes / 1024 / 1024).toFixed(1) + "MB";
-            } else {
-                root.fileSizeStr = "";
-            }
+            root.latestVersion = version;
             root.open();
-        }
-        function onDownloadProgressChanged(progress) {
-            if (root.startedDownloadFromDialog && progress >= 1.0) {
-                root.startedDownloadFromDialog = false;
-                root.close();
-            }
-        }
-        function onDownloadFailed(message) {
-            root.startedDownloadFromDialog = false;
         }
     }
 
     Column {
         width: parent.width
-        spacing: 12
+        spacing: 16
 
+        // Current (installed) version.
         Text {
-            width: parent.width
-            text: qsTr("Your current client version is ") + UpdateManager.currentVersion + qsTr(", which is not the latest. We recommend updating to the latest version ") + root.versionStr + qsTr(" for a better experience.")
-            font.pixelSize: Theme.Typography.body
-            color: "#374151"
-            wrapMode: Text.WordWrap
-            lineHeight: 1.6
+            text: qsTr("Current Version") + " V" + UpdateManager.currentVersion
+            font.pixelSize: Theme.Typography.caption
+            color: Theme.Colors.textCaption
         }
 
-        Row {
-            spacing: 4
-            visible: root.fileSizeStr !== ""
-
-            Text {
-                text: qsTr("Update Size:")
-                font.pixelSize: Theme.Typography.caption
-                color: "#6b7280"
-            }
-            Text {
-                text: root.fileSizeStr
-                font.pixelSize: Theme.Typography.caption
-                color: "#374151"
-            }
-        }
-
+        // Release notes — driven by the backend description; hidden when none is provided.
         Column {
             width: parent.width
-            spacing: 6
-            visible: UpdateManager.isDownloading || root.startedDownloadFromDialog
+            spacing: 8
+            visible: UpdateManager.updateDescription !== ""
 
             Text {
-                text: qsTr("Downloading update package...")
-                font.pixelSize: Theme.Typography.caption
-                color: "#374151"
+                text: qsTr("Release Notes")
+                font.pixelSize: Theme.Typography.body
+                font.weight: Font.DemiBold
+                color: Theme.Colors.textHeading
             }
 
-            ProgressBar {
-                id: downloadProgressBar
+            Text {
                 width: parent.width
-                from: 0
-                to: 1
-                value: UpdateManager.downloadProgress
-
-                background: Rectangle {
-                    implicitHeight: 8
-                    radius: height / 2
-                    color: "#e5e7eb"
-                }
-
-                contentItem: Item {
-                    implicitHeight: 8
-
-                    Rectangle {
-                        width: downloadProgressBar.visualPosition * parent.width
-                        height: parent.height
-                        radius: height / 2
-                        color: "#22c55e"
-                    }
-                }
-            }
-
-            Item {
-                width: parent.width
-                height: percentText.implicitHeight
-
-                Text {
-                    id: percentText
-                    anchors.left: parent.left
-                    text: Math.round(UpdateManager.downloadProgress * 100) + "%"
-                    font.pixelSize: Theme.Typography.small
-                    color: "#6b7280"
-                }
-
-                Text {
-                    anchors.right: parent.right
-                    text: UpdateManager.downloadSpeed
-                    font.pixelSize: Theme.Typography.small
-                    color: "#6b7280"
-                    visible: UpdateManager.downloadSpeed !== ""
-                }
+                text: UpdateManager.updateDescription
+                font.pixelSize: Theme.Typography.body
+                color: Theme.Colors.textMenu
+                wrapMode: Text.WordWrap
+                lineHeight: 1.6
             }
         }
 
-        Rectangle {
+        // Footer action. The download/install behaviour is wired up in a later step.
+        Item {
             width: parent.width
-            height: 1
-            color: "#e5e7eb"
-        }
+            height: updateButton.height
 
-        Row {
-            anchors.right: parent.right
-            spacing: 12
-
-            SecondaryButton {
-                text: qsTr("Later")
-                visible: !root.forceUpdate
-                enabled: !UpdateManager.isDownloading
-                onClicked: root.close()
-            }
-
+            // TODO: wire the download/install flow on click (deferred for now).
             PrimaryButton {
-                text: UpdateManager.isDownloading ? qsTr("Downloading...") : (UpdateManager.downloadProgress >= 1.0 ? qsTr("Install Now") : qsTr("Update Now"))
-                enabled: !UpdateManager.isDownloading
-                onClicked: {
-                    root.immediateActionTriggered();
-                    if (UpdateManager.downloadProgress >= 1.0) {
-                        root.close();
-                        UpdateManager.installUpdate();
-                    } else {
-                        root.startedDownloadFromDialog = true;
-                        UpdateManager.startDownload();
-                    }
-                }
+                id: updateButton
+                anchors.right: parent.right
+                text: qsTr("Update Now")
+                fontWeight: Font.Medium
             }
         }
     }

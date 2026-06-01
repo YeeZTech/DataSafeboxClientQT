@@ -463,7 +463,12 @@ int main(int argc, char *argv[])
         }
     }
     g_previousMessageHandler = qInstallMessageHandler(sentryMessageHandler);
-    qInfo() << "[Startup] datasafebox-qt-client starting, build:" << __DATE__ << __TIME__;
+#ifdef APP_VERSION
+    const QString appVersion = QStringLiteral(APP_VERSION);
+#else
+    const QString appVersion = QStringLiteral("unknown");
+#endif
+    qInfo() << "[Startup] datasafebox-qt-client starting, version:" << appVersion << "build:" << __DATE__ << __TIME__;
 
     // Periodically flush queued Sentry events (e.g. warnings) every 30 seconds
     QTimer *sentryFlushTimer = new QTimer(&app);

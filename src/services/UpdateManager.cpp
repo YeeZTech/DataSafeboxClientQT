@@ -164,8 +164,12 @@ void UpdateManager::checkUpdate(bool manual)
                     }
                     else
                     {
-                        // A different version is available. The update-available flow
-                        // (download URL/size, force update) is wired up in a later step.
+                        // A newer/different version is available — notify the UI so the
+                        // update dialog pops up. The download/install action is wired up
+                        // in a later step.
+                        m_latestVersion = latestVersion;
+                        m_forceUpdate = data["needForceUpdate"].toBool();
+                        emit updateAvailable(m_latestVersion, m_updateDescription, m_forceUpdate);
                     }
                 }
                 else

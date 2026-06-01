@@ -707,6 +707,29 @@ ApplicationWindow {
                 onCheckUpdateRequested: window.requestManualUpdateCheck()
             }
 
+            // Update-available dialog — centered within the main content area.
+            UpdateDialog {
+                id: updateDialog
+                parent: mainContentArea
+                dim: false  // Dimming is handled by updateDialogBackdrop so the sidebar stays bright
+            }
+
+            // Scoped dim backdrop for the update dialog: covers only the main content
+            // area so the left sidebar stays bright and visible. A press here closes the
+            // dialog (mirrors CloseOnPressOutside, which no longer fires with dim off).
+            Rectangle {
+                id: updateDialogBackdrop
+                anchors.fill: parent
+                z: 50
+                color: Qt.rgba(0, 0, 0, 0.5)
+                visible: updateDialog.opened
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: updateDialog.close()
+                }
+            }
+
             // 未读消息计数器驱动：监听 MessageCenter 的三种事件
             Connections {
                 target: messageCenter
@@ -802,10 +825,6 @@ ApplicationWindow {
         parent: Overlay.overlay
         x: parent.width - width - 15
         y: Math.max(8, parent.height - height - 93)
-    }
-
-    UpdateDialog {
-        id: updateDialog
     }
 
     // 错误通知卡片（顶部滑入）
