@@ -222,6 +222,12 @@ Rectangle {
                                     height: 20
                                     anchors.verticalCenter: parent.verticalCenter
 
+                                    // The domain list loads synchronously, so the spin
+                                    // would otherwise end before a single frame renders.
+                                    // Guarantee at least one full turn per click, and keep
+                                    // spinning while a load is still in flight.
+                                    property bool minSpinElapsed: true
+
                                     Image {
                                         id: domainRefreshIcon
                                         width: 16
@@ -250,7 +256,18 @@ Rectangle {
                                         to: 360
                                         duration: 800
                                         loops: Animation.Infinite
-                                        running: sidebar.domainRefreshing
+                                        running: sidebar.domainRefreshing || !domainRefreshBtn.minSpinElapsed
+                                        // Restore the icon to its resting angle when
+                                        // the refresh finishes (PRD: 动画停止并恢复正常状态)
+                                        onStopped: domainRefreshIcon.rotation = 0
+                                    }
+
+                                    // Keeps the spin visible for at least one full turn
+                                    // even when the list loads instantly.
+                                    Timer {
+                                        id: domainRefreshMinSpin
+                                        interval: 800
+                                        onTriggered: domainRefreshBtn.minSpinElapsed = true
                                     }
 
                                     MouseArea {
@@ -260,7 +277,11 @@ Rectangle {
                                         hoverEnabled: true
                                         onEntered: securityDomainHeader.hovered = false
                                         onExited: securityDomainHeader.hovered = false
-                                        onClicked: sidebar.refreshDomainsRequested()
+                                        onClicked: {
+                                            domainRefreshBtn.minSpinElapsed = false;
+                                            domainRefreshMinSpin.restart();
+                                            sidebar.refreshDomainsRequested();
+                                        }
                                     }
                                 }
                             }
