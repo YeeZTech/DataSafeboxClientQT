@@ -172,6 +172,8 @@ ApplicationWindow {
         DsccBridge.setCurrentUser(user.authUserId || "", user.userName || "", user.token || "", "");
         window.resetDsccUserState();
         DsccBridge.loadDomainList();
+        // 登录后立即拉取未读消息数, 使红点在进入消息页之前即可显示
+        messageCenter.fetchUnreadCount();
         window.authPage = "main";
         ArrearsManager.getArrearsOverview(user.token || "");
     }

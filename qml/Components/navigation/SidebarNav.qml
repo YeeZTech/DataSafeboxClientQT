@@ -162,9 +162,10 @@ Item {
 
     BadgeIndicator {
         visible: !userMenu.visible && count > 0
-        x: 161
+        // 右对齐固定右边缘, 角标随位数向左增长, 避免多位数时遮挡右侧下拉箭头
+        x: 177 - width
         anchors.verticalCenter: parent.verticalCenter
-        count: root.hasUpdateNotification ? 1 : root.unreadMessageCount
+        count: root.unreadMessageCount
     }
 
     MouseArea {
@@ -571,13 +572,6 @@ Item {
                         color: Theme.Colors.textMenu
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                }
-
-                BadgeIndicator {
-                    visible: root.hasUpdateNotification
-                    x: 166
-                    anchors.verticalCenter: parent.verticalCenter
-                    count: 1
                 }
 
                 MouseArea {
