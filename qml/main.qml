@@ -121,8 +121,7 @@ ApplicationWindow {
             checkFailedDialog.open();
             return;
         }
-        noUpdateLabel.text = qsTr("Current version: v") + UpdateManager.currentVersion;
-        noUpdateDialog.open();
+        UpdateManager.checkUpdate(true);
     }
 
     function startCasdoorLoginFlow() {
@@ -906,7 +905,7 @@ ApplicationWindow {
         padding: 0
         width: Math.min(280, noUpdateLabel.implicitWidth + 80)
         height: 56
-        x: (parent.width - width) / 2
+        x: sidebarWidth + (mainContentArea.width - width) / 2
         y: (parent.height - height) / 2
         modal: false
         focus: false
@@ -1148,7 +1147,7 @@ ApplicationWindow {
 
         function onNoUpdateAvailable() {
             window.hasUpdateNotification = false;
-            noUpdateLabel.text = qsTr("Already up to date, current version is v") + UpdateManager.currentVersion;
+            noUpdateLabel.text = qsTr("Already up to date");
             noUpdateDialog.open();
         }
 

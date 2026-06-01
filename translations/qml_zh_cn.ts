@@ -2250,11 +2250,6 @@ Location: %1</source>
         <source>Install Now</source>
         <translation>立即安装</translation>
     </message>
-    <message>
-        <location line="+29"/>
-        <source>Already up to date, current version is v</source>
-        <translation>当前已是最新版本 v</translation>
-    </message>
 </context>
 <context>
     <name>PrimaryButton</name>
