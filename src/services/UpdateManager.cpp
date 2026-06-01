@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
@@ -19,6 +20,18 @@ static QString normalizeVersionString(const QString &version)
         normalized.remove(0, 1);
     }
     return normalized;
+}
+
+static QString inferVersionFromInstallerPath(const QString &installerPath)
+{
+    const QString fileName = QFileInfo(installerPath).completeBaseName();
+    static const QRegularExpression re(QStringLiteral("([0-9]+(?:\\.[0-9]+){1,3})"));
+    const QRegularExpressionMatch match = re.match(fileName);
+    if (!match.hasMatch())
+    {
+        return QString();
+    }
+    return normalizeVersionString(match.captured(1));
 }
 
 // Parse a human-readable size string such as "285.99MB" into bytes (1024-based).
@@ -778,6 +791,10 @@ void UpdateManager::markPendingInstall()
 
     m_hasPendingInstall = true;
     m_pendingInstallFilePath = m_downloadedFilePath;
+    if (m_latestVersion.isEmpty())
+    {
+        m_latestVersion = inferVersionFromInstallerPath(m_pendingInstallFilePath);
+    }
     savePendingInstallState();
     emit pendingInstallChanged();
 
@@ -798,6 +815,7 @@ void UpdateManager::loadPendingInstallState()
 {
     m_hasPendingInstall = false;
     m_pendingInstallFilePath.clear();
+    m_latestVersion.clear();
 
     if (m_pendingInstallStateFile.isEmpty() || !QFile::exists(m_pendingInstallStateFile))
     {
@@ -823,18 +841,31 @@ void UpdateManager::loadPendingInstallState()
     QJsonObject obj = doc.object();
     m_hasPendingInstall = obj.value("hasPending").toBool();
     m_pendingInstallFilePath = obj.value("filePath").toString();
+    m_latestVersion = normalizeVersionString(obj.value("version").toString());
+
+    if (!m_hasPendingInstall)
+    {
+        m_pendingInstallFilePath.clear();
+        m_latestVersion.clear();
+        return;
+    }
 
     // Verify the file still exists
     if (!QFile::exists(m_pendingInstallFilePath))
     {
         m_hasPendingInstall = false;
         m_pendingInstallFilePath.clear();
+        m_latestVersion.clear();
         qWarning() << "[PendingInstall] state exists but installer missing, cleared in memory";
     }
     else
     {
         // Restore installer path for install flow after app restart.
         m_downloadedFilePath = m_pendingInstallFilePath;
+        if (m_latestVersion.isEmpty())
+        {
+            m_latestVersion = inferVersionFromInstallerPath(m_pendingInstallFilePath);
+        }
         qInfo().noquote() << QStringLiteral("[PendingInstall] restored => file=%1").arg(m_pendingInstallFilePath);
     }
 }
@@ -856,6 +887,7 @@ void UpdateManager::savePendingInstallState()
     QJsonObject obj;
     obj["hasPending"] = m_hasPendingInstall;
     obj["filePath"] = m_pendingInstallFilePath;
+    obj["version"] = m_hasPendingInstall ? m_latestVersion : QString();
 
     QJsonDocument doc(obj);
     QFile file(m_pendingInstallStateFile);

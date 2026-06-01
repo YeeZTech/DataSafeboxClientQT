@@ -1098,78 +1098,59 @@ ApplicationWindow {
         onOpened: failedTimer.start()
     }
 
-    Dialog {
+    BaseDialog {
         id: pendingInstallWarningDialog
         parent: mainContentArea
-        modal: true
-        dim: false  // Dimming is handled by pendingInstallBackdrop so the sidebar stays bright
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        modal: false
+        dim: false
+        focus: true
+        closePolicy: Popup.CloseOnEscape
+        dialogWidth: 448
+        title: qsTr("Software Update")
 
-        x: (parent.width - width) / 2
-        y: (parent.height - height) / 2
-        width: 380
-        height: 186
-
-        background: Rectangle {
-            color: "white"
-            border.color: Theme.Colors.borderSeparator
-            border.width: 1
-            radius: 12
-        }
-
-        padding: 0
-        topPadding: 0
-        bottomPadding: 0
-        leftPadding: 0
-        rightPadding: 0
-
-        contentItem: ColumnLayout {
-            Layout.fillWidth: true
-            anchors.margins: 20
-            anchors.fill: parent
-            spacing: 10
+        Column {
+            width: parent.width
+            spacing: 0
 
             Text {
-                text: qsTr("Software Update")
-                font.pixelSize: Theme.Typography.h2
-                font.weight: Font.Medium
-                color: Theme.Colors.textHeading
-            }
-
-            Text {
+                width: parent.width
                 text: qsTr("New version downloaded. Install now?")
                 font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textMenu
                 wrapMode: Text.WordWrap
-                lineHeight: 1.25
-                Layout.fillWidth: true
-            }
-
-            Text {
-                text: qsTr("Version v") + UpdateManager.latestVersion
-                font.pixelSize: Theme.Typography.small
-                color: "#64748b"
-                visible: UpdateManager.latestVersion !== ""
+                lineHeight: 1.6
             }
 
             Item {
-                Layout.fillHeight: true
+                width: parent.width
+                height: 12
             }
 
-            RowLayout {
-                Layout.fillWidth: true
+            Text {
+                width: parent.width
+                text: qsTr("Version v") + UpdateManager.latestVersion
+                font.pixelSize: Theme.Typography.caption
+                color: Theme.Colors.textCaption
+            }
+
+            Item {
+                width: parent.width
+                height: 28
+            }
+
+            Row {
+                anchors.right: parent.right
                 spacing: 12
-                Layout.alignment: Qt.AlignBottom
 
                 SecondaryButton {
-                    Layout.fillWidth: true
                     text: qsTr("Later")
+                    accent: true
                     onClicked: pendingInstallWarningDialog.close()
                 }
 
                 PrimaryButton {
-                    Layout.fillWidth: true
                     text: qsTr("Install Now")
+                    fontWeight: Font.Medium
                     onClicked: {
                         pendingInstallWarningDialog.close();
                         UpdateManager.installUpdate();

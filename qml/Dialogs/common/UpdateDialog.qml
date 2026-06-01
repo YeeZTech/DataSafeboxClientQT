@@ -312,6 +312,7 @@ BaseDialog {
 
                 SecondaryButton {
                     text: qsTr("Cancel")
+                    accent: true
                     onClicked: root.close()
                 }
 
