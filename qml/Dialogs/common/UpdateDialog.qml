@@ -7,13 +7,10 @@ BaseDialog {
     id: root
     dialogWidth: 448
 
-    // Flow phase: "prompt" | "downloading" | "installing" | "success" | "failure"
+    // Flow phase: "prompt" | "downloading" | "success" | "failure"
     property string phase: "prompt"
     property string latestVersion: ""
     property string errorText: ""
-    // Animated progress for the brief, synthetic "installing" stage. The real file
-    // replacement happens after the user restarts into the installer.
-    property real installProgress: 0
 
     // Raised when the user taps "Contact Customer Service" on the failure screen.
     signal contactCustomerServiceRequested
@@ -21,7 +18,6 @@ BaseDialog {
     title: {
         switch (root.phase) {
         case "downloading":
-        case "installing":
             return qsTr("Updating");
         case "success":
             return qsTr("Update Successful");
@@ -52,27 +48,15 @@ BaseDialog {
         }
         function onDownloadFinished() {
             if (root.opened && root.phase === "downloading") {
-                root.phase = "installing";
-                installAnim.restart();
+                root.phase = "success";
             }
         }
         function onDownloadFailed(message) {
-            if (root.opened && (root.phase === "downloading" || root.phase === "installing")) {
+            if (root.opened && root.phase === "downloading") {
                 root.errorText = message;
                 root.phase = "failure";
             }
         }
-    }
-
-    // Brief synthetic "installing" progress shown before the success screen.
-    NumberAnimation {
-        id: installAnim
-        target: root
-        property: "installProgress"
-        from: 0
-        to: 1
-        duration: 1200
-        onFinished: root.phase = "success"
     }
 
     Column {
@@ -203,50 +187,6 @@ BaseDialog {
             }
         }
 
-        // ---- installing ----
-        Column {
-            width: parent.width
-            spacing: 12
-            visible: root.phase === "installing"
-
-            Text {
-                text: qsTr("Installing...")
-                font.pixelSize: Theme.Typography.caption
-                color: Theme.Colors.textCaption
-            }
-
-            Item {
-                width: parent.width
-                height: 16
-
-                Rectangle {
-                    anchors.left: parent.left
-                    anchors.right: installPercent.left
-                    anchors.rightMargin: 12
-                    anchors.verticalCenter: parent.verticalCenter
-                    height: 10
-                    radius: 4
-                    color: Theme.Colors.backgroundGray
-
-                    Rectangle {
-                        height: parent.height
-                        radius: parent.radius
-                        width: parent.width * root.installProgress
-                        color: Theme.Colors.primary
-                    }
-                }
-
-                Text {
-                    id: installPercent
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: Math.round(root.installProgress * 100) + "%"
-                    font.pixelSize: Theme.Typography.caption
-                    color: Theme.Colors.textCaption
-                }
-            }
-        }
-
         // ---- success ----
         Column {
             width: parent.width
@@ -317,7 +257,7 @@ BaseDialog {
                 }
 
                 PrimaryButton {
-                    text: qsTr("Restart")
+                    text: qsTr("Install")
                     fontWeight: Font.Medium
                     onClicked: UpdateManager.installUpdate()
                 }

@@ -2030,10 +2030,6 @@ Status:
         <translation>版本更新中</translation>
     </message>
     <message>
-        <source>Installing...</source>
-        <translation>安装中...</translation>
-    </message>
-    <message>
         <source>Download Speed:</source>
         <translation>下载速度：</translation>
     </message>
@@ -2043,15 +2039,15 @@ Status:
     </message>
     <message>
         <source>Update Successful</source>
-        <translation>更新成功</translation>
+        <translation>下载成功</translation>
     </message>
     <message>
         <source>Update downloaded successfully. Please restart the client to enjoy the new features.</source>
-        <translation>版本更新成功，请您重启客户端，体验全新功能</translation>
+        <translation>新版本下载成功，请您安装客户端，体验全新功能</translation>
     </message>
     <message>
         <source>Update Failed</source>
-        <translation>更新失败</translation>
+        <translation>下载失败</translation>
     </message>
     <message>
         <source>Failure reason:</source>
@@ -2059,7 +2055,7 @@ Status:
     </message>
     <message>
         <source>. You can try updating the client again or contact customer service for help.</source>
-        <translation>。您可尝试再次更新客户端或联系客服寻求帮助。</translation>
+        <translation>。您可尝试再次下载客户端或联系客服寻求帮助。</translation>
     </message>
     <message>
         <source>Contact Customer Service</source>
@@ -2070,8 +2066,8 @@ Status:
         <translation>取消</translation>
     </message>
     <message>
-        <source>Restart</source>
-        <translation>重启</translation>
+        <source>Install</source>
+        <translation>安装</translation>
     </message>
     <message>
         <source>Retry</source>
