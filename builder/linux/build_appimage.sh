@@ -57,6 +57,7 @@ fi
 if [[ "${USE_TEST_ENV}" != "0" && "${USE_TEST_ENV}" != "1" ]]; then
     error "USE_TEST_ENV=${USE_TEST_ENV} is invalid. Only 0 or 1 is accepted."
 fi
+PACKAGE_SUFFIX="$([[ "${USE_TEST_ENV}" == "1" ]] && echo "_test" || echo "")"
 
 echo ""
 echo "=================================================="
@@ -244,7 +245,7 @@ linuxdeploy \
 APPIMAGE_FILE="$(ls "${BUILD_DIR}"/DatasafeBox*.AppImage 2>/dev/null | head -1 || \
                  ls "${BUILD_DIR}"/*.AppImage 2>/dev/null | head -1)"
 [[ -n "${APPIMAGE_FILE}" ]] || error "未找到生成的 AppImage 文件"
-OUTPUT_NAME="DatasafeBox-${VERSION}-${APPIMAGE_ARCH}.AppImage"
+OUTPUT_NAME="DataSafebox_${VERSION}${PACKAGE_SUFFIX}.AppImage"
 mv "${APPIMAGE_FILE}" "${DIST_DIR}/${OUTPUT_NAME}"
 
 echo ""

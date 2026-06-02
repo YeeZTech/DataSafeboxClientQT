@@ -420,6 +420,12 @@ int main(int argc, char *argv[])
     {
     }
 
+ #ifdef APP_VERSION
+    const QString appVersion = QStringLiteral(APP_VERSION);
+ #else
+    const QString appVersion = QStringLiteral("unknown");
+ #endif
+
     // Install message handler (for file logging and Sentry capture)
     {
         // crashpad_handler binary is shipped alongside the executable.
@@ -431,7 +437,7 @@ int main(int argc, char *argv[])
             ;
         sentry_options_t *options = sentry_options_new();
         sentry_options_set_dsn(options, AppCfg::SENTRY_DSN);
-        sentry_options_set_release(options, "datasafebox-client@1.0.0");
+        sentry_options_set_release(options, qPrintable(QStringLiteral("datasafebox-client@") + appVersion));
         sentry_options_set_environment(options, "production");
 #ifdef QT_DEBUG
         sentry_options_set_debug(options, 1);
@@ -463,11 +469,6 @@ int main(int argc, char *argv[])
         }
     }
     g_previousMessageHandler = qInstallMessageHandler(sentryMessageHandler);
-#ifdef APP_VERSION
-    const QString appVersion = QStringLiteral(APP_VERSION);
-#else
-    const QString appVersion = QStringLiteral("unknown");
-#endif
     qInfo() << "[Startup] datasafebox-qt-client starting, version:" << appVersion << "build:" << __DATE__ << __TIME__;
 
     // Periodically flush queued Sentry events (e.g. warnings) every 30 seconds

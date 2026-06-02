@@ -82,17 +82,18 @@ echo.
 rem ==================================================================
 rem USE_TEST_ENV VALIDATION (optional; defaults to 0 in .pro)
 rem ==================================================================
-if defined USE_TEST_ENV (
-    if not "%USE_TEST_ENV%"=="0" if not "%USE_TEST_ENV%"=="1" (
-        echo [Error] USE_TEST_ENV=%USE_TEST_ENV% is invalid. Only 0 or 1 is accepted.
-        goto :fail_no_msg
-    )
-    echo [INFO] USE_TEST_ENV=%USE_TEST_ENV%
-    set "QMAKE_USE_TEST_ENV=USE_TEST_ENV=%USE_TEST_ENV%"
-) else (
-    echo [INFO] USE_TEST_ENV not set, defaulting to 0 ^(production^) via .pro
-    set "QMAKE_USE_TEST_ENV="
+if not defined USE_TEST_ENV (
+    set "USE_TEST_ENV=0"
+    echo [INFO] USE_TEST_ENV not set, defaulting to 0 ^(production^)
 )
+if not "%USE_TEST_ENV%"=="0" if not "%USE_TEST_ENV%"=="1" (
+    echo [Error] USE_TEST_ENV=%USE_TEST_ENV% is invalid. Only 0 or 1 is accepted.
+    goto :fail_no_msg
+)
+echo [INFO] USE_TEST_ENV=%USE_TEST_ENV%
+set "QMAKE_USE_TEST_ENV=USE_TEST_ENV=%USE_TEST_ENV%"
+set "PACKAGE_SUFFIX="
+if "%USE_TEST_ENV%"=="1" set "PACKAGE_SUFFIX=_test"
 
 rem ==================================================================
 rem PRE-FLIGHT CHECK
@@ -136,7 +137,8 @@ rem ==================================================================
 rem --- read version (single source: installer/config/config.xml) ---
 for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "(Select-Xml -Path '%CONFIG_XML%' -XPath '/Installer/Version').Node.InnerText"`) do set "PACKAGE_VERSION=%%i"
 if not defined PACKAGE_VERSION (echo [Error] Failed to read version from config.xml & goto :fail)
-set "OUTPUT_INSTALLER=%SCRIPT_DIR%DataSafebox_%PACKAGE_VERSION%.exe"
+set "OUTPUT_BASENAME=DataSafebox_%PACKAGE_VERSION%%PACKAGE_SUFFIX%"
+set "OUTPUT_INSTALLER=%SCRIPT_DIR%%OUTPUT_BASENAME%.exe"
 echo [INFO] Version: %PACKAGE_VERSION%
 echo [INFO] Output : %OUTPUT_INSTALLER%
 echo.
@@ -300,8 +302,8 @@ set "BC_ERROR=%errorlevel%"
 popd
 if not "%BC_ERROR%"=="0" goto :fail
 
-rem Rename installer to localized Chinese name using PowerShell Unicode codepoints
-powershell -NoProfile -Command "$v='%PACKAGE_VERSION%'; $dir='%SCRIPT_DIR%'; Write-Host ''; Write-Host '=================================================='; Write-Host '  Build complete'; Write-Host ('  Output: '+$dir+'DataSafebox_'+$v+'.exe'); Write-Host '==================================================' "
+rem Print final installer path
+powershell -NoProfile -Command "$out='%OUTPUT_INSTALLER%'; Write-Host ''; Write-Host '=================================================='; Write-Host '  Build complete'; Write-Host ('  Output: '+$out); Write-Host '==================================================' "
 echo.
 pause
 exit /b 0
