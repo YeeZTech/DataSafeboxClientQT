@@ -299,17 +299,17 @@ else
 fi
 
 # -- [10/10] App icon  (depends on librsvg [3] and Pillow [5]) ---------------
+# Always regenerate from SafeLogo.svg. SafeLogo.icns is not tracked in git, so a
+# copy left over from a previous logo would otherwise be reused and the bundle
+# would ship the old icon. Deleting it first forces a fresh render every build.
 step "10/10" "App icon (SafeLogo.icns)"
+rm -f "${PROJECT_DIR}/icons/SafeLogo.icns"
+info "  Regenerating SafeLogo.icns from SafeLogo.svg..."
+bash "${PROJECT_DIR}/icons/generate_platform_icons.sh" 2>&1 | tail -3 || true
 if [[ -f "${PROJECT_DIR}/icons/SafeLogo.icns" ]]; then
-    ok "SafeLogo.icns: ${PROJECT_DIR}/icons/SafeLogo.icns"
+    ok "SafeLogo.icns generated"
 else
-    warn "  Not found -- generating..."
-    bash "${PROJECT_DIR}/icons/generate_platform_icons.sh" 2>&1 | tail -3 || true
-    if [[ -f "${PROJECT_DIR}/icons/SafeLogo.icns" ]]; then
-        ok "  SafeLogo.icns generated"
-    else
-        fail_check "SafeLogo.icns  ->  bash ${PROJECT_DIR}/icons/generate_platform_icons.sh  (requires librsvg + Pillow)"
-    fi
+    fail_check "SafeLogo.icns  ->  bash ${PROJECT_DIR}/icons/generate_platform_icons.sh  (requires librsvg + Pillow)"
 fi
 
 # -- Preflight result --------------------------------------------------------
@@ -626,4 +626,6 @@ printf "==================================================\n"
 printf "%s  Build complete!%s\n" "${GREEN}" "${NC}"
 printf "  Version : %s\n" "${VERSION}"
 printf "  Output  : %s/%s\n" "${DIST_DIR}" "${DMG_NAME}"
+printf "  Tip     : if an upgraded install shows the old icon, run\n"
+printf "            builder/macos/refresh_icon_cache.sh\n"
 printf "==================================================\n"

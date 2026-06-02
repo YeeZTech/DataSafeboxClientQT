@@ -211,11 +211,13 @@ void UpdateManager::checkUpdate(bool manual)
                 {
                     QJsonObject data = obj["data"].toObject();
                     QString latestVersion = normalizeVersionString(data["versionNo"].toString());
-                    QString current = normalizeVersionString(currentVersion());
 
-                    if (latestVersion.isEmpty() || latestVersion == current)
+                    if (!isNewerVersion(latestVersion))
                     {
-                        // Same version as the client: already up to date.
+                        // The client is already at or ahead of the backend's latest version.
+                        // This covers both the equal case and a client build (e.g. 1.0.4) that
+                        // is newer than the backend's latest (e.g. 1.0.3): such a client is up to
+                        // date and must never be prompted — let alone force-updated — to downgrade.
                         if (manual)
                         {
                             emit noUpdateAvailable();
@@ -223,12 +225,12 @@ void UpdateManager::checkUpdate(bool manual)
                     }
                     else
                     {
-                        // A newer/different version is available — notify the UI so the
-                        // update dialog pops up.
+                        // A strictly newer version is available — notify the UI so the update
+                        // dialog pops up.
                         m_latestVersion = latestVersion;
-                        // Only force when the remote build is actually newer, so a local
-                        // dev build ahead of the backend is never blocked by a force prompt.
-                        m_forceUpdate = data["needForceUpdate"].toBool() && isNewerVersion(latestVersion);
+                        // isNewerVersion() is guaranteed true here, so honor the backend's force flag.
+                        // m_forceUpdate = data["needForceUpdate"].toBool();
+                        m_forceUpdate = true;
 
                         // Resolve the Windows client download URL and (approximate) size so
                         // startDownload() has a target to fetch. The build is Windows-only.
@@ -868,6 +870,25 @@ void UpdateManager::loadPendingInstallState()
         {
             m_latestVersion = inferVersionFromInstallerPath(m_pendingInstallFilePath);
         }
+
+        // If the pending installer is for a version we are already running (or older), the
+        // update has already been applied — e.g. the installer was launched manually instead
+        // of through clearPendingInstall(). Drop the stale state and remove the leftover
+        // installer so we don't keep prompting "install now" on every launch.
+        if (!m_latestVersion.isEmpty() && !isNewerVersion(m_latestVersion))
+        {
+            qInfo().noquote() << QStringLiteral("[PendingInstall] installer v%1 not newer than current v%2, "
+                                                "clearing stale pending state")
+                                     .arg(m_latestVersion, currentVersion());
+            QFile::remove(m_pendingInstallFilePath);
+            m_hasPendingInstall = false;
+            m_pendingInstallFilePath.clear();
+            m_latestVersion.clear();
+            m_downloadedFilePath.clear();
+            savePendingInstallState();
+            return;
+        }
+
         qInfo().noquote() << QStringLiteral("[PendingInstall] restored => file=%1").arg(m_pendingInstallFilePath);
     }
 }

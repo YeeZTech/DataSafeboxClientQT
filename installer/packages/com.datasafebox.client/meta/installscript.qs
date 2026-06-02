@@ -74,6 +74,26 @@ Component.prototype.createOperations = function() {
     component.addOperation("CreateShortcut", target, "@StartMenuDir@/" + appDisplayName + ".lnk", "workingDirectory=@TargetDir@", "iconPath=" + iconPath);
     component.addOperation("CreateShortcut", target, "@DesktopDir@/" + appDisplayName + ".lnk", "workingDirectory=@TargetDir@", "iconPath=" + iconPath);
 
+    // Refresh the Windows shell icon cache so the freshly written shortcut/exe
+    // icons replace any icon Explorer cached from a previously installed version
+    // (same install path + filename, so Windows otherwise keeps showing the old
+    // icon). Non-destructive: notifies the shell instead of restarting Explorer.
+    // try/catch keeps PowerShell's exit code at 0 so the IFW Execute op succeeds.
+    var iconCacheRefreshScript =
+        "try { Start-Process -FilePath 'ie4uinit.exe' -ArgumentList '-show' -WindowStyle Hidden -ErrorAction SilentlyContinue } catch {}; " +
+        "try { " +
+        "  Add-Type -Namespace Shell -Name Cache -MemberDefinition '[DllImport(\"shell32.dll\")] public static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);'; " +
+        "  [Shell.Cache]::SHChangeNotify(0x08000000, 0, [IntPtr]::Zero, [IntPtr]::Zero); " +
+        "} catch {}";
+
+    component.addOperation(
+        "Execute",
+        "powershell.exe",
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-Command", iconCacheRefreshScript
+    );
+
     var vcRedistPath = toWindowsPath(targetDir) + "\\vc_redist.x64.exe";
     var vcRedistScript =
         "$exe = " + psLiteral(vcRedistPath) + "; " +
