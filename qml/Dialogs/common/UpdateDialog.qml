@@ -12,6 +12,12 @@ BaseDialog {
     property string latestVersion: ""
     property string errorText: ""
 
+    // When true, this is the mandatory (force) update variant shown before login:
+    // the subtitle warns that the current version is no longer supported.
+    property bool forceMode: false
+    // Guards auto-open so the regular variant doesn't pop over the login screen.
+    property bool autoOpenEnabled: true
+
     // Raised when the user taps "Contact Customer Service" on the failure screen.
     signal contactCustomerServiceRequested
 
@@ -41,6 +47,12 @@ BaseDialog {
     Connections {
         target: UpdateManager
         function onUpdateAvailable(version, desc, force) {
+            // Route by the force flag so the matching dialog variant handles it:
+            // the force variant takes mandatory updates, the regular one the rest.
+            if (root.forceMode !== force)
+                return;
+            if (!root.autoOpenEnabled)
+                return;
             root.latestVersion = version;
             root.errorText = "";
             root.phase = "prompt";
@@ -70,9 +82,11 @@ BaseDialog {
             visible: root.phase === "prompt"
 
             Text {
-                text: qsTr("Current Version") + " V" + UpdateManager.currentVersion
+                width: parent.width
+                text: root.forceMode ? (qsTr("Current Version") + " V" + UpdateManager.currentVersion + qsTr(", no longer supported. Please upgrade to the latest version to continue.")) : (qsTr("Current Version") + " V" + UpdateManager.currentVersion)
                 font.pixelSize: Theme.Typography.caption
                 color: Theme.Colors.textCaption
+                wrapMode: Text.WordWrap
             }
 
             // Release notes — hidden when the backend provides no description.

@@ -2022,6 +2022,10 @@ Status:
         <translation>当前版本</translation>
     </message>
     <message>
+        <source>, no longer supported. Please upgrade to the latest version to continue.</source>
+        <translation>, 已不再支持使用，请升级最新版本后继续操作</translation>
+    </message>
+    <message>
         <source>Release Notes</source>
         <translation>版本更新说明</translation>
     </message>

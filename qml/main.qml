@@ -95,10 +95,8 @@ ApplicationWindow {
 
     Component.onCompleted: {
         Qt.callLater(function () {
-            // 初始化时检查是否有可用更新
-            if (UpdateManager && UpdateManager.checkForUpdates) {
-                UpdateManager.checkForUpdates();
-            }
+            // 进入登录页前检查版本：若需强制更新，forceUpdateDialog 会弹出
+            UpdateManager.checkUpdate(false);
             if (dataManager && dataManager.currentUser !== undefined) {
                 dataManager.currentUser = window.currentUser;
             }
@@ -727,6 +725,9 @@ ApplicationWindow {
                 id: updateDialog
                 parent: mainContentArea
                 dim: false  // Dimming is handled by updateDialogBackdrop so the sidebar stays bright
+                // Only the post-login app shows the optional "new version" prompt; the
+                // pre-login force variant is handled by forceUpdateDialog.
+                autoOpenEnabled: window.authPage === "main"
                 onContactCustomerServiceRequested: customerServiceDialog.open()
             }
 
@@ -857,6 +858,17 @@ ApplicationWindow {
         parent: Overlay.overlay
         x: parent.width - width - 15
         y: Math.max(8, parent.height - height - 93)
+    }
+
+    // Mandatory (force) update dialog. Parented to the overlay so it covers the
+    // whole window — including the login WebView — when the backend requires a
+    // force update. Per product decision, dismissing it exits the application.
+    UpdateDialog {
+        id: forceUpdateDialog
+        parent: Overlay.overlay
+        forceMode: true
+        onContactCustomerServiceRequested: customerServiceDialog.open()
+        onClosed: Qt.quit()
     }
 
     // 错误通知卡片（顶部滑入）

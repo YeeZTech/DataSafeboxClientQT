@@ -226,7 +226,9 @@ void UpdateManager::checkUpdate(bool manual)
                         // A newer/different version is available — notify the UI so the
                         // update dialog pops up.
                         m_latestVersion = latestVersion;
-                        m_forceUpdate = data["needForceUpdate"].toBool();
+                        // Only force when the remote build is actually newer, so a local
+                        // dev build ahead of the backend is never blocked by a force prompt.
+                        m_forceUpdate = data["needForceUpdate"].toBool() && isNewerVersion(latestVersion);
 
                         // Resolve the Windows client download URL and (approximate) size so
                         // startDownload() has a target to fetch. The build is Windows-only.
