@@ -4,6 +4,10 @@
 <context>
     <name>AddVisibleUserDialog</name>
     <message>
+        <source>Security domain is deactivated, this operation is not supported</source>
+        <translation>安全域已停用，暂不支持该操作</translation>
+    </message>
+    <message>
         <location filename="../qml/Dialogs/domain/AddVisibleUserDialog.qml" line="+16"/>
         <location line="+11"/>
         <location line="+5"/>
@@ -352,6 +356,10 @@
 <context>
     <name>DomainBasicInfoCard</name>
     <message>
+        <source>Security domain is deactivated, this operation is not supported</source>
+        <translation>安全域已停用，暂不支持该操作</translation>
+    </message>
+    <message>
         <location filename="../qml/Pages/domain/DomainBasicInfoCard.qml" line="+49"/>
         <source>Name</source>
         <translation>名称</translation>
@@ -608,6 +616,10 @@
 </context>
 <context>
     <name>EncryptFileDialog</name>
+    <message>
+        <source>Security domain is deactivated, this operation is not supported</source>
+        <translation>安全域已停用，暂不支持该操作</translation>
+    </message>
     <message>
         <location filename="../qml/Dialogs/encrypt/EncryptFileDialog.qml" line="+177"/>
         <source> (encrypted)</source>

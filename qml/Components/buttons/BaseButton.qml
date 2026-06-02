@@ -8,6 +8,14 @@ Rectangle {
     property string text: ""
     property bool enabled: true
     property bool loading: false
+    // Visually-disabled state that still detects hover so `disabledTooltipText`
+    // can be shown (used for the inactive-security-domain submit buttons; PRD 3.3).
+    // NOTE: `enabled` maps to Item.enabled, which disables the whole subtree
+    // (including this button's hover/tooltip). So when using `inactive`, keep
+    // `enabled` truthy — e.g. `enabled: inactive || <yourCondition>` — otherwise
+    // the tooltip cannot appear.
+    property bool inactive: false
+    property string disabledTooltipText: ""
     property int fontSize: Theme.Typography.body
     property int fontWeight: buttonStyle === "primary" ? Font.Normal : Font.Medium
     property url iconSource: ""
@@ -24,14 +32,16 @@ Rectangle {
     height: 36
     implicitWidth: Math.max(88, contentRow.implicitWidth + 32)
     radius: 8
-    opacity: enabled ? 1.0 : 0.5
+    opacity: _active ? 1.0 : 0.5
 
     readonly property bool _isSecondary: buttonStyle === "secondary"
     readonly property bool _isDanger: buttonStyle === "danger"
     readonly property bool _useAccent: accent || primaryOutline
+    // Interactive (clickable, normally styled) when enabled and not inactive.
+    readonly property bool _active: enabled && !inactive
 
     color: {
-        if (!enabled) {
+        if (!_active) {
             if (_isSecondary)
                 return Theme.Colors.buttonSecondaryDefault;
             if (_isDanger)
@@ -62,7 +72,7 @@ Rectangle {
     border.color: {
         if (!_isSecondary)
             return "transparent";
-        if (_useAccent) {
+        if (_useAccent && _active) {
             if (mouseArea.pressed)
                 return Theme.Colors.buttonSecondaryAccentBorderPressed;
             if (mouseArea.containsMouse)
@@ -108,7 +118,7 @@ Rectangle {
             font.pixelSize: root.fontSize
             font.weight: root.fontWeight
             color: {
-                if (!root.enabled) {
+                if (!root._active) {
                     // Disabled primary keeps white text on its faded-blue fill; gray bg buttons use muted text
                     if (!root._isSecondary && !root._isDanger)
                         return Theme.Colors.primaryText;
@@ -125,11 +135,20 @@ Rectangle {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        hoverEnabled: root.enabled
-        cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+        // Keep hover tracking alive while inactive so the disabled tooltip can show.
+        hoverEnabled: root.enabled || root.inactive
+        cursorShape: root._active ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: {
-            if (root.enabled && !root.loading)
+            if (root._active && !root.loading)
                 root.clicked();
         }
+    }
+
+    // Hover hint shown when the button is intentionally inactive (e.g. the security
+    // domain is deactivated). No-op when disabledTooltipText is empty.
+    HintTooltip {
+        parent: root
+        text: root.disabledTooltipText
+        visible: root.inactive && root.disabledTooltipText !== "" && mouseArea.containsMouse
     }
 }

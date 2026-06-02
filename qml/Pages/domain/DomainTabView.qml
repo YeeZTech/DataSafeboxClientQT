@@ -50,6 +50,8 @@ Column {
         width: parent.width
         domainData: root.domainData
         isDomainReadOnly: root.isDomainReadOnly
+        isCreator: root.isCreator
+        isDomainInactive: root.isDomainInactive
         isEditingDescription: root.isEditingDescription
         editedDescription: root.editedDescription
         isDescriptionSaving: root.isDescriptionSaving
@@ -71,6 +73,7 @@ Column {
         width: parent.width
         visibleUsers: root.domainData.visibleUsers || []
         isDomainReadOnly: root.isDomainReadOnly
+        isCreator: root.isCreator
         operationBusy: root.operationBusy
         pendingRemovedAccount: root.pendingRemovedAccount
         actionRightMargin: root.actionRightMargin

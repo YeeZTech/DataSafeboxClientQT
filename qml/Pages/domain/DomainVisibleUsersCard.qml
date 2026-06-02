@@ -8,6 +8,8 @@ Card {
 
     property var visibleUsers: []
     property bool isDomainReadOnly: false
+    // 创建方即使在停用安全域下也可打开"添加可见用户"弹窗（提交按钮置灰，PRD 3.3）
+    property bool isCreator: false
     property bool operationBusy: false
     property string pendingRemovedAccount: ""
     property int actionRightMargin: 6
@@ -82,7 +84,7 @@ Card {
                     return "transparent";
                 }
                 visible: true
-                opacity: (!card.isDomainReadOnly && !card.operationBusy) ? 1.0 : 0.5
+                opacity: (card.isCreator && !card.operationBusy) ? 1.0 : 0.5
                 Behavior on opacity {
                     NumberAnimation {
                         duration: 150
@@ -114,7 +116,7 @@ Card {
 
                 MouseArea {
                     anchors.fill: parent
-                    enabled: !card.isDomainReadOnly && !card.operationBusy
+                    enabled: card.isCreator && !card.operationBusy
                     hoverEnabled: true
                     cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                     onEntered: parent.hovered = true

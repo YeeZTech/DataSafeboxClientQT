@@ -277,6 +277,7 @@ Item {
         id: addUserDialog
         parent: root
         dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
+        domainInactive: root.isDomainInactive
 
         property string pendingAccount: ""
         property var pendingVisibleUsers: []
@@ -355,6 +356,7 @@ Item {
         dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
         domainName: root.domainName
         domainPubKey: root.domainPubKey
+        domainInactive: root.isDomainInactive
 
         onOpened: {
             root.encryptButtonBusy = true;

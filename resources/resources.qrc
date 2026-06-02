@@ -22,6 +22,7 @@
         <file alias="DataSafebox/Components/FormField.qml">../qml/Components/inputs/FormField.qml</file>
         <file alias="DataSafebox/Components/BadgeIndicator.qml">../qml/Components/display/BadgeIndicator.qml</file>
         <file alias="DataSafebox/Components/CenteredTooltipText.qml">../qml/Components/display/CenteredTooltipText.qml</file>
+        <file alias="DataSafebox/Components/HintTooltip.qml">../qml/Components/display/HintTooltip.qml</file>
         <file alias="DataSafebox/Components/LinkText.qml">../qml/Components/display/LinkText.qml</file>
         <file alias="DataSafebox/Components/InputContextMenu.qml">../qml/Components/inputs/InputContextMenu.qml</file>
         <file alias="DataSafebox/Components/MessageCenter.qml">../qml/Components/feedback/MessageCenter.qml</file>

@@ -16,6 +16,8 @@ BaseDialog {
     property string pendingAccount: ""
     property var currentUserInfo: null  // 存储当前验证通过的用户信息
     property string domainCreator: ""  // 安全域创建者，用于拦截重复添加
+    // 安全域已停用（已关闭/创建失败）：弹窗正常打开，但"添加"按钮置灰并提示 (PRD 3.3)
+    property bool domainInactive: false
     signal addClicked(string account)
     signal cancelClicked
 
@@ -210,7 +212,10 @@ BaseDialog {
 
             PrimaryButton {
                 text: qsTr("Add")
-                enabled: accountInput.text.trim() !== "" && !root.isVerifying
+                inactive: root.domainInactive
+                disabledTooltipText: qsTr("Security domain is deactivated, this operation is not supported")
+                // Stay enabled (Item-level) while inactive so the hover tooltip works; `inactive` handles the grayed look.
+                enabled: root.domainInactive || (accountInput.text.trim() !== "" && !root.isVerifying)
                 loading: root.isVerifying
                 onClicked: {
                     var trimmedAccount = accountInput.text ? accountInput.text.trim() : "";

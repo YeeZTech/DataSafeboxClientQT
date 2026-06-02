@@ -9,6 +9,10 @@ Card {
 
     property var domainData: ({})
     property bool isDomainReadOnly: false
+    // 当前用户是否为创建方；安全域是否已停用（已关闭/创建失败）。
+    // PRD 3.3：停用安全域时创建方仍可进入编辑态，但"保存"按钮置灰并提示。
+    property bool isCreator: false
+    property bool isDomainInactive: false
     property bool isEditingDescription: false
     property string editedDescription: ""
     property bool isDescriptionSaving: false
@@ -259,6 +263,7 @@ Card {
                 }
 
                 Rectangle {
+                    id: editButton
                     anchors.right: parent.right
                     anchors.rightMargin: -15
                     anchors.verticalCenter: parent.verticalCenter
@@ -266,10 +271,15 @@ Card {
                     height: 32
                     radius: 8
                     visible: true
-                    opacity: !card.isDomainReadOnly ? 1.0 : 0.5
+                    // 编辑入口：创建方始终可点击；进入编辑态后若安全域已停用，"保存"置灰 (PRD 3.3)
+                    readonly property bool saveBlocked: card.isEditingDescription && card.isDomainInactive
+                    opacity: (card.isCreator && !saveBlocked) ? 1.0 : 0.5
                     property bool hovered: false
                     property bool pressed: false
                     color: {
+                        // 保存被拦截时保持置灰外观，不显示 hover/pressed 高亮 (PRD 3.3)
+                        if (editButton.saveBlocked)
+                            return "transparent";
                         if (pressed)
                             return "#c1d9ef";
                         if (hovered)
@@ -334,9 +344,10 @@ Card {
 
                     MouseArea {
                         anchors.fill: parent
-                        enabled: !card.isDomainReadOnly && !card.isDescriptionSaving
+                        // 创建方可点击进入/退出编辑态；保存被拦截时在 onClicked 内提前返回。
+                        enabled: card.isCreator && !card.isDescriptionSaving
                         hoverEnabled: true
-                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                        cursorShape: (card.isCreator && !editButton.saveBlocked) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                         onEntered: parent.hovered = true
                         onExited: parent.hovered = false
                         onPressed: {
@@ -353,9 +364,12 @@ Card {
                             card._savingFromButton = false;
                         }
                         onClicked: {
-                            if (card.isDomainReadOnly || card.isDescriptionSaving)
+                            if (!card.isCreator || card.isDescriptionSaving)
                                 return;
                             if (card.isEditingDescription) {
+                                // PRD 3.3：安全域已停用时保存不可用，仅展示提示。
+                                if (card.isDomainInactive)
+                                    return;
                                 if ((card.editedDescription || "").length > card.descriptionMaxLength) {
                                     card.descriptionErrorMessage = qsTr("Description cannot exceed 500 characters");
                                     return;
@@ -369,6 +383,13 @@ Card {
                                 card.editDescriptionRequested();
                             }
                         }
+                    }
+
+                    // 停用安全域时"保存"按钮的悬停提示 (PRD 3.3)
+                    HintTooltip {
+                        parent: editButton
+                        text: qsTr("Security domain is deactivated, this operation is not supported")
+                        visible: editButton.saveBlocked && editButton.hovered
                     }
                 }
             }
@@ -435,7 +456,8 @@ Card {
                     selectionColor: Theme.Colors.accent
                     wrapMode: TextArea.Wrap
                     selectByMouse: true
-                    readOnly: card.isDomainReadOnly
+                    // 创建方在停用安全域时仍可编辑描述文本（保存被拦截，PRD 3.3）
+                    readOnly: !card.isCreator
                     leftPadding: 0
                     rightPadding: 0
                     topPadding: 0

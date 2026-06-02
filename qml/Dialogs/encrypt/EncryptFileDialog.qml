@@ -25,6 +25,8 @@ BaseDialog {
     property string selectedOutputPath: ""
     property string domainName: ""
     property string domainPubKey: ""
+    // 安全域已停用（已关闭/创建失败）：弹窗正常打开，但"加密文件"按钮置灰并提示 (PRD 3.3)
+    property bool domainInactive: false
 
     // Encryption queue state
     property var _encryptQueue: []       // [{file, modelIndex}]
@@ -652,7 +654,10 @@ BaseDialog {
 
             PrimaryButton {
                 text: qsTr("Encrypt Files")
-                enabled: root._pendingCount > 0 && !root._encrypting
+                inactive: root.domainInactive
+                disabledTooltipText: qsTr("Security domain is deactivated, this operation is not supported")
+                // Stay enabled (Item-level) while inactive so the hover tooltip works; `inactive` handles the grayed look.
+                enabled: root.domainInactive || (root._pendingCount > 0 && !root._encrypting)
                 onClicked: root.startEncryption()
             }
         }

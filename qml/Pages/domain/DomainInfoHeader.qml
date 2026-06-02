@@ -78,8 +78,9 @@ Item {
 
         PrimaryButton {
             id: encryptFileButton
-            // 使用方始终可点击（点击仅弹出提示）；创建方沿用原有停用/忙碌禁用逻辑。
-            readonly property bool disabled: root.isCreator && (root.isDomainInactive || root.encryptButtonBusy)
+            // 使用方始终可点击（点击仅弹出提示）；创建方仅在加密进行中禁用。
+            // 停用安全域时创建方仍可打开加密弹窗，弹窗内"加密文件"按钮置灰 (PRD 3.3)。
+            readonly property bool disabled: root.isCreator && root.encryptButtonBusy
             visible: true
             enabled: !disabled
             iconSource: "qrc:/icons/icon-encrypt-to-domain.svg"
