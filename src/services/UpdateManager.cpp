@@ -229,8 +229,8 @@ void UpdateManager::checkUpdate(bool manual)
                         // dialog pops up.
                         m_latestVersion = latestVersion;
                         // isNewerVersion() is guaranteed true here, so honor the backend's force flag.
-                        // m_forceUpdate = data["needForceUpdate"].toBool();
-                        m_forceUpdate = true;
+                        m_forceUpdate = data["needForceUpdate"].toBool();
+                        // m_forceUpdate = true;
 
                         // Resolve the Windows client download URL and (approximate) size so
                         // startDownload() has a target to fetch. The build is Windows-only.
