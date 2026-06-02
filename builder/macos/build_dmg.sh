@@ -13,6 +13,9 @@
 #
 # Overridable via environment variables:
 #   QT_VERSION, SENTRY_ROOT_DIR, DSCC_DIR
+#
+# sentry-native is expected to be installed via Homebrew:
+#   brew install sentry-native
 
 # Preflight phase accumulates ALL failures before exiting — no -e yet.
 set -uo pipefail
@@ -46,13 +49,50 @@ DIST_DIR="${SCRIPT_DIR}"
 ENTITLEMENTS="${SCRIPT_DIR}/entitlements.plist"
 
 NOTARY_PROFILE="datasafebox-notary"
-SKIP_NOTARY="${SKIP_NOTARY:-1}"   # set to 0 to enable notarization
+SKIP_NOTARY=0   # set to 0 to enable notarization
 
 ARCH="$(uname -m)"
-VCPKG_TRIPLET="$([[ "${ARCH}" == arm64 ]] && echo arm64-osx || echo x64-osx)"
-QT_DIR="${HOME}/Qt/${QT_VERSION}/macos"
-VCPKG_DIR="${PARENT_DIR}/vcpkg"
-SENTRY_ROOT="${SENTRY_ROOT_DIR:-${VCPKG_DIR}/installed/${VCPKG_TRIPLET}}"
+
+# find_qt_dir <version>
+# Locate a Qt installation matching <version> by searching common roots in
+# priority order: explicit QT_DIR env var > aqt-style search (~/Qt, ~/packages/Qt,
+# /opt/Qt) > Homebrew qt / qt@6.  Prints the directory and returns 0 on success.
+find_qt_dir() {
+    local ver="$1"
+    # 1. Caller already knows exactly where Qt lives.
+    if [[ -n "${QT_DIR:-}" && -x "${QT_DIR}/bin/qmake" ]]; then
+        echo "${QT_DIR}"; return 0
+    fi
+    # 2. aqt-style layout: <root>/<version>/macos
+    local root
+    for root in "${HOME}/Qt" "${HOME}/packages/Qt" /opt/Qt; do
+        local candidate="${root}/${ver}/macos"
+        if [[ -x "${candidate}/bin/qmake" ]]; then
+            echo "${candidate}"; return 0
+        fi
+    done
+    # 3. Any qmake found under common package dirs whose --version matches.
+    local qmake
+    while IFS= read -r qmake; do
+        if "${qmake}" --version 2>/dev/null | grep -qF "Qt version ${ver}"; then
+            echo "$(dirname "$(dirname "${qmake}")")"; return 0
+        fi
+    done < <(find "${HOME}/packages" "${HOME}/Qt" /opt/Qt -maxdepth 6 \
+                  -name "qmake" -type f 2>/dev/null)
+    # 4. Homebrew qt / qt@6 -- only accept if the version matches exactly.
+    for brew_pkg in qt "qt@6"; do
+        local brew_prefix
+        brew_prefix="$(brew --prefix "${brew_pkg}" 2>/dev/null)" || continue
+        if [[ -x "${brew_prefix}/bin/qmake" ]] && \
+           "${brew_prefix}/bin/qmake" --version 2>/dev/null | grep -qF "Qt version ${ver}"; then
+            echo "${brew_prefix}"; return 0
+        fi
+    done
+    return 1
+}
+
+QT_DIR="$(find_qt_dir "${QT_VERSION}")" || true
+SENTRY_ROOT="${SENTRY_ROOT_DIR:-$(brew --prefix sentry-native 2>/dev/null || true)}"
 DSCC_DIR="${DSCC_DIR:-/usr/local/DSCC}"
 
 # Auto-detect Developer ID certificate from Keychain
@@ -82,9 +122,9 @@ DMG_NAME="DataSafebox_${VERSION}${PACKAGE_SUFFIX}.dmg"
 printf "\n"
 printf "==================================================\n"
 printf "  DatasafeBox %-8s  macOS Build + Package\n" "${VERSION}"
-printf "  Arch    : %s (%s)\n"  "${ARCH}" "${VCPKG_TRIPLET}"
+printf "  Arch    : %s\n"        "${ARCH}"
 printf "  Qt      : %s\n"       "${QT_DIR}"
-printf "  Sentry  : %s\n"       "${SENTRY_ROOT}"
+printf "  Sentry  : %s\n"       "${SENTRY_ROOT:-<not found>}"
 printf "  DSCC    : %s\n"       "${DSCC_DIR:-<not set>}"
 printf "  Sign    : %s\n"       "${SIGN_IDENTITY:-<ad-hoc>}"
 printf "  Env     : %s\n"       "$([[ "${USE_TEST_ENV}" == "1" ]] && echo 'TEST' || echo 'PRODUCTION')"
@@ -108,7 +148,7 @@ brew_tool() {
         return
     fi
     if ! command -v brew &>/dev/null; then
-        fail_check "${cmd}  ->  brew install ${pkg}  (install Homebrew first -- see [2/10])"
+        fail_check "${cmd}  ->  brew install ${pkg}  (install Homebrew first -- see [2/9])"
         return
     fi
     warn "  Not found -- installing via Homebrew..."
@@ -122,14 +162,22 @@ brew_tool() {
 
 # find_sdk
 # Print the path of the best available macOS SDK.
-# Prefers MacOSX14 (most compatible with Qt 6.7.x), falls back to 15, then
-# the system default (macOS 26+ SDK may be unsupported by Qt 6.7.3).
+# Must match the active Command Line Tools clang: pinning an older SDK (e.g. 14.x)
+# while the toolchain targets 15.x produces libc++ header mismatches such as
+# "reference to unresolved using declaration" on uint32_t. So prefer the SDK
+# that xcrun resolves by default, then fall back to 15 / 14, then any default.
 find_sdk() {
+    # 1. Whatever the active toolchain points at -- guarantees clang/header match.
+    local default_sdk
+    default_sdk="$(xcrun --sdk macosx --show-sdk-path 2>/dev/null)"
+    [[ -n "${default_sdk}" && -d "${default_sdk}" ]] && echo "${default_sdk}" && return
+
+    # 2. Explicit search as a fallback, newest first (15 before 14).
     local clt_base="/Library/Developer/CommandLineTools/SDKs"
     local xcode_base
     xcode_base="$(xcode-select -p 2>/dev/null)/Platforms/MacOSX.platform/Developer/SDKs"
     local sdk=""
-    for ver in 14 15; do
+    for ver in 15 14; do
         sdk="$(find "${clt_base}" "${xcode_base}" -maxdepth 1 \
                    -name "MacOSX${ver}*.sdk" -type d 2>/dev/null \
                | sort -V | tail -1)"
@@ -154,14 +202,14 @@ sign_target() {
 }
 
 # ===========================================================================
-# PRE-FLIGHT  (10 checks -- all run even if earlier ones fail)
+# PRE-FLIGHT  (9 checks -- all run even if earlier ones fail)
 # ===========================================================================
 printf "==================================================\n"
 printf "  Scanning build environment...\n"
 printf "==================================================\n"
 
-# -- [1/10] Xcode Command Line Tools -----------------------------------------
-step "1/10" "Xcode Command Line Tools"
+# -- [1/9] Xcode Command Line Tools -----------------------------------------
+step "1/9" "Xcode Command Line Tools"
 if xcode-select -p &>/dev/null; then
     ok "Xcode CLT: $(xcode-select -p)"
 else
@@ -176,7 +224,7 @@ else
 fi
 
 # -- [2/10] Homebrew ---------------------------------------------------------
-step "2/10" "Homebrew"
+step "2/9" "Homebrew"
 if command -v brew &>/dev/null; then
     ok "brew: $(brew --prefix)"
 else
@@ -191,16 +239,16 @@ else
     fi
 fi
 
-# -- [3/10] librsvg ----------------------------------------------------------
-step "3/10" "librsvg (rsvg-convert)"
+# -- [3/9] librsvg ----------------------------------------------------------
+step "3/9" "librsvg (rsvg-convert)"
 brew_tool rsvg-convert librsvg
 
-# -- [4/10] pkg-config -------------------------------------------------------
-step "4/10" "pkg-config"
+# -- [4/9] pkg-config -------------------------------------------------------
+step "4/9" "pkg-config"
 brew_tool pkg-config pkg-config
 
-# -- [5/10] Python Pillow (required by generate_platform_icons.sh) -----------
-step "5/10" "Python Pillow"
+# -- [5/9] Python Pillow (required by generate_platform_icons.sh) -----------
+step "5/9" "Python Pillow"
 if python3 -c "from PIL import Image" &>/dev/null 2>&1; then
     ok "Pillow: installed"
 elif ! command -v python3 &>/dev/null; then
@@ -215,15 +263,15 @@ else
     fi
 fi
 
-# -- [6/10] Qt ---------------------------------------------------------------
-step "6/10" "Qt ${QT_VERSION}"
-if [[ -x "${QT_DIR}/bin/qmake" ]]; then
+# -- [6/9] Qt ---------------------------------------------------------------
+step "6/9" "Qt ${QT_VERSION}"
+if [[ -n "${QT_DIR}" && -x "${QT_DIR}/bin/qmake" ]]; then
     export PATH="${QT_DIR}/bin:${PATH}"
     ok "Qt: ${QT_DIR}"
 elif ! command -v python3 &>/dev/null; then
     fail_check "Qt ${QT_VERSION}  ->  brew install python3  then re-run"
 else
-    warn "  Not found -- installing via aqt (~2-3 GB, may take a while)..."
+    warn "  Not found -- installing via aqt to ~/Qt (~2-3 GB, may take a while)..."
     python3 -m pip install --quiet --upgrade aqtinstall 2>&1 | tail -2 || true
     PIP_BIN="$(python3 -m site --user-base)/bin"
     export PATH="${PIP_BIN}:${PATH}"
@@ -232,64 +280,36 @@ else
             --outputdir "${HOME}/Qt" \
             -m qtwebengine qtquick3d qtwebchannel qtpositioning qtlocation 2>&1 | tail -5 || true
     fi
-    if [[ -x "${QT_DIR}/bin/qmake" ]]; then
+    QT_DIR="$(find_qt_dir "${QT_VERSION}")" || true
+    if [[ -n "${QT_DIR}" && -x "${QT_DIR}/bin/qmake" ]]; then
         export PATH="${QT_DIR}/bin:${PATH}"
         grep -qF "${QT_DIR}/bin" "${HOME}/.zshrc" 2>/dev/null \
             || echo "export PATH=\"${QT_DIR}/bin:\$PATH\"" >> "${HOME}/.zshrc"
-        ok "  Qt ${QT_VERSION} installed"
+        ok "  Qt ${QT_VERSION} installed: ${QT_DIR}"
     else
         fail_check "Qt ${QT_VERSION}  ->  aqt install-qt mac desktop ${QT_VERSION} clang_64 --outputdir ~/Qt -m qtwebengine qtquick3d qtwebchannel qtpositioning qtlocation"
     fi
 fi
 
-# -- [7/10] vcpkg ------------------------------------------------------------
-step "7/10" "vcpkg"
-if [[ -x "${VCPKG_DIR}/vcpkg" ]]; then
-    ok "vcpkg: ${VCPKG_DIR}"
-elif ! command -v git &>/dev/null; then
-    fail_check "vcpkg  ->  install Xcode CLT first (provides git)"
-else
-    warn "  Not found -- cloning to ${VCPKG_DIR}..."
-    git clone https://github.com/microsoft/vcpkg.git "${VCPKG_DIR}" 2>&1 | tail -3 || true
-    if [[ -f "${VCPKG_DIR}/bootstrap-vcpkg.sh" ]]; then
-        "${VCPKG_DIR}/bootstrap-vcpkg.sh" -disableMetrics 2>&1 | tail -3 || true
-        # Pin to the commit matching the downloaded binary to avoid script/binary mismatch
-        BIN_DATE="$("${VCPKG_DIR}/vcpkg" version 2>/dev/null \
-            | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1 || true)"
-        if [[ -n "${BIN_DATE}" ]]; then
-            PIN="$(git -C "${VCPKG_DIR}" log --before="${BIN_DATE} 23:59:59" \
-                       -1 --format="%H" 2>/dev/null || true)"
-            [[ -n "${PIN}" ]] && git -C "${VCPKG_DIR}" checkout "${PIN}" --quiet 2>/dev/null || true
-        fi
-    fi
-    if [[ -x "${VCPKG_DIR}/vcpkg" ]]; then
-        ok "  vcpkg initialized"
-    else
-        fail_check "vcpkg  ->  git clone https://github.com/microsoft/vcpkg.git ${VCPKG_DIR} && ${VCPKG_DIR}/bootstrap-vcpkg.sh -disableMetrics"
-    fi
-fi
-
-# -- [8/10] sentry-native ----------------------------------------------------
-step "8/10" "sentry-native (${VCPKG_TRIPLET})"
-if [[ -f "${SENTRY_ROOT}/lib/libsentry.a" ]]; then
+# -- [7/9] sentry-native ----------------------------------------------------
+step "7/9" "sentry-native"
+if [[ -f "${SENTRY_ROOT}/lib/libsentry.dylib" ]]; then
     ok "sentry: ${SENTRY_ROOT}"
-elif [[ ! -x "${VCPKG_DIR}/vcpkg" ]]; then
-    fail_check "sentry-native  ->  install vcpkg first (see [7/10])"
+elif ! command -v brew &>/dev/null; then
+    fail_check "sentry-native  ->  install Homebrew first (see [2/9])"
 else
-    warn "  Not found -- building via vcpkg (~15-20 min first time)..."
-    "${VCPKG_DIR}/vcpkg" install \
-        --triplet "${VCPKG_TRIPLET}" \
-        --x-manifest-root "${PROJECT_DIR}" \
-        --x-install-root "${VCPKG_DIR}/installed" 2>&1 | tail -5 || true
-    if [[ -f "${SENTRY_ROOT}/lib/libsentry.a" ]]; then
-        ok "  sentry-native installed"
+    warn "  Not found -- installing via Homebrew..."
+    brew install sentry-native 2>&1 | tail -3 || true
+    SENTRY_ROOT="$(brew --prefix sentry-native 2>/dev/null || true)"
+    if [[ -f "${SENTRY_ROOT}/lib/libsentry.dylib" ]]; then
+        ok "  sentry-native installed: ${SENTRY_ROOT}"
     else
-        fail_check "sentry-native  ->  ${VCPKG_DIR}/vcpkg install --triplet ${VCPKG_TRIPLET} --x-manifest-root ${PROJECT_DIR}"
+        fail_check "sentry-native  ->  brew install sentry-native"
     fi
 fi
 
-# -- [9/10] DSCC SDK  (must be provided manually -- no auto-install possible) -
-step "9/10" "DSCC SDK"
+# -- [8/9] DSCC SDK  (must be provided manually -- no auto-install possible) -
+step "8/9" "DSCC SDK"
 if [[ -z "${DSCC_DIR}" ]]; then
     fail_check "DSCC SDK  ->  export DSCC_DIR=/path/to/DSCC  (must be set manually)"
 elif [[ ! -f "${DSCC_DIR}/include/dscc/core/common/active_notify.h" ]]; then
@@ -298,11 +318,11 @@ else
     ok "DSCC: ${DSCC_DIR}"
 fi
 
-# -- [10/10] App icon  (depends on librsvg [3] and Pillow [5]) ---------------
+# -- [9/9] App icon  (depends on librsvg [3] and Pillow [5]) ---------------
 # Always regenerate from SafeLogo.svg. SafeLogo.icns is not tracked in git, so a
 # copy left over from a previous logo would otherwise be reused and the bundle
 # would ship the old icon. Deleting it first forces a fresh render every build.
-step "10/10" "App icon (SafeLogo.icns)"
+step "9/9" "App icon (SafeLogo.icns)"
 rm -f "${PROJECT_DIR}/icons/SafeLogo.icns"
 info "  Regenerating SafeLogo.icns from SafeLogo.svg..."
 bash "${PROJECT_DIR}/icons/generate_platform_icons.sh" 2>&1 | tail -3 || true
@@ -383,7 +403,7 @@ ok "Compile done"
     "${APP_BUNDLE}/Contents/Info.plist" 2>/dev/null || true
 
 # Copy crashpad_handler into the bundle for Sentry crash reporting
-CRASHPAD="${SENTRY_ROOT}/tools/sentry-native/crashpad_handler"
+CRASHPAD="${SENTRY_ROOT}/bin/crashpad_handler"
 if [[ -f "${CRASHPAD}" ]]; then
     cp "${CRASHPAD}" "${APP_BUNDLE}/Contents/MacOS/"
     chmod +x "${APP_BUNDLE}/Contents/MacOS/crashpad_handler"
@@ -396,6 +416,23 @@ fi
 # that macdeployqt can trace their dependencies and rewrite install names.
 DSCC_FWDIR="${APP_BUNDLE}/Contents/Frameworks"
 mkdir -p "${DSCC_FWDIR}"
+
+# libsentry.dylib (Homebrew install -- dynamic, must be bundled).
+# Homebrew ships it with an absolute install name (/opt/homebrew/.../libsentry.dylib),
+# which the main executable links against. Rewrite both the dylib's own id and the
+# executable's reference to @rpath so the app runs on machines without Homebrew.
+SENTRY_DYLIB="${SENTRY_ROOT}/lib/libsentry.dylib"
+if [[ -f "${SENTRY_DYLIB}" ]]; then
+    cp -f "${SENTRY_DYLIB}" "${DSCC_FWDIR}/"
+    install_name_tool -id "@rpath/libsentry.dylib" "${DSCC_FWDIR}/libsentry.dylib"
+    # Repoint the main executable from the absolute Homebrew path to @rpath.
+    SENTRY_OLD_ID="$(otool -D "${SENTRY_DYLIB}" | tail -1)"
+    install_name_tool -change "${SENTRY_OLD_ID}" "@rpath/libsentry.dylib" \
+        "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
+    ok "bundled libsentry.dylib (rewrote install name to @rpath)"
+else
+    warn "libsentry.dylib not found -- Sentry crash reporting disabled"
+fi
 
 # Core DSCC dylibs
 for _lib in libdscc_common.dylib libdscc_core.dylib; do
@@ -623,7 +660,7 @@ fi
 
 printf "\n"
 printf "==================================================\n"
-printf "%s  Build complete!%s\n" "${GREEN}" "${NC}"
+printf "${GREEN}  Build complete!${NC}\n"
 printf "  Version : %s\n" "${VERSION}"
 printf "  Output  : %s/%s\n" "${DIST_DIR}" "${DMG_NAME}"
 printf "  Tip     : if an upgraded install shows the old icon, run\n"
