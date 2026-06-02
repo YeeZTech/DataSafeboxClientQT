@@ -95,8 +95,13 @@ ApplicationWindow {
 
     Component.onCompleted: {
         Qt.callLater(function () {
-            // 进入登录页前检查版本：若需强制更新，forceUpdateDialog 会弹出
-            UpdateManager.checkUpdate(false);
+            // 进入登录页前检查版本。若已下载待安装的新版本，则只提醒安装，不再
+            // 重复检查/下载；否则检查更新，需强制更新时由 forceUpdateDialog 弹出。
+            if (UpdateManager.hasPendingInstall) {
+                pendingInstallWarningDialog.open();
+            } else {
+                UpdateManager.checkUpdate(false);
+            }
             if (dataManager && dataManager.currentUser !== undefined) {
                 dataManager.currentUser = window.currentUser;
             }
@@ -1125,13 +1130,25 @@ ApplicationWindow {
 
     BaseDialog {
         id: pendingInstallWarningDialog
-        parent: mainContentArea
-        modal: false
-        dim: false
+        // Before login there is no sidebar, so center over the whole window via the
+        // overlay; inside the app keep the About-page placement within the content area.
+        readonly property bool preLogin: window.authPage === "login"
+        // Set when the user chooses to install, so the install path isn't treated as a dismissal.
+        property bool installRequested: false
+        parent: preLogin ? Overlay.overlay : mainContentArea
+        modal: preLogin
+        dim: preLogin
         focus: true
         closePolicy: Popup.CloseOnEscape
         dialogWidth: 448
         title: qsTr("Software Update")
+
+        onOpened: installRequested = false
+        // Pre-login this is a mandatory prompt: dismissing it (×, Later, Esc) exits the app.
+        onClosed: {
+            if (preLogin && !installRequested)
+                Qt.quit();
+        }
 
         Column {
             width: parent.width
@@ -1177,6 +1194,7 @@ ApplicationWindow {
                     text: qsTr("Install Now")
                     fontWeight: Font.Medium
                     onClicked: {
+                        pendingInstallWarningDialog.installRequested = true;
                         pendingInstallWarningDialog.close();
                         UpdateManager.installUpdate();
                     }
@@ -1204,8 +1222,8 @@ ApplicationWindow {
 
         function onPendingInstallReminder(filePath) {
             // The in-dialog update flow shows its own success screen; only fall back to
-            // the standalone reminder when the update dialog isn't driving the flow.
-            if (!updateDialog.opened)
+            // the standalone reminder when neither update dialog is driving the flow.
+            if (!updateDialog.opened && !forceUpdateDialog.opened)
                 pendingInstallWarningDialog.open();
         }
     }
