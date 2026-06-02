@@ -393,6 +393,24 @@ void DsccBridge::connectAssetSignals()
                 emit domainCloseFailed(operationId, domainCode, notification);
             });
 
+    connect(m_assets.get(), &dscc::UserAssets::DeleteDomainSuccess, this,
+            [this](uint32_t operationId, QString domainCode) {
+                qInfo().noquote() << QStringLiteral(
+                                         "[DsccBridge] corelib DeleteDomainSuccess operationId=%1 domainCode=\"%2\"")
+                                         .arg(operationId)
+                                         .arg(domainCode);
+                emit domainDeleted(operationId, domainCode);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::DeleteDomainFailed, this,
+            [this](uint32_t operationId, QString domainCode, dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib DeleteDomainFailed operationId=%1 domainCode=\"%2\"")
+                                    .arg(operationId)
+                                    .arg(domainCode),
+                                notification);
+                emit domainDeleteFailed(operationId, domainCode, notification);
+            });
+
     connect(m_assets.get(), &dscc::UserAssets::AddUserToDomainSuccess, this,
             [this](uint32_t operationId, QString domainCode, QString userId) {
                 qInfo().noquote()
@@ -1519,14 +1537,15 @@ void DsccBridge::deleteDomain(const QString &domainCode)
         return;
     }
 
-    // TODO(PRD 1.0.4 §3.2): DSCC 核心 SDK 暂未提供删除安全域接口（dscc::UserAssets 目前仅有 CloseDomain）。
-    // 待 core 增加 DeleteDomain 后，将以下桩替换为真实调用：
-    //     const dscc::Handle handle = m_assets->DeleteDomain(trimmedDomainCode);
-    // 并在 connectAssetSignals() 中把 UserAssets 的 DeleteDomainSuccess/Failed 连接到
-    // domainDeleted / domainDeleteFailed 信号（参考 CloseDomainSuccess / CloseDomainFailed）。
-    qWarning().noquote() << QStringLiteral("[DsccBridge] deleteDomain not yet supported by core SDK domainCode=\"%1\"")
-                                .arg(trimmedDomainCode);
-    emit domainDeleteFailed(0, trimmedDomainCode, dscc::Notification());
+    qInfo().noquote() << QStringLiteral("[DsccBridge] deleteDomain request domainCode=\"%1\" currentUserHash=%2")
+                             .arg(trimmedDomainCode)
+                             .arg(logHash(m_currentUserId));
+
+    const dscc::Handle handle = m_assets->DeleteDomain(trimmedDomainCode);
+    qInfo().noquote() << QStringLiteral("[DsccBridge] deleteDomain submitted operationId=%1 domainCode=\"%2\"")
+                             .arg(handle.GetOperationId())
+                             .arg(trimmedDomainCode);
+    Q_UNUSED(handle);
 }
 
 void DsccBridge::auditInstanceRequest(const QString &instanceCode, bool approved)
