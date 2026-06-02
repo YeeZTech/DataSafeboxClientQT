@@ -95,6 +95,7 @@ class DsccBridge : public QObject
     QVariantMap domainInfoToSummary(const dscc::DomainInfo &info) const;
     QVariantMap instanceInfoToVariant(const dscc::InstanceInfo &info) const;
     QVariantMap messageInfoToVariant(const dscc::MessageInfo &info) const;
+    QString resolveUserNameWithCache(const QHash<QString, QString> &domainLookup, const QString &userId);
 
     struct FileCryptoOperation
     {
@@ -112,6 +113,7 @@ class DsccBridge : public QObject
     bool m_initializingUserAssets = false;
     dscc::Notification m_userAssetsInitializationError;
     QHash<QString, QList<dscc::VisibleUserInfo>> m_domainVisibleUsersCache;
+    QHash<QString, QString> m_userNameCache;
     QHash<uint32_t, QString> m_domainCreateFailureMessages;
     QHash<uint32_t, FileCryptoOperation> m_encryptFileOperations;
 };

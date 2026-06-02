@@ -355,6 +355,8 @@ Item {
         Canvas {
             id: arrowTop
             visible: root._arrowOnTop
+            // 置于气泡之上，使三角底边压住气泡顶部高光描边，与向下箭头一致地贴合 (避免缝隙)
+            z: 1
             width: 16
             height: 9
             x: root._arrowOffsetX - width / 2

@@ -65,15 +65,10 @@ Item {
         SecondaryButton {
             id: createInstanceButton
             visible: true
-            // 创建方与使用方均可点击；仅在安全域停用时禁用。
-            enabled: !root.isDomainInactive
+            // 创建方与使用方均可点击；所有状态（含已关闭/创建失败）下均可点击，行为一致。
             primaryOutline: true
             text: qsTr("How to Instantiate Security Domain?")
-            onClicked: {
-                if (root.isDomainInactive)
-                    return;
-                root.instantiateRequested();
-            }
+            onClicked: root.instantiateRequested()
         }
 
         PrimaryButton {

@@ -143,18 +143,6 @@ QHash<QString, QString> buildUserNameLookup(const QList<dscc::VisibleUserInfo> &
     return lookup;
 }
 
-QString resolveUserName(const QHash<QString, QString> &lookup, const QString &userId)
-{
-    const QString trimmedUserId = userId.trimmed();
-    if (trimmedUserId.isEmpty())
-    {
-        return QString();
-    }
-
-    const QString userName = lookup.value(trimmedUserId).trimmed();
-    return userName.isEmpty() ? trimmedUserId : userName;
-}
-
 void logDomainInfoSummarySource(const QString &domainCode, const dscc::DomainInfo &info)
 {
     qInfo().noquote()
@@ -239,6 +227,7 @@ void DsccBridge::shutdown()
     m_domainCreateFailureMessages.clear();
     m_encryptFileOperations.clear();
     m_domainVisibleUsersCache.clear();
+    m_userNameCache.clear();
     m_currentUserId.clear();
     m_currentUserName.clear();
 }
@@ -267,6 +256,7 @@ void DsccBridge::setCurrentUser(const QString &userId, const QString &userName, 
     m_domainCreateFailureMessages.clear();
     m_encryptFileOperations.clear();
     m_domainVisibleUsersCache.clear();
+    m_userNameCache.clear();
 
     const QString domainDbPath = userDomainDbPath(trimmedUserId);
     QDir().mkpath(QFileInfo(domainDbPath).absolutePath());
@@ -310,6 +300,7 @@ void DsccBridge::setCurrentUser(const QString &userId, const QString &userName, 
         m_domainCreateFailureMessages.clear();
         m_encryptFileOperations.clear();
         m_domainVisibleUsersCache.clear();
+        m_userNameCache.clear();
         emit coreErrorOccurred(notification);
         emit domainListLoaded(QVariantList());
         emit domainSummaryLoaded(QString(), QVariantMap());
@@ -329,6 +320,7 @@ void DsccBridge::clearCurrentUser()
     m_domainCreateFailureMessages.clear();
     m_encryptFileOperations.clear();
     m_domainVisibleUsersCache.clear();
+    m_userNameCache.clear();
     m_currentUserId.clear();
     m_currentUserName.clear();
     emit domainListLoaded(QVariantList());
@@ -1024,6 +1016,48 @@ void DsccBridge::loadDomainList()
     emit domainListLoaded(list);
 }
 
+QString DsccBridge::resolveUserNameWithCache(const QHash<QString, QString> &domainLookup, const QString &userId)
+{
+    const QString trimmedUserId = userId.trimmed();
+    if (trimmedUserId.isEmpty())
+    {
+        return QString();
+    }
+
+    const QString fromDomain = domainLookup.value(trimmedUserId).trimmed();
+    if (!fromDomain.isEmpty())
+    {
+        return fromDomain;
+    }
+
+    const auto cached = m_userNameCache.constFind(trimmedUserId);
+    if (cached != m_userNameCache.constEnd())
+    {
+        return cached->isEmpty() ? trimmedUserId : *cached;
+    }
+
+    QString resolved;
+    if (m_assets)
+    {
+        const auto info = m_assets->DetailVisibleUserInfo(trimmedUserId);
+        if (info.has_value())
+        {
+            resolved = info->auth_user_name.trimmed();
+            if (resolved.isEmpty())
+            {
+                resolved = info->display_name.trimmed();
+            }
+            if (resolved.isEmpty())
+            {
+                resolved = info->account.trimmed();
+            }
+        }
+    }
+
+    m_userNameCache.insert(trimmedUserId, resolved);
+    return resolved.isEmpty() ? trimmedUserId : resolved;
+}
+
 void DsccBridge::loadInstances(const QString &domainCode)
 {
     const QString trimmedDomainCode = domainCode.trimmed();
@@ -1046,7 +1080,7 @@ void DsccBridge::loadInstances(const QString &domainCode)
     for (const dscc::InstanceInfo &inst : instances)
     {
         QVariantMap map = instanceInfoToVariant(inst);
-        const QString creatorUserName = resolveUserName(userNameLookup, inst.creator_user_id);
+        const QString creatorUserName = resolveUserNameWithCache(userNameLookup, inst.creator_user_id);
         map.insert(QStringLiteral("creatorUserName"), creatorUserName);
         list.append(map);
     }
@@ -1100,7 +1134,7 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         map.insert(QStringLiteral("applyCode"), audit.apply_code);
         map.insert(QStringLiteral("id"), audit.apply_code);
         map.insert(QStringLiteral("applyType"), applyType);
-        const QString applicantUserName = resolveUserName(userNameLookup, audit.applicant_user_id);
+        const QString applicantUserName = resolveUserNameWithCache(userNameLookup, audit.applicant_user_id);
         map.insert(QStringLiteral("applicant"), applicantUserName);
         map.insert(QStringLiteral("applicantUserId"), audit.applicant_user_id);
         map.insert(QStringLiteral("applicantUserName"), applicantUserName);
