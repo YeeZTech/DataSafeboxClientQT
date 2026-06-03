@@ -232,17 +232,28 @@ void UpdateManager::checkUpdate(bool manual)
                         m_forceUpdate = data["needForceUpdate"].toBool();
                         // m_forceUpdate = true;
 
-                        // Resolve the Windows client download URL and (approximate) size so
-                        // startDownload() has a target to fetch. The build is Windows-only.
+                        // Resolve the download URL and (approximate) size for the platform we
+                        // are running on, so startDownload() fetches the matching installer.
+#if defined(Q_OS_WIN)
                         m_downloadUrl = data["downloadWin"].toString();
                         m_clientSize = parseSizeToBytes(data["sizeWin"].toString());
+                        const QString defaultExt = QStringLiteral("exe");
+#elif defined(Q_OS_MACOS)
+                        m_downloadUrl = data["downloadMac"].toString();
+                        m_clientSize = parseSizeToBytes(data["sizeMac"].toString());
+                        const QString defaultExt = QStringLiteral("dmg");
+#else
+                        m_downloadUrl = data["downloadLinux"].toString();
+                        m_clientSize = parseSizeToBytes(data["sizeLinux"].toString());
+                        const QString defaultExt = QStringLiteral("deb");
+#endif
 
                         // Resolve the local installer path: <cache>/update/<filename>.
                         if (!m_downloadUrl.isEmpty() && !m_cacheDirectory.isEmpty())
                         {
                             QString fileName = QUrl(m_downloadUrl).fileName();
                             if (fileName.isEmpty())
-                                fileName = QStringLiteral("DataSafeboxSetup-%1.exe").arg(m_latestVersion);
+                                fileName = QStringLiteral("DataSafeboxSetup-%1.%2").arg(m_latestVersion, defaultExt);
                             QDir updateDir(QDir(m_cacheDirectory).filePath(QStringLiteral("update")));
                             if (!updateDir.exists())
                                 updateDir.mkpath(QStringLiteral("."));
