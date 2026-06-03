@@ -722,6 +722,9 @@ ApplicationWindow {
                 anchors.topMargin: mainContentArea.contentTopOffset
                 visible: window.currentPage === "about"
 
+                userAgreementUrl: "https://dianshudata.com/user-protocol"
+                historyVersionUrl: "https://help.yeez.tech/docs/2026dsdox-client-update-history"
+
                 onCheckUpdateRequested: window.requestManualUpdateCheck()
             }
 
