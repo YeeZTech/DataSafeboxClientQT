@@ -77,6 +77,45 @@ function restoreRenamedFiles(targetDir) {
     log("restoreRenamedFiles done");
 }
 
+// 扫描注册表卸载项，查找本产品已安装的目录（不限安装路径）。
+// 通过“安装目录下存在 DataSafebox.exe”来识别，纯 ASCII，避免命令行中文编码问题。
+// 返回正斜杠规范化、去掉末尾斜杠的安装目录；未安装返回空字符串。
+function detectExistingInstallDir() {
+    try {
+        var ps =
+            "$regPaths = @(" +
+            "'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall'," +
+            "'HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall'," +
+            "'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall'); " +
+            "foreach ($path in $regPaths) { " +
+            "  if (Test-Path $path) { " +
+            "    Get-ChildItem $path | ForEach-Object { " +
+            "      try { " +
+            "        $p = Get-ItemProperty $_.PSPath; " +
+            "        $loc = $p.InstallLocation; " +
+            "        if ($loc -and (Test-Path (Join-Path $loc 'DataSafebox.exe'))) { Write-Output $loc.Trim(); } " +
+            "      } catch {} " +
+            "    } " +
+            "  } " +
+            "}";
+        var result = installer.execute("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps]);
+        if (result && result.length > 0 && result[0]) {
+            var out = ("" + result[0]).replace(/\r/g, "").trim();
+            if (out !== "") {
+                var first = out.split("\n")[0].trim();
+                if (first !== "") {
+                    var normalized = first.replace(/\\/g, "/").replace(/\/+$/, "");
+                    log("detectExistingInstallDir found: " + normalized);
+                    return normalized;
+                }
+            }
+        }
+    } catch (e) {
+        log("detectExistingInstallDir failed: " + e);
+    }
+    return "";
+}
+
 // TargetDirectoryPageCallback：
 // 1. 页面显示时对当前路径做重命名（记录哪个目录被操作过）
 // 2. 用户修改路径时：先还原上一次操作的目录，再对新路径做重命名
@@ -98,6 +137,39 @@ Controller.prototype.TargetDirectoryPageCallback = function() {
         log("dirEdit found: " + (dirEdit ? "yes" : "no"));
         if (!dirEdit) return;
 
+        // 先检测机器上是否已有已安装版本（不限安装目录）。
+        // 已安装时强制锁定到已有目录升级，禁止安装第二份。
+        var existingDir = detectExistingInstallDir();
+        log("existingDir: " + existingDir);
+
+        if (existingDir !== "") {
+            var winExistingDir = existingDir.replace(/\//g, "\\");
+            installer.setValue("TargetDir", existingDir);
+            dirEdit.text = winExistingDir;
+            dirEdit.setEnabled(false);
+
+            // 禁用“浏览”按钮，防止经由文件对话框改写已禁用的输入框
+            var browseButton = gui.findChild(page, "BrowseDirectoryButton");
+            if (browseButton) {
+                browseButton.setEnabled(false);
+                log("browse button disabled");
+            }
+
+            // 兜底：任何使路径偏离已有目录的改动都强制改回
+            dirEdit.textChanged.connect(function(newText) {
+                var n = newText.replace(/\\/g, "/").trim().replace(/\/+$/, "");
+                if (n !== existingDir) {
+                    dirEdit.text = winExistingDir;
+                    installer.setValue("TargetDir", existingDir);
+                }
+            });
+
+            // 对已有目录执行覆盖前的重命名，保证可原地升级
+            renameIfOverwrite(existingDir);
+            return;
+        }
+
+        // 未安装：保持原有逻辑（默认路径，允许用户修改）
         // 记录当前已被重命名的目录，用于用户切换路径时还原
         var lastRenamedDir = "";
 
