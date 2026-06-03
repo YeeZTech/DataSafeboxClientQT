@@ -59,7 +59,7 @@ BaseDialog {
 
                         Text {
                             width: parent.width - 28
-                            text: qsTr("Security domain instantiation is implemented in the Linux CLI client.")
+                            text: qsTr("Instantiation is available in the Linux CLI client.")
                             font.pixelSize: Theme.Typography.caption
                             color: "#1e4d8c"
                             wrapMode: Text.WordWrap

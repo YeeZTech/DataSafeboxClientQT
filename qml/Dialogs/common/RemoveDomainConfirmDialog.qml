@@ -6,7 +6,7 @@ import DataSafebox.Components 1.0
 BaseDialog {
     id: root
     dialogWidth: 446
-    title: qsTr("Are you sure you want to remove this security domain?")
+    title: qsTr("Remove This Security Domain?")
     onCloseRequested: cancelClicked()
 
     signal confirmClicked

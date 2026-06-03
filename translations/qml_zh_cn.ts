@@ -334,7 +334,7 @@
     <name>RemoveDomainConfirmDialog</name>
     <message>
         <location filename="../qml/Dialogs/common/RemoveDomainConfirmDialog.qml" line="+8"/>
-        <source>Are you sure you want to remove this security domain?</source>
+        <source>Remove This Security Domain?</source>
         <translation>确定移除此安全域吗？</translation>
     </message>
     <message>
@@ -1161,8 +1161,8 @@
     </message>
     <message>
         <location line="+76"/>
-        <source>Security domain instantiation is implemented in the Linux CLI client.</source>
-        <translation>安全域实例化已在Linux命令行客户端中实现</translation>
+        <source>Instantiation is available in the Linux CLI client.</source>
+        <translation>安全域实例化已在 Linux 命令行客户端中实现</translation>
     </message>
     <message>
         <location line="+10"/>
