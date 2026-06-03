@@ -55,7 +55,7 @@ Row {
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: 2
             fontFamily: root.fontFamily
-            tooltipText: qsTr("Creating a security domain instance will incur fees (1 CNY/GB/Month). The fees can be borne by the security domain creator or the instance user.")
+            tooltipText: qsTr("Creating a security domain instance will incur fees (1 CNY/GB·Month). The fees can be borne by the security domain creator or the instance user.")
         }
     }
 

@@ -254,6 +254,8 @@ Item {
                             fontSizeBody: root.fontSizeBody
                             onAddUserRequested: {
                                 addUserDialog.domainCreator = root.currentUser ? (root.currentUser.userName || "") : "";
+                                addUserDialog.currentUserName = root.currentUser ? (root.currentUser.userName || "") : "";
+                                addUserDialog.currentUserId = root.currentUser ? (root.currentUser.authUserId || "") : "";
                                 addUserDialog.open();
                             }
                             onRemoveUserRequested: function (index) {

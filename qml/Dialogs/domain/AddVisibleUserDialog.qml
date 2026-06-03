@@ -16,6 +16,9 @@ BaseDialog {
     property string pendingAccount: ""
     property var currentUserInfo: null  // 存储当前验证通过的用户信息
     property string domainCreator: ""  // 安全域创建者，用于拦截重复添加
+    // 当前登录用户，用于拦截"将自己添加为可见用户"
+    property string currentUserName: ""
+    property string currentUserId: ""
     // 安全域已停用（已关闭/创建失败）：弹窗正常打开，但"添加"按钮置灰并提示 (PRD 3.3)
     property bool domainInactive: false
     signal addClicked(string account)
@@ -248,6 +251,14 @@ BaseDialog {
             if (!userId || !userName || !account) {
                 root.hasError = true;
                 root.errorMessage = qsTr("Query result is missing required fields, please contact administrator");
+                return;
+            }
+            // 不允许将自己添加为可见用户
+            var selfId = root.currentUserId ? root.currentUserId.trim() : "";
+            var selfName = root.currentUserName ? root.currentUserName.trim() : "";
+            if ((selfId && selfId === userId) || (selfName && selfName === userName)) {
+                root.hasError = true;
+                root.errorMessage = qsTr("You cannot add yourself as a visible user");
                 return;
             }
             root.currentUserInfo = {

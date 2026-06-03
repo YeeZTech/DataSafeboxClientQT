@@ -644,6 +644,8 @@ Item {
 
                 onAddUserRequested: {
                     addUserDialog.domainCreator = root.domainData.creator || "";
+                    addUserDialog.currentUserName = root.currentUser ? (root.currentUser.userName || "") : "";
+                    addUserDialog.currentUserId = root.currentUser ? (root.currentUser.authUserId || "") : "";
                     addUserDialog.open();
                 }
 

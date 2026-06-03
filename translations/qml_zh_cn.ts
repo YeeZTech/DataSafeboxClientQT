@@ -53,6 +53,10 @@
         <translation>查询结果缺少必填字段，请联系管理员</translation>
     </message>
     <message>
+        <source>You cannot add yourself as a visible user</source>
+        <translation>您不可以将自己添加为可见用户</translation>
+    </message>
+    <message>
         <location line="+52"/>
         <source>Prompt</source>
         <translation>提示</translation>
@@ -1671,8 +1675,8 @@ Status:
         <translation>费用承担方：</translation>
     </message>
     <message>
-        <source>Creating a security domain instance will incur fees (1 CNY/GB/Month). The fees can be borne by the security domain creator or the instance user.</source>
-        <translation>创建安全域实例将产生费用（1元/GB/月）。费用可由安全域创建者或实例使用者承担。</translation>
+        <source>Creating a security domain instance will incur fees (1 CNY/GB·Month). The fees can be borne by the security domain creator or the instance user.</source>
+        <translation>创建安全域实例将产生费用（1元/GB·月）。费用可由安全域创建者或实例使用者承担。</translation>
     </message>
     <message>
         <source>Creator</source>
