@@ -238,7 +238,7 @@ function canRenderAuditEmptyState(detail) {
 function formatPayerText(payerValue, creatorLabel, userLabel, emptyLabel) {
     var text = trimText(payerValue)
     if (!text) return emptyLabel || "-"
-    if (text === "åˆ›å»ºæ–¹" || text === "å®‰å…¨åŸŸåˆ›å»ºæ–¹" || text === "åˆ›å»ºè€…") return creatorLabel || "Creator"
-    if (text === "ä½¿ç”¨æ–¹" || text === "å®‰å…¨åŸŸä½¿ç”¨æ–¹" || text === "ä½¿ç”¨è€…") return userLabel || "User"
+    if (text === "创建方" || text === "安全域创建方" || text === "创建者") return creatorLabel || "Creator"
+    if (text === "使用方" || text === "安全域使用方" || text === "使用者") return userLabel || "User"
     return text
 }

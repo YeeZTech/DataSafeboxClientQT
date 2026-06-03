@@ -165,7 +165,7 @@ Item {
             lineHeightMode: Text.FixedHeight
             font.pixelSize: 12
             color: "#73000000"
-            text: "Copyright © YeeZTech 北京熠智科技有限公司 版权所有" + "\n" + "京公网安备11010802038645号 | 京ICP备20022436号-3 | 京EDI证京B2-20220639号" + "\n" + "区块链备案号：京网信备1101082276223860002X号"
+            text: qsTr("Copyright © Beijing YeeZTech Co., Ltd. All Rights Reserved") + "\n" + qsTr("Beijing Public Network Security No. 11010802038645 | Beijing ICP License No. 20022436-3 | Beijing EDI License No. B2-20220639") + "\n" + qsTr("Blockchain Filing No. 1101082276223860002X")
         }
     }
 }

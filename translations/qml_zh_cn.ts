@@ -1911,6 +1911,10 @@ Status:
 <context>
     <name>Sidebar</name>
     <message>
+        <source>Beijing YeeZTech Co., Ltd</source>
+        <translation>北京熠智科技有限公司</translation>
+    </message>
+    <message>
         <location filename="../qml/Components/navigation/Sidebar.qml" line="+84"/>
         <source>Create Security Domain</source>
         <translation>创建安全域</translation>
@@ -2147,7 +2151,7 @@ Location: %1</source>
     <name>main</name>
     <message>
         <location filename="../qml/main.qml" line="+23"/>
-        <source>Data SafeBox Console</source>
+        <source>DataSafeBox Console</source>
         <translation>数据安全柜控制台</translation>
     </message>
     <message>
@@ -2430,6 +2434,18 @@ Location: %1</source>
     <message>
         <source>Version History</source>
         <translation>历史版本</translation>
+    </message>
+    <message>
+        <source>Copyright © Beijing YeeZTech Co., Ltd. All Rights Reserved</source>
+        <translation>Copyright © YeeZTech 北京熠智科技有限公司 版权所有</translation>
+    </message>
+    <message>
+        <source>Beijing Public Network Security No. 11010802038645 | Beijing ICP License No. 20022436-3 | Beijing EDI License No. B2-20220639</source>
+        <translation>京公网安备11010802038645号 | 京ICP备20022436号-3 | 京EDI证京B2-20220639号</translation>
+    </message>
+    <message>
+        <source>Blockchain Filing No. 1101082276223860002X</source>
+        <translation>区块链备案号：京网信备1101082276223860002X号</translation>
     </message>
 </context>
 <context>

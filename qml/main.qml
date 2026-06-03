@@ -23,7 +23,7 @@ ApplicationWindow {
     minimumHeight: 600
     maximumHeight: 10000
     visible: true
-    title: qsTr("Data SafeBox Console")
+    title: qsTr("DataSafeBox Console")
     color: Theme.Colors.backgroundGray  // slate-50 background
 
     // Authentication state

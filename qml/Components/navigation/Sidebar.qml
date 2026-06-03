@@ -41,7 +41,7 @@ Rectangle {
                 id: companyNameText
                 anchors.centerIn: parent
                 anchors.horizontalCenterOffset: 0
-                text: AppConfig.vendorCompanyName()
+                text: qsTr("Beijing YeeZTech Co., Ltd")
                 font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Bold
                 color: Theme.Colors.primary
