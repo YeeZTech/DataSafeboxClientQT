@@ -11,6 +11,10 @@
  * Supported language codes: "en", "zh_cn".
  * On first launch, the system locale determines the default (Chinese → zh_cn, else en).
  * A saved preference in QSettings takes priority if it is a supported code.
+ *
+ * Build-time override: passing USE_LANG=EN or USE_LANG=CN to qmake defines
+ * FORCE_LANGUAGE, which locks the UI language at startup and ignores both the
+ * saved preference and the system locale.
  */
 class LanguageManager : public QObject
 {

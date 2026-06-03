@@ -15,6 +15,19 @@ isEmpty(USE_TEST_ENV) {
 DEFINES += USE_TEST_ENV=$$USE_TEST_ENV
 message("USE_TEST_ENV=$$USE_TEST_ENV")
 
+# ── USE_LANG 编译期强制界面语言（EN = 英文，CN = 中文；不设置则按运行时逻辑）──
+!isEmpty(USE_LANG) {
+    USE_LANG_NORM = $$upper($$USE_LANG)
+    equals(USE_LANG_NORM, EN) {
+        DEFINES += FORCE_LANGUAGE=\\\"en\\\"
+    } else:equals(USE_LANG_NORM, CN) {
+        DEFINES += FORCE_LANGUAGE=\\\"zh_cn\\\"
+    } else {
+        error("USE_LANG=$$USE_LANG is invalid. Only EN or CN is accepted.")
+    }
+    message("USE_LANG=$$USE_LANG (forced UI language)")
+}
+
 # Application name
 TARGET = DataSafebox
 

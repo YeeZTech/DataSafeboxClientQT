@@ -27,10 +27,16 @@ void LanguageManager::applyInitialLanguage()
 {
     installNotificationTranslator();
 
+#ifdef FORCE_LANGUAGE
+    // Build-time language lock via qmake USE_LANG=EN/CN. Overrides the saved
+    // preference and system locale entirely.
+    loadLanguage(QStringLiteral(FORCE_LANGUAGE));
+#else
     QSettings settings;
     const QString saved = settings.value(kSettingsKeyLanguage).toString();
     const QString language = isSupportedLanguage(saved) ? saved : systemDefaultLanguage();
     loadLanguage(language);
+#endif
 }
 
 void LanguageManager::switchLanguage(const QString &languageCode)
