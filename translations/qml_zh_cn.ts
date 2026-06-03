@@ -2510,12 +2510,12 @@ Location: %1</source>
     </message>
     <message>
         <location line="+61"/>
-        <source>How to Instantiate Security Domain?</source>
+        <source>How to Instantiate?</source>
         <translation>如何实例化安全域？</translation>
     </message>
     <message>
         <location line="+70"/>
-        <source>Encrypt Files to This Security Domain</source>
+        <source>Encrypt Files</source>
         <translation>加密文件到此安全域</translation>
     </message>
     <message>

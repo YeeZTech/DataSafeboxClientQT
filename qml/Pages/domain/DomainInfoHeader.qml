@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 import DataSafebox.Theme 1.0 as Theme
 import DataSafebox.Components 1.0
 import DataSafebox.Dialogs 1.0
@@ -27,70 +28,79 @@ Item {
     signal guideRequested
     signal errorOccurred(string message, string title)
 
-    Text {
-        id: headerTitleText
-        anchors.left: parent.left
-        anchors.right: headerButtonRow.left
-        anchors.rightMargin: 48
-        anchors.verticalCenter: parent.verticalCenter
-        text: root.domainName
-        font.pixelSize: Theme.Typography.h1
-        font.weight: Font.Medium
-        color: Theme.Colors.textHeading
-        elide: Text.ElideRight
+    RowLayout {
+        anchors.fill: parent
+        spacing: 0
 
-        ToolTip.visible: truncated && headerTitleHover.containsMouse
-        ToolTip.text: root.domainName
-        ToolTip.delay: 500
+        Text {
+            id: headerTitleText
+            // Flexible title: shrinks as the action buttons grow, but never below a
+            // readable floor (longer EN labels no longer crush it to zero).
+            Layout.fillWidth: true
+            Layout.minimumWidth: 120
+            Layout.rightMargin: 48
+            Layout.alignment: Qt.AlignVCenter
+            text: root.domainName
+            font.pixelSize: Theme.Typography.h1
+            font.weight: Font.Medium
+            color: Theme.Colors.textHeading
+            elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter
 
-        HoverHandler {
-            id: headerTitleHover
-            enabled: headerTitleText.truncated
-        }
-    }
+            ToolTip.visible: truncated && headerTitleHover.containsMouse
+            ToolTip.text: root.domainName
+            ToolTip.delay: 500
 
-    Row {
-        id: headerButtonRow
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        spacing: 12
-
-        LinkText {
-            anchors.verticalCenter: parent.verticalCenter
-            text: qsTr("View Feature Guide")
-            fontSize: Theme.Typography.body
-            onClicked: root.guideRequested()
+            HoverHandler {
+                id: headerTitleHover
+                enabled: headerTitleText.truncated
+            }
         }
 
-        SecondaryButton {
-            id: createInstanceButton
-            visible: true
-            // 创建方与使用方均可点击；所有状态（含已关闭/创建失败）下均可点击，行为一致。
-            primaryOutline: true
-            text: qsTr("How to Instantiate Security Domain?")
-            onClicked: root.instantiateRequested()
-        }
+        // Buttons stay in a plain Row (sizes to content, keeps the 36px button
+        // height) and the Row is the layout-managed item on the right.
+        Row {
+            id: headerButtonRow
+            Layout.alignment: Qt.AlignVCenter
+            spacing: 12
 
-        PrimaryButton {
-            id: encryptFileButton
-            // 使用方始终可点击（点击仅弹出提示）；创建方仅在加密进行中禁用。
-            // 停用安全域时创建方仍可打开加密弹窗，弹窗内"加密文件"按钮置灰 (PRD 3.3)。
-            readonly property bool disabled: root.isCreator && root.encryptButtonBusy
-            visible: true
-            enabled: !disabled
-            iconSource: "qrc:/icons/icon-encrypt-to-domain.svg"
-            text: qsTr("Encrypt Files to This Security Domain")
-            onClicked: {
-                if (!root.isCreator) {
-                    // 使用方：弹出"加密操作仅由创建方执行"的提示弹窗 (PRD 3.6)。
-                    root.encryptUserHintRequested();
-                    return;
+            LinkText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("View Feature Guide")
+                fontSize: Theme.Typography.body
+                onClicked: root.guideRequested()
+            }
+
+            SecondaryButton {
+                id: createInstanceButton
+                visible: true
+                // 创建方与使用方均可点击；所有状态（含已关闭/创建失败）下均可点击，行为一致。
+                primaryOutline: true
+                text: qsTr("How to Instantiate?")
+                onClicked: root.instantiateRequested()
+            }
+
+            PrimaryButton {
+                id: encryptFileButton
+                // 使用方始终可点击（点击仅弹出提示）；创建方仅在加密进行中禁用。
+                // 停用安全域时创建方仍可打开加密弹窗，弹窗内"加密文件"按钮置灰 (PRD 3.3)。
+                readonly property bool disabled: root.isCreator && root.encryptButtonBusy
+                visible: true
+                enabled: !disabled
+                iconSource: "qrc:/icons/icon-encrypt-to-domain.svg"
+                text: qsTr("Encrypt Files")
+                onClicked: {
+                    if (!root.isCreator) {
+                        // 使用方：弹出"加密操作仅由创建方执行"的提示弹窗 (PRD 3.6)。
+                        root.encryptUserHintRequested();
+                        return;
+                    }
+                    if (!root.domainPubKey) {
+                        root.errorOccurred(qsTr("Security domain public key not found"), qsTr("Encrypt File"));
+                        return;
+                    }
+                    root.encryptRequested();
                 }
-                if (!root.domainPubKey) {
-                    root.errorOccurred(qsTr("Security domain public key not found"), qsTr("Encrypt File"));
-                    return;
-                }
-                root.encryptRequested();
             }
         }
     }

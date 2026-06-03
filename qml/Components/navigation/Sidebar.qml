@@ -30,21 +30,29 @@ Rectangle {
         anchors.fill: parent
 
         Item {
-            width: 175.342
             height: 24
             anchors.top: parent.top
             anchors.topMargin: 16
             anchors.left: parent.left
             anchors.leftMargin: 16
+            anchors.right: parent.right
+            anchors.rightMargin: 16
 
             Text {
                 id: companyNameText
-                anchors.centerIn: parent
-                anchors.horizontalCenterOffset: 0
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Beijing YeeZTech Co., Ltd")
                 font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Bold
                 color: Theme.Colors.primary
+                maximumLineCount: 1
+                elide: Text.ElideRight
+
+                ToolTip.visible: companyNameText.truncated && companyNameMouseArea.containsMouse
+                ToolTip.text: companyNameText.text
+                ToolTip.delay: 500
             }
 
             MouseArea {

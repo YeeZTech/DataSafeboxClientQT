@@ -24,10 +24,26 @@ Card {
     readonly property int colApplyCode: 100
     readonly property int colAction: 82
 
+    // Status column sized to the widest audit-status label in the active language
+    // (审核状态仅这三种)，英文长文案不再被截断；极端兜底仍由 badge 的 elide+tooltip 承担。
+    readonly property int colStatus: {
+        var codes = ["待审核", "已授权", "已拒绝"];
+        var w = 0;
+        for (var i = 0; i < codes.length; i++)
+            w = Math.max(w, statusFm.advanceWidth(Theme.Colors.translateStatus(codes[i])));
+        return Math.ceil(w) + 12 + 6 + 10; // badge padding + left margin + breathing
+    }
+
     FontMetrics {
         id: actionFm
         font.pixelSize: card.actionTextPixelSize
         font.weight: card.actionTextWeight
+    }
+
+    FontMetrics {
+        id: statusFm
+        font.pixelSize: Theme.Typography.small
+        font.weight: Font.Medium
     }
 
     function normalizeCurrentPage() {
@@ -203,12 +219,11 @@ Card {
                     }
 
                     Item {
-                        Layout.fillWidth: true
-                        Layout.minimumWidth: 28
+                        Layout.preferredWidth: card.colStatus
                         Layout.fillHeight: true
                         Text {
                             anchors.left: parent.left
-                            anchors.leftMargin: 30
+                            anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
                             text: qsTr("Status")
                             font.pixelSize: Theme.Typography.body
@@ -363,15 +378,14 @@ Card {
                             }
 
                             Item {
-                                Layout.fillWidth: true
-                                Layout.minimumWidth: 28
+                                Layout.preferredWidth: card.colStatus
                                 Layout.fillHeight: true
                                 StatusBadge {
                                     id: expStatusBadge
                                     anchors.left: parent.left
-                                    anchors.leftMargin: 30
+                                    anchors.leftMargin: 6
                                     anchors.verticalCenter: parent.verticalCenter
-                                    width: Math.min(implicitWidth, parent.width - 30)
+                                    width: Math.min(implicitWidth, parent.width - 12)
                                     status: modelData.status || ""
                                     MouseArea {
                                         id: expStatusHover
