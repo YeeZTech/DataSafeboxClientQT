@@ -424,7 +424,7 @@
     </message>
     <message>
         <location line="+45"/>
-        <source>Application ID</source>
+        <source>App ID</source>
         <translation>申请ID</translation>
     </message>
     <message>
@@ -444,7 +444,7 @@
     </message>
     <message>
         <location line="+15"/>
-        <source>Instance Name</source>
+        <source>Instance</source>
         <translation>实例名称</translation>
     </message>
     <message>
@@ -556,7 +556,7 @@
     </message>
     <message>
         <location line="+48"/>
-        <source>Application ID</source>
+        <source>App ID</source>
         <translation>申请ID</translation>
     </message>
     <message>
@@ -571,7 +571,7 @@
     </message>
     <message>
         <location line="+14"/>
-        <source>Instance Name</source>
+        <source>Instance</source>
         <translation>实例名称</translation>
     </message>
     <message>

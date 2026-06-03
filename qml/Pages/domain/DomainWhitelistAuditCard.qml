@@ -23,7 +23,7 @@ Card {
     property int itemsPerPage: 3
     property int totalPages: auditCount > 0 ? Math.ceil(auditCount * 1.0 / itemsPerPage) : 0
     readonly property int colApplyCode: 100
-    readonly property int colAction: 82
+    readonly property int colAction: 64
 
     // Status column sized to the widest audit-status label in the active language
     // (审核状态仅这三种)，英文长文案不再被截断；极端兜底仍由 badge 的 elide+tooltip 承担。
@@ -34,6 +34,10 @@ Card {
             w = Math.max(w, statusFm.advanceWidth(Theme.Colors.translateStatus(codes[i])));
         return Math.ceil(w) + 12 + 6 + 10; // badge padding + left margin + breathing
     }
+    // Date/time column sized to the full formatted timestamp so it shows in full and
+    // never collides with Status. The +30 covers CenteredTooltipText's own padding
+    // (leftMargin 6 + rightMargin 6 + reserved CJK right-gap ~14 + slack).
+    readonly property int colTime: Math.ceil(dateFm.advanceWidth("2026-05-27 14:58")) + 30
 
     FontMetrics {
         id: actionFm
@@ -45,6 +49,11 @@ Card {
         id: statusFm
         font.pixelSize: Theme.Typography.small
         font.weight: Font.Medium
+    }
+
+    FontMetrics {
+        id: dateFm
+        font.pixelSize: Theme.Typography.body
     }
 
     function normalizeCurrentPage() {
@@ -128,7 +137,7 @@ Card {
                             anchors.left: parent.left
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
-                            text: qsTr("Application ID")
+                            text: qsTr("App ID")
                             font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
@@ -170,7 +179,7 @@ Card {
                             anchors.left: parent.left
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
-                            text: qsTr("Instance Name")
+                            text: qsTr("Instance")
                             font.pixelSize: Theme.Typography.body
                             font.weight: Font.Medium
                             color: Theme.Colors.textLabel
@@ -178,7 +187,7 @@ Card {
                     }
 
                     Item {
-                        Layout.fillWidth: true
+                        Layout.preferredWidth: card.colTime
                         Layout.fillHeight: true
                         SelectableText {
                             anchors.left: parent.left
@@ -259,7 +268,7 @@ Card {
                                     textColor: Theme.Colors.textLabel
                                     leftMargin: 6
                                     rightMargin: 6
-                                    beforeChars: 6
+                                    beforeChars: 4
                                     afterChars: 4
                                     boundsItem: card
                                 }
@@ -275,7 +284,7 @@ Card {
                                     textColor: Theme.Colors.textLabel
                                     leftMargin: 6
                                     rightMargin: 6
-                                    beforeChars: 6
+                                    beforeChars: 4
                                     afterChars: 4
                                     boundsItem: card
                                 }
@@ -291,7 +300,7 @@ Card {
                                     textColor: Theme.Colors.textLabel
                                     leftMargin: 6
                                     rightMargin: 6
-                                    beforeChars: 6
+                                    beforeChars: 4
                                     afterChars: 4
                                     boundsItem: card
                                 }
@@ -307,22 +316,23 @@ Card {
                                     textColor: Theme.Colors.textLabel
                                     leftMargin: 6
                                     rightMargin: 6
-                                    beforeChars: 6
+                                    beforeChars: 4
                                     afterChars: 4
                                     boundsItem: card
                                 }
                             }
 
                             Item {
-                                Layout.fillWidth: true
+                                Layout.preferredWidth: card.colTime
                                 Layout.fillHeight: true
-                                Text {
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 6
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
-                                    font.pixelSize: Theme.Typography.body
-                                    color: Theme.Colors.textLabel
+                                CenteredTooltipText {
+                                    anchors.fill: parent
+                                    value: Theme.Utils.formatDateTime(modelData.applyTime || modelData.createdAt || "")
+                                    textPixelSize: 14
+                                    textColor: Theme.Colors.textLabel
+                                    leftMargin: 6
+                                    rightMargin: 6
+                                    boundsItem: card
                                 }
                             }
 
