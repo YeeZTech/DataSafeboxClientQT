@@ -10,7 +10,7 @@ import DataSafebox.Auth 1.0
 
 ApplicationWindow {
     id: window
-    readonly property int sidebarWidth: 232
+    readonly property int sidebarWidth: Math.ceil(sidebar.preferredWidth)
     readonly property int mainContentMinWidth: sidebarWidth * 2
     readonly property int mainContentMaxWidth: 842
     readonly property int windowWidth: sidebarWidth + mainContentMaxWidth

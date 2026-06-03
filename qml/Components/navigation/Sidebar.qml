@@ -5,6 +5,11 @@ import DataSafebox.Theme 1.0 as Theme
 Rectangle {
     id: sidebar
 
+    // Width needed to show the company name on a single line, plus the 16px
+    // left/right margins of its container. Floored at 232 so the CN layout is
+    // unchanged; wider locales (e.g. EN) expand the sidebar instead of wrapping.
+    readonly property real preferredWidth: Math.max(232, companyNameText.implicitWidth + 2 * 16)
+
     property var currentUser: null
     property string currentUserAvatar: ""
     property string selectedDomainCode: ""
@@ -47,12 +52,7 @@ Rectangle {
                 font.pixelSize: Theme.Typography.h3
                 font.weight: Font.Bold
                 color: Theme.Colors.primary
-                maximumLineCount: 1
-                elide: Text.ElideRight
-
-                ToolTip.visible: companyNameText.truncated && companyNameMouseArea.containsMouse
-                ToolTip.text: companyNameText.text
-                ToolTip.delay: 500
+                horizontalAlignment: Text.AlignHCenter
             }
 
             MouseArea {

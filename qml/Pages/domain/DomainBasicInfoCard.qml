@@ -98,10 +98,7 @@ Card {
                 }
 
                 Rectangle {
-                    width: {
-                        var statusText = card.domainData.status || "";
-                        return Math.max(60, statusText.length * 14 + 18);
-                    }
+                    width: Math.max(60, statusLabel.implicitWidth + 18)
                     height: 28
                     radius: 8
                     property var domainStatusStyle: Theme.Colors.getStatusColor(card.domainData.status || Theme.Colors.statusNormal)
@@ -110,6 +107,7 @@ Card {
                     border.width: 1
 
                     Text {
+                        id: statusLabel
                         anchors.centerIn: parent
                         text: Theme.Colors.translateStatus(card.domainData.status || "")
                         font.pixelSize: Theme.Typography.body
