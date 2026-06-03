@@ -51,7 +51,7 @@ Row {
 
         HelpTooltipButton {
             anchors.left: payerTextRow.right
-            anchors.leftMargin: -6
+            anchors.leftMargin: 4
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: 2
             fontFamily: root.fontFamily

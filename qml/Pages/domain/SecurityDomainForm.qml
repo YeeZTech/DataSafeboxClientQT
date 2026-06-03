@@ -345,9 +345,12 @@ Item {
                                             Text {
                                                 anchors.left: parent.left
                                                 anchors.leftMargin: 0  // Align with TextArea text position
+                                                anchors.right: parent.right
+                                                anchors.rightMargin: 0
                                                 anchors.top: parent.top
                                                 anchors.topMargin: 0  // Align with TextArea text position
                                                 verticalAlignment: Text.AlignTop
+                                                wrapMode: Text.WordWrap
                                                 text: qsTr("Please describe the security domain's purpose so other users can understand it.")
                                                 font.family: root.fontFamily
                                                 font.pixelSize: root.fontSizeBody
