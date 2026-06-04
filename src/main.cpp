@@ -477,7 +477,11 @@ int main(int argc, char *argv[])
     QObject::connect(sentryFlushTimer, &QTimer::timeout, []() { sentry_flush(3000); });
     sentryFlushTimer->start();
 
+#ifdef Q_OS_MACOS
+    // Keep the Dock icon from the bundle .icns; the SVG is full-bleed and makes the running app icon look oversized.
+#else
     app.setWindowIcon(QIcon(":/icons/SafeLogo.svg"));
+#endif
 
     QQmlApplicationEngine engine;
 
