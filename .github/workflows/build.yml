@@ -156,6 +156,7 @@ jobs:
           header="$(find dscc-sdk -path '*/include/dscc/core/common/active_notify.h' | head -1)"
           if [ -z "$header" ]; then echo 'DSCC SDK header not found after extraction'; exit 1; fi
           dscc="${header%/include/dscc/core/common/active_notify.h}"
+          dscc="$(cd "$dscc" && pwd)"   # 转绝对路径：build_dmg.sh 在 build/macos 子目录里编译/链接
           echo "DSCC_DIR=$dscc" >> "$GITHUB_ENV"
           echo "DSCC_DIR=$dscc"
 
