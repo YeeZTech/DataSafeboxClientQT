@@ -43,7 +43,7 @@ jobs:
           host:    'windows'
           target:  'desktop'
           arch:    'win64_msvc2019_64'   # Qt 6.7.3 ships no msvc2022 build; this is ABI-compatible with MSVC 2022
-          modules: 'qtwebengine qtquick3d'
+          modules: 'qtwebengine qtwebchannel qtpositioning qtlocation qtquick3d'
           tools:   'tools_ifw'
           cache:   true
 
@@ -68,7 +68,8 @@ jobs:
         shell: pwsh
         env:
           VCPKG_ROOT: C:/vcpkg
-        run: C:/vcpkg/vcpkg.exe install sentry-native --triplet x64-windows
+        # --classic：本仓库根有 vcpkg.json，默认会进入 manifest 模式而拒绝单包安装
+        run: C:/vcpkg/vcpkg.exe install sentry-native --triplet x64-windows --classic
 
       # 下载并解压对应环境的 DSCC SDK（私有仓库，需要 DSCC_TOKEN）
       - name: Download DSCC SDK (${{ matrix.env_name }})
@@ -132,7 +133,7 @@ jobs:
           host:    'mac'
           target:  'desktop'
           arch:    'clang_64'
-          modules: 'qtwebengine qtquick3d'
+          modules: 'qtwebengine qtwebchannel qtpositioning qtlocation qtquick3d'
           cache:   true
 
       # 构建依赖：图标渲染(librsvg) + pkg-config + sentry-native(arm64) + Pillow
