@@ -179,7 +179,8 @@ jobs:
           retention-days: 30
 
   # ============================================================
-  # Release：推送 release/v* 标签时，把 4 个产物发布到 GitHub Release
+  # Release：推送 release/v* 标签时，仅把 prod 的 exe + dmg 发布到 GitHub Release
+  #（test 包仍会构建并作为可下载的 build artifact，但不进 Release）
   # ============================================================
   release:
     name: Create GitHub Release
@@ -200,9 +201,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/DataSafebox-windows-test/DataSafebox_*.exe
             artifacts/DataSafebox-windows-prod/DataSafebox_*.exe
-            artifacts/DataSafebox-macos-test/DataSafebox_*.dmg
             artifacts/DataSafebox-macos-prod/DataSafebox_*.dmg
           generate_release_notes: true
           draft: false
