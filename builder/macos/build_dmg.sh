@@ -51,6 +51,11 @@ ENTITLEMENTS="${SCRIPT_DIR}/entitlements.plist"
 NOTARY_PROFILE="datasafebox-notary"
 SKIP_NOTARY=0   # set to 0 to enable notarization
 
+# Optional: when set (e.g. by CI), notarytool reads the credential profile from
+# this keychain instead of the default/login keychain. Empty = local behavior.
+NOTARY_KEYCHAIN="${NOTARY_KEYCHAIN:-}"
+NOTARY_KEYCHAIN_ARG="${NOTARY_KEYCHAIN:+--keychain ${NOTARY_KEYCHAIN}}"
+
 ARCH="$(uname -m)"
 
 # find_qt_dir <version>
@@ -644,10 +649,10 @@ if [[ -n "${SIGN_IDENTITY}" ]]; then
 
     if [[ "${SKIP_NOTARY}" == "1" ]]; then
         warn "Notarization skipped (SKIP_NOTARY=1)"
-    elif xcrun notarytool history --keychain-profile "${NOTARY_PROFILE}" &>/dev/null; then
+    elif xcrun notarytool history --keychain-profile "${NOTARY_PROFILE}" ${NOTARY_KEYCHAIN_ARG} &>/dev/null; then
         info "Submitting for Apple notarization (may take a few minutes)..."
         xcrun notarytool submit "${DIST_DIR}/${DMG_NAME}" \
-            --keychain-profile "${NOTARY_PROFILE}" --wait
+            --keychain-profile "${NOTARY_PROFILE}" ${NOTARY_KEYCHAIN_ARG} --wait
         xcrun stapler staple "${DIST_DIR}/${DMG_NAME}"
         ok "Notarized and stapled"
     else
