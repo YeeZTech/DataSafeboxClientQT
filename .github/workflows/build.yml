@@ -208,6 +208,21 @@ jobs:
           chmod +x builder/macos/build_dmg.sh
           ./builder/macos/build_dmg.sh
 
+      # 静态自检：bundle 内每个 dylib 的 @rpath 依赖都必须就位。
+      # （-mt boost 缺失这类问题不会让 build_dmg.sh 失败，但 app 启动即崩，故加此校验）
+      - name: Verify bundled dylib closure
+        run: |
+          APP="build/macos/DataSafebox.app"; FW="$APP/Contents/Frameworks"
+          missing=0
+          for lib in "$APP/Contents/MacOS/DataSafebox" "$FW"/*.dylib; do
+            [ -e "$lib" ] || continue
+            while read -r dep; do
+              d="${dep#@rpath/}"
+              [ -e "$FW/$d" ] || { echo "UNMET: $(basename "$lib") -> $dep"; missing=1; }
+            done < <(otool -L "$lib" | awk '/@rpath\/.*\.dylib/{print $1}')
+          done
+          if [ "$missing" = 0 ]; then echo "dylib closure OK"; else echo "::error::bundle has unresolved @rpath dylibs"; exit 1; fi
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

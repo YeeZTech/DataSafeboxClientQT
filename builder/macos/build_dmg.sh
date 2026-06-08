@@ -483,16 +483,18 @@ for _lib in libsecp256k1.6.dylib; do
     fi
 done
 
-# Boost (required by libdscc_common + libdscc_core + libycrypto_core/toolkit)
-for _lib in libboost_system.dylib libboost_filesystem.dylib libboost_atomic.dylib libboost_program_options.dylib; do
-    _src="${DSCC_DIR}/deps/boost/lib/${_lib}"
-    if [[ -f "${_src}" ]]; then
-        cp -f "${_src}" "${DSCC_FWDIR}/"
-        ok "bundled ${_lib}"
-    else
-        warn "${_src} not found -- bundle may be incomplete"
-    fi
+# Boost: the released DSCC SDK links libdscc_common/core against the -mt variants
+# (libboost_system-mt.dylib, …) and libycrypto_core/toolkit against the non-mt
+# ones. Both ship in the package, so bundle every boost dylib to cover the whole
+# closure (cp follows symlinks, producing real files for any -mt aliases).
+_boost_found=0
+for _src in "${DSCC_DIR}"/deps/boost/lib/*.dylib; do
+    [[ -e "${_src}" ]] || continue
+    cp -f "${_src}" "${DSCC_FWDIR}/"
+    ok "bundled $(basename "${_src}")"
+    _boost_found=1
 done
+[[ "${_boost_found}" == "1" ]] || warn "no boost dylibs in ${DSCC_DIR}/deps/boost/lib -- bundle may be incomplete"
 
 # fflib (required by libdscc_core)
 for _lib in libff_net.dylib; do
