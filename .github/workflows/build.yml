@@ -1,40 +1,63 @@
-name: Build & Package
+name: Build & Release
 
-# 触发条件：推送到 main/master 分支，或创建 v* 版本标签，或手动触发
+# 触发条件：
+#   - 推送到 feature/build 分支（每次出 test + prod 产物，仅上传为构建产物）
+#   - 推送 release/v* 标签（例如 release/v1.0.4，额外创建 GitHub Release）
+#   - 手动触发（workflow_dispatch）
 on:
   push:
-    branches: [ main, master ]
-    tags:     [ 'v*' ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [ feature/build ]
+    tags:     [ 'release/v*' ]
   workflow_dispatch:
 
-# 三平台并行构建
+# 同一分支/标签的旧构建在新构建开始时取消，避免排队浪费 runner 时长
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # ============================================================
-  # Windows — MSVC2022 + Qt 6.7.3 + IFW → .exe 安装包
+  # Windows — MSVC2022 + Qt 6.7.3 + Qt IFW → .exe 安装包
+  # test:  USE_TEST_ENV=1  →  DataSafebox_<version>_test.exe
+  # prod:  USE_TEST_ENV=0  →  DataSafebox_<version>.exe
   # ============================================================
   build-windows:
-    name: Windows (MSVC2022)
+    name: Windows (${{ matrix.env_name }})
     runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { env_name: test, use_test_env: '1' }
+          - { env_name: prod, use_test_env: '0' }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 安装 Qt（含 WebEngine + Qt IFW）
+      # 安装 Qt（含 WebEngine + Qt Installer Framework）
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version:   '6.7.3'
-          host:      'windows'
-          target:    'desktop'
-          arch:      'win64_msvc2022_64'
-          modules:   'qtwebengine qtquick3d'
-          tools:     'tools_ifw'
-          cache:     true
+          version: '6.7.3'
+          host:    'windows'
+          target:  'desktop'
+          arch:    'win64_msvc2022_64'
+          modules: 'qtwebengine qtquick3d'
+          tools:   'tools_ifw'
+          cache:   true
 
-      # vcpkg 缓存 + 安装 sentry-native
+      # 定位 Qt Installer Framework 的 binarycreator.exe，供 build_installer.bat 使用
+      - name: Resolve Qt IFW path
+        shell: pwsh
+        run: |
+          $bc = Get-ChildItem -Path (Join-Path $env:QT_ROOT_DIR '..\..') -Recurse `
+                  -Filter binarycreator.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $bc) { Write-Error 'binarycreator.exe not found under Qt install dir'; exit 1 }
+          "IFW_BIN=$($bc.DirectoryName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "IFW_BIN=$($bc.DirectoryName)"
+
+      # vcpkg 缓存 + 安装 sentry-native（x64-windows）
       - name: Cache vcpkg
         uses: actions/cache@v4
         with:
@@ -43,64 +66,65 @@ jobs:
 
       - name: Install sentry-native (vcpkg)
         shell: pwsh
-        run: |
-          C:/vcpkg/vcpkg.exe install sentry-native --triplet x64-windows
         env:
           VCPKG_ROOT: C:/vcpkg
+        run: C:/vcpkg/vcpkg.exe install sentry-native --triplet x64-windows
 
-      # MSVC 环境初始化 + 编译
-      - name: Build (qmake + nmake)
-        shell: cmd
-        run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          qmake datasafebox-qt-client.pro CONFIG+=release ^
-                USE_TEST_ENV=0 ^
-                SENTRY_ROOT_DIR=C:/vcpkg/installed/x64-windows
-          nmake release
-
-      # 从 vcpkg 拷 sentry 运行时到 release/
-      - name: Copy sentry runtime
+      # 下载并解压对应环境的 DSCC SDK（私有仓库，需要 DSCC_TOKEN）
+      - name: Download DSCC SDK (${{ matrix.env_name }})
         shell: pwsh
-        run: |
-          Copy-Item C:/vcpkg/installed/x64-windows/bin/sentry.dll          release/
-          Copy-Item C:/vcpkg/installed/x64-windows/tools/sentry-native/crashpad_handler.exe release/
-
-      # 打包成 .exe 安装包
-      - name: Package installer
-        shell: cmd
-        run: builder\windows\build_installer.bat
         env:
-          USE_TEST_ENV: '0'
+          GH_TOKEN: ${{ secrets.DSCC_TOKEN }}
+        run: |
+          $asset = "dscc-sdk-win64-${{ matrix.env_name }}.zip"
+          gh release download feature-build --repo YeeZTech/data-safebox-core `
+            --pattern $asset --dir dscc-zip
+          New-Item -ItemType Directory -Force dscc-sdk | Out-Null
+          tar -xf "dscc-zip/$asset" -C dscc-sdk
+          $hdr = Get-ChildItem -Path dscc-sdk -Recurse -Filter active_notify.h -ErrorAction SilentlyContinue |
+                 Where-Object { $_.FullName -match 'include\\dscc\\core\\common' } | Select-Object -First 1
+          if (-not $hdr) { Write-Error 'DSCC SDK header not found after extraction'; exit 1 }
+          $dscc = $hdr.FullName -replace '\\include\\dscc\\core\\common\\active_notify\.h$',''
+          "DSCC_DIR=$dscc" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "DSCC_DIR=$dscc"
 
-      # 上传产物（.exe 安装包）
+      # 编译 + 打包（build_installer.bat 内部完成 lrelease/qmake/nmake/windeployqt/IFW）
+      - name: Build & package installer
+        shell: cmd
+        env:
+          USE_TEST_ENV:    ${{ matrix.use_test_env }}
+          SENTRY_ROOT_DIR: C:/vcpkg/installed/x64-windows
+          # DSCC_DIR 与 IFW_BIN 已通过 GITHUB_ENV 注入
+        run: call builder\windows\build_installer.bat
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: installer-windows
-          path: builder/windows/safebox_*.exe
+          name: DataSafebox-windows-${{ matrix.env_name }}
+          path: builder/windows/DataSafebox_*.exe
+          if-no-files-found: error
           retention-days: 30
 
   # ============================================================
-  # macOS — Clang + Qt 6.7.3 + macdeployqt → .dmg
+  # macOS (Apple Silicon) — Clang + Qt 6.7.3 + macdeployqt → .dmg
+  # test:  USE_TEST_ENV=1  →  DataSafebox_<version>_test.dmg
+  # prod:  USE_TEST_ENV=0  →  DataSafebox_<version>.dmg
   # ============================================================
   build-macos:
-    name: macOS (Clang)
-    runs-on: macos-14        # Apple Silicon runner（免费额度更多）
+    name: macOS (${{ matrix.env_name }})
+    runs-on: macos-14        # Apple Silicon (arm64) — 与 DSCC macos-arm64 包匹配
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { env_name: test, use_test_env: '1' }
+          - { env_name: prod, use_test_env: '0' }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 生成图标（需要 librsvg + iconutil）
-      - name: Install icon tools
-        run: brew install librsvg
-
-      - name: Generate macOS icons
-        run: |
-          chmod +x icons/generate_platform_icons.sh
-          bash icons/generate_platform_icons.sh
-
-      # 安装 Qt
+      # 安装 Qt（含 WebEngine）
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -111,117 +135,55 @@ jobs:
           modules: 'qtwebengine qtquick3d'
           cache:   true
 
-      # vcpkg 缓存 + sentry-native
-      - name: Cache vcpkg
-        uses: actions/cache@v4
-        with:
-          path: ~/vcpkg/installed
-          key:  vcpkg-macos-sentry-${{ hashFiles('vcpkg.json') }}
+      # 构建依赖：图标渲染(librsvg) + pkg-config + sentry-native(arm64) + Pillow
+      - name: Install build dependencies (Homebrew)
+        run: brew install librsvg pkg-config sentry-native
 
-      - name: Install sentry-native (vcpkg)
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git ~/vcpkg || true
-          ~/vcpkg/bootstrap-vcpkg.sh
-          ~/vcpkg/vcpkg install sentry-native --triplet x64-osx
+      - name: Install Pillow
+        run: python3 -m pip install --break-system-packages --quiet Pillow
 
-      # 打包（build_dmg.sh 内部包含 qmake + make + macdeployqt）
-      - name: Build & Package dmg
-        run: |
-          chmod +x builder/macos/build_dmg.sh
-          USE_TEST_ENV=0 SENTRY_ROOT_DIR=~/vcpkg/installed/x64-osx ./builder/macos/build_dmg.sh
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: installer-macos
-          path: builder/macos/safebox_*.dmg
-          retention-days: 30
-
-  # ============================================================
-  # Linux — GCC + Qt 6.7.3 + linuxdeploy → .AppImage
-  # ============================================================
-  build-linux:
-    name: Linux (GCC)
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # 系统依赖
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential libgl1-mesa-dev libglu1-mesa-dev \
-            libxcb-xinerama0-dev libfontconfig1-dev libfreetype-dev \
-            libx11-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev \
-            libxcb1-dev libx11-xcb-dev libxcb-glx0-dev \
-            libxkbcommon-dev libxkbcommon-x11-dev \
-            libcurl4-openssl-dev \
-            librsvg2-bin \
-            libnspr4 libnss3 libasound2
-
-      # 生成 PNG 图标
-      - name: Generate Linux icon
-        run: bash icons/generate_platform_icons.sh
-
-      # 安装 Qt
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
-        with:
-          version: '6.7.3'
-          host:    'linux'
-          target:  'desktop'
-          arch:    'gcc_64'
-          modules: 'qtwebengine qtquick3d'
-          cache:   true
-
-      # vcpkg + sentry-native
-      - name: Cache vcpkg
-        uses: actions/cache@v4
-        with:
-          path: ~/vcpkg/installed
-          key:  vcpkg-linux-sentry-${{ hashFiles('vcpkg.json') }}
-
-      - name: Install sentry-native (vcpkg)
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git ~/vcpkg || true
-          ~/vcpkg/bootstrap-vcpkg.sh
-          ~/vcpkg/vcpkg install sentry-native --triplet x64-linux
-
-      # 下载 linuxdeploy 工具
-      - name: Download linuxdeploy
-        run: |
-          curl -Lo linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/latest/download/linuxdeploy-x86_64.AppImage
-          curl -Lo linuxdeploy-plugin-qt https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/latest/download/linuxdeploy-plugin-qt-x86_64.AppImage
-          chmod +x linuxdeploy linuxdeploy-plugin-qt
-          sudo mv linuxdeploy linuxdeploy-plugin-qt /usr/local/bin/
-
-      # 打包
-      - name: Build & Package AppImage
-        run: |
-          chmod +x builder/linux/build_appimage.sh
-          USE_TEST_ENV=0 SENTRY_ROOT_DIR=~/vcpkg/installed/x64-linux ./builder/linux/build_appimage.sh
+      # 下载并解压对应环境的 DSCC SDK（私有仓库，需要 DSCC_TOKEN）
+      - name: Download DSCC SDK (${{ matrix.env_name }})
         env:
-          QMAKE: qmake
-          DISPLAY: ''
+          GH_TOKEN: ${{ secrets.DSCC_TOKEN }}
+        run: |
+          asset="dscc-sdk-macos-arm64-${{ matrix.env_name }}.zip"
+          gh release download feature-build --repo YeeZTech/data-safebox-core \
+            --pattern "$asset" --dir dscc-zip
+          mkdir -p dscc-sdk
+          tar -xf "dscc-zip/$asset" -C dscc-sdk
+          header="$(find dscc-sdk -path '*/include/dscc/core/common/active_notify.h' | head -1)"
+          if [ -z "$header" ]; then echo 'DSCC SDK header not found after extraction'; exit 1; fi
+          dscc="${header%/include/dscc/core/common/active_notify.h}"
+          echo "DSCC_DIR=$dscc" >> "$GITHUB_ENV"
+          echo "DSCC_DIR=$dscc"
+
+      # 编译 + 打包（build_dmg.sh 内部完成 lrelease/qmake/make/macdeployqt/签名/制作 dmg）
+      - name: Build & package dmg
+        env:
+          USE_TEST_ENV: ${{ matrix.use_test_env }}
+        run: |
+          export QT_DIR="$QT_ROOT_DIR"
+          export SENTRY_ROOT_DIR="$(brew --prefix sentry-native)"
+          chmod +x builder/macos/build_dmg.sh
+          ./builder/macos/build_dmg.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: installer-linux
-          path: builder/linux/*.AppImage
+          name: DataSafebox-macos-${{ matrix.env_name }}
+          path: builder/macos/DataSafebox_*.dmg
+          if-no-files-found: error
           retention-days: 30
 
   # ============================================================
-  # Release：打 v* 标签时，把三平台产物发布到 GitHub Releases
+  # Release：推送 release/v* 标签时，把 4 个产物发布到 GitHub Release
   # ============================================================
   release:
     name: Create GitHub Release
-    needs: [ build-windows, build-macos, build-linux ]
+    needs: [ build-windows, build-macos ]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/release/v')
 
     permissions:
       contents: write
@@ -236,9 +198,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/installer-windows/safebox_*.exe
-            artifacts/installer-macos/safebox_*.dmg
-            artifacts/installer-linux/*.AppImage
+            artifacts/DataSafebox-windows-test/DataSafebox_*.exe
+            artifacts/DataSafebox-windows-prod/DataSafebox_*.exe
+            artifacts/DataSafebox-macos-test/DataSafebox_*.dmg
+            artifacts/DataSafebox-macos-prod/DataSafebox_*.dmg
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}

@@ -305,7 +305,8 @@ if not "%BC_ERROR%"=="0" goto :fail
 rem Print final installer path
 powershell -NoProfile -Command "$out='%OUTPUT_INSTALLER%'; Write-Host ''; Write-Host '=================================================='; Write-Host '  Build complete'; Write-Host ('  Output: '+$out); Write-Host '==================================================' "
 echo.
-pause
+rem Skip the interactive pause on CI runners (GitHub Actions sets CI=true).
+if not defined CI pause
 exit /b 0
 
 :fail
@@ -313,7 +314,7 @@ echo.
 echo [Error] Build failed. See messages above.
 echo.
 :fail_no_msg
-pause
+if not defined CI pause
 exit /b 1
 
 rem ==================================================================
