@@ -42,7 +42,7 @@ jobs:
           version: '6.7.3'
           host:    'windows'
           target:  'desktop'
-          arch:    'win64_msvc2022_64'
+          arch:    'win64_msvc2019_64'   # Qt 6.7.3 ships no msvc2022 build; this is ABI-compatible with MSVC 2022
           modules: 'qtwebengine qtquick3d'
           tools:   'tools_ifw'
           cache:   true
