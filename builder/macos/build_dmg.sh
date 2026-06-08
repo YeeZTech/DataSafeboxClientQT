@@ -483,10 +483,13 @@ for _lib in libsecp256k1.6.dylib; do
     fi
 done
 
-# Boost: the released DSCC SDK links libdscc_common/core against the -mt variants
-# (libboost_system-mt.dylib, …) and libycrypto_core/toolkit against the non-mt
-# ones. Both ship in the package, so bundle every boost dylib to cover the whole
-# closure (cp follows symlinks, producing real files for any -mt aliases).
+# Boost: libdscc_common/core link the -mt variants (libboost_system-mt.dylib, …)
+# while libycrypto_core/toolkit link the plain names (libboost_filesystem.dylib).
+# In the SDK the -mt dylib is the real multi-threaded build and the plain name is
+# a symlink to it, so both refer to the SAME binary (the plain name must NOT be a
+# separate single-threaded build, or ycrypto fails to find boost::filesystem::
+# path::append_v3 at launch). Bundling every entry here (cp follows symlinks)
+# yields a real plain file with the -mt contents, covering the whole closure.
 _boost_found=0
 for _src in "${DSCC_DIR}"/deps/boost/lib/*.dylib; do
     [[ -e "${_src}" ]] || continue
