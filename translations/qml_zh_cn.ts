@@ -1968,6 +1968,10 @@ Status:
         <source>Logout</source>
         <translation>退出登录</translation>
     </message>
+    <message>
+        <source>Archive</source>
+        <translation>归档</translation>
+    </message>
 </context>
 <context>
     <name>UpdateDialog</name>
@@ -2365,6 +2369,30 @@ Location: %1</source>
         <source>Install Now</source>
         <translation>立即安装</translation>
     </message>
+    <message>
+        <source>Archived successfully</source>
+        <translation>归档成功</translation>
+    </message>
+    <message>
+        <source>Restored successfully</source>
+        <translation>恢复成功</translation>
+    </message>
+    <message>
+        <source>Failed to archive security domain</source>
+        <translation>归档安全域失败</translation>
+    </message>
+    <message>
+        <source>Archive Security Domain</source>
+        <translation>归档安全域</translation>
+    </message>
+    <message>
+        <source>Failed to restore security domain</source>
+        <translation>恢复安全域失败</translation>
+    </message>
+    <message>
+        <source>Restore Security Domain</source>
+        <translation>恢复安全域</translation>
+    </message>
 </context>
 <context>
     <name>PrimaryButton</name>
@@ -2544,6 +2572,22 @@ Location: %1</source>
         <location line="+40"/>
         <source>Remove This Security Domain</source>
         <translation>移除此安全域</translation>
+    </message>
+    <message>
+        <source>Archive This Security Domain</source>
+        <translation>归档此安全域</translation>
+    </message>
+    <message>
+        <source>Restore This Security Domain</source>
+        <translation>恢复此安全域</translation>
+    </message>
+    <message>
+        <source>Move this security domain to the archive directory; data and features remain unchanged</source>
+        <translation>将此安全域移至归档目录，数据与功能保持不变</translation>
+    </message>
+    <message>
+        <source>Move this security domain back to the security domain directory; original configuration remains unchanged</source>
+        <translation>将此安全域移回安全域目录，原有配置保持不变</translation>
     </message>
 </context>
 <context>

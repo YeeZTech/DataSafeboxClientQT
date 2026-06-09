@@ -12,6 +12,8 @@ Column {
     property bool isDomainReadOnly: false
     property bool isCreator: false
     property bool isDomainInactive: false
+    // 当前安全域是否已归档 (PRD 3.1)。已归档时底部显示“恢复”按钮，否则显示“归档”按钮。
+    property bool isArchived: false
     property var currentUser: null
 
     property bool isEditingDescription: false
@@ -44,6 +46,8 @@ Column {
     signal viewExportRequested(var auditData)
     signal deactivateRequested
     signal removeDomainRequested
+    signal archiveRequested
+    signal restoreRequested
 
     DomainBasicInfoCard {
         id: basicInfoCard
@@ -129,73 +133,118 @@ Column {
         }
     }
 
-    Rectangle {
-        id: disableBtn
-        height: 36
+    // 底部操作区 (PRD 3.1.2)：停用/移除按钮与归档/恢复按钮水平居中排列。
+    // 归档/恢复按钮对任意状态、任意角色始终可用；停用/移除沿用原有可见性逻辑，
+    // 因此自然形成“单按钮 / 双按钮”两种布局。
+    Row {
+        id: bottomActionRow
         anchors.horizontalCenter: parent.horizontalCenter
-        radius: 8
-        property bool hovered: false
-        property bool pressed: false
-        color: pressed ? "#ccffa2a2" : (hovered ? "#80ffd2d2" : Theme.Colors.backgroundWhite)
-        border.width: 1
-        border.color: "#ffa2a2"
-        visible: !root.isDomainReadOnly
-        implicitWidth: disableText.implicitWidth + 34
+        spacing: 20
 
-        Text {
-            id: disableText
-            anchors.centerIn: parent
-            text: qsTr("Disable This Security Domain")
-            font.pixelSize: Theme.Typography.body
-            font.weight: Font.Medium
-            color: Theme.Colors.textError
+        Rectangle {
+            id: disableBtn
+            height: 36
+            radius: 8
+            property bool hovered: false
+            property bool pressed: false
+            color: pressed ? "#ccffa2a2" : (hovered ? "#80ffd2d2" : Theme.Colors.backgroundWhite)
+            border.width: 1
+            border.color: "#ffa2a2"
+            visible: !root.isDomainReadOnly
+            implicitWidth: disableText.implicitWidth + 34
+
+            Text {
+                id: disableText
+                anchors.centerIn: parent
+                text: qsTr("Disable This Security Domain")
+                font.pixelSize: Theme.Typography.body
+                font.weight: Font.Medium
+                color: Theme.Colors.textError
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: !root.isDomainReadOnly
+                hoverEnabled: true
+                cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                onClicked: root.deactivateRequested()
+                onEntered: parent.hovered = true
+                onExited: parent.hovered = false
+                onPressed: parent.pressed = true
+                onReleased: parent.pressed = false
+            }
         }
 
-        MouseArea {
-            anchors.fill: parent
-            enabled: !root.isDomainReadOnly
-            hoverEnabled: true
-            cursorShape: (!root.isDomainReadOnly) ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-            onClicked: root.deactivateRequested()
-            onEntered: parent.hovered = true
-            onExited: parent.hovered = false
-            onPressed: parent.pressed = true
-            onReleased: parent.pressed = false
-        }
-    }
+        // Remove button (PRD 3.2): only the creator can remove a closed/failed domain.
+        Rectangle {
+            id: removeBtn
+            height: 36
+            radius: 8
+            property bool hovered: false
+            property bool pressed: false
+            color: pressed ? "#ccffa2a2" : (hovered ? "#80ffd2d2" : Theme.Colors.backgroundWhite)
+            border.width: 1
+            border.color: "#ffa2a2"
+            visible: root.isCreator && root.isDomainInactive
+            implicitWidth: removeText.implicitWidth + 34
 
-    // Remove button (PRD 3.2): only the creator can remove a closed/failed domain.
-    Rectangle {
-        id: removeBtn
-        height: 36
-        anchors.horizontalCenter: parent.horizontalCenter
-        radius: 8
-        property bool hovered: false
-        property bool pressed: false
-        color: pressed ? "#ccffa2a2" : (hovered ? "#80ffd2d2" : Theme.Colors.backgroundWhite)
-        border.width: 1
-        border.color: "#ffa2a2"
-        visible: root.isCreator && root.isDomainInactive
-        implicitWidth: removeText.implicitWidth + 34
+            Text {
+                id: removeText
+                anchors.centerIn: parent
+                text: qsTr("Remove This Security Domain")
+                font.pixelSize: Theme.Typography.body
+                font.weight: Font.Medium
+                color: Theme.Colors.textError
+            }
 
-        Text {
-            id: removeText
-            anchors.centerIn: parent
-            text: qsTr("Remove This Security Domain")
-            font.pixelSize: Theme.Typography.body
-            font.weight: Font.Medium
-            color: Theme.Colors.textError
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.removeDomainRequested()
+                onEntered: parent.hovered = true
+                onExited: parent.hovered = false
+                onPressed: parent.pressed = true
+                onReleased: parent.pressed = false
+            }
         }
 
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: root.removeDomainRequested()
-            onEntered: parent.hovered = true
-            onExited: parent.hovered = false
-            onPressed: parent.pressed = true
-            onReleased: parent.pressed = false
+        // Archive button (PRD 3.1.2): always available, any status / any role.
+        SecondaryButton {
+            id: archiveBtn
+            primaryOutline: true
+            visible: !root.isArchived
+            text: qsTr("Archive This Security Domain")
+            onClicked: root.archiveRequested()
+
+            HoverHandler {
+                id: archiveHover
+            }
+
+            HintTooltip {
+                parent: archiveBtn
+                text: qsTr("Move this security domain to the archive directory; data and features remain unchanged")
+                visible: archiveHover.hovered
+            }
+        }
+
+        // Restore button (PRD 3.1.2): shown when the domain is archived.
+        SecondaryButton {
+            id: restoreBtn
+            primaryOutline: true
+            visible: root.isArchived
+            text: qsTr("Restore This Security Domain")
+            onClicked: root.restoreRequested()
+
+            HoverHandler {
+                id: restoreHover
+            }
+
+            HintTooltip {
+                parent: restoreBtn
+                text: qsTr("Move this security domain back to the security domain directory; original configuration remains unchanged")
+                visible: restoreHover.hovered
+            }
         }
     }
 }

@@ -93,6 +93,18 @@ ApplicationWindow {
     property string selectedDomainPubKey: ""
     property string selectedDomainCode: ""
 
+    // ── 归档功能 (PRD 3.1) ────────────────────────────────────────────────────
+    // 归档/恢复经由 DSCC-SDK 持久化（服务端 + 本地 DB），归档状态由 loadDomainList /
+    // loadDomainSummary 返回的 isArchived 字段驱动。归档是与状态无关的视图划分：
+    // 把安全域在侧栏主列表与“归档”子列表之间移动，不改变安全域的任何状态。
+    function showArchiveToast(message) {
+        archiveToastLabel.text = message;
+        if (archiveToast.opened)
+            archiveToastTimer.restart();
+        else
+            archiveToast.open();
+    }
+
     Component.onCompleted: {
         Qt.callLater(function () {
             // 进入登录页前检查版本。若已下载待安装的新版本，则只提醒安装，不再
@@ -358,6 +370,34 @@ ApplicationWindow {
             DsccBridge.loadDomainList();
         }
 
+        function onDomainArchived(operationId, domainCode) {
+            // 归档成功 (PRD 3.1)：刷新侧栏列表使其移入“归档”子列表；若当前正打开该安全域，
+            // 刷新其概要使详情页按钮翻转为“恢复”。保持在详情页、不改变安全域状态。
+            window.showArchiveToast(qsTr("Archived successfully"));
+            DsccBridge.loadDomainList();
+            if (securityDomainDetail && domainCode === window.selectedDomainCode)
+                DsccBridge.loadDomainSummary(domainCode);
+        }
+
+        function onDomainArchiveFailed(operationId, domainCode, notification) {
+            var msg = DsccBridge.notificationMessage(notification, qsTr("Failed to archive security domain"));
+            window.showError(msg, qsTr("Archive Security Domain"));
+        }
+
+        function onDomainUnarchived(operationId, domainCode) {
+            // 恢复成功 (PRD 3.1)：刷新侧栏列表使其移回主列表；若当前正打开该安全域，
+            // 刷新其概要使详情页按钮翻转为“归档”。
+            window.showArchiveToast(qsTr("Restored successfully"));
+            DsccBridge.loadDomainList();
+            if (securityDomainDetail && domainCode === window.selectedDomainCode)
+                DsccBridge.loadDomainSummary(domainCode);
+        }
+
+        function onDomainUnarchiveFailed(operationId, domainCode, notification) {
+            var msg = DsccBridge.notificationMessage(notification, qsTr("Failed to restore security domain"));
+            window.showError(msg, qsTr("Restore Security Domain"));
+        }
+
         function onMessageReadFailed(operationId, messageCode, notification) {
             var msg = DsccBridge.notificationMessage(notification, qsTr("Failed to mark message as read"));
             window.showError(msg, qsTr("Message"));
@@ -564,6 +604,10 @@ ApplicationWindow {
                     else
                         customerServiceDialog.open();
                 }
+
+                onArchiveRequested: DsccBridge.archiveDomain(window.selectedDomainCode)
+
+                onRestoreRequested: DsccBridge.unarchiveDomain(window.selectedDomainCode)
 
                 onErrorOccurred: function (message, title) {
                     window.showError(message, title);
@@ -1009,6 +1053,86 @@ ApplicationWindow {
         }
 
         onOpened: noUpdateTimer.start()
+    }
+
+    // 归档/恢复成功提示 Toast (PRD 3.1.2.6)
+    Popup {
+        id: archiveToast
+        padding: 0
+        width: Math.min(280, archiveToastLabel.implicitWidth + 80)
+        height: 56
+        x: sidebarWidth + (mainContentArea.width - width) / 2
+        y: (parent.height - height) / 2
+        modal: false
+        focus: false
+        parent: Overlay.overlay
+
+        background: Rectangle {
+            color: Theme.Colors.backgroundWhite
+            radius: 28
+            border.color: Theme.Colors.borderSeparator
+            border.width: 1
+
+            ShadowBox {
+                cornerRadius: 28
+                shadowColor: "#08000000"
+            }
+        }
+
+        contentItem: RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 18
+            anchors.rightMargin: 18
+            spacing: 10
+
+            Image {
+                source: "qrc:/icons/icon-check-success.svg"
+                Layout.preferredWidth: 20
+                Layout.preferredHeight: 20
+                fillMode: Image.PreserveAspectFit
+            }
+
+            Label {
+                id: archiveToastLabel
+                text: ""
+                font.pixelSize: Theme.Typography.body
+                font.weight: Font.Medium
+                color: "#1e293b"
+                Layout.fillWidth: true
+            }
+        }
+
+        enter: Transition {
+            NumberAnimation {
+                property: "opacity"
+                from: 0
+                to: 1
+                duration: 250
+            }
+            NumberAnimation {
+                property: "y"
+                from: 30
+                to: 60
+                duration: 400
+                easing.type: Easing.OutBack
+            }
+        }
+        exit: Transition {
+            NumberAnimation {
+                property: "opacity"
+                from: 1
+                to: 0
+                duration: 250
+            }
+        }
+
+        Timer {
+            id: archiveToastTimer
+            interval: 2000
+            onTriggered: archiveToast.close()
+        }
+
+        onOpened: archiveToastTimer.restart()
     }
 
     Popup {

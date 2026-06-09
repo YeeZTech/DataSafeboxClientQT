@@ -2,7 +2,7 @@
 <Package>
     <DisplayName>数据安全柜控制台</DisplayName>
     <Description>数据安全柜控制台</Description>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <ReleaseDate>2026-01-20</ReleaseDate>
     <Default>true</Default>
     <Script>installscript.qs</Script>

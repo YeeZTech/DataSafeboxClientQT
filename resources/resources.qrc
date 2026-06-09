@@ -105,6 +105,7 @@
         <file alias="icons/SafeLogo.svg">../icons/SafeLogo.svg</file>
         <file alias="icons/SafeLogoRounded.svg">../icons/SafeLogoRounded.svg</file>
         <file alias="icons/icon-security-domain.svg">../icons/icon-security-domain.svg</file>
+        <file alias="icons/icon-archive.svg">../icons/icon-archive.svg</file>
         <file alias="icons/icon-security-instance.svg">../icons/icon-security-instance.svg</file>
         <file alias="icons/icon-user-avatar.svg">../icons/icon-user-avatar.svg</file>
         <file alias="icons/icon-settings.svg">../icons/icon-settings.svg</file>

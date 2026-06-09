@@ -22,6 +22,10 @@ Item {
     // Current user - set from parent (Main.qml)
     property var currentUser: null
 
+    // 当前安全域是否已归档：派生自后端返回的 domainData.isArchived 字段（经 DSCC-SDK
+    // 持久化）。归档是与状态无关的视图划分，不改变安全域的任何状态 (PRD 3.1)。
+    readonly property bool isArchived: !!(domainData && domainData.isArchived)
+
     // Pending state for removing visible user (kept on root for delegate scope access)
     property string removeUserState_pendingRemovedAccount: ""
     property string removeUserState_pendingRemovedAuthUserId: ""
@@ -69,6 +73,8 @@ Item {
     // Signals
     signal instantiateRequested
     signal contactSupportRequested
+    signal archiveRequested
+    signal restoreRequested
     signal errorOccurred(string message, string title)
 
     property bool _pendingGuideShow: false
@@ -599,6 +605,7 @@ Item {
                 isDomainReadOnly: root.isDomainReadOnly
                 isCreator: root.isCreator
                 isDomainInactive: root.isDomainInactive
+                isArchived: root.isArchived
                 currentUser: root.currentUser
                 isEditingDescription: root.isEditingDescription
                 editedDescription: root.editedDescription
@@ -714,6 +721,10 @@ Item {
                 onDeactivateRequested: deactivateDialog.open()
 
                 onRemoveDomainRequested: removeDomainDialog.open()
+
+                onArchiveRequested: root.archiveRequested()
+
+                onRestoreRequested: root.restoreRequested()
             }
         }
     }

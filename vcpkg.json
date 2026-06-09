@@ -1,6 +1,6 @@
 {
   "name": "datasafebox-qt-client",
-  "version-string": "1.0.4",
+  "version-string": "1.0.5",
   "description": "DatasafeBox Qt Client - cross-platform native dependencies",
   "dependencies": [
     {

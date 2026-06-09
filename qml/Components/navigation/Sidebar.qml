@@ -18,6 +18,28 @@ Rectangle {
     property var domainList: []
     property bool domainRefreshing: false
 
+    // 主列表只显示未归档的安全域；“归档”子列表显示已归档的。两者都派生自完整的
+    // domainList（后端返回的全量列表），按其 isArchived 字段划分。归档状态由 DSCC-SDK
+    // 持久化，归档/恢复不改变安全域的任何状态 (PRD 3.1)。
+    readonly property var activeDomainList: {
+        var list = sidebar.domainList || [];
+        var out = [];
+        for (var i = 0; i < list.length; i++) {
+            if (!list[i].isArchived)
+                out.push(list[i]);
+        }
+        return out;
+    }
+    readonly property var archivedDomainList: {
+        var list = sidebar.domainList || [];
+        var out = [];
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].isArchived)
+                out.push(list[i]);
+        }
+        return out;
+    }
+
     signal createDomainRequested
     signal domainSelected(string domainCode, string pubKey, string name)
     signal refreshDomainsRequested
@@ -29,6 +51,158 @@ Rectangle {
     color: Theme.Colors.backgroundSidebar
     border.color: Theme.Colors.borderSlate
     border.width: 1
+
+    // 安全域列表项的共享委托：主列表与“归档”子列表使用同一份实现，保持显示一致。
+    // 由 Repeater 注入 index / modelData，并通过其 parent 容器定位（topMargin: index * 32）。
+    Component {
+        id: domainListItemDelegate
+
+        Rectangle {
+            anchors.top: parent.top
+            anchors.topMargin: index * 32
+            anchors.left: parent.left
+            anchors.leftMargin: 8
+            height: 32
+            width: Math.max(0, parent.width - 8)
+            radius: 4
+            property bool hovered: false
+            readonly property bool isSelected: (modelData.domainCode || "") === sidebar.selectedDomainCode && sidebar.selectedDomainCode !== ""
+            color: isSelected ? "#c2d8ef" : (hovered ? "#d6e8f5" : Qt.rgba(194 / 255, 216 / 255, 239 / 255, 0))
+            border.color: "transparent"
+            border.width: 0
+            Behavior on color {
+                ColorAnimation {
+                    duration: 120
+                }
+            }
+
+            Rectangle {
+                x: 8
+                width: 8
+                height: 8
+                radius: 4
+                anchors.verticalCenter: parent.verticalCenter
+                color: Theme.Colors.getStatusColor(modelData.status || Theme.Colors.statusRunning).dot
+            }
+
+            Text {
+                id: domainNameText
+                x: 24
+                anchors.verticalCenter: parent.verticalCenter
+                text: modelData.name
+                font.pixelSize: Theme.Typography.body
+                font.weight: parent.isSelected ? Font.Medium : Font.Normal
+                color: parent.isSelected ? Theme.Colors.primary : (parent.hovered ? "#1e3a5f" : Theme.Colors.textCaption)
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 120
+                    }
+                }
+                maximumLineCount: 1
+                elide: Text.ElideMiddle
+                width: Math.max(0, (pendingBadge.visible ? pendingBadge.x - 6 : parent.width - 8) - x)
+                readonly property bool isOverflow: implicitWidth > width
+                property bool showTooltip: domainItemMouseArea.containsMouse && domainNameText.isOverflow && domainItemMouseArea.mouseX >= domainNameText.x && domainItemMouseArea.mouseX <= (domainNameText.x + domainNameText.width)
+
+                Popup {
+                    id: domainNameTooltip
+                    parent: Overlay.overlay
+                    modal: false
+                    focus: false
+                    closePolicy: Popup.NoAutoClose
+                    padding: 0
+                    visible: domainNameText.showTooltip
+                    z: 99999
+
+                    readonly property real maxBubbleWidth: Overlay.overlay ? Math.max(160, Overlay.overlay.width - 16) : 400
+                    readonly property real bubbleWidth: Math.min(Math.max(domainNameTooltipText.implicitWidth + 16, 120), maxBubbleWidth)
+
+                    x: {
+                        var p = domainNameText.mapToItem(Overlay.overlay, 0, 0);
+                        var desired = p.x + (domainNameText.width - bubbleWidth) / 2;
+                        var minX = 8;
+                        var maxX = Overlay.overlay ? (Overlay.overlay.width - bubbleWidth - 8) : desired;
+                        return Math.max(minX, Math.min(desired, maxX));
+                    }
+                    y: {
+                        var p = domainNameText.mapToItem(Overlay.overlay, 0, 0);
+                        return p.y - bubbleBackground.height - 8;
+                    }
+
+                    background: Item {
+                        Rectangle {
+                            id: bubbleBackground
+                            width: domainNameTooltip.bubbleWidth
+                            height: Math.max(28, domainNameTooltipText.implicitHeight + 10)
+                            color: Theme.Colors.tooltipBackground
+                            radius: 4
+
+                            Text {
+                                id: domainNameTooltipText
+                                anchors.centerIn: parent
+                                width: Math.max(0, parent.width - 16)
+                                text: domainNameText.text
+                                font.pixelSize: Theme.Typography.caption
+                                color: "white"
+                                wrapMode: Text.WrapAnywhere
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+
+                            Canvas {
+                                width: 10
+                                height: 5
+                                anchors.top: parent.bottom
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                onPaint: {
+                                    var ctx = getContext("2d");
+                                    ctx.reset();
+                                    ctx.fillStyle = Theme.Colors.tooltipBackground;
+                                    ctx.beginPath();
+                                    ctx.moveTo(0, 0);
+                                    ctx.lineTo(5, 5);
+                                    ctx.lineTo(10, 0);
+                                    ctx.closePath();
+                                    ctx.fill();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                id: pendingBadge
+                property int auditCount: 0
+                visible: auditCount > 0
+                x: 130
+                anchors.verticalCenter: parent.verticalCenter
+                width: auditCount > 99 ? 32 : (auditCount > 9 ? 24 : 16)
+                height: 16
+                radius: 8
+                color: Theme.Colors.notificationRed
+                z: 10
+                Text {
+                    anchors.centerIn: parent
+                    color: "#fff"
+                    font.pixelSize: 11
+                    font.bold: true
+                    text: pendingBadge.auditCount > 99 ? "99+" : pendingBadge.auditCount.toString()
+                }
+            }
+
+            MouseArea {
+                id: domainItemMouseArea
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onEntered: parent.hovered = true
+                onExited: parent.hovered = false
+                onClicked: {
+                    sidebar.domainSelected(modelData.domainCode || "", modelData.pubKey || "", modelData.name || "");
+                }
+            }
+        }
+    }
 
     Item {
         id: sidebarContent
@@ -317,153 +491,127 @@ Rectangle {
 
                             Repeater {
                                 id: securityDomainRepeater
-                                model: sidebar.domainList
+                                model: sidebar.activeDomainList
+                                delegate: domainListItemDelegate
+                            }
+                        }
+                    }
 
-                                Rectangle {
-                                    anchors.top: parent.top
-                                    anchors.topMargin: index * 32
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 8
-                                    height: 32
-                                    width: Math.max(0, parent.width - 8)
-                                    radius: 4
-                                    property bool hovered: false
-                                    readonly property bool isSelected: (modelData.domainCode || "") === sidebar.selectedDomainCode && sidebar.selectedDomainCode !== ""
-                                    color: isSelected ? "#c2d8ef" : (hovered ? "#d6e8f5" : Qt.rgba(194 / 255, 216 / 255, 239 / 255, 0))
-                                    border.color: "transparent"
-                                    border.width: 0
-                                    Behavior on color {
-                                        ColorAnimation {
-                                            duration: 120
-                                        }
-                                    }
+                    // 归档子列表 (PRD 3.1.1)：默认收起，仅当存在已归档安全域时显示。
+                    Item {
+                        id: archiveSection
+                        width: parent.width
+                        visible: sidebar.archivedDomainList.length > 0
 
-                                    Rectangle {
-                                        x: 8
-                                        width: 8
-                                        height: 8
-                                        radius: 4
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        color: Theme.Colors.getStatusColor(modelData.status || Theme.Colors.statusRunning).dot
-                                    }
+                        property bool archiveExpanded: false
 
-                                    Text {
-                                        id: domainNameText
-                                        x: 24
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: modelData.name
-                                        font.pixelSize: Theme.Typography.body
-                                        font.weight: parent.isSelected ? Font.Medium : Font.Normal
-                                        color: parent.isSelected ? Theme.Colors.primary : (parent.hovered ? "#1e3a5f" : Theme.Colors.textCaption)
-                                        Behavior on color {
-                                            ColorAnimation {
-                                                duration: 120
-                                            }
-                                        }
-                                        maximumLineCount: 1
-                                        elide: Text.ElideMiddle
-                                        width: Math.max(0, (pendingBadge.visible ? pendingBadge.x - 6 : parent.width - 8) - x)
-                                        readonly property bool isOverflow: implicitWidth > width
-                                        property bool showTooltip: domainItemMouseArea.containsMouse && domainNameText.isOverflow && domainItemMouseArea.mouseX >= domainNameText.x && domainItemMouseArea.mouseX <= (domainNameText.x + domainNameText.width)
+                        property int headerHeight: 36
+                        property int listTopMargin: 44
+                        property int itemHeight: 32
+                        height: {
+                            if (!archiveExpanded) {
+                                return headerHeight;
+                            }
+                            if (archiveRepeater.model && archiveRepeater.model.length > 0) {
+                                var listBottom = listTopMargin + archiveRepeater.model.length * itemHeight;
+                                return Math.max(headerHeight, listBottom);
+                            }
+                            return headerHeight;
+                        }
 
-                                        Popup {
-                                            id: domainNameTooltip
-                                            parent: Overlay.overlay
-                                            modal: false
-                                            focus: false
-                                            closePolicy: Popup.NoAutoClose
-                                            padding: 0
-                                            visible: domainNameText.showTooltip
-                                            z: 99999
+                        Behavior on height {
+                            NumberAnimation {
+                                duration: 200
+                                easing.type: Easing.OutCubic
+                            }
+                        }
 
-                                            readonly property real maxBubbleWidth: Overlay.overlay ? Math.max(160, Overlay.overlay.width - 16) : 400
-                                            readonly property real bubbleWidth: Math.min(Math.max(domainNameTooltipText.implicitWidth + 16, 120), maxBubbleWidth)
+                        Rectangle {
+                            id: archiveHeader
+                            width: parent.width
+                            height: 36
+                            anchors.left: parent.left
+                            anchors.leftMargin: 0
+                            radius: 4
+                            property bool hovered: false
+                            color: hovered ? "#eaf2fb" : "transparent"
 
-                                            x: {
-                                                var p = domainNameText.mapToItem(Overlay.overlay, 0, 0);
-                                                var desired = p.x + (domainNameText.width - bubbleWidth) / 2;
-                                                var minX = 8;
-                                                var maxX = Overlay.overlay ? (Overlay.overlay.width - bubbleWidth - 8) : desired;
-                                                return Math.max(minX, Math.min(desired, maxX));
-                                            }
-                                            y: {
-                                                var p = domainNameText.mapToItem(Overlay.overlay, 0, 0);
-                                                return p.y - bubbleBackground.height - 8;
-                                            }
+                            Row {
+                                spacing: 8
+                                height: parent.height
+                                anchors.verticalCenter: parent.verticalCenter
+                                x: 8
+                                Image {
+                                    id: archiveDropdownIcon
+                                    width: 14
+                                    height: 14
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    source: "qrc:/icons/icon-dropdown.svg"
+                                    fillMode: Image.PreserveAspectFit
+                                    rotation: archiveSection.archiveExpanded ? 0 : -90
 
-                                            background: Item {
-                                                Rectangle {
-                                                    id: bubbleBackground
-                                                    width: domainNameTooltip.bubbleWidth
-                                                    height: Math.max(28, domainNameTooltipText.implicitHeight + 10)
-                                                    color: Theme.Colors.tooltipBackground
-                                                    radius: 4
-
-                                                    Text {
-                                                        id: domainNameTooltipText
-                                                        anchors.centerIn: parent
-                                                        width: Math.max(0, parent.width - 16)
-                                                        text: domainNameText.text
-                                                        font.pixelSize: Theme.Typography.caption
-                                                        color: "white"
-                                                        wrapMode: Text.WrapAnywhere
-                                                        horizontalAlignment: Text.AlignHCenter
-                                                    }
-
-                                                    Canvas {
-                                                        width: 10
-                                                        height: 5
-                                                        anchors.top: parent.bottom
-                                                        anchors.horizontalCenter: parent.horizontalCenter
-                                                        onPaint: {
-                                                            var ctx = getContext("2d");
-                                                            ctx.reset();
-                                                            ctx.fillStyle = Theme.Colors.tooltipBackground;
-                                                            ctx.beginPath();
-                                                            ctx.moveTo(0, 0);
-                                                            ctx.lineTo(5, 5);
-                                                            ctx.lineTo(10, 0);
-                                                            ctx.closePath();
-                                                            ctx.fill();
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    Rectangle {
-                                        id: pendingBadge
-                                        property int auditCount: 0
-                                        visible: auditCount > 0
-                                        x: 130
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        width: auditCount > 99 ? 32 : (auditCount > 9 ? 24 : 16)
-                                        height: 16
-                                        radius: 8
-                                        color: Theme.Colors.notificationRed
-                                        z: 10
-                                        Text {
-                                            anchors.centerIn: parent
-                                            color: "#fff"
-                                            font.pixelSize: 11
-                                            font.bold: true
-                                            text: pendingBadge.auditCount > 99 ? "99+" : pendingBadge.auditCount.toString()
-                                        }
-                                    }
-
-                                    MouseArea {
-                                        id: domainItemMouseArea
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        hoverEnabled: true
-                                        onEntered: parent.hovered = true
-                                        onExited: parent.hovered = false
-                                        onClicked: {
-                                            sidebar.domainSelected(modelData.domainCode || "", modelData.pubKey || "", modelData.name || "");
+                                    Behavior on rotation {
+                                        NumberAnimation {
+                                            duration: 200
+                                            easing.type: Easing.OutCubic
                                         }
                                     }
                                 }
+
+                                Image {
+                                    id: archiveIcon
+                                    width: 16
+                                    height: 16
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    source: "qrc:/icons/icon-archive.svg"
+                                    fillMode: Image.PreserveAspectFit
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: qsTr("Archive")
+                                    font.pixelSize: Theme.Typography.body
+                                    font.weight: Font.Bold
+                                    color: Theme.Colors.primary
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                hoverEnabled: true
+                                onEntered: archiveHeader.hovered = true
+                                onExited: archiveHeader.hovered = false
+                                onClicked: {
+                                    archiveSection.archiveExpanded = !archiveSection.archiveExpanded;
+                                }
+                            }
+                        }
+
+                        Item {
+                            id: archiveListContainer
+                            anchors.left: parent.left
+                            anchors.leftMargin: 20
+                            anchors.right: parent.right
+                            anchors.rightMargin: 0
+                            anchors.top: parent.top
+                            anchors.topMargin: 36
+
+                            height: archiveRepeater.model && archiveRepeater.model.length > 0 ? (archiveRepeater.model.length * 32) : 0
+                            visible: archiveSection.archiveExpanded
+                            opacity: archiveSection.archiveExpanded ? 1 : 0
+
+                            Behavior on opacity {
+                                NumberAnimation {
+                                    duration: 200
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+
+                            Repeater {
+                                id: archiveRepeater
+                                model: sidebar.archivedDomainList
+                                delegate: domainListItemDelegate
                             }
                         }
                     }

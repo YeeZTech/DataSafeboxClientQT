@@ -403,6 +403,42 @@ void DsccBridge::connectAssetSignals()
                 emit domainDeleteFailed(operationId, domainCode, notification);
             });
 
+    connect(m_assets.get(), &dscc::UserAssets::ArchiveDomainSuccess, this,
+            [this](uint32_t operationId, QString domainCode) {
+                qInfo().noquote() << QStringLiteral(
+                                         "[DsccBridge] corelib ArchiveDomainSuccess operationId=%1 domainCode=\"%2\"")
+                                         .arg(operationId)
+                                         .arg(domainCode);
+                emit domainArchived(operationId, domainCode);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::ArchiveDomainFailed, this,
+            [this](uint32_t operationId, QString domainCode, dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib ArchiveDomainFailed operationId=%1 domainCode=\"%2\"")
+                                    .arg(operationId)
+                                    .arg(domainCode),
+                                notification);
+                emit domainArchiveFailed(operationId, domainCode, notification);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::UnarchiveDomainSuccess, this,
+            [this](uint32_t operationId, QString domainCode) {
+                qInfo().noquote() << QStringLiteral(
+                                         "[DsccBridge] corelib UnarchiveDomainSuccess operationId=%1 domainCode=\"%2\"")
+                                         .arg(operationId)
+                                         .arg(domainCode);
+                emit domainUnarchived(operationId, domainCode);
+            });
+
+    connect(m_assets.get(), &dscc::UserAssets::UnarchiveDomainFailed, this,
+            [this](uint32_t operationId, QString domainCode, dscc::Notification notification) {
+                logNotification(QStringLiteral("corelib UnarchiveDomainFailed operationId=%1 domainCode=\"%2\"")
+                                    .arg(operationId)
+                                    .arg(domainCode),
+                                notification);
+                emit domainUnarchiveFailed(operationId, domainCode, notification);
+            });
+
     connect(m_assets.get(), &dscc::UserAssets::AddUserToDomainSuccess, this,
             [this](uint32_t operationId, QString domainCode, QString userId) {
                 qInfo().noquote()
@@ -665,6 +701,8 @@ QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
     }
     summary.insert(QStringLiteral("status"), statusText);
     summary.insert(QStringLiteral("isInactive"), isDomainInactive(info));
+    // 归档是与状态无关的视图划分：归档/恢复不改变安全域状态 (PRD 3.1)。
+    summary.insert(QStringLiteral("isArchived"), info.is_archived != 0);
     const QString creatorUserId = info.creator_user_id.trimmed();
     QString creatorUserName = info.creator_user_name.trimmed();
     if (creatorUserName.isEmpty() && !creatorUserId.isEmpty() && creatorUserId == m_currentUserId.trimmed())
@@ -1577,6 +1615,73 @@ void DsccBridge::deleteDomain(const QString &domainCode)
 
     const dscc::Handle handle = m_assets->DeleteDomain(trimmedDomainCode);
     qInfo().noquote() << QStringLiteral("[DsccBridge] deleteDomain submitted operationId=%1 domainCode=\"%2\"")
+                             .arg(handle.GetOperationId())
+                             .arg(trimmedDomainCode);
+    Q_UNUSED(handle);
+}
+
+void DsccBridge::archiveDomain(const QString &domainCode)
+{
+    const QString trimmedDomainCode = domainCode.trimmed();
+    if (!m_assets)
+    {
+        qWarning().noquote()
+            << QStringLiteral(
+                   "[DsccBridge] archiveDomain rejected because UserAssets is not initialized domainCode=\"%1\"")
+                   .arg(trimmedDomainCode);
+        emit domainArchiveFailed(0, trimmedDomainCode, dscc::Notification());
+        return;
+    }
+
+    if (trimmedDomainCode.isEmpty())
+    {
+        qWarning().noquote() << QStringLiteral("[DsccBridge] archiveDomain rejected because domainCode is empty");
+        emit domainArchiveFailed(
+            0, QString(),
+            dscc::Notification(dscc::Notification::kArchiveDomainEmptyDomainCode, dscc::Notification::kError));
+        return;
+    }
+
+    // 归档对任意状态的安全域均可执行，不做 inactive 校验 (PRD 3.1)。
+    qInfo().noquote() << QStringLiteral("[DsccBridge] archiveDomain request domainCode=\"%1\" currentUserHash=%2")
+                             .arg(trimmedDomainCode)
+                             .arg(logHash(m_currentUserId));
+
+    const dscc::Handle handle = m_assets->ArchiveDomain(trimmedDomainCode);
+    qInfo().noquote() << QStringLiteral("[DsccBridge] archiveDomain submitted operationId=%1 domainCode=\"%2\"")
+                             .arg(handle.GetOperationId())
+                             .arg(trimmedDomainCode);
+    Q_UNUSED(handle);
+}
+
+void DsccBridge::unarchiveDomain(const QString &domainCode)
+{
+    const QString trimmedDomainCode = domainCode.trimmed();
+    if (!m_assets)
+    {
+        qWarning().noquote()
+            << QStringLiteral(
+                   "[DsccBridge] unarchiveDomain rejected because UserAssets is not initialized domainCode=\"%1\"")
+                   .arg(trimmedDomainCode);
+        emit domainUnarchiveFailed(0, trimmedDomainCode, dscc::Notification());
+        return;
+    }
+
+    if (trimmedDomainCode.isEmpty())
+    {
+        qWarning().noquote() << QStringLiteral("[DsccBridge] unarchiveDomain rejected because domainCode is empty");
+        emit domainUnarchiveFailed(
+            0, QString(),
+            dscc::Notification(dscc::Notification::kUnarchiveDomainEmptyDomainCode, dscc::Notification::kError));
+        return;
+    }
+
+    qInfo().noquote() << QStringLiteral("[DsccBridge] unarchiveDomain request domainCode=\"%1\" currentUserHash=%2")
+                             .arg(trimmedDomainCode)
+                             .arg(logHash(m_currentUserId));
+
+    const dscc::Handle handle = m_assets->UnarchiveDomain(trimmedDomainCode);
+    qInfo().noquote() << QStringLiteral("[DsccBridge] unarchiveDomain submitted operationId=%1 domainCode=\"%2\"")
                              .arg(handle.GetOperationId())
                              .arg(trimmedDomainCode);
     Q_UNUSED(handle);
