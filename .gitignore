@@ -111,3 +111,7 @@ mocinclude.opt
 DataSafebox_resource.rc
 CLAUDE.md
 .omc/
+
+# Build-time secret env files (real values live locally or come from CI secrets).
+# The committed template is .env.example (not matched by *.env).
+*.env

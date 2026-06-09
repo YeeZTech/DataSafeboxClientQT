@@ -89,6 +89,25 @@ jobs:
           "DSCC_DIR=$dscc" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           Write-Host "DSCC_DIR=$dscc"
 
+      # 将敏感配置从 GitHub Secrets 写入对应环境的 .env 文件（qmake 构建时读取）
+      - name: Write secrets env file (${{ matrix.env_name }})
+        shell: pwsh
+        env:
+          SOKETI_APP_KEY:         ${{ secrets.SOKETI_APP_KEY }}
+          CUSTOMER_SERVICE_TOKEN: ${{ secrets.CUSTOMER_SERVICE_TOKEN }}
+          SENTRY_DSN:             ${{ secrets.SENTRY_DSN }}
+          CASDOOR_CLIENT_ID:      ${{ matrix.env_name == 'test' && secrets.CASDOOR_CLIENT_ID_TEST || secrets.CASDOOR_CLIENT_ID_PROD }}
+        run: |
+          $envFile = if ('${{ matrix.use_test_env }}' -eq '1') { 'test.env' } else { 'prod.env' }
+          $lines = @(
+            "SOKETI_APP_KEY=$env:SOKETI_APP_KEY"
+            "CASDOOR_CLIENT_ID=$env:CASDOOR_CLIENT_ID"
+            "CUSTOMER_SERVICE_TOKEN=$env:CUSTOMER_SERVICE_TOKEN"
+            "SENTRY_DSN=$env:SENTRY_DSN"
+          )
+          [IO.File]::WriteAllText((Join-Path $PWD $envFile), ($lines -join "`n") + "`n")
+          Write-Host "Wrote $envFile"
+
       # 编译 + 打包（build_installer.bat 内部完成 lrelease/qmake/nmake/windeployqt/IFW）
       - name: Build & package installer
         shell: cmd
@@ -197,6 +216,23 @@ jobs:
           # 4) 告诉 build_dmg.sh 从该 keychain 读取 notary profile
           echo "NOTARY_KEYCHAIN=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
           echo "macOS signing & notary profile ready"
+
+      # 将敏感配置从 GitHub Secrets 写入对应环境的 .env 文件（qmake 构建时读取）
+      - name: Write secrets env file (${{ matrix.env_name }})
+        env:
+          SOKETI_APP_KEY:         ${{ secrets.SOKETI_APP_KEY }}
+          CUSTOMER_SERVICE_TOKEN: ${{ secrets.CUSTOMER_SERVICE_TOKEN }}
+          SENTRY_DSN:             ${{ secrets.SENTRY_DSN }}
+          CASDOOR_CLIENT_ID:      ${{ matrix.env_name == 'test' && secrets.CASDOOR_CLIENT_ID_TEST || secrets.CASDOOR_CLIENT_ID_PROD }}
+        run: |
+          if [ "${{ matrix.use_test_env }}" = "1" ]; then envFile=test.env; else envFile=prod.env; fi
+          {
+            echo "SOKETI_APP_KEY=$SOKETI_APP_KEY"
+            echo "CASDOOR_CLIENT_ID=$CASDOOR_CLIENT_ID"
+            echo "CUSTOMER_SERVICE_TOKEN=$CUSTOMER_SERVICE_TOKEN"
+            echo "SENTRY_DSN=$SENTRY_DSN"
+          } > "$envFile"
+          echo "Wrote $envFile"
 
       # 编译 + 打包（build_dmg.sh 内部完成 lrelease/qmake/make/macdeployqt/签名/公证/制作 dmg）
       - name: Build & package dmg

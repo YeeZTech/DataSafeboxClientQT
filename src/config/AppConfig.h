@@ -18,12 +18,9 @@ inline constexpr const char *API_BASE_URL = "https://test-dsbox.dianshudata.com"
 
 // Soketi 消息推送 WebSocket 主机
 inline constexpr const char *SOKETI_WS_HOST = "ws://49.232.246.86:6001";
-// Soketi App Key（与正式环境相同）
-inline constexpr const char *SOKETI_APP_KEY = "5f7accca692f298f15458113e4a84dca";
 
 // Casdoor SSO 配置
 inline constexpr const char *CASDOOR_ENDPOINT = "https://test-sso.dianshudata.com";
-inline constexpr const char *CASDOOR_CLIENT_ID = "2ca9e76c06266f8be002";
 inline constexpr const char *CASDOOR_REDIRECT_URI = "https://test-account.dianshudata.com/callback/";
 
 // 官网 & 钱包
@@ -40,10 +37,6 @@ inline constexpr const char *HELP_DOCS_URL = "https://help.yeez.tech/docs/dsbox"
 
 // 客服聊天（Chatwoot，测试环境复用正式）
 inline constexpr const char *CUSTOMER_SERVICE_URL = "https://customersupport.dianshudata.com";
-inline constexpr const char *CUSTOMER_SERVICE_TOKEN = "d86Jao4VKH8Qtd1Kh7er5Qg3";
-
-// Sentry 错误监控 DSN（测试环境复用正式）
-inline constexpr const char *SENTRY_DSN = "https://0d04b662f5452d324fa2c4e49e47748c@trace.dianshudata.com/19";
 
 #else
 
@@ -53,12 +46,9 @@ inline constexpr const char *API_BASE_URL = "https://dsbox-api.dianshudata.com";
 
 // Soketi 消息推送 WebSocket 主机
 inline constexpr const char *SOKETI_WS_HOST = "wss://dsbox-api.dianshudata.com";
-// Soketi App Key
-inline constexpr const char *SOKETI_APP_KEY = "5f7accca692f298f15458113e4a84dca";
 
 // Casdoor SSO 配置
 inline constexpr const char *CASDOOR_ENDPOINT = "https://sso.dianshudata.com";
-inline constexpr const char *CASDOOR_CLIENT_ID = "fcdfeb6531b13151851f";
 inline constexpr const char *CASDOOR_REDIRECT_URI = "https://account.dianshudata.com/callback/";
 
 // 官网 & 钱包
@@ -75,12 +65,22 @@ inline constexpr const char *HELP_DOCS_URL = "https://help.yeez.tech/docs/dsbox"
 
 // 客服聊天（Chatwoot）
 inline constexpr const char *CUSTOMER_SERVICE_URL = "https://customersupport.dianshudata.com";
-inline constexpr const char *CUSTOMER_SERVICE_TOKEN = "d86Jao4VKH8Qtd1Kh7er5Qg3";
-
-// Sentry 错误监控 DSN
-inline constexpr const char *SENTRY_DSN = "https://0d04b662f5452d324fa2c4e49e47748c@trace.dianshudata.com/19";
 
 #endif // USE_TEST_ENV
+
+// ── 敏感配置（密钥 / 令牌 / DSN）────────────────────────────
+// 不在源码中硬编码：由 qmake 在编译期从 test.env（USE_TEST_ENV=1）或
+// prod.env（=0）读取，注入为 DSBOX_<KEY> 宏（见 datasafebox-qt-client.pro）。
+// 本地开发：复制 .env.example 为 test.env / prod.env 并填入真实值。
+// CI：由 GitHub Secrets 在构建前写入。这两个文件已被 .gitignore 忽略。
+#if !defined(DSBOX_SOKETI_APP_KEY) || !defined(DSBOX_CASDOOR_CLIENT_ID) ||                          \
+    !defined(DSBOX_CUSTOMER_SERVICE_TOKEN) || !defined(DSBOX_SENTRY_DSN)
+#error "敏感配置宏未注入：请确认 test.env / prod.env 存在并由 qmake 注入。参见 .env.example。"
+#endif
+inline constexpr const char *SOKETI_APP_KEY = DSBOX_SOKETI_APP_KEY;
+inline constexpr const char *CASDOOR_CLIENT_ID = DSBOX_CASDOOR_CLIENT_ID;
+inline constexpr const char *CUSTOMER_SERVICE_TOKEN = DSBOX_CUSTOMER_SERVICE_TOKEN;
+inline constexpr const char *SENTRY_DSN = DSBOX_SENTRY_DSN;
 
 // ============================================================
 // 分页配置（与环境无关的统一配置）

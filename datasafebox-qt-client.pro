@@ -15,6 +15,37 @@ isEmpty(USE_TEST_ENV) {
 DEFINES += USE_TEST_ENV=$$USE_TEST_ENV
 message("USE_TEST_ENV=$$USE_TEST_ENV")
 
+# ── 敏感配置注入（密钥 / 令牌 / DSN）────────────────────────────────────
+# 不在源码中硬编码：构建时从 test.env（USE_TEST_ENV=1）或 prod.env（=0）读取，
+# 以编译期宏 DSBOX_<KEY> 注入，供 src/config/AppConfig.h 使用。
+# 本地开发：复制 .env.example 为 test.env / prod.env 并填入真实值。
+# CI：由 GitHub Secrets 在构建前写入。这两个文件已在 .gitignore 中，不会提交。
+equals(USE_TEST_ENV, 1) {
+    ENV_FILE = $$PWD/test.env
+} else {
+    ENV_FILE = $$PWD/prod.env
+}
+!exists($$ENV_FILE) {
+    error("Secrets file not found: $$ENV_FILE — copy .env.example to test.env/prod.env (local dev), or let CI write it from GitHub Secrets. See .env.example.")
+}
+ENV_REQUIRED_KEYS = SOKETI_APP_KEY CASDOOR_CLIENT_ID CUSTOMER_SERVICE_TOKEN SENTRY_DSN
+ENV_SEEN_KEYS =
+ENV_LINES = $$cat($$ENV_FILE, lines)
+for(line, ENV_LINES) {
+    key = $$section(line, =, 0, 0)
+    contains(ENV_REQUIRED_KEYS, $$key) {
+        val = $$section(line, =, 1, -1)
+        val ~= s/\\s+$//
+        isEmpty(val): error("Empty value for $$key in $$ENV_FILE")
+        DEFINES += DSBOX_$${key}=\\\"$${val}\\\"
+        ENV_SEEN_KEYS += $$key
+    }
+}
+for(k, ENV_REQUIRED_KEYS) {
+    !contains(ENV_SEEN_KEYS, $$k): error("Missing required key $$k in $$ENV_FILE (see .env.example).")
+}
+message("Injected sensitive config from $$ENV_FILE")
+
 # ── USE_LANG 编译期强制界面语言（EN = 英文，CN = 中文；不设置则按运行时逻辑）──
 !isEmpty(USE_LANG) {
     USE_LANG_NORM = $$upper($$USE_LANG)
@@ -135,11 +166,11 @@ linux {
 # 外部库路径配置
 # 优先级：qmake 命令行参数 > 环境变量。
 # 不在工程文件中探测本机相对目录或构建产物目录；请显式设置 SENTRY_ROOT_DIR / DSCC_DIR。
-# 所有运行时服务配置（URL / 密钥 / DSN）统一在 AppConfig.h 中管理。
+# 运行时服务 URL 在 AppConfig.h 中管理；密钥 / 令牌 / DSN 由 test.env/prod.env 注入（见上方敏感配置注入段）。
 # ===========================================================================
 
 # Sentry Native (via vcpkg)
-# SENTRY_DSN 已移入 AppConfig.h
+# SENTRY_DSN 由 test.env/prod.env 注入（见上方敏感配置注入段）
 isEmpty(SENTRY_ROOT_DIR): SENTRY_ROOT_DIR = $$(SENTRY_ROOT_DIR)
 isEmpty(SENTRY_ROOT_DIR) {
     error("Sentry Native not found. Set SENTRY_ROOT_DIR to the vcpkg installed triplet root, for example D:/vcpkg/installed/x64-windows")
