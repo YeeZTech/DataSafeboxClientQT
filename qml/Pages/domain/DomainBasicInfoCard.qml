@@ -46,7 +46,7 @@ Card {
                 spacing: 10
 
                 SelectableText {
-                    text: qsTr("Name")
+                    text: qsTr("Code")
                     font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                 }
@@ -54,13 +54,13 @@ Card {
                 Text {
                     id: basicInfoNameText
                     width: parent.width
-                    text: card.domainData.name || ""
+                    text: card.domainData.domainCode || ""
                     font.pixelSize: Theme.Typography.h3
                     color: Theme.Colors.textHeading
                     elide: Text.ElideRight
 
                     ToolTip.visible: truncated && basicInfoNameHover.containsMouse
-                    ToolTip.text: card.domainData.name || ""
+                    ToolTip.text: card.domainData.domainCode || ""
                     ToolTip.delay: 500
 
                     HoverHandler {
