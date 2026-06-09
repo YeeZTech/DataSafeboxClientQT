@@ -179,11 +179,15 @@ rem --- Step 2/6: sentry runtime ---
 echo.
 echo [2/6] Checking sentry runtime...
 set "SENTRY_DLL=%SENTRY_ROOT_DIR%\bin\sentry.dll"
-set "CRASHPAD_EXE=%SENTRY_ROOT_DIR%\tools\sentry-native\crashpad_handler.exe"
+set "CRASHPAD_DIR=%SENTRY_ROOT_DIR%\tools\sentry-native"
+set "CRASHPAD_EXE=%CRASHPAD_DIR%\crashpad_handler.exe"
 
 call :copy_dep "%SENTRY_DLL%"         "sentry.dll not found - crash reporting disabled"
 call :copy_dep "%CRASHPAD_EXE%"       "crashpad_handler.exe not found - crash reporting disabled"
-for %%D in (zlib1.dll) do call :copy_dep "%SENTRY_ROOT_DIR%\bin\%%D" "%%D not found - crashpad_handler may fail to start"
+rem crashpad_handler.exe's runtime DLLs (zlib etc.) sit next to it in the vcpkg
+rem tools dir. The DLL name varies by vcpkg version (z.dll vs zlib1.dll), so copy
+rem whatever vcpkg placed there instead of hardcoding a single name.
+for %%D in ("%CRASHPAD_DIR%\*.dll") do call :copy_dep "%%D" "crashpad dependency missing"
 
 rem --- Step 3/6: windeployqt ---
 echo.

@@ -159,10 +159,12 @@ linux: LIBS += -lcurl
 #   macOS:   crashpad_handler 需打入 .app/Contents/MacOS
 #   Linux:   crashpad_handler 需与可执行文件同目录
 win32 {
-    SENTRY_RUNTIME_FILES = \
-        $$SENTRY_ROOT_DIR/bin/sentry.dll \
-        $$SENTRY_ROOT_DIR/bin/zlib1.dll \
-        $$SENTRY_ROOT_DIR/tools/sentry-native/crashpad_handler.exe
+    # sentry.dll (the app links it) + crashpad_handler.exe and the DLLs vcpkg put
+    # next to it (zlib — named zlib1.dll or z.dll depending on the vcpkg version).
+    # Globbing the tools dir avoids hardcoding the zlib DLL name.
+    SENTRY_RUNTIME_FILES = $$SENTRY_ROOT_DIR/bin/sentry.dll
+    SENTRY_RUNTIME_FILES += $$files($$SENTRY_ROOT_DIR/tools/sentry-native/*.dll)
+    SENTRY_RUNTIME_FILES += $$SENTRY_ROOT_DIR/tools/sentry-native/crashpad_handler.exe
 
     CONFIG(release, debug|release) {
         for(file, SENTRY_RUNTIME_FILES) {
@@ -244,29 +246,16 @@ macx {
 # 由 windeployqt 统一处理，此处跳过，避免重复复制。
 # DSCC 只提供 Release 版 DLL，Debug 构建同样使用 Release DLL。
 win32 {
-    DSCC_COPY_DLLS = \
-        dscc_common.dll \
-        dscc_core.dll \
-        WCDB.dll \
-        ff_net.dll \
-        boost_filesystem-vc143-mt-x64-1_89.dll \
-        boost_program_options-vc143-mt-x64-1_89.dll \
-        glog.dll \
-        gflags.dll \
-        libcrypto-3-x64.dll \
-        libsecp256k1-6.dll \
-        ycrypto_core.dll \
-        ycrypto_stdeth.dll \
-        ycrypto_toolkit.dll
-
-    CONFIG(release, debug|release) {
-        for(dll, DSCC_COPY_DLLS) {
-            QMAKE_POST_LINK += copy /Y $$shell_quote($$shell_path($$DSCC_DIR/bin/$$dll)) $$shell_quote($$shell_path($$OUT_PWD/release)) >nul &
-        }
-    }
-    CONFIG(debug, debug|release) {
-        for(dll, DSCC_COPY_DLLS) {
-            QMAKE_POST_LINK += copy /Y $$shell_quote($$shell_path($$DSCC_DIR/bin/$$dll)) $$shell_quote($$shell_path($$OUT_PWD/debug)) >nul &
+    # Copy EVERY DLL the DSCC SDK ships in bin/ rather than a hardcoded list, so a
+    # new transitive dependency in a future SDK build never silently goes missing.
+    # Skip Qt6*.dll only (windeployqt supplies copies matching the client's own Qt).
+    CONFIG(release, debug|release): DSCC_COPY_DEST = $$OUT_PWD/release
+    CONFIG(debug,   debug|release): DSCC_COPY_DEST = $$OUT_PWD/debug
+    DSCC_BIN_DLLS = $$files($$DSCC_DIR/bin/*.dll)
+    for(dllpath, DSCC_BIN_DLLS) {
+        dllname = $$basename(dllpath)
+        !contains(dllname, Qt6.*) {
+            QMAKE_POST_LINK += copy /Y $$shell_quote($$shell_path($$dllpath)) $$shell_quote($$shell_path($$DSCC_COPY_DEST)) >nul &
         }
     }
 }
