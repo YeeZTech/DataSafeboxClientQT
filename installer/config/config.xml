@@ -7,6 +7,7 @@
     <StartMenuDir>DataSafebox</StartMenuDir>
     <TargetDir>@ApplicationsDir@/DataSafebox</TargetDir>
     <WizardStyle>Classic</WizardStyle>
+    <StyleSheet>style.qss</StyleSheet>
     <ControlScript>controlscript.qs</ControlScript>
     <Translations>
         <Translation>ifw_zh_CN</Translation>

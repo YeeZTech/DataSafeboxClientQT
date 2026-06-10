@@ -58,6 +58,32 @@ Component.prototype.createOperations = function() {
         );
     }
 
+    if (isWindows && targetDirRaw) {
+        // Files of a previous install can be locked (a running app instance or
+        // its QtWebEngineProcess helper keeps e.g. resources/icudtl.dat
+        // memory-mapped) or carry a read-only attribute; either aborts
+        // extraction with "Can't unlink already-existing object: Permission
+        // denied". Stop processes running from the target dir and clear
+        // attributes before the archives are extracted.
+        var unlockScript =
+            "$targetDir = " + psLiteral(toWindowsPath(targetDirRaw)) + "; " +
+            "try { " +
+            "  if (Test-Path $targetDir) { " +
+            "    Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith(($targetDir.TrimEnd('\\') + '\\'), [StringComparison]::OrdinalIgnoreCase) } | Stop-Process -Force -ErrorAction SilentlyContinue; " +
+            "    Start-Sleep -Milliseconds 800; " +
+            "    attrib.exe -R ($targetDir.TrimEnd('\\') + '\\*') /S /D; " +
+            "  } " +
+            "} catch {}; exit 0";
+
+        component.addOperation(
+            "Execute",
+            "powershell.exe",
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-Command", unlockScript
+        );
+    }
+
     component.createOperations();
 
     if (!isWindows) {

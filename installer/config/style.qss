@@ -1,0 +1,17 @@
+/* Pins widget rendering that varies with the Qt build embedded in IFW.
+   The vendored IFW 4.10 (Qt 6.7.2, windows11 style) draws QProgressBar as a
+   thin pale-gray line; override it so the install progress bar is always the
+   classic blue block regardless of the IFW build / Windows version. */
+
+QProgressBar {
+    border: 1px solid #999999;
+    border-radius: 3px;
+    background-color: #F5F5F5;
+    text-align: center;
+    min-height: 18px;
+    max-height: 18px;
+}
+
+QProgressBar::chunk {
+    background-color: #0078D4;
+}
