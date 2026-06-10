@@ -88,7 +88,8 @@ UpdateManager::UpdateManager(QObject *parent)
     connect(m_speedTimer, &QTimer::timeout, this, &UpdateManager::updateSpeed);
 
     // Initialize pending install state file path
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QString cacheDir = QDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation))
+                           .filePath(AppCfg::environmentDirName());
     m_pendingInstallStateFile = QDir(cacheDir).filePath(".pending_install");
 
     // Load pending install state from disk

@@ -205,7 +205,8 @@ void DsccBridge::initialize()
                              "[DsccBridge] initialize metaDbPath=\"%1\" dsccDataRoot=\"%2\" serverUrl=\"%3\"")
                              .arg(m_metaDbPath, m_dsccDataRoot, m_serverUrl);
 
-    const QString localDataDir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    const QString localDataDir = QDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation))
+                                     .filePath(AppCfg::environmentDirName());
     QDir().mkpath(localDataDir);
     const QString coreLogPath = QDir(localDataDir).filePath(QStringLiteral("dscc-core.log"));
     dscc::detail::SetLoggerFilePath(coreLogPath);

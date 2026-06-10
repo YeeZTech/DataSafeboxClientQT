@@ -39,14 +39,23 @@ static QTextStream *g_logStream = nullptr;
 
 static QString startupLocalRootPath()
 {
+    QString base;
 #ifdef Q_OS_WIN
     const QString localAppData = qEnvironmentVariable("LOCALAPPDATA");
     if (!localAppData.isEmpty())
     {
-        return QDir(localAppData).filePath(QStringLiteral("yeeztech/datasafebox-client"));
+        base = QDir(localAppData).filePath(QStringLiteral("yeeztech/datasafebox-client"));
     }
 #endif
-    return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    if (base.isEmpty())
+    {
+        base = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    }
+    if (base.isEmpty())
+    {
+        return base;
+    }
+    return QDir(base).filePath(AppCfg::environmentDirName());
 }
 
 static QString startupCacheRootPath(const QString &startupRootDir)
@@ -420,11 +429,11 @@ int main(int argc, char *argv[])
     {
     }
 
- #ifdef APP_VERSION
+#ifdef APP_VERSION
     const QString appVersion = QStringLiteral(APP_VERSION);
- #else
+#else
     const QString appVersion = QStringLiteral("unknown");
- #endif
+#endif
 
     // Install message handler (for file logging and Sentry capture)
     {

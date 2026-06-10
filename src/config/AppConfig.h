@@ -1,7 +1,9 @@
 ﻿#ifndef APPCONFIG_H
 #define APPCONFIG_H
 
+#include <QCryptographicHash>
 #include <QObject>
+#include <QString>
 
 #ifndef USE_TEST_ENV
 #error "USE_TEST_ENV is not defined. Pass USE_TEST_ENV=0 or USE_TEST_ENV=1 on the qmake command line."
@@ -68,13 +70,23 @@ inline constexpr const char *CUSTOMER_SERVICE_URL = "https://customersupport.dia
 
 #endif // USE_TEST_ENV
 
+// ── 环境隔离目录名 ──────────────────────────────────────────
+// 本地数据根目录按后端环境隔离：%LOCALAPPDATA%/<组织名>/<应用名>/<ENV>，
+// 其中 ENV = SHA-256(API_BASE_URL + SOKETI_WS_HOST + CASDOOR_ENDPOINT) 的十六进制串。
+inline QString environmentDirName()
+{
+    return QString::fromLatin1(QCryptographicHash::hash(QByteArray(API_BASE_URL) + SOKETI_WS_HOST + CASDOOR_ENDPOINT,
+                                                        QCryptographicHash::Sha256)
+                                   .toHex());
+}
+
 // ── 敏感配置（密钥 / 令牌 / DSN）────────────────────────────
 // 不在源码中硬编码：由 qmake 在编译期从 test.env（USE_TEST_ENV=1）或
 // prod.env（=0）读取，注入为 DSBOX_<KEY> 宏（见 datasafebox-qt-client.pro）。
 // 本地开发：复制 .env.example 为 test.env / prod.env 并填入真实值。
 // CI：由 GitHub Secrets 在构建前写入。这两个文件已被 .gitignore 忽略。
-#if !defined(DSBOX_SOKETI_APP_KEY) || !defined(DSBOX_CASDOOR_CLIENT_ID) ||                          \
-    !defined(DSBOX_CUSTOMER_SERVICE_TOKEN) || !defined(DSBOX_SENTRY_DSN)
+#if !defined(DSBOX_SOKETI_APP_KEY) || !defined(DSBOX_CASDOOR_CLIENT_ID) || !defined(DSBOX_CUSTOMER_SERVICE_TOKEN) ||   \
+    !defined(DSBOX_SENTRY_DSN)
 #error "敏感配置宏未注入：请确认 test.env / prod.env 存在并由 qmake 注入。参见 .env.example。"
 #endif
 inline constexpr const char *SOKETI_APP_KEY = DSBOX_SOKETI_APP_KEY;

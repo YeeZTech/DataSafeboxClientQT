@@ -1,5 +1,6 @@
 ﻿#include "PathManager.h"
 
+#include "AppConfig.h"
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDir>
@@ -17,6 +18,7 @@ PathManager::PathManager(QObject *parent) : QObject(parent), m_cacheSizeBytes(0)
     {
         m_rootDir = QCoreApplication::applicationDirPath();
     }
+    m_rootDir = QDir(m_rootDir).filePath(AppCfg::environmentDirName());
 
     m_dataDir = QDir(m_rootDir).filePath("data");
     m_defaultCacheDir = QDir(m_rootDir).filePath("cache");
