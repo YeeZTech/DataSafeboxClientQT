@@ -366,7 +366,7 @@
     <message>
         <location filename="../qml/Pages/domain/DomainBasicInfoCard.qml" line="+49"/>
         <source>Code</source>
-        <translation>编码</translation>
+        <translation>编号</translation>
     </message>
     <message>
         <location line="+29"/>
