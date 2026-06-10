@@ -35,7 +35,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 安装 Qt（含 WebEngine + Qt Installer Framework）
+      # 安装 Qt（含 WebEngine）。IFW 不从这里取——见下方 vendored 步骤。
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -44,16 +44,23 @@ jobs:
           target:  'desktop'
           arch:    'win64_msvc2019_64'   # Qt 6.7.3 ships no msvc2022 build; this is ABI-compatible with MSVC 2022
           modules: 'qtwebengine qtwebchannel qtpositioning qtlocation qtquick3d'
-          tools:   'tools_ifw'
           cache:   true
 
-      # 定位 Qt Installer Framework 的 binarycreator.exe，供 build_installer.bat 使用
-      - name: Resolve Qt IFW path
+      # 取用仓库自带的预编译 Qt IFW 4.10（binarycreator + installerbase，静态链接 Qt，
+      # 经 release 资产分发）。aqt 的 tools_ifw 只到 4.7：其 installerbase 基于旧版 Qt、
+      # 不含 zh_CN，导致向导显示英文且样式陈旧；4.10 基于 Qt 6.7.2、内嵌 zh_CN 且带
+      # Windows 11 风格，从而统一安装向导的语言与外观。
+      - name: Fetch vendored Qt IFW 4.10
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          $bc = Get-ChildItem -Path (Join-Path $env:QT_ROOT_DIR '..\..') -Recurse `
-                  -Filter binarycreator.exe -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $bc) { Write-Error 'binarycreator.exe not found under Qt install dir'; exit 1 }
+          gh release download ifw-4.10 --repo ${{ github.repository }} `
+            --pattern ifw-4.10.0-win64.zip --dir ifw-zip
+          New-Item -ItemType Directory -Force ifw-bin | Out-Null
+          tar -xf ifw-zip/ifw-4.10.0-win64.zip -C ifw-bin
+          $bc = Get-ChildItem -Path ifw-bin -Recurse -Filter binarycreator.exe | Select-Object -First 1
+          if (-not $bc) { Write-Error 'binarycreator.exe not found in vendored IFW asset'; exit 1 }
           "IFW_BIN=$($bc.DirectoryName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           Write-Host "IFW_BIN=$($bc.DirectoryName)"
 

@@ -300,8 +300,12 @@ echo [OK] License files copied
 rem --- Step 6/6: build installer ---
 echo.
 echo [6/6] Building installer package...
+rem -r embeds Chinese UI translations (installer/config/translations_new.qrc) so the
+rem wizard is Chinese on any build host. The IFW shipped by CI (aqtinstall tools_ifw)
+rem does not embed zh_CN in installerbase.exe, so we cannot rely on its built-ins.
+set "TRANSLATIONS_QRC=%INSTALLER_DIR%\config\translations_new.qrc"
 pushd "%PROJECT_ROOT%"
-"%BINARYCREATOR%" -c "%CONFIG_XML%" -p "%PACKAGES_DIR%" "%OUTPUT_INSTALLER%"
+"%BINARYCREATOR%" -c "%CONFIG_XML%" -p "%PACKAGES_DIR%" -r "%TRANSLATIONS_QRC%" "%OUTPUT_INSTALLER%"
 set "BC_ERROR=%errorlevel%"
 popd
 if not "%BC_ERROR%"=="0" goto :fail

@@ -48,6 +48,10 @@ Makefile*
 
 # Qt translation binary files
 *.qm
+# Exception: installer UI translations are vendored (the CI IFW installerbase
+# does not embed zh_CN), so the wizard is Chinese on any build host.
+!installer/config/ifw_zh_CN.qm
+!installer/config/qtbase_zh_CN.qm
 
 # Temporary files
 *~

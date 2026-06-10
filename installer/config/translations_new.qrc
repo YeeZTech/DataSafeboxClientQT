@@ -1,0 +1,13 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<!-- Bundles the Chinese installer UI translations directly into the generated
+     installer, so the wizard is Chinese regardless of which Qt Installer
+     Framework build the build environment provides (the IFW installerbase from
+     aqtinstall's tools_ifw does not embed zh_CN, unlike the local Qt online
+     installer). IFW looks up overriding translations under :/translations_new.
+     ifw_zh_CN.qm  : compiled from IFW 4.10 src/sdk/translations/ifw_zh_CN.ts
+     qtbase_zh_CN.qm: copied from Qt 6.7.3 translations (aliased to qt_zh_CN.qm) -->
+<qresource prefix="/translations_new">
+    <file>ifw_zh_CN.qm</file>
+    <file alias="qt_zh_CN.qm">qtbase_zh_CN.qm</file>
+</qresource>
+</RCC>

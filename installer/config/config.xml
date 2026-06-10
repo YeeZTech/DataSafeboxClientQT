@@ -8,5 +8,9 @@
     <TargetDir>@ApplicationsDir@/DataSafebox</TargetDir>
     <WizardStyle>Classic</WizardStyle>
     <ControlScript>controlscript.qs</ControlScript>
+    <Translations>
+        <Translation>ifw_zh_CN</Translation>
+        <Translation>qt_zh_CN</Translation>
+    </Translations>
     <InstallerApplicationIcon>../../icons/SafeLogo_256</InstallerApplicationIcon>
 </Installer>
