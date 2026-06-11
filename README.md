@@ -56,7 +56,7 @@
 - Qt：建议使用 Qt 6.7.3，并安装 WebEngine、Quick Controls 2 等桌面组件。
 - Sentry Native：通过 vcpkg 安装，qmake 参数或环境变量 `SENTRY_ROOT_DIR` 指向安装目录。
 - DSCC：Windows 下通过 `DSCC_DIR` 指向 DSCC SDK/运行时目录。
-- Casdoor、后端 API、Soketi、Sentry DSN、官网和客服地址统一在 `src/config/AppConfig.h` 中管理，环境切换通过 qmake 参数 `USE_TEST_ENV=0/1` 控制。
+- Casdoor、后端 API、Soketi、Sentry DSN、官网和客服地址统一在 `src/config/AppConfig.h` 中管理。单一安装包同时内置测试/正式两套服务配置，运行时在登录页选择环境（切换后自动重启生效）。
 
 更详细的 Windows 本地编译配置见 [docs/INSTALL_GUIDE.md](docs/INSTALL_GUIDE.md)。
 
@@ -68,18 +68,18 @@
 
 ## 构建与打包
 
-编译时必须通过 qmake 参数显式指定环境：`USE_TEST_ENV=0`（正式）或 `USE_TEST_ENV=1`（测试）。
+单一安装包同时内置测试/正式两套配置，无需在编译期指定环境；构建前需准备 `secrets.env`（复制 `.env.example` 填入真实值）。
 
 **Qt Creator / 本地 qmake：**
 
 ```
-qmake datasafebox-qt-client.pro USE_TEST_ENV=0 SENTRY_ROOT_DIR=... DSCC_DIR=...
+qmake datasafebox-qt-client.pro SENTRY_ROOT_DIR=... DSCC_DIR=...
 ```
 
 **平台打包脚本：**
 
-- Windows：先 `set USE_TEST_ENV=0`，再运行 `builder\windows\build_installer.bat`
-- macOS：`USE_TEST_ENV=0 ./builder/macos/build_dmg.sh`
-- Linux：`USE_TEST_ENV=0 ./builder/linux/build_appimage.sh`
+- Windows：运行 `builder\windows\build_installer.bat`
+- macOS：`./builder/macos/build_dmg.sh`
+- Linux：`./builder/linux/build_appimage.sh`
 
 CI 配置位于 `.github/workflows/build.yml`，会在主分支、PR 和 `v*` 标签上触发多平台构建与发布流程。

@@ -487,6 +487,46 @@ ApplicationWindow {
         }
     }
 
+    // Server environment selector (login page only) — switching persists the
+    // choice and restarts the app into the selected environment.
+    Row {
+        visible: window.authPage === "login"
+        z: 202
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.margins: 16
+        spacing: 8
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: qsTr("Server")
+            font.pixelSize: Theme.Typography.caption
+            color: "#64748b"
+        }
+
+        ComboBox {
+            id: serverSelector
+            width: 132
+            textRole: "label"
+            valueRole: "value"
+            model: [
+                {
+                    "label": qsTr("Production"),
+                    "value": "prod"
+                },
+                {
+                    "label": qsTr("Test"),
+                    "value": "test"
+                }
+            ]
+            Component.onCompleted: currentIndex = indexOfValue(AppConfig.currentServerId())
+            onActivated: {
+                if (currentValue !== AppConfig.currentServerId())
+                    AppConfig.selectServer(currentValue);
+            }
+        }
+    }
+
     // Main Application Content
     Row {
         anchors.fill: parent

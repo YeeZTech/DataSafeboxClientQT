@@ -19,8 +19,8 @@ class CasdoorHelper : public QObject
     static CasdoorHelper *instance();
 
     // Configuration
-    const QString endpoint = QLatin1String(AppCfg::CASDOOR_ENDPOINT);
-    const QString clientId = QLatin1String(AppCfg::CASDOOR_CLIENT_ID);
+    const QString endpoint = QLatin1String(AppCfg::currentProfile().casdoorEndpoint);
+    const QString clientId = QLatin1String(AppCfg::currentProfile().casdoorClientId);
 
     Q_INVOKABLE QString getSigninUrl();
     Q_INVOKABLE QString getRedirectUri() const
@@ -55,7 +55,7 @@ class CasdoorHelper : public QObject
     void onCookieRemoved(const QNetworkCookie &cookie);
 
   private:
-    const QString redirectUri = QLatin1String(AppCfg::CASDOOR_REDIRECT_URI);
+    const QString redirectUri = QLatin1String(AppCfg::currentProfile().casdoorRedirectUri);
 
     QString m_oauthState;
     QString m_currentToken;

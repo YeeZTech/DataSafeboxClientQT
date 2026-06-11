@@ -2158,6 +2158,18 @@ Location: %1</source>
 <context>
     <name>main</name>
     <message>
+        <source>Server</source>
+        <translation>服务器</translation>
+    </message>
+    <message>
+        <source>Production</source>
+        <translation>正式环境</translation>
+    </message>
+    <message>
+        <source>Test</source>
+        <translation>测试环境</translation>
+    </message>
+    <message>
         <location filename="../qml/main.qml" line="+23"/>
         <source>DataSafeBox Console</source>
         <translation>数据安全柜控制台</translation>

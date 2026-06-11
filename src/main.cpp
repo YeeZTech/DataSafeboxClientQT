@@ -7,6 +7,7 @@
 #include "SentryBridge.h"
 #include "SingleApplication.h"
 #include "UpdateManager.h"
+#include "dscc/core/net/service_endpoints.h"
 #include "sentry.h"
 #include <QApplication>
 #include <QCoreApplication>
@@ -39,18 +40,7 @@ static QTextStream *g_logStream = nullptr;
 
 static QString startupLocalRootPath()
 {
-    QString base;
-#ifdef Q_OS_WIN
-    const QString localAppData = qEnvironmentVariable("LOCALAPPDATA");
-    if (!localAppData.isEmpty())
-    {
-        base = QDir(localAppData).filePath(QStringLiteral("yeeztech/datasafebox-client"));
-    }
-#endif
-    if (base.isEmpty())
-    {
-        base = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-    }
+    const QString base = AppCfg::localDataBaseDir();
     if (base.isEmpty())
     {
         return base;
@@ -447,7 +437,7 @@ int main(int argc, char *argv[])
         sentry_options_t *options = sentry_options_new();
         sentry_options_set_dsn(options, AppCfg::SENTRY_DSN);
         sentry_options_set_release(options, qPrintable(QStringLiteral("datasafebox-client@") + appVersion));
-        sentry_options_set_environment(options, "production");
+        sentry_options_set_environment(options, AppCfg::currentProfile().isTest ? "test" : "production");
 #ifdef QT_DEBUG
         sentry_options_set_debug(options, 1);
 #endif
@@ -511,9 +501,19 @@ int main(int argc, char *argv[])
     SentryBridge *sentryBridge = new SentryBridge(&app);
     engine.rootContext()->setContextProperty("SentryBridge", sentryBridge);
 
-    // Register AppConfig (unified service URL config — edit AppConfig.h to switch environments)
+    // Register AppConfig (runtime server profile — selected on the login page)
     AppConfig *appConfig = new AppConfig(&app);
     engine.rootContext()->setContextProperty("AppConfig", appConfig);
+    // 切换服务器环境：选择已持久化，先释放单实例锁再拉起新进程，避免新实例
+    // 被单实例检查拒之门外（新旧实例的数据目录分属两个环境，互不冲突）。
+    QObject::connect(
+        appConfig, &AppConfig::restartRequested, &app,
+        [&app]() {
+            app.releaseSingleInstance();
+            QProcess::startDetached(QCoreApplication::applicationFilePath(), {});
+            QCoreApplication::quit();
+        },
+        Qt::QueuedConnection);
 
     // Register LanguageManager — must be done before DsccBridge so that
     // Notification::SetTranslator is installed before any notifications are created.
@@ -522,10 +522,14 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("LanguageManager", languageManager);
 
     // Register DsccBridge (business logic dynamic library)
+    // 向 DSCC 注入当前环境的服务地址（SSO 用户查询 + OpenBao KMS），必须在任何
+    // DSCC 网络操作之前完成。
+    dscc::SetServiceEndpoints(QLatin1String(AppCfg::currentProfile().casdoorEndpoint),
+                              QLatin1String(AppCfg::currentProfile().openbaoServiceUrl));
     const QString dsccDbPath = pathManager->featureDataDir("dscc");
     QDir().mkpath(dsccDbPath);
     DsccBridge *dsccBridge = new DsccBridge(QDir(dsccDbPath).filePath("meta.db"), dsccDbPath,
-                                            QString::fromLatin1(AppCfg::API_BASE_URL), QString(), &app);
+                                            QString::fromLatin1(AppCfg::currentProfile().apiBaseUrl), QString(), &app);
     dsccBridge->initialize();
     engine.rootContext()->setContextProperty("DsccBridge", static_cast<QObject *>(dsccBridge));
 

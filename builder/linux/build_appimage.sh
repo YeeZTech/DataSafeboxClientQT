@@ -50,22 +50,12 @@ QT_DIR="${HOME}/Qt/${QT_VERSION}/${QT_ARCH_DIR}"
 VCPKG_DIR="${PARENT_DIR}/vcpkg"
 SENTRY_ROOT="${SENTRY_ROOT_DIR:-${VCPKG_DIR}/installed/${VCPKG_TRIPLET}}"
 
-# ── USE_TEST_ENV 校验 ─────────────────────────────────────────
-if [[ -z "${USE_TEST_ENV:-}" ]]; then
-    error "USE_TEST_ENV is not set. Export USE_TEST_ENV=0 (production) or USE_TEST_ENV=1 (test) before running this script."
-fi
-if [[ "${USE_TEST_ENV}" != "0" && "${USE_TEST_ENV}" != "1" ]]; then
-    error "USE_TEST_ENV=${USE_TEST_ENV} is invalid. Only 0 or 1 is accepted."
-fi
-PACKAGE_SUFFIX="$([[ "${USE_TEST_ENV}" == "1" ]] && echo "_test" || echo "")"
-
 echo ""
 echo "=================================================="
 echo "  DatasafeBox ${VERSION} — Linux 构建打包"
 echo "  CPU 架构  : ${ARCH_RAW}"
 echo "  vcpkg 三元: ${VCPKG_TRIPLET}"
 echo "  Qt        : ${QT_VERSION}"
-echo "  Env       : $([[ "${USE_TEST_ENV}" == "1" ]] && echo 'TEST' || echo 'PRODUCTION')"
 echo "=================================================="
 echo ""
 
@@ -190,7 +180,6 @@ cd "${BUILD_DIR}"
 
 qmake "${PROJECT_DIR}/datasafebox-qt-client.pro" \
     CONFIG+=release \
-    USE_TEST_ENV="${USE_TEST_ENV}" \
     SENTRY_ROOT_DIR="${SENTRY_ROOT}"
 make -j"$(nproc)"
 make INSTALL_ROOT="${APPDIR}" install
@@ -245,7 +234,7 @@ linuxdeploy \
 APPIMAGE_FILE="$(ls "${BUILD_DIR}"/DatasafeBox*.AppImage 2>/dev/null | head -1 || \
                  ls "${BUILD_DIR}"/*.AppImage 2>/dev/null | head -1)"
 [[ -n "${APPIMAGE_FILE}" ]] || error "未找到生成的 AppImage 文件"
-OUTPUT_NAME="DataSafebox_${VERSION}${PACKAGE_SUFFIX}.AppImage"
+OUTPUT_NAME="DataSafebox_${VERSION}.AppImage"
 mv "${APPIMAGE_FILE}" "${DIST_DIR}/${OUTPUT_NAME}"
 
 echo ""

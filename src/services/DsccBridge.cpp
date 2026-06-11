@@ -188,7 +188,8 @@ void registerDsccBridgeMetaTypes()
 DsccBridge::DsccBridge(const QString &metaDbPath, const QString &dsccDataRoot, const QString &serverUrl,
                        const QString &credential, QObject *parent)
     : QObject(parent), m_metaDbPath(metaDbPath), m_dsccDataRoot(QDir::cleanPath(dsccDataRoot)),
-      m_serverUrl(serverUrl.trimmed().isEmpty() ? QString::fromLatin1(AppCfg::API_BASE_URL) : serverUrl.trimmed()),
+      m_serverUrl(serverUrl.trimmed().isEmpty() ? QString::fromLatin1(AppCfg::currentProfile().apiBaseUrl)
+                                                : serverUrl.trimmed()),
       m_credential(credential)
 {
     registerDsccBridgeMetaTypes();

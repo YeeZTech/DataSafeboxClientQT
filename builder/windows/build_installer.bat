@@ -22,7 +22,6 @@ rem Configurable paths (env vars take priority over defaults below)
 rem ------------------------------------------------------------------
 if not defined QT_VERSION  set "QT_VERSION=6.7.3"
 if not defined IFW_VERSION set "IFW_VERSION=4.10"
-rem USE_TEST_ENV is optional here; defaults to 0 (production) in .pro if not set
 
 if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
     if not defined QT_ARCH       set "QT_ARCH=msvc2022_arm64"
@@ -80,22 +79,6 @@ echo ==================================================
 echo.
 
 rem ==================================================================
-rem USE_TEST_ENV VALIDATION (optional; defaults to 0 in .pro)
-rem ==================================================================
-if not defined USE_TEST_ENV (
-    set "USE_TEST_ENV=0"
-    echo [INFO] USE_TEST_ENV not set, defaulting to 0 ^(production^)
-)
-if not "%USE_TEST_ENV%"=="0" if not "%USE_TEST_ENV%"=="1" (
-    echo [Error] USE_TEST_ENV=%USE_TEST_ENV% is invalid. Only 0 or 1 is accepted.
-    goto :fail_no_msg
-)
-echo [INFO] USE_TEST_ENV=%USE_TEST_ENV%
-set "QMAKE_USE_TEST_ENV=USE_TEST_ENV=%USE_TEST_ENV%"
-set "PACKAGE_SUFFIX="
-if "%USE_TEST_ENV%"=="1" set "PACKAGE_SUFFIX=_test"
-
-rem ==================================================================
 rem PRE-FLIGHT CHECK
 rem ==================================================================
 set "PREFLIGHT_FAIL=0"
@@ -137,7 +120,7 @@ rem ==================================================================
 rem --- read version (single source: installer/config/config.xml) ---
 for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "(Select-Xml -Path '%CONFIG_XML%' -XPath '/Installer/Version').Node.InnerText"`) do set "PACKAGE_VERSION=%%i"
 if not defined PACKAGE_VERSION (echo [Error] Failed to read version from config.xml & goto :fail)
-set "OUTPUT_BASENAME=DataSafebox_%PACKAGE_VERSION%%PACKAGE_SUFFIX%"
+set "OUTPUT_BASENAME=DataSafebox_%PACKAGE_VERSION%"
 set "OUTPUT_INSTALLER=%SCRIPT_DIR%%OUTPUT_BASENAME%.exe"
 echo [INFO] Version: %PACKAGE_VERSION%
 echo [INFO] Output : %OUTPUT_INSTALLER%
@@ -168,7 +151,7 @@ cd /d "%PROJECT_ROOT%"
 if exist "%BUILD_DIR%" rd /s /q "%BUILD_DIR%"
 if exist "%PROJECT_ROOT%\resources_qmlcache.qrc" del /Q "%PROJECT_ROOT%\resources_qmlcache.qrc"
 
-"%QMAKE%" datasafebox-qt-client.pro CONFIG+=release CONFIG-=qtquickcompiler %QMAKE_USE_TEST_ENV% SENTRY_ROOT_DIR="%SENTRY_ROOT_DIR:\=/%" DSCC_DIR="%DSCC_DIR%"
+"%QMAKE%" datasafebox-qt-client.pro CONFIG+=release CONFIG-=qtquickcompiler SENTRY_ROOT_DIR="%SENTRY_ROOT_DIR:\=/%" DSCC_DIR="%DSCC_DIR%"
 if errorlevel 1 goto :fail
 nmake release
 if errorlevel 1 goto :fail

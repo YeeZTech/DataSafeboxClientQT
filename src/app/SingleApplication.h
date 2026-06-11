@@ -15,6 +15,9 @@ class SingleApplication : public QApplication
         return m_isRunning;
     }
     bool sendMessage(const QString &message);
+    // 关闭本地 server 并释放实例名，供"切换服务器环境后重启自身"使用：
+    // 先释放再拉起新进程，新实例才不会被单实例检查当作重复实例。
+    void releaseSingleInstance();
 
   signals:
     void messageReceived(const QString &message);

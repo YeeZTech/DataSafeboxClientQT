@@ -18,7 +18,7 @@ void ArrearsManager::getArrearsOverview(const QString &token)
         return;
     }
 
-    QUrl url(QLatin1String(AppCfg::API_BASE_URL) + QLatin1String("/api/user/arrears/overview"));
+    QUrl url(QLatin1String(AppCfg::currentProfile().apiBaseUrl) + QLatin1String("/api/user/arrears/overview"));
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     req.setRawHeader("Accept", "application/json");

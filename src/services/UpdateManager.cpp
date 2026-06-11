@@ -175,7 +175,8 @@ void UpdateManager::checkUpdate(bool manual)
     emit checkStatusChanged();
 
     QNetworkRequest request;
-    QString updateUrl = QLatin1String(AppCfg::API_BASE_URL) + QLatin1String("/api/appVersion/latest/info");
+    QString updateUrl =
+        QLatin1String(AppCfg::currentProfile().apiBaseUrl) + QLatin1String("/api/appVersion/latest/info");
     request.setUrl(QUrl(updateUrl));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded;charset=utf-8");
     request.setRawHeader("Accept", "application/json");

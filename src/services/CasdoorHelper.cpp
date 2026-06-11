@@ -133,7 +133,7 @@ void CasdoorHelper::callBackendLogin(const QString &code, const QString &state)
 
     const QByteArray data = QJsonDocument(jsonBody).toJson(QJsonDocument::Compact);
 
-    QUrl url(QLatin1String(AppCfg::API_BASE_URL) + "/api/user/login/callback");
+    QUrl url(QLatin1String(AppCfg::currentProfile().apiBaseUrl) + "/api/user/login/callback");
     QNetworkRequest req(url);
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     req.setRawHeader("Accept", "application/json");

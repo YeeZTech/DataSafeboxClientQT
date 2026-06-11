@@ -1,7 +1,7 @@
 name: Build & Release
 
 # 触发条件：
-#   - 推送到 feature/build 分支（每次出 test + prod 产物，仅上传为构建产物）
+#   - 推送到 feature/build 分支（出单一安装包：内置测试/正式两套配置，登录页选择环境）
 #   - 推送 release/v* 标签（例如 release/v1.0.4，额外创建 GitHub Release）
 #   - 手动触发（workflow_dispatch）
 on:
@@ -18,18 +18,11 @@ concurrency:
 jobs:
   # ============================================================
   # Windows — MSVC2022 + Qt 6.7.3 + Qt IFW → .exe 安装包
-  # test:  USE_TEST_ENV=1  →  DataSafebox_<version>_test.exe
-  # prod:  USE_TEST_ENV=0  →  DataSafebox_<version>.exe
+  # 单一安装包 DataSafebox_<version>.exe，内置测试/正式两套配置
   # ============================================================
   build-windows:
-    name: Windows (${{ matrix.env_name }})
+    name: Windows
     runs-on: windows-2022
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { env_name: test, use_test_env: '1' }
-          - { env_name: prod, use_test_env: '0' }
 
     steps:
       - name: Checkout
@@ -78,13 +71,13 @@ jobs:
         # --classic：本仓库根有 vcpkg.json，默认会进入 manifest 模式而拒绝单包安装
         run: C:/vcpkg/vcpkg.exe install sentry-native --triplet x64-windows --classic
 
-      # 下载并解压对应环境的 DSCC SDK（私有仓库，需要 DSCC_TOKEN）
-      - name: Download DSCC SDK (${{ matrix.env_name }})
+      # 下载并解压 DSCC SDK（环境无关单包；私有仓库，需要 DSCC_TOKEN）
+      - name: Download DSCC SDK
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.DSCC_TOKEN }}
         run: |
-          $asset = "dscc-sdk-win64-${{ matrix.env_name }}.zip"
+          $asset = "dscc-sdk-win64.zip"
           gh release download feature-build --repo YeeZTech/data-safebox-core `
             --pattern $asset --dir dscc-zip
           New-Item -ItemType Directory -Force dscc-sdk | Out-Null
@@ -96,30 +89,31 @@ jobs:
           "DSCC_DIR=$dscc" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           Write-Host "DSCC_DIR=$dscc"
 
-      # 将敏感配置从 GitHub Secrets 写入对应环境的 .env 文件（qmake 构建时读取）
-      - name: Write secrets env file (${{ matrix.env_name }})
+      # 将敏感配置从 GitHub Secrets 写入 secrets.env（qmake 构建时读取；
+      # CASDOOR_CLIENT_ID 测试/正式两个值都注入，单一安装包运行时按所选环境取用）
+      - name: Write secrets env file
         shell: pwsh
         env:
           SOKETI_APP_KEY:         ${{ secrets.SOKETI_APP_KEY }}
           CUSTOMER_SERVICE_TOKEN: ${{ secrets.CUSTOMER_SERVICE_TOKEN }}
           SENTRY_DSN:             ${{ secrets.SENTRY_DSN }}
-          CASDOOR_CLIENT_ID:      ${{ matrix.env_name == 'test' && secrets.CASDOOR_CLIENT_ID_TEST || secrets.CASDOOR_CLIENT_ID_PROD }}
+          CASDOOR_CLIENT_ID_TEST: ${{ secrets.CASDOOR_CLIENT_ID_TEST }}
+          CASDOOR_CLIENT_ID_PROD: ${{ secrets.CASDOOR_CLIENT_ID_PROD }}
         run: |
-          $envFile = if ('${{ matrix.use_test_env }}' -eq '1') { 'test.env' } else { 'prod.env' }
           $lines = @(
             "SOKETI_APP_KEY=$env:SOKETI_APP_KEY"
-            "CASDOOR_CLIENT_ID=$env:CASDOOR_CLIENT_ID"
+            "CASDOOR_CLIENT_ID_TEST=$env:CASDOOR_CLIENT_ID_TEST"
+            "CASDOOR_CLIENT_ID_PROD=$env:CASDOOR_CLIENT_ID_PROD"
             "CUSTOMER_SERVICE_TOKEN=$env:CUSTOMER_SERVICE_TOKEN"
             "SENTRY_DSN=$env:SENTRY_DSN"
           )
-          [IO.File]::WriteAllText((Join-Path $PWD $envFile), ($lines -join "`n") + "`n")
-          Write-Host "Wrote $envFile"
+          [IO.File]::WriteAllText((Join-Path $PWD 'secrets.env'), ($lines -join "`n") + "`n")
+          Write-Host "Wrote secrets.env"
 
       # 编译 + 打包（build_installer.bat 内部完成 lrelease/qmake/nmake/windeployqt/IFW）
       - name: Build & package installer
         shell: cmd
         env:
-          USE_TEST_ENV:    ${{ matrix.use_test_env }}
           SENTRY_ROOT_DIR: C:/vcpkg/installed/x64-windows
           # DSCC_DIR 与 IFW_BIN 已通过 GITHUB_ENV 注入
         run: call builder\windows\build_installer.bat
@@ -127,25 +121,18 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DataSafebox-windows-${{ matrix.env_name }}
+          name: DataSafebox-windows
           path: builder/windows/DataSafebox_*.exe
           if-no-files-found: error
           retention-days: 30
 
   # ============================================================
   # macOS (Apple Silicon) — Clang + Qt 6.7.3 + macdeployqt → .dmg
-  # test:  USE_TEST_ENV=1  →  DataSafebox_<version>_test.dmg
-  # prod:  USE_TEST_ENV=0  →  DataSafebox_<version>.dmg
+  # 单一安装包 DataSafebox_<version>.dmg，内置测试/正式两套配置
   # ============================================================
   build-macos:
-    name: macOS (${{ matrix.env_name }})
+    name: macOS
     runs-on: macos-14        # Apple Silicon (arm64) — 与 DSCC macos-arm64 包匹配
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { env_name: test, use_test_env: '1' }
-          - { env_name: prod, use_test_env: '0' }
 
     steps:
       - name: Checkout
@@ -169,12 +156,12 @@ jobs:
       - name: Install Pillow
         run: python3 -m pip install --break-system-packages --quiet Pillow
 
-      # 下载并解压对应环境的 DSCC SDK（私有仓库，需要 DSCC_TOKEN）
-      - name: Download DSCC SDK (${{ matrix.env_name }})
+      # 下载并解压 DSCC SDK（环境无关单包；私有仓库，需要 DSCC_TOKEN）
+      - name: Download DSCC SDK
         env:
           GH_TOKEN: ${{ secrets.DSCC_TOKEN }}
         run: |
-          asset="dscc-sdk-macos-arm64-${{ matrix.env_name }}.zip"
+          asset="dscc-sdk-macos-arm64.zip"
           gh release download feature-build --repo YeeZTech/data-safebox-core \
             --pattern "$asset" --dir dscc-zip
           mkdir -p dscc-sdk
@@ -224,27 +211,27 @@ jobs:
           echo "NOTARY_KEYCHAIN=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
           echo "macOS signing & notary profile ready"
 
-      # 将敏感配置从 GitHub Secrets 写入对应环境的 .env 文件（qmake 构建时读取）
-      - name: Write secrets env file (${{ matrix.env_name }})
+      # 将敏感配置从 GitHub Secrets 写入 secrets.env（qmake 构建时读取；
+      # CASDOOR_CLIENT_ID 测试/正式两个值都注入，单一安装包运行时按所选环境取用）
+      - name: Write secrets env file
         env:
           SOKETI_APP_KEY:         ${{ secrets.SOKETI_APP_KEY }}
           CUSTOMER_SERVICE_TOKEN: ${{ secrets.CUSTOMER_SERVICE_TOKEN }}
           SENTRY_DSN:             ${{ secrets.SENTRY_DSN }}
-          CASDOOR_CLIENT_ID:      ${{ matrix.env_name == 'test' && secrets.CASDOOR_CLIENT_ID_TEST || secrets.CASDOOR_CLIENT_ID_PROD }}
+          CASDOOR_CLIENT_ID_TEST: ${{ secrets.CASDOOR_CLIENT_ID_TEST }}
+          CASDOOR_CLIENT_ID_PROD: ${{ secrets.CASDOOR_CLIENT_ID_PROD }}
         run: |
-          if [ "${{ matrix.use_test_env }}" = "1" ]; then envFile=test.env; else envFile=prod.env; fi
           {
             echo "SOKETI_APP_KEY=$SOKETI_APP_KEY"
-            echo "CASDOOR_CLIENT_ID=$CASDOOR_CLIENT_ID"
+            echo "CASDOOR_CLIENT_ID_TEST=$CASDOOR_CLIENT_ID_TEST"
+            echo "CASDOOR_CLIENT_ID_PROD=$CASDOOR_CLIENT_ID_PROD"
             echo "CUSTOMER_SERVICE_TOKEN=$CUSTOMER_SERVICE_TOKEN"
             echo "SENTRY_DSN=$SENTRY_DSN"
-          } > "$envFile"
-          echo "Wrote $envFile"
+          } > secrets.env
+          echo "Wrote secrets.env"
 
       # 编译 + 打包（build_dmg.sh 内部完成 lrelease/qmake/make/macdeployqt/签名/公证/制作 dmg）
       - name: Build & package dmg
-        env:
-          USE_TEST_ENV: ${{ matrix.use_test_env }}
         run: |
           export QT_DIR="$QT_ROOT_DIR"
           export SENTRY_ROOT_DIR="$(brew --prefix sentry-native)"
@@ -269,7 +256,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DataSafebox-macos-${{ matrix.env_name }}
+          name: DataSafebox-macos
           path: builder/macos/DataSafebox_*.dmg
           if-no-files-found: error
           retention-days: 30
@@ -280,8 +267,7 @@ jobs:
         run: security delete-keychain "$RUNNER_TEMP/signing.keychain-db" 2>/dev/null || true
 
   # ============================================================
-  # Release：推送 release/v* 标签时，仅把 prod 的 exe + dmg 发布到 GitHub Release
-  #（test 包仍会构建并作为可下载的 build artifact，但不进 Release）
+  # Release：推送 release/v* 标签时，把单一安装包 exe + dmg 发布到 GitHub Release
   # ============================================================
   release:
     name: Create GitHub Release
@@ -302,8 +288,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/DataSafebox-windows-prod/DataSafebox_*.exe
-            artifacts/DataSafebox-macos-prod/DataSafebox_*.dmg
+            artifacts/DataSafebox-windows/DataSafebox_*.exe
+            artifacts/DataSafebox-macos/DataSafebox_*.dmg
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}

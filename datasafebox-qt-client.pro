@@ -5,30 +5,17 @@ CONFIG += c++17
 CONFIG -= qtquickcompiler
 win32:CONFIG -= depend_includepath
 
-# ── USE_TEST_ENV 编译期校验（0 = 正式环境，1 = 测试环境）──
-isEmpty(USE_TEST_ENV) {
-    USE_TEST_ENV = 0
-}
-!equals(USE_TEST_ENV, 0):!equals(USE_TEST_ENV, 1) {
-    error("USE_TEST_ENV=$$USE_TEST_ENV is invalid. Only 0 (production) or 1 (test) is accepted.")
-}
-DEFINES += USE_TEST_ENV=$$USE_TEST_ENV
-message("USE_TEST_ENV=$$USE_TEST_ENV")
-
 # ── 敏感配置注入（密钥 / 令牌 / DSN）────────────────────────────────────
-# 不在源码中硬编码：构建时从 test.env（USE_TEST_ENV=1）或 prod.env（=0）读取，
-# 以编译期宏 DSBOX_<KEY> 注入，供 src/config/AppConfig.h 使用。
-# 本地开发：复制 .env.example 为 test.env / prod.env 并填入真实值。
-# CI：由 GitHub Secrets 在构建前写入。这两个文件已在 .gitignore 中，不会提交。
-equals(USE_TEST_ENV, 1) {
-    ENV_FILE = $$PWD/test.env
-} else {
-    ENV_FILE = $$PWD/prod.env
-}
+# 不在源码中硬编码：构建时从 secrets.env 读取，以编译期宏 DSBOX_<KEY> 注入，
+# 供 src/config/AppConfig.h 使用。单一安装包同时内置测试/正式两套服务配置
+# （登录页选择环境），因此 CASDOOR_CLIENT_ID 需要 test/prod 两个值。
+# 本地开发：复制 .env.example 为 secrets.env 并填入真实值。
+# CI：由 GitHub Secrets 在构建前写入。该文件已在 .gitignore 中，不会提交。
+ENV_FILE = $$PWD/secrets.env
 !exists($$ENV_FILE) {
-    error("Secrets file not found: $$ENV_FILE — copy .env.example to test.env/prod.env (local dev), or let CI write it from GitHub Secrets. See .env.example.")
+    error("Secrets file not found: $$ENV_FILE — copy .env.example to secrets.env (local dev), or let CI write it from GitHub Secrets. See .env.example.")
 }
-ENV_REQUIRED_KEYS = SOKETI_APP_KEY CASDOOR_CLIENT_ID CUSTOMER_SERVICE_TOKEN SENTRY_DSN
+ENV_REQUIRED_KEYS = SOKETI_APP_KEY CASDOOR_CLIENT_ID_TEST CASDOOR_CLIENT_ID_PROD CUSTOMER_SERVICE_TOKEN SENTRY_DSN
 ENV_SEEN_KEYS =
 ENV_LINES = $$cat($$ENV_FILE, lines)
 for(line, ENV_LINES) {
@@ -166,11 +153,11 @@ linux {
 # 外部库路径配置
 # 优先级：qmake 命令行参数 > 环境变量。
 # 不在工程文件中探测本机相对目录或构建产物目录；请显式设置 SENTRY_ROOT_DIR / DSCC_DIR。
-# 运行时服务 URL 在 AppConfig.h 中管理；密钥 / 令牌 / DSN 由 test.env/prod.env 注入（见上方敏感配置注入段）。
+# 运行时服务 URL 在 AppConfig.h 中管理；密钥 / 令牌 / DSN 由 secrets.env 注入（见上方敏感配置注入段）。
 # ===========================================================================
 
 # Sentry Native (via vcpkg)
-# SENTRY_DSN 由 test.env/prod.env 注入（见上方敏感配置注入段）
+# SENTRY_DSN 由 secrets.env 注入（见上方敏感配置注入段）
 isEmpty(SENTRY_ROOT_DIR): SENTRY_ROOT_DIR = $$(SENTRY_ROOT_DIR)
 isEmpty(SENTRY_ROOT_DIR) {
     error("Sentry Native not found. Set SENTRY_ROOT_DIR to the vcpkg installed triplet root, for example D:/vcpkg/installed/x64-windows")

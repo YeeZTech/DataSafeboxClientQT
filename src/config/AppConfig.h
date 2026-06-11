@@ -1,65 +1,75 @@
-﻿#ifndef APPCONFIG_H
+#ifndef APPCONFIG_H
 #define APPCONFIG_H
 
 #include <QCryptographicHash>
+#include <QDir>
 #include <QObject>
+#include <QSettings>
+#include <QStandardPaths>
 #include <QString>
+#include <QStringList>
 
-#ifndef USE_TEST_ENV
-#error "USE_TEST_ENV is not defined. Pass USE_TEST_ENV=0 or USE_TEST_ENV=1 on the qmake command line."
+// ── 敏感配置（密钥 / 令牌 / DSN）────────────────────────────
+// 不在源码中硬编码：由 qmake 在编译期从 secrets.env 读取，注入为
+// DSBOX_<KEY> 宏（见 datasafebox-qt-client.pro）。
+// 本地开发：复制 .env.example 为 secrets.env 并填入真实值。
+// CI：由 GitHub Secrets 在构建前写入。该文件已被 .gitignore 忽略。
+#if !defined(DSBOX_SOKETI_APP_KEY) || !defined(DSBOX_CASDOOR_CLIENT_ID_TEST) ||                                        \
+    !defined(DSBOX_CASDOOR_CLIENT_ID_PROD) || !defined(DSBOX_CUSTOMER_SERVICE_TOKEN) || !defined(DSBOX_SENTRY_DSN)
+#error "敏感配置宏未注入：请确认 secrets.env 存在并由 qmake 注入。参见 .env.example。"
 #endif
-static_assert(USE_TEST_ENV == 0 || USE_TEST_ENV == 1, "USE_TEST_ENV must be 0 (production) or 1 (test).");
+
 namespace AppCfg
 {
 
-#if USE_TEST_ENV
+// ── 服务器环境 Profile ──────────────────────────────────────
+// 单一安装包同时内置测试/正式两套服务配置，登录前由用户在登录页选择。
+// 选择持久化在环境隔离目录的上一级（所有环境共享，见 serverSelectionFilePath），
+// 切换通过重启应用生效（数据目录/Sentry/WebEngine 缓存均按环境隔离）。
+struct ServerProfile
+{
+    const char *id; // 持久化标识（"prod"/"test"），不可更改
+    bool isTest;
+    const char *apiBaseUrl;      // 后端 API 基础地址（同时传给 DSCC 作 domain manager）
+    const char *soketiWsHost;    // Soketi 消息推送 WebSocket 主机
+    const char *casdoorEndpoint; // Casdoor SSO（同时传给 DSCC 作用户查询服务）
+    const char *casdoorClientId;
+    const char *casdoorRedirectUri;
+    const char *websiteUrl;
+    const char *walletUrl;
+    const char *userCenterUrl;
+    const char *openbaoServiceUrl; // OpenBao KMS（传给 DSCC，加密安全域私钥）
+};
 
-// ── 测试环境 ──────────────────────────────────────────────
-// 后端 API 基础地址
-inline constexpr const char *API_BASE_URL = "https://test-dsbox.dianshudata.com";
+inline constexpr ServerProfile PROD_PROFILE = {
+    "prod",
+    false,
+    "https://dsbox-api.dianshudata.com",
+    "wss://dsbox-api.dianshudata.com",
+    "https://sso.dianshudata.com",
+    DSBOX_CASDOOR_CLIENT_ID_PROD,
+    "https://account.dianshudata.com/callback/",
+    "https://dsbox.dianshudata.com",
+    "https://dsbox.dianshudata.com/wallet",
+    "https://dianshudata.com/userCenter/userInfo",
+    "https://kms.dianshudata.com:8200",
+};
 
-// Soketi 消息推送 WebSocket 主机
-inline constexpr const char *SOKETI_WS_HOST = "ws://49.232.246.86:6001";
+inline constexpr ServerProfile TEST_PROFILE = {
+    "test",
+    true,
+    "https://test-dsbox.dianshudata.com",
+    "ws://49.232.246.86:6001",
+    "https://test-sso.dianshudata.com",
+    DSBOX_CASDOOR_CLIENT_ID_TEST,
+    "https://test-account.dianshudata.com/callback/",
+    "https://test-dsbox.dianshudata.com",
+    "https://test-dsbox.dianshudata.com/wallet",
+    "https://test.dianshudata.com/userCenter/userInfo",
+    "https://kms.dianshudata.com:8100",
+};
 
-// Casdoor SSO 配置
-inline constexpr const char *CASDOOR_ENDPOINT = "https://test-sso.dianshudata.com";
-inline constexpr const char *CASDOOR_REDIRECT_URI = "https://test-account.dianshudata.com/callback/";
-
-// 官网 & 钱包
-inline constexpr const char *WEBSITE_URL = "https://test-dsbox.dianshudata.com";
-inline constexpr const char *WALLET_URL = "https://test-dsbox.dianshudata.com/wallet";
-
-// 用户中心
-inline constexpr const char *USER_CENTER_URL = "https://test.dianshudata.com/userCenter/userInfo";
-
-// 厂商官网 & 帮助文档（与正式环境相同）
-inline constexpr const char *VENDOR_URL = "https://yeez.tech/";
-inline constexpr const char *VENDOR_COMPANY_NAME = "北京熠智科技有限公司";
-inline constexpr const char *HELP_DOCS_URL = "https://help.yeez.tech/docs/dsbox";
-
-// 客服聊天（Chatwoot，测试环境复用正式）
-inline constexpr const char *CUSTOMER_SERVICE_URL = "https://customersupport.dianshudata.com";
-
-#else
-
-// ── 正式环境 ──────────────────────────────────────────────
-// 后端 API 基础地址
-inline constexpr const char *API_BASE_URL = "https://dsbox-api.dianshudata.com";
-
-// Soketi 消息推送 WebSocket 主机
-inline constexpr const char *SOKETI_WS_HOST = "wss://dsbox-api.dianshudata.com";
-
-// Casdoor SSO 配置
-inline constexpr const char *CASDOOR_ENDPOINT = "https://sso.dianshudata.com";
-inline constexpr const char *CASDOOR_REDIRECT_URI = "https://account.dianshudata.com/callback/";
-
-// 官网 & 钱包
-inline constexpr const char *WEBSITE_URL = "https://dsbox.dianshudata.com";
-inline constexpr const char *WALLET_URL = "https://dsbox.dianshudata.com/wallet";
-
-// 用户中心
-inline constexpr const char *USER_CENTER_URL = "https://dianshudata.com/userCenter/userInfo";
-
+// ── 共享配置（与环境无关）──────────────────────────────────
 // 厂商官网 & 帮助文档
 inline constexpr const char *VENDOR_URL = "https://yeez.tech/";
 inline constexpr const char *VENDOR_COMPANY_NAME = "北京熠智科技有限公司";
@@ -68,31 +78,64 @@ inline constexpr const char *HELP_DOCS_URL = "https://help.yeez.tech/docs/dsbox"
 // 客服聊天（Chatwoot）
 inline constexpr const char *CUSTOMER_SERVICE_URL = "https://customersupport.dianshudata.com";
 
-#endif // USE_TEST_ENV
+inline constexpr const char *SOKETI_APP_KEY = DSBOX_SOKETI_APP_KEY;
+inline constexpr const char *CUSTOMER_SERVICE_TOKEN = DSBOX_CUSTOMER_SERVICE_TOKEN;
+inline constexpr const char *SENTRY_DSN = DSBOX_SENTRY_DSN;
+
+// ── 选择持久化 ──────────────────────────────────────────────
+// 本地数据根目录的上一级（不含环境 hash 段），所有环境共享。
+// 与 main.cpp 的启动路径推导保持一致。
+inline QString localDataBaseDir()
+{
+    QString base;
+#ifdef Q_OS_WIN
+    const QString localAppData = qEnvironmentVariable("LOCALAPPDATA");
+    if (!localAppData.isEmpty())
+    {
+        base = QDir(localAppData).filePath(QStringLiteral("yeeztech/datasafebox-client"));
+    }
+#endif
+    if (base.isEmpty())
+    {
+        base = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    }
+    return base;
+}
+
+inline QString serverSelectionFilePath()
+{
+    return QDir(localDataBaseDir()).filePath(QStringLiteral("server.ini"));
+}
+
+// 当前环境：进程内只解析一次（启动早期即被读取，之后切换走"持久化+重启"）。
+inline const ServerProfile &currentProfile()
+{
+    static const ServerProfile *const selected = [] {
+        const QSettings settings(serverSelectionFilePath(), QSettings::IniFormat);
+        const QString id = settings.value(QStringLiteral("server/profile")).toString().trimmed();
+        return id == QLatin1String(TEST_PROFILE.id) ? &TEST_PROFILE : &PROD_PROFILE;
+    }();
+    return *selected;
+}
+
+inline void persistServerSelection(const QString &id)
+{
+    QSettings settings(serverSelectionFilePath(), QSettings::IniFormat);
+    settings.setValue(QStringLiteral("server/profile"), id);
+}
 
 // ── 环境隔离目录名 ──────────────────────────────────────────
 // 本地数据根目录按后端环境隔离：%LOCALAPPDATA%/<组织名>/<应用名>/<ENV>，
-// 其中 ENV = SHA-256(API_BASE_URL + SOKETI_WS_HOST + CASDOOR_ENDPOINT) 的十六进制串。
+// 其中 ENV = SHA-256(apiBaseUrl + soketiWsHost + casdoorEndpoint) 的十六进制串。
+// 注意：哈希输入与单包改造前完全一致，保证老安装的数据目录无缝衔接。
 inline QString environmentDirName()
 {
-    return QString::fromLatin1(QCryptographicHash::hash(QByteArray(API_BASE_URL) + SOKETI_WS_HOST + CASDOOR_ENDPOINT,
-                                                        QCryptographicHash::Sha256)
-                                   .toHex());
+    const ServerProfile &profile = currentProfile();
+    return QString::fromLatin1(
+        QCryptographicHash::hash(QByteArray(profile.apiBaseUrl) + profile.soketiWsHost + profile.casdoorEndpoint,
+                                 QCryptographicHash::Sha256)
+            .toHex());
 }
-
-// ── 敏感配置（密钥 / 令牌 / DSN）────────────────────────────
-// 不在源码中硬编码：由 qmake 在编译期从 test.env（USE_TEST_ENV=1）或
-// prod.env（=0）读取，注入为 DSBOX_<KEY> 宏（见 datasafebox-qt-client.pro）。
-// 本地开发：复制 .env.example 为 test.env / prod.env 并填入真实值。
-// CI：由 GitHub Secrets 在构建前写入。这两个文件已被 .gitignore 忽略。
-#if !defined(DSBOX_SOKETI_APP_KEY) || !defined(DSBOX_CASDOOR_CLIENT_ID) || !defined(DSBOX_CUSTOMER_SERVICE_TOKEN) ||   \
-    !defined(DSBOX_SENTRY_DSN)
-#error "敏感配置宏未注入：请确认 test.env / prod.env 存在并由 qmake 注入。参见 .env.example。"
-#endif
-inline constexpr const char *SOKETI_APP_KEY = DSBOX_SOKETI_APP_KEY;
-inline constexpr const char *CASDOOR_CLIENT_ID = DSBOX_CASDOOR_CLIENT_ID;
-inline constexpr const char *CUSTOMER_SERVICE_TOKEN = DSBOX_CUSTOMER_SERVICE_TOKEN;
-inline constexpr const char *SENTRY_DSN = DSBOX_SENTRY_DSN;
 
 // ============================================================
 // 分页配置（与环境无关的统一配置）
@@ -134,11 +177,11 @@ class AppConfig : public QObject
 
     Q_INVOKABLE QString apiBaseUrl() const
     {
-        return QLatin1String(AppCfg::API_BASE_URL);
+        return QLatin1String(AppCfg::currentProfile().apiBaseUrl);
     }
     Q_INVOKABLE QString soketiWsHost() const
     {
-        return QLatin1String(AppCfg::SOKETI_WS_HOST);
+        return QLatin1String(AppCfg::currentProfile().soketiWsHost);
     }
     Q_INVOKABLE QString soketiAppKey() const
     {
@@ -146,27 +189,27 @@ class AppConfig : public QObject
     }
     Q_INVOKABLE QString casdoorEndpoint() const
     {
-        return QLatin1String(AppCfg::CASDOOR_ENDPOINT);
+        return QLatin1String(AppCfg::currentProfile().casdoorEndpoint);
     }
     Q_INVOKABLE QString casdoorClientId() const
     {
-        return QLatin1String(AppCfg::CASDOOR_CLIENT_ID);
+        return QLatin1String(AppCfg::currentProfile().casdoorClientId);
     }
     Q_INVOKABLE QString casdoorRedirectUri() const
     {
-        return QLatin1String(AppCfg::CASDOOR_REDIRECT_URI);
+        return QLatin1String(AppCfg::currentProfile().casdoorRedirectUri);
     }
     Q_INVOKABLE QString websiteUrl() const
     {
-        return QLatin1String(AppCfg::WEBSITE_URL);
+        return QLatin1String(AppCfg::currentProfile().websiteUrl);
     }
     Q_INVOKABLE QString walletUrl() const
     {
-        return QLatin1String(AppCfg::WALLET_URL);
+        return QLatin1String(AppCfg::currentProfile().walletUrl);
     }
     Q_INVOKABLE QString userCenterUrl() const
     {
-        return QLatin1String(AppCfg::USER_CENTER_URL);
+        return QLatin1String(AppCfg::currentProfile().userCenterUrl);
     }
     Q_INVOKABLE QString vendorUrl() const
     {
@@ -192,11 +235,27 @@ class AppConfig : public QObject
     // 环境标识：仅在测试环境为 true，用于 QML 端在测试环境下放宽 SSL 校验等场景
     Q_INVOKABLE bool isTestEnv() const
     {
-#if USE_TEST_ENV
-        return true;
-#else
-        return false;
-#endif
+        return AppCfg::currentProfile().isTest;
+    }
+
+    // ── 服务器环境选择（登录页下拉框）─────────────────────
+    Q_INVOKABLE QStringList availableServerIds() const
+    {
+        return {QLatin1String(AppCfg::PROD_PROFILE.id), QLatin1String(AppCfg::TEST_PROFILE.id)};
+    }
+    Q_INVOKABLE QString currentServerId() const
+    {
+        return QLatin1String(AppCfg::currentProfile().id);
+    }
+    // 持久化选择并请求重启（重启由 main.cpp 响应 restartRequested 完成）
+    Q_INVOKABLE void selectServer(const QString &serverId)
+    {
+        if (serverId == currentServerId())
+        {
+            return;
+        }
+        AppCfg::persistServerSelection(serverId);
+        emit restartRequested();
     }
 
     // 分页配置访问方法
@@ -230,6 +289,9 @@ class AppConfig : public QObject
     {
         return AppCfg::DETAIL_CACHE_TTL_SECONDS;
     }
+
+  signals:
+    void restartRequested();
 };
 
 #endif // APPCONFIG_H

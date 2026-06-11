@@ -33,10 +33,10 @@
 3. 在 **Additional arguments** 中填入（替换为实际路径）：
 
 ```
-USE_TEST_ENV=0 SENTRY_ROOT_DIR=C:/vcpkg/installed/x64-windows
+SENTRY_ROOT_DIR=C:/vcpkg/installed/x64-windows
 ```
 
-`USE_TEST_ENV` 为必填参数：`0` = 正式环境，`1` = 测试环境。未传或传非法值时 qmake 和编译器均会报错。
+另需在项目根目录准备 `secrets.env`（复制 `.env.example` 填入真实值），缺失时 qmake 会报错。
 
 也可通过系统环境变量设置 `SENTRY_ROOT_DIR`（同名），Qt Creator 重启后自动读取。
 
@@ -69,7 +69,7 @@ C:/vcpkg/installed/x64-windows/bin
 - Sentry DSN
 - 官网 / 客服 URL
 
-切换测试/正式环境通过 qmake 参数 `USE_TEST_ENV=0`（正式）或 `USE_TEST_ENV=1`（测试）指定，不再需要手动修改源码。
+测试/正式两套配置同时编译进二进制，运行时在登录页右上角的下拉框选择环境（切换后应用自动重启生效），不再需要分环境出包。
 
 ---
 

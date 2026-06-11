@@ -44,6 +44,15 @@ void SingleApplication::initLocalConnection()
     }
 }
 
+void SingleApplication::releaseSingleInstance()
+{
+    if (m_localServer)
+    {
+        m_localServer->close();
+        QLocalServer::removeServer(m_serverName);
+    }
+}
+
 bool SingleApplication::sendMessage(const QString &message)
 {
     if (!m_isRunning)
