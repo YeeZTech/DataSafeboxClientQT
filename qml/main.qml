@@ -120,6 +120,10 @@ ApplicationWindow {
             // authPage 初始值为 "login" 时 onAuthPageChanged 不会触发，手动启动登录流程
             if (window.authPage === "login") {
                 window.startCasdoorLoginFlow();
+                // 切换服务器后的重启带 --server-switched 标记，首次进入不再重复弹窗
+                if (!AppConfig.startedAfterServerSwitch()) {
+                    window.openServerSelectDialog();
+                }
             }
         });
     }
@@ -145,6 +149,12 @@ ApplicationWindow {
         if (casdoorLoginWebView && casdoorLoginWebView.startLogin) {
             casdoorLoginWebView.startLogin();
         }
+    }
+
+    // 登录前弹出"选择服务器"：按当前环境预选（测试环境视为自有服务器）
+    function openServerSelectDialog() {
+        serverSelectDialog.useOwnServer = AppConfig.isTestEnv();
+        serverSelectDialog.open();
     }
 
     function switchToSecurityDomain(domainCode, pubKey, domainName) {
@@ -237,6 +247,7 @@ ApplicationWindow {
         if (window.authPage === "login") {
             Qt.callLater(function () {
                 window.startCasdoorLoginFlow();
+                window.openServerSelectDialog();
             });
         }
     }
@@ -487,43 +498,32 @@ ApplicationWindow {
         }
     }
 
-    // Server environment selector (login page only) — switching persists the
-    // choice and restarts the app into the selected environment.
-    Row {
-        visible: window.authPage === "login"
-        z: 202
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: 16
-        spacing: 8
+    // 登录前服务器选择（官方 / 自有服务器）。切换环境时持久化选择并重启应用，
+    // 关闭弹窗（×/Esc/点击外部）则停留在当前环境继续登录。
+    ServerSelectDialog {
+        id: serverSelectDialog
 
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: qsTr("Server")
-            font.pixelSize: Theme.Typography.caption
-            color: "#64748b"
-        }
-
-        ComboBox {
-            id: serverSelector
-            width: 132
-            textRole: "label"
-            valueRole: "value"
-            model: [
-                {
-                    "label": qsTr("Production"),
-                    "value": "prod"
-                },
-                {
-                    "label": qsTr("Test"),
-                    "value": "test"
-                }
-            ]
-            Component.onCompleted: currentIndex = indexOfValue(AppConfig.currentServerId())
-            onActivated: {
-                if (currentValue !== AppConfig.currentServerId())
-                    AppConfig.selectServer(currentValue);
+        onConnectRequested: function (ownServer) {
+            if (!ownServer) {
+                AppConfig.selectServer("prod"); // 已是正式环境时为 no-op，直接继续登录
+                return;
             }
+            serverAddressDialog.address = AppConfig.isTestEnv() ? AppConfig.apiBaseUrl() : "";
+            serverAddressDialog.open();
+        }
+    }
+
+    ServerAddressDialog {
+        id: serverAddressDialog
+
+        onConfirmed: function (address) {
+            var serverId = AppConfig.serverIdForBaseUrl(address);
+            if (serverId === "") {
+                serverAddressDialog.hasError = true;
+                return;
+            }
+            serverAddressDialog.close();
+            AppConfig.selectServer(serverId); // 与当前环境一致时为 no-op，直接继续登录
         }
     }
 

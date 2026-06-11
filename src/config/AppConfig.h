@@ -1,6 +1,7 @@
 #ifndef APPCONFIG_H
 #define APPCONFIG_H
 
+#include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
 #include <QObject>
@@ -124,6 +125,35 @@ inline void persistServerSelection(const QString &id)
     settings.setValue(QStringLiteral("server/profile"), id);
 }
 
+// ── 自有服务器地址检索 ──────────────────────────────────────
+// 以后端 baseurl 检索内置 profile：归一化（去首尾空白与结尾斜杠，缺省
+// scheme 按 https）后与各 profile 的 apiBaseUrl 大小写不敏感比较。
+// 填入官方地址时返回 PROD_PROFILE，与选择官方服务器等价；无匹配返回 nullptr。
+inline const ServerProfile *profileForBaseUrl(const QString &url)
+{
+    QString normalized = url.trimmed();
+    while (normalized.endsWith(QLatin1Char('/')))
+    {
+        normalized.chop(1);
+    }
+    if (normalized.isEmpty())
+    {
+        return nullptr;
+    }
+    if (!normalized.contains(QLatin1String("://")))
+    {
+        normalized.prepend(QLatin1String("https://"));
+    }
+    for (const ServerProfile *profile : {&PROD_PROFILE, &TEST_PROFILE})
+    {
+        if (normalized.compare(QLatin1String(profile->apiBaseUrl), Qt::CaseInsensitive) == 0)
+        {
+            return profile;
+        }
+    }
+    return nullptr;
+}
+
 // ── 环境隔离目录名 ──────────────────────────────────────────
 // 本地数据根目录按后端环境隔离：%LOCALAPPDATA%/<组织名>/<应用名>/<ENV>，
 // 其中 ENV = SHA-256(apiBaseUrl + soketiWsHost + casdoorEndpoint) 的十六进制串。
@@ -238,14 +268,21 @@ class AppConfig : public QObject
         return AppCfg::currentProfile().isTest;
     }
 
-    // ── 服务器环境选择（登录页下拉框）─────────────────────
-    Q_INVOKABLE QStringList availableServerIds() const
-    {
-        return {QLatin1String(AppCfg::PROD_PROFILE.id), QLatin1String(AppCfg::TEST_PROFILE.id)};
-    }
+    // ── 服务器环境选择（登录前"选择服务器"弹窗）───────────
     Q_INVOKABLE QString currentServerId() const
     {
         return QLatin1String(AppCfg::currentProfile().id);
+    }
+    // 自有服务器地址 → 内置 Profile 检索（见 AppCfg::profileForBaseUrl）。无匹配返回空串。
+    Q_INVOKABLE QString serverIdForBaseUrl(const QString &url) const
+    {
+        const AppCfg::ServerProfile *profile = AppCfg::profileForBaseUrl(url);
+        return profile ? QString(QLatin1String(profile->id)) : QString();
+    }
+    // 本次启动是否由"切换服务器后重启"拉起（见 main.cpp），用于跳过重复弹窗
+    Q_INVOKABLE bool startedAfterServerSwitch() const
+    {
+        return QCoreApplication::arguments().contains(QStringLiteral("--server-switched"));
     }
     // 持久化选择并请求重启（重启由 main.cpp 响应 restartRequested 完成）
     Q_INVOKABLE void selectServer(const QString &serverId)

@@ -1875,6 +1875,48 @@ Status:
     </message>
 </context>
 <context>
+    <name>ServerAddressDialog</name>
+    <message>
+        <source>Server Address</source>
+        <translation>服务器地址</translation>
+    </message>
+    <message>
+        <source>Enter server address</source>
+        <translation>请输入服务器地址</translation>
+    </message>
+    <message>
+        <source>Address example: http://your.domain.name</source>
+        <translation>地址示例：http://your.domain.name</translation>
+    </message>
+    <message>
+        <source>No server configuration found for this address</source>
+        <translation>未找到该服务器地址对应的配置</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+</context>
+<context>
+    <name>ServerSelectDialog</name>
+    <message>
+        <source>Select Server</source>
+        <translation>选择服务器</translation>
+    </message>
+    <message>
+        <source>Official Server</source>
+        <translation>官方服务器</translation>
+    </message>
+    <message>
+        <source>Own Server</source>
+        <translation>自有服务器</translation>
+    </message>
+    <message>
+        <source>Connect</source>
+        <translation>连接</translation>
+    </message>
+</context>
+<context>
     <name>SetDurationDialog</name>
     <message>
         <location filename="../qml/Dialogs/instantiation/SetDurationDialog.qml" line="+56"/>
@@ -2157,18 +2199,6 @@ Location: %1</source>
 </context>
 <context>
     <name>main</name>
-    <message>
-        <source>Server</source>
-        <translation>服务器</translation>
-    </message>
-    <message>
-        <source>Production</source>
-        <translation>正式环境</translation>
-    </message>
-    <message>
-        <source>Test</source>
-        <translation>测试环境</translation>
-    </message>
     <message>
         <location filename="../qml/main.qml" line="+23"/>
         <source>DataSafeBox Console</source>

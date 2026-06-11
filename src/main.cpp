@@ -510,7 +510,8 @@ int main(int argc, char *argv[])
         appConfig, &AppConfig::restartRequested, &app,
         [&app]() {
             app.releaseSingleInstance();
-            QProcess::startDetached(QCoreApplication::applicationFilePath(), {});
+            // --server-switched：告知新实例本次启动源于切换服务器，登录页不再重复弹"选择服务器"
+            QProcess::startDetached(QCoreApplication::applicationFilePath(), {QStringLiteral("--server-switched")});
             QCoreApplication::quit();
         },
         Qt::QueuedConnection);

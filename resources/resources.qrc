@@ -77,6 +77,8 @@
         <file alias="DataSafebox/Dialogs/PaymentSuccessDialog.qml">../qml/Dialogs/instantiation/PaymentSuccessDialog.qml</file>
         <file alias="DataSafebox/Dialogs/PausedReminderDialog.qml">../qml/Dialogs/common/PausedReminderDialog.qml</file>
         <file alias="DataSafebox/Dialogs/RemoveDomainConfirmDialog.qml">../qml/Dialogs/common/RemoveDomainConfirmDialog.qml</file>
+        <file alias="DataSafebox/Dialogs/ServerAddressDialog.qml">../qml/Dialogs/common/ServerAddressDialog.qml</file>
+        <file alias="DataSafebox/Dialogs/ServerSelectDialog.qml">../qml/Dialogs/common/ServerSelectDialog.qml</file>
         <file alias="DataSafebox/Dialogs/SetDurationDialog.qml">../qml/Dialogs/instantiation/SetDurationDialog.qml</file>
         <file alias="DataSafebox/Dialogs/UpdateDialog.qml">../qml/Dialogs/common/UpdateDialog.qml</file>
         <file alias="DataSafebox/Dialogs/EncryptSuccessPopup.qml">../qml/Dialogs/encrypt/EncryptSuccessPopup.qml</file>
