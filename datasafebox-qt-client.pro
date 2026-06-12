@@ -124,6 +124,12 @@ win32 {
     } else {
         message("Warning: icons/SafeLogo_256.ico not found. Executable will use default Windows icon.")
     }
+
+    # 进程级 UTF-8 活动代码页（Win10 1903+）：DSCC/ycrypto 以窄字符 ANSI API 打开文件，
+    # 没有它，非 ACP 字符（如英文系统区域下的中文文件名）会导致加解密 open file failed。
+    # 用 mt.exe 在链接后把 manifest 合并进 exe（jom/CI 均在 vcvars 环境中运行，mt.exe 在 PATH 上）。
+    UTF8_MANIFEST = $$shell_quote($$shell_path($$PWD/builder/windows/utf8.manifest))
+    QMAKE_POST_LINK += mt.exe -nologo -manifest $$UTF8_MANIFEST -inputresource:$(DESTDIR_TARGET) -outputresource:$(DESTDIR_TARGET) &
 }
 macx {
     exists($$PWD/icons/SafeLogo.icns) {
