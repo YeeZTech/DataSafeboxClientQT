@@ -748,7 +748,8 @@ Item {
         deactivateDomainState.pendingDomainPubKey = pubKey;
         deactivateDomainState.pendingDomainCode = domainCode;
 
-        // 调用 DSCC 接口关闭安全域，结果在 main.qml 的 onDomainClosed / onDomainCloseFailed 中处理
+        // 调用 DSCC 接口关闭安全域，结果在本页 onDomainClosed / onDomainCloseFailed 中处理，
+        // 成功后保持在详情页，列表/概要刷新由 main.qml 的 onDomainClosed 处理
         DsccBridge.closeDomain(domainCode);
     }
 
@@ -910,7 +911,14 @@ Item {
             root.errorOccurred(errorMessage || qsTr("Failed to disable security domain"), qsTr("Disable Security Domain"));
         }
 
-        // 注意：onDomainClosed 成功的导航/刷新由 main.qml 统一处理（切换至 home + 刷新列表）
+        function onDomainClosed(operationId, domainCode) {
+            if (domainCode !== root.currentDomainCode)
+                return;
+            deactivateDomainState.isPending = false;
+            deactivateDomainState.pendingDomainPubKey = "";
+            deactivateDomainState.pendingDomainCode = "";
+        // 列表/概要刷新由 main.qml 统一处理（保持在详情页）
+        }
 
         function onDomainDeleteFailed(operationId, domainCode, notification) {
             if (domainCode !== root.currentDomainCode)

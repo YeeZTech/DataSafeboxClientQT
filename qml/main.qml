@@ -356,16 +356,11 @@ ApplicationWindow {
         }
 
         function onDomainClosed(operationId, domainCode) {
-            // 安全域关闭成功：返回首页并刷新侧边栏列表
-            if (securityDomainDetail) {
-                securityDomainDetail.domainPubKey = "";
-                securityDomainDetail.domainName = "";
-                securityDomainDetail.currentDomainCode = "";
-            }
-            window.selectedDomainCode = "";
-            window.selectedDomainPubKey = "";
-            window.currentPage = "home";
+            // 安全域停用成功：保持在详情页，刷新侧边栏列表；若当前正打开该安全域，
+            // 刷新其概要使详情页翻转为停用（只读）态。
             DsccBridge.loadDomainList();
+            if (securityDomainDetail && domainCode === window.selectedDomainCode)
+                DsccBridge.loadDomainSummary(domainCode);
         }
 
         function onDomainDeleted(operationId, domainCode) {
