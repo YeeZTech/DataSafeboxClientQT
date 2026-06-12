@@ -302,6 +302,7 @@ Card {
                                     anchors.leftMargin: 31
                                     anchors.verticalCenter: parent.verticalCenter
                                     status: modelData.status || ""
+                                    statusStyle: Theme.Colors.getInstanceStatusColor(status)
                                 }
                             }
 

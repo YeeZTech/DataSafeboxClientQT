@@ -146,6 +146,20 @@ QtObject {
         return statusColors[status] || defaultStatusColor;
     }
 
+    // Security domain instance statuses: "已授权" is blue per design;
+    // audit statuses (whitelist/export) keep the shared green from statusColors
+    function getInstanceStatusColor(status) {
+        if (status === statusAuthorized) {
+            return {
+                bg: "#dbeafe",
+                border: "#bedbff",
+                text: "#1447e6",
+                dot: "#2B7FFF"
+            };
+        }
+        return getStatusColor(status);
+    }
+
     // Translate status from Chinese backend value to current-language display text
     function translateStatus(status) {
         var s = (status || "").trim();
