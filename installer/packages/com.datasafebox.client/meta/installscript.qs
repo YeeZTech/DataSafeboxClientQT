@@ -47,7 +47,7 @@ Component.prototype.createOperations = function() {
             "      } " +
             "    } " +
             "  } " +
-            "} catch {}";
+            "} catch {} ; exit 0";
 
         component.addOperation(
             "Execute",
@@ -110,7 +110,7 @@ Component.prototype.createOperations = function() {
         "try { " +
         "  Add-Type -Namespace Shell -Name Cache -MemberDefinition '[DllImport(\"shell32.dll\")] public static extern void SHChangeNotify(int eventId, uint flags, IntPtr item1, IntPtr item2);'; " +
         "  [Shell.Cache]::SHChangeNotify(0x08000000, 0, [IntPtr]::Zero, [IntPtr]::Zero); " +
-        "} catch {}";
+        "} catch {} ; exit 0";
 
     component.addOperation(
         "Execute",
@@ -130,7 +130,7 @@ Component.prototype.createOperations = function() {
         "    if ($code -eq 0 -or $code -eq 1638 -or $code -eq 3010) { Write-Host ('[VCRedist] OK exit=' + $code) } " +
         "    else { Write-Host ('[VCRedist] WARN exit=' + $code) } " +
         "  } catch { Write-Host ('[VCRedist] Error: ' + $_.ToString()) } " +
-        "} else { Write-Host '[VCRedist] vc_redist.x64.exe not found, skipping' }";
+        "} else { Write-Host '[VCRedist] vc_redist.x64.exe not found, skipping' } ; exit 0";
 
     component.addOperation(
         "Execute",
@@ -143,13 +143,15 @@ Component.prototype.createOperations = function() {
     var protocolRegScript =
         "$targetDir = " + psLiteral(toWindowsPath(targetDir)) + "; " +
         "$exePath = Join-Path $targetDir 'DataSafebox.exe'; " +
-        "New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT -ErrorAction SilentlyContinue | Out-Null; " +
-        "if (-not (Test-Path 'HKCR:\\dianshu')) { New-Item -Path 'HKCR:\\dianshu' -Force | Out-Null }; " +
-        "Set-ItemProperty -Path 'HKCR:\\dianshu' -Name '(default)' -Value 'URL:Dianshu Protocol'; " +
-        "Set-ItemProperty -Path 'HKCR:\\dianshu' -Name 'URL Protocol' -Value ''; " +
-        "if (-not (Test-Path 'HKCR:\\dianshu\\shell\\open\\command')) { New-Item -Path 'HKCR:\\dianshu\\shell\\open\\command' -Force | Out-Null }; " +
-        "$command = '\"' + $exePath + '\" \"%1\"'; " +
-        "Set-ItemProperty -Path 'HKCR:\\dianshu\\shell\\open\\command' -Name '(default)' -Value $command;";
+        "try { " +
+        "  New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT -ErrorAction SilentlyContinue | Out-Null; " +
+        "  if (-not (Test-Path 'HKCR:\\dianshu')) { New-Item -Path 'HKCR:\\dianshu' -Force | Out-Null }; " +
+        "  Set-ItemProperty -Path 'HKCR:\\dianshu' -Name '(default)' -Value 'URL:Dianshu Protocol'; " +
+        "  Set-ItemProperty -Path 'HKCR:\\dianshu' -Name 'URL Protocol' -Value ''; " +
+        "  if (-not (Test-Path 'HKCR:\\dianshu\\shell\\open\\command')) { New-Item -Path 'HKCR:\\dianshu\\shell\\open\\command' -Force | Out-Null }; " +
+        "  $command = '\"' + $exePath + '\" \"%1\"'; " +
+        "  Set-ItemProperty -Path 'HKCR:\\dianshu\\shell\\open\\command' -Name '(default)' -Value $command; " +
+        "} catch {} ; exit 0";
 
     component.addOperation(
         "Execute",
