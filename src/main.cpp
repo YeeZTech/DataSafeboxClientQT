@@ -7,7 +7,7 @@
 #include "SentryBridge.h"
 #include "SingleApplication.h"
 #include "UpdateManager.h"
-#include "dscc/core/net/service_endpoints.h"
+#include "dscc/core/net/http/service_endpoints.h"
 #include "sentry.h"
 #include <QApplication>
 #include <QCoreApplication>
