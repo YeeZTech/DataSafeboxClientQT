@@ -3,6 +3,7 @@
 
 #include <QHash>
 #include <QObject>
+#include <QTimer>
 #include <QVariant>
 #include <QVariantList>
 #include <QVariantMap>
@@ -27,6 +28,9 @@ class DsccBridge : public QObject
     Q_INVOKABLE void clearCurrentUser();
 
     Q_INVOKABLE void loadDomainList();
+    // Triggers an immediate server sync (SyncData). The refreshed lists are
+    // re-read and re-emitted when the corelib fires DataSyncFinished.
+    Q_INVOKABLE void refresh();
     Q_INVOKABLE void loadInstances(const QString &domainCode);
     Q_INVOKABLE void loadDomainSummary(const QString &domainCode);
     Q_INVOKABLE void loadAudits(const QString &domainCode, int applyType);
@@ -93,9 +97,15 @@ class DsccBridge : public QObject
     void auditInstanceRequestSuccess(uint32_t operation_id, QString instance_code);
     void auditInstanceRequestFailed(uint32_t operation_id, QString instance_code, dscc::Notification notification);
     void coreErrorOccurred(dscc::Notification notification);
+    // Emitted after a corelib sync round (DataSyncFinished) so open views (e.g.
+    // the domain detail page) can refresh their contents for multi-endpoint sync.
+    void dataSynced();
 
   private:
     void connectAssetSignals();
+    void triggerSyncData();
+    void startSyncTimer();
+    void stopSyncTimer();
     QString userDomainDbPath(const QString &userId) const;
     bool isDomainInactiveForOperation(const QString &domainCode) const;
     QVariantMap domainInfoToSummary(const dscc::DomainInfo &info) const;
@@ -110,6 +120,7 @@ class DsccBridge : public QObject
     };
 
     std::unique_ptr<dscc::UserAssets> m_assets;
+    QTimer *m_syncTimer = nullptr;
     QString m_metaDbPath;
     QString m_dsccDataRoot;
     QString m_serverUrl;

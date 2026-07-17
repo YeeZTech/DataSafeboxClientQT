@@ -53,7 +53,7 @@ inline constexpr ServerProfile PROD_PROFILE = {
     "https://dsbox.dianshudata.com",
     "https://dsbox.dianshudata.com/wallet",
     "https://dianshudata.com/userCenter/userInfo",
-    "https://kms.dianshudata.com:8200",
+    "https://kms.dianshudata.com",
 };
 
 inline constexpr ServerProfile TEST_PROFILE = {
@@ -67,7 +67,7 @@ inline constexpr ServerProfile TEST_PROFILE = {
     "https://test-dsbox.dianshudata.com",
     "https://test-dsbox.dianshudata.com/wallet",
     "https://test.dianshudata.com/userCenter/userInfo",
-    "https://kms.dianshudata.com:8100",
+    "https://test-kms.dianshudata.com",
 };
 
 // ── 共享配置（与环境无关）──────────────────────────────────

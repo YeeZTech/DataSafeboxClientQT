@@ -343,6 +343,13 @@ ApplicationWindow {
             sidebar.domainRefreshing = false;
         }
 
+        function onDataSynced() {
+            // 多端同步：后台同步已把最新服务器状态合并到本地缓存。侧边栏列表由
+            // loadDomainList 自动刷新；若正打开某安全域详情，重载其概要/实例/审核。
+            if (securityDomainDetail && window.selectedDomainCode)
+                securityDomainDetail.reloadAllData();
+        }
+
         function onDomainCreateFailed(operationId, notification) {
             createSecurityDomainForm.isSubmitting = false;
             var msg = DsccBridge.notificationMessage(notification, qsTr("Security domain creation failed"));
@@ -546,6 +553,9 @@ ApplicationWindow {
             onRefreshDomainsRequested: {
                 sidebar.domainRefreshing = true;
                 DsccBridge.loadDomainList();
+                // 主动向服务器拉取一轮，纳入他端（如命令行）新建的安全域；
+                // 拉取完成后经 DataSyncFinished 再次刷新列表。
+                DsccBridge.refresh();
             }
             onPageRequested: function (page) {
                 window.currentPage = page;

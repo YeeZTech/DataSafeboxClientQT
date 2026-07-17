@@ -4,16 +4,25 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QMetaType>
 #include <QStandardPaths>
 #include <QStringList>
+#include <QTimer>
 #include <algorithm>
 
 #include "AppConfig.h"
 #include "dscc/core/common/logger.h"
 #include "dscc/core/db/table/domain_ops.h"
 #include "dscc/core/interface/app_assets.h"
+
+namespace
+{
+// Interval for the session-scoped auto-refresh that keeps the console in sync
+// with domains/audits/messages created on other endpoints (e.g. the CLI).
+constexpr int kSyncTimerIntervalMs = 15 * 1000;
+} // namespace
 
 namespace
 {
@@ -193,6 +202,10 @@ DsccBridge::DsccBridge(const QString &metaDbPath, const QString &dsccDataRoot, c
       m_credential(credential)
 {
     registerDsccBridgeMetaTypes();
+
+    m_syncTimer = new QTimer(this);
+    m_syncTimer->setInterval(kSyncTimerIntervalMs);
+    connect(m_syncTimer, &QTimer::timeout, this, [this]() { triggerSyncData(); });
 }
 
 DsccBridge::~DsccBridge()
@@ -219,6 +232,7 @@ void DsccBridge::initialize()
 
 void DsccBridge::shutdown()
 {
+    stopSyncTimer();
     if (m_assets)
     {
         m_assets->Shutdown();
@@ -248,6 +262,7 @@ void DsccBridge::setCurrentUser(const QString &userId, const QString &userName, 
         return;
     }
 
+    stopSyncTimer();
     if (m_assets)
     {
         m_assets->Shutdown();
@@ -308,10 +323,19 @@ void DsccBridge::setCurrentUser(const QString &userId, const QString &userName, 
         emit domainSummaryLoaded(QString(), QVariantMap());
         emit messageListLoaded(QVariantList());
     }
+    else if (m_assets)
+    {
+        // Pull server state immediately after login so the lists aren't empty
+        // while the corelib daemon waits ~10s for its first periodic poll, then
+        // keep them fresh for multi-endpoint sync via the session timer.
+        triggerSyncData();
+        startSyncTimer();
+    }
 }
 
 void DsccBridge::clearCurrentUser()
 {
+    stopSyncTimer();
     if (m_assets)
     {
         m_assets->Shutdown();
@@ -657,6 +681,15 @@ void DsccBridge::connectAssetSignals()
                     m_userAssetsInitializationError = notification;
                 }
             });
+
+    connect(m_assets.get(), &dscc::UserAssets::DataSyncFinished, this, [this](uint32_t operationId) {
+        qInfo().noquote() << QStringLiteral("[DsccBridge] corelib DataSyncFinished operationId=%1").arg(operationId);
+        // A sync round merged the latest server state into the local cache;
+        // re-read the lists so multi-endpoint changes surface in the UI.
+        loadDomainList();
+        loadMessageList();
+        emit dataSynced();
+    });
 }
 
 QString DsccBridge::userDomainDbPath(const QString &userId) const
@@ -692,6 +725,8 @@ QVariantMap DsccBridge::domainInfoToSummary(const dscc::DomainInfo &info) const
     const bool domainCreateFailed = isDomainCreateFailed(info);
     summary.insert(QStringLiteral("domainCode"), info.domain_code);
     summary.insert(QStringLiteral("name"), info.domain_name);
+    // 安全域类型(1-用户安全域 2-典枢安全域)；两类都展示，仅供 UI 区分/标注。
+    summary.insert(QStringLiteral("domainType"), info.domain_type);
     summary.insert(QStringLiteral("pubKey"), info.domain_pub_key);
     summary.insert(QStringLiteral("description"), info.remarks);
     summary.insert(QStringLiteral("payer"), info.pay_type == 2 ? QStringLiteral("使用者") : QStringLiteral("创建者"));
@@ -1054,6 +1089,38 @@ void DsccBridge::loadDomainList()
         list.append(domainInfoToSummary(domain));
     }
     emit domainListLoaded(list);
+}
+
+void DsccBridge::refresh()
+{
+    triggerSyncData();
+}
+
+void DsccBridge::triggerSyncData()
+{
+    if (!m_assets)
+    {
+        return;
+    }
+    // SyncData() returns a Handle whose work starts on Submit(); the round
+    // completes asynchronously and fires DataSyncFinished.
+    m_assets->SyncData().Submit();
+}
+
+void DsccBridge::startSyncTimer()
+{
+    if (m_syncTimer && !m_syncTimer->isActive())
+    {
+        m_syncTimer->start();
+    }
+}
+
+void DsccBridge::stopSyncTimer()
+{
+    if (m_syncTimer)
+    {
+        m_syncTimer->stop();
+    }
 }
 
 QString DsccBridge::resolveUserNameWithCache(const QHash<QString, QString> &domainLookup, const QString &userId)
