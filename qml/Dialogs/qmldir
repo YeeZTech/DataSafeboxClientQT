@@ -15,6 +15,7 @@ PaymentSuccessDialog 1.0 PaymentSuccessDialog.qml
 PausedReminderDialog 1.0 PausedReminderDialog.qml
 RemoveDomainConfirmDialog 1.0 RemoveDomainConfirmDialog.qml
 ServerAddressDialog 1.0 ServerAddressDialog.qml
+SendToCliDialog 1.0 SendToCliDialog.qml
 ServerSelectDialog 1.0 ServerSelectDialog.qml
 SetDurationDialog 1.0 SetDurationDialog.qml
 UpdateDialog 1.0 UpdateDialog.qml

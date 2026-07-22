@@ -76,7 +76,8 @@ SOURCES += \
     src/services/UpdateManager.cpp \
     src/services/SentryBridge.cpp \
     src/services/ArrearsManager.cpp \
-    src/services/DsccBridge.cpp
+    src/services/DsccBridge.cpp \
+    src/services/FileTransferBridge.cpp
 
 HEADERS += \
     src/config/AppConfig.h \
@@ -87,7 +88,8 @@ HEADERS += \
     src/services/UpdateManager.h \
     src/services/SentryBridge.h \
     src/services/ArrearsManager.h \
-    src/services/DsccBridge.h
+    src/services/DsccBridge.h \
+    src/services/FileTransferBridge.h
 
 INCLUDEPATH += \
     $$PWD/src/app \
@@ -230,7 +232,9 @@ win32 {
     INCLUDEPATH += "$$DSCC_DIR/deps/glog/include"
     INCLUDEPATH += "$$DSCC_DIR/deps/gflags/include"
     INCLUDEPATH += "$$DSCC_DIR/deps/fflib/include"
-    LIBS += -L"$$DSCC_DIR/lib" -ldscc_common -ldscc_core
+    # dscc_transfer：加密文件的 WebRTC 点对点发送。libdatachannel 及其
+    # usrsctp/juice 已静态链进该库，这里不需要额外的第三方依赖。
+    LIBS += -L"$$DSCC_DIR/lib" -ldscc_common -ldscc_core -ldscc_transfer
     LIBS += -L"$$DSCC_DIR/deps/wcdb/lib" -lWCDB
     LIBS += -L"$$DSCC_DIR/deps/ycrypto/lib" -lycrypto_stdeth
     # C4068: 未知的杂注（WCDB 头文件含 #pragma mark，仅 Clang/Xcode 支持）
@@ -254,7 +258,8 @@ macx {
     INCLUDEPATH += "$$DSCC_DIR/deps/gflags/include"
     INCLUDEPATH += "$$DSCC_DIR/deps/fflib/include"
 
-    LIBS += -L"$$DSCC_DIR/lib" -ldscc_common -ldscc_core
+    # dscc_transfer：加密文件的 WebRTC 点对点发送（libdatachannel 已静态链入）。
+    LIBS += -L"$$DSCC_DIR/lib" -ldscc_common -ldscc_core -ldscc_transfer
     LIBS += -F"$$DSCC_DIR/deps/wcdb/lib" -framework WCDB
     LIBS += -L"$$DSCC_DIR/deps/ycrypto/lib" -lycrypto_stdeth
 

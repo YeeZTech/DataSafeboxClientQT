@@ -71,6 +71,7 @@
         <file alias="DataSafebox/Dialogs/ExportDetailDialog.qml">../qml/Dialogs/transfer/ExportDetailDialog.qml</file>
         <file alias="DataSafebox/Dialogs/ExportFileDialog.qml">../qml/Dialogs/transfer/ExportFileDialog.qml</file>
         <file alias="DataSafebox/Dialogs/ImportFileDialog.qml">../qml/Dialogs/transfer/ImportFileDialog.qml</file>
+        <file alias="DataSafebox/Dialogs/SendToCliDialog.qml">../qml/Dialogs/transfer/SendToCliDialog.qml</file>
         <file alias="DataSafebox/Dialogs/InstanceDetailDialog.qml">../qml/Dialogs/domain/InstanceDetailDialog.qml</file>
         <file alias="DataSafebox/Dialogs/InstantiationHelpDialog.qml">../qml/Dialogs/instantiation/InstantiationHelpDialog.qml</file>
         <file alias="DataSafebox/Dialogs/InstantiationPaymentDialog.qml">../qml/Dialogs/instantiation/InstantiationPaymentDialog.qml</file>

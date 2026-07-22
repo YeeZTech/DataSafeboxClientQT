@@ -46,6 +46,8 @@ BaseDialog {
     property string _resultType: "" // "success" | "error"
     property string _lastErrorMessage: ""
     property string _encryptOutputDir: ""
+    // 本轮最后一个加密成功的 .sealed 路径，供"发送到命令行客户端"使用。
+    property string _lastEncryptedFile: ""
 
     // Count helpers
     readonly property int _pendingCount: {
@@ -87,6 +89,7 @@ BaseDialog {
         _currentSourceFile = "";
         _currentTargetFile = "";
         _currentModelIndex = -1;
+        _lastEncryptedFile = "";
         pathListModel.clear();
         encryptionStateChanged(false);
     }
@@ -505,6 +508,9 @@ BaseDialog {
         function onEncryptFileSucceeded(operationId, sourceFile, targetFile) {
             if (!root._encrypting || !root._operationMatches(operationId, sourceFile, targetFile))
                 return;
+            // 记下产物路径，成功弹窗据此提供"发送到命令行客户端"。一次只发一个
+            // 文件，多选时取最后一个成功的产物。
+            root._lastEncryptedFile = targetFile;
             root._completeCurrentEncryption("encrypted", "");
         }
 
@@ -795,6 +801,11 @@ BaseDialog {
         parent: root.parent  // host page → page-scoped dim via the page's backdrop
         dim: false
         encryptOutputDir: root._encryptOutputDir
+        encryptedFilePath: root._lastEncryptedFile
+
+        onSendToCliRequested: function (filePath) {
+            root.sendToCliRequested(filePath);
+        }
     }
 
     EncryptFailurePopup {
@@ -813,4 +824,6 @@ BaseDialog {
     signal cancelClicked
     signal encryptClicked
     signal contactSupportRequested
+    // 由成功弹窗透传：用户要求把加密文件直接发给命令行客户端。
+    signal sendToCliRequested(string filePath)
 }

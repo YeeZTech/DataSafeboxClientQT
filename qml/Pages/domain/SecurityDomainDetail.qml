@@ -383,6 +383,18 @@ Item {
         onContactSupportRequested: {
             root.contactSupportRequested();
         }
+
+        onSendToCliRequested: function (filePath) {
+            sendToCliDialog.filePath = filePath;
+            sendToCliDialog.open();
+        }
+    }
+
+    // 把刚加密好的 .sealed 点对点发给命令行客户端（替代 U 盘 / scp 搬运）
+    SendToCliDialog {
+        id: sendToCliDialog
+        parent: root
+        dim: false  // Dimming is handled by dialogBackdrop so only this page is covered
     }
 
     // User (non-creator) encrypt hint dialog (PRD 3.6)
@@ -968,7 +980,7 @@ Item {
         anchors.fill: parent
         z: 50
         color: Qt.rgba(0, 0, 0, 0.5)
-        visible: addUserDialog.opened || encryptFileDialog.opened || userEncryptHintDialog.opened || deactivateDialog.opened || removeDomainDialog.opened || exportDetailDialog.opened || instanceDetailDialog.opened || appWhitelistDetailDialog.opened || encryptFileDialog.successPopup.opened || encryptFileDialog.failurePopup.opened
+        visible: addUserDialog.opened || encryptFileDialog.opened || userEncryptHintDialog.opened || deactivateDialog.opened || removeDomainDialog.opened || exportDetailDialog.opened || instanceDetailDialog.opened || appWhitelistDetailDialog.opened || encryptFileDialog.successPopup.opened || encryptFileDialog.failurePopup.opened || sendToCliDialog.opened
 
         MouseArea {
             anchors.fill: parent
@@ -995,6 +1007,10 @@ Item {
                     encryptFileDialog.successPopup.close();
                 } else if (encryptFileDialog.failurePopup.opened) {
                     encryptFileDialog.failurePopup.close();
+                } else if (sendToCliDialog.opened) {
+                    // 传输进行中不能被点外部误关，否则等于悄悄中止传输。
+                    if (!sendToCliDialog._active)
+                        sendToCliDialog.close();
                 }
             }
         }

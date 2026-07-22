@@ -2,6 +2,7 @@
 #include "ArrearsManager.h"
 #include "CasdoorHelper.h"
 #include "DsccBridge.h"
+#include "FileTransferBridge.h"
 #include "LanguageManager.h"
 #include "PathManager.h"
 #include "SentryBridge.h"
@@ -533,6 +534,10 @@ int main(int argc, char *argv[])
                                             QString::fromLatin1(AppCfg::currentProfile().apiBaseUrl), QString(), &app);
     dsccBridge->initialize();
     engine.rootContext()->setContextProperty("DsccBridge", static_cast<QObject *>(dsccBridge));
+
+    // Register FileTransferBridge (加密文件点对点发送给命令行客户端)
+    FileTransferBridge *fileTransferBridge = new FileTransferBridge(&app);
+    engine.rootContext()->setContextProperty("FileTransferBridge", static_cast<QObject *>(fileTransferBridge));
 
     // Register ArrearsManager (account arrears/paused status)
     ArrearsManager *arrearsManager = new ArrearsManager(&app);

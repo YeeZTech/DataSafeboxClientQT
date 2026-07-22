@@ -2574,6 +2574,64 @@ Location: %1</source>
         <source>Open File Save Directory</source>
         <translation>打开文件保存目录</translation>
     </message>
+    <message>
+        <source>Send to Command Line Client</source>
+        <translation>发送到命令行客户端</translation>
+    </message>
+</context>
+<context>
+    <name>SendToCliDialog</name>
+    <message>
+        <source>Send to Command Line Client</source>
+        <translation>发送到命令行客户端</translation>
+    </message>
+    <message>
+        <source>File: %1</source>
+        <translation>文件：%1</translation>
+    </message>
+    <message>
+        <source>Pickup Code</source>
+        <translation>取件码</translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <source>On the target machine, run: dv transfer recv %1</source>
+        <translation>在目标机器上执行：dv transfer recv %1</translation>
+    </message>
+    <message>
+        <source>The pickup code is valid for 1 hour and can only be used once. File contents are transferred peer-to-peer and never pass through the server.</source>
+        <translation>取件码 1 小时内有效，且只能使用一次。文件内容点对点直传，不经过服务器。</translation>
+    </message>
+    <message>
+        <source>Transfer complete</source>
+        <translation>传输完成</translation>
+    </message>
+    <message>
+        <source>Cancel Transfer</source>
+        <translation>取消传输</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+</context>
+<context>
+    <name>FileTransferBridge</name>
+    <message>
+        <source>A file transfer is already in progress.</source>
+        <translation>已有文件正在传输中。</translation>
+    </message>
+    <message>
+        <source>File transfer is not configured for this server.</source>
+        <translation>当前服务器未配置文件传输服务。</translation>
+    </message>
+    <message>
+        <source>File not found: %1</source>
+        <translation>文件不存在：%1</translation>
+    </message>
 </context>
 <context>
     <name>DomainInfoHeader</name>

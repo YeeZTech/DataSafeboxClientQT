@@ -40,6 +40,9 @@ struct ServerProfile
     const char *walletUrl;
     const char *userCenterUrl;
     const char *openbaoServiceUrl; // OpenBao KMS（传给 DSCC，加密安全域私钥）
+    // 加密文件点对点传输的信令服务（file-transfer-go）根地址。只用于换取件码与
+    // 交换 SDP/ICE，文件内容不经过它。为空表示该环境未部署，界面隐藏传输入口。
+    const char *transferSignalUrl;
 };
 
 inline constexpr ServerProfile PROD_PROFILE = {
@@ -54,6 +57,7 @@ inline constexpr ServerProfile PROD_PROFILE = {
     "https://dsbox.dianshudata.com/wallet",
     "https://dianshudata.com/userCenter/userInfo",
     "https://kms.dianshudata.com",
+    "", // transferSignalUrl：正式环境的信令服务部署后填入
 };
 
 inline constexpr ServerProfile TEST_PROFILE = {
@@ -68,6 +72,7 @@ inline constexpr ServerProfile TEST_PROFILE = {
     "https://test-dsbox.dianshudata.com/wallet",
     "https://test.dianshudata.com/userCenter/userInfo",
     "https://test-kms.dianshudata.com",
+    "", // transferSignalUrl：测试环境的信令服务部署后填入
 };
 
 // ── 共享配置（与环境无关）──────────────────────────────────
@@ -260,6 +265,12 @@ class AppConfig : public QObject
     Q_INVOKABLE QString customerServiceToken() const
     {
         return QLatin1String(AppCfg::CUSTOMER_SERVICE_TOKEN);
+    }
+
+    // 加密文件点对点传输的信令服务地址。为空时 QML 隐藏"发送到命令行客户端"入口。
+    Q_INVOKABLE QString transferSignalUrl() const
+    {
+        return QLatin1String(AppCfg::currentProfile().transferSignalUrl);
     }
 
     // 环境标识：仅在测试环境为 true，用于 QML 端在测试环境下放宽 SSL 校验等场景
