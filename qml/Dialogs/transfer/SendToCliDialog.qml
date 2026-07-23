@@ -16,6 +16,7 @@ BaseDialog {
     // 传输进行中不允许误关；用户要中止得走"取消传输"按钮。
     closePolicy: root._active ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
     showCloseButton: !root._active
+
     // 关闭动作统一在 onClosed 里收尾（BaseDialog 的关闭按钮自己会调 close()）。
 
     property string filePath: ""
@@ -144,7 +145,6 @@ BaseDialog {
                     codeClipboard.copy();
                 }
             }
-
         }
 
         Text {

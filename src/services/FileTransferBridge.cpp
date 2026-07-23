@@ -73,13 +73,11 @@ void FileTransferBridge::sendFile(const QString &filePath)
     dscc::transfer::Callbacks callbacks;
     callbacks.on_room_code = [this](const std::string &code) {
         const QString roomCode = QString::fromStdString(code);
-        QMetaObject::invokeMethod(
-            this, [this, roomCode]() { emit roomCodeReady(roomCode); }, Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, [this, roomCode]() { emit roomCodeReady(roomCode); }, Qt::QueuedConnection);
     };
     callbacks.on_stage = [this](dscc::transfer::Stage stage) {
         const QString text = QString::fromUtf8(dscc::transfer::StageText(stage));
-        QMetaObject::invokeMethod(
-            this, [this, text]() { emit stageChanged(text); }, Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, [this, text]() { emit stageChanged(text); }, Qt::QueuedConnection);
     };
     callbacks.on_progress = [this](std::uint64_t processed, std::uint64_t total) {
         QMetaObject::invokeMethod(
