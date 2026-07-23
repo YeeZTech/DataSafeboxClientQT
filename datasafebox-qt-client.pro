@@ -129,9 +129,10 @@ win32 {
 
     # 进程级 UTF-8 活动代码页（Win10 1903+）：DSCC/ycrypto 以窄字符 ANSI API 打开文件，
     # 没有它，非 ACP 字符（如英文系统区域下的中文文件名）会导致加解密 open file failed。
-    # 用 mt.exe 在链接后把 manifest 合并进 exe（jom/CI 均在 vcvars 环境中运行，mt.exe 在 PATH 上）。
-    UTF8_MANIFEST = $$shell_quote($$shell_path($$PWD/builder/windows/utf8.manifest))
-    QMAKE_POST_LINK += mt.exe -nologo -manifest $$UTF8_MANIFEST -inputresource:$(DESTDIR_TARGET) -outputresource:$(DESTDIR_TARGET) &
+    # 由链接器在链接期把 manifest 并入（CONFIG 默认带 embed_manifest_exe → link /MANIFEST:embed）。
+    # 用 /MANIFESTINPUT 而非链接后 mt.exe：链接期原子合并，失败会直接让链接报错，
+    # 不会像 post-link "mt.exe & copy & copy" 那样被 & 串联吞掉退出码而静默产出缺 manifest 的 exe。
+    QMAKE_LFLAGS += /MANIFESTINPUT:$$shell_quote($$shell_path($$PWD/builder/windows/utf8.manifest))
 }
 macx {
     exists($$PWD/icons/SafeLogo.icns) {

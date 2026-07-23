@@ -151,7 +151,6 @@ BaseDialog {
             width: parent.width
             text: qsTr("On the target machine, run: dv transfer recv %1").arg(root._roomCode !== "" ? root._roomCode : "<code>")
             font.pixelSize: Theme.Typography.caption
-            font.family: "monospace"
             color: "#45556c"
             wrapMode: Text.WrapAnywhere
         }
@@ -215,6 +214,7 @@ BaseDialog {
 
             SecondaryButton {
                 visible: root._active
+                accent: true
                 text: qsTr("Cancel Transfer")
                 onClicked: {
                     FileTransferBridge.cancel();

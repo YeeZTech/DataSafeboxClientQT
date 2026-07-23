@@ -59,37 +59,44 @@ BaseDialog {
             horizontalAlignment: Text.AlignHCenter
         }
 
-        Row {
-            anchors.right: parent.right
-            spacing: 8
+        // 链接单独占一行、按钮右对齐另起一行：中英文案在一行里放不下
+        // (链接 + 两个按钮会超出弹窗宽度并从左侧溢出)，拆两行可保证不溢出。
+        Column {
+            width: parent.width
+            spacing: 12
             topPadding: 4
 
             LinkText {
-                anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("View Encrypted File Guide")
                 onClicked: Qt.openUrlExternally("https://help.yeez.tech/docs/bu-zhou-5-mai-fang-jia-mi-yuan-shi-shu-ju")
             }
 
-            SecondaryButton {
-                visible: root._canSendToCli
-                text: qsTr("Send to Command Line Client")
-                onClicked: {
-                    root.close();
-                    root.sendToCliRequested(root.encryptedFilePath);
-                }
-            }
+            Row {
+                anchors.right: parent.right
+                spacing: 8
 
-            PrimaryButton {
-                text: qsTr("Open File Save Directory")
-                onClicked: {
-                    var p = root.encryptOutputDir;
-                    if (p) {
-                        var url = p.replace(/\\/g, "/");
-                        if (!url.startsWith("file:"))
-                            url = "file:///" + url;
-                        Qt.openUrlExternally(url);
+                SecondaryButton {
+                    visible: root._canSendToCli
+                    accent: true
+                    text: qsTr("Send to Command Line Client")
+                    onClicked: {
+                        root.close();
+                        root.sendToCliRequested(root.encryptedFilePath);
                     }
-                    root.close();
+                }
+
+                PrimaryButton {
+                    text: qsTr("Open File Save Directory")
+                    onClicked: {
+                        var p = root.encryptOutputDir;
+                        if (p) {
+                            var url = p.replace(/\\/g, "/");
+                            if (!url.startsWith("file:"))
+                                url = "file:///" + url;
+                            Qt.openUrlExternally(url);
+                        }
+                        root.close();
+                    }
                 }
             }
         }
