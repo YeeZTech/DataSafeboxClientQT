@@ -777,6 +777,8 @@ QVariantMap DsccBridge::instanceInfoToVariant(const dscc::InstanceInfo &info) co
     map.insert(QStringLiteral("instanceStatus"), info.instance_status);
     map.insert(QStringLiteral("syncStatus"), info.sync_status);
     map.insert(QStringLiteral("createdAt"), timestampToIsoString(info.created_at));
+    // 原始 epoch 毫秒，0 表示永久授权；不走 timestampToIsoString，否则永久与无数据无法区分
+    map.insert(QStringLiteral("expireAt"), quint64(info.expire_at));
     return map;
 }
 
@@ -1275,6 +1277,8 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         const QString createdAtStr = timestampToIsoString(audit.created_at);
         map.insert(QStringLiteral("createdAt"), createdAtStr);
         map.insert(QStringLiteral("applyTime"), createdAtStr);
+        // 原始 epoch 毫秒，0 表示永久授权
+        map.insert(QStringLiteral("expireAt"), quint64(audit.expire_at));
 
         if (applyType == 1)
         {

@@ -17,6 +17,7 @@ BaseDialog {
     property string creator: ""                 // 创建方
     property string instanceName: ""            // 安全域实例名称
     property string appliedTime: ""             // 申请时间
+    property var expireAt: undefined            // 授权到期时间（epoch 毫秒，0 表示永久）
     property string duration: ""                // 实例申请时长
     property string cost: ""                    // 实例费用
     property string appName: ""                 // 应用名称 label
@@ -212,6 +213,30 @@ BaseDialog {
                         font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                         elide: Text.ElideRight
+                    }
+                }
+            }
+
+            // Row 4: 申请授权有效期至
+            Row {
+                width: parent.width
+                spacing: 16
+
+                Column {
+                    width: (parent.width - 16) / 2
+                    spacing: 4
+
+                    SelectableText {
+                        text: qsTr("Authorized Until")
+                        font.pixelSize: Theme.Typography.body
+                        color: Theme.Colors.textCaption
+                        width: parent.width
+                    }
+
+                    SelectableText {
+                        text: Theme.Utils.formatExpiry(root.expireAt)
+                        font.pixelSize: Theme.Typography.h3
+                        color: "#000000"
                     }
                 }
             }

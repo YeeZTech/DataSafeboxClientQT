@@ -71,6 +71,9 @@ Item {
         var status = instance.status || "";
         if (status === "待审核" || status === "已拒绝")
             return "-";
+        // 后端下发的绝对到期时间优先于按 createdAt + duration 的推算
+        if (instance.expireAt !== undefined)
+            return Theme.Utils.formatExpiry(instance.expireAt);
         var expiryDate = DateTimeUtils.resolveExpiryDate(instance);
         if (!expiryDate)
             return "-";

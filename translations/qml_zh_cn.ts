@@ -110,6 +110,10 @@
         <translation>应用名称</translation>
     </message>
     <message>
+        <source>Authorized Until</source>
+        <translation>申请授权有效期至</translation>
+    </message>
+    <message>
         <location line="+20"/>
         <source>App Whitelist Dependency Files</source>
         <translation>应用白名单依赖文件</translation>
@@ -1041,6 +1045,10 @@
         <location line="+24"/>
         <source>Application Time</source>
         <translation>申请时间</translation>
+    </message>
+    <message>
+        <source>Authorized Until</source>
+        <translation>申请授权有效期至</translation>
     </message>
     <message>
         <location line="+26"/>
@@ -2873,6 +2881,14 @@ Location: %1</source>
         <location line="+5"/>
         <source>OK</source>
         <translation>确定</translation>
+    </message>
+</context>
+<context>
+    <name>Utils</name>
+    <message>
+        <location filename="../qml/Theme/Utils.qml" line="+138"/>
+        <source>Permanent</source>
+        <translation>永久</translation>
     </message>
 </context>
 </TS>

@@ -118,6 +118,29 @@ QtObject {
     }
 
     /**
+     * Format an authorization deadline coming from DSCC (epoch milliseconds).
+     *
+     * DSCC reports 0 for a permanent authorization, so a missing value and a
+     * permanent one must render differently.
+     *
+     * @param value - Epoch milliseconds, or undefined when not reported
+     * @returns Formatted string "YYYY-MM-DD HH:mm", "永久", or "-"
+     */
+    function formatExpiry(value) {
+        if (value === undefined || value === null || value === "") {
+            return "-";
+        }
+        var ms = Number(value);
+        if (!isFinite(ms)) {
+            return "-";
+        }
+        if (ms <= 0) {
+            return qsTr("Permanent");
+        }
+        return formatDateTime(ms);
+    }
+
+    /**
      * Compute display width of string, accounting for CJK characters.
      *
      * CJK (Chinese, Japanese, Korean) and full-width characters count as 2 units,

@@ -16,6 +16,7 @@ BaseDialog {
     property string creator: ""
     property string instanceSize: ""
     property string appliedTime: ""
+    property var expireAt: undefined  // 授权到期时间（epoch 毫秒，0 表示永久）
     property string instanceRemainingDays: ""
     property string instanceCost: ""  // Instance cost
     property var whitelistApps: []  // Whitelist applications array
@@ -218,13 +219,13 @@ BaseDialog {
                 }
             }
 
-            // Row 3: Applied Time
+            // Row 3: Applied Time and Authorization Expiry
             Row {
                 width: parent.width
-                spacing: 0
+                spacing: fieldsContainer.twoColumnGap
 
                 Column {
-                    width: parent.width
+                    width: fieldsContainer.leftColumnWidth
                     spacing: 4
 
                     SelectableText {
@@ -235,6 +236,24 @@ BaseDialog {
 
                     SelectableText {
                         text: Theme.Utils.formatDateTime(root.appliedTime)
+                        font.pixelSize: Theme.Typography.h3
+                        color: "#000000"
+                    }
+                }
+
+                Column {
+                    width: fieldsContainer.rightColumnWidth
+                    spacing: 4
+
+                    SelectableText {
+                        text: qsTr("Authorized Until")
+                        font.pixelSize: Theme.Typography.body
+                        color: Theme.Colors.textCaption
+                        width: parent.width
+                    }
+
+                    SelectableText {
+                        text: Theme.Utils.formatExpiry(root.expireAt)
                         font.pixelSize: Theme.Typography.h3
                         color: "#000000"
                     }

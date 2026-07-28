@@ -689,6 +689,7 @@ Item {
                     var rawSizeBytes = Theme.Utils.normalizeVolumeToBytes(instanceData.volumnSize !== undefined ? instanceData.volumnSize : instanceData.size);
                     instanceDetailDialog.instanceSize = Theme.Utils.formatSize(rawSizeBytes);
                     instanceDetailDialog.appliedTime = Theme.Utils.formatDateTime(instanceData.createdAt || instanceData.appliedTime);
+                    instanceDetailDialog.expireAt = instanceData.expireAt;
                     instanceDetailDialog.instanceRemainingDays = formatRemainingDays(instanceData);
                     instanceDetailDialog.instanceCost = instanceData.cost || "15,500";
                     instanceDetailDialog.whitelistApps = [];
@@ -705,6 +706,7 @@ Item {
                     appWhitelistDetailDialog.creator = auditData.applicantUserName || auditData.applicant || "";
                     appWhitelistDetailDialog.instanceName = auditData.instanceName || "";
                     appWhitelistDetailDialog.appliedTime = Theme.Utils.formatDateTime(auditData.applyTime || "");
+                    appWhitelistDetailDialog.expireAt = auditData.expireAt;
                     appWhitelistDetailDialog.duration = auditData.duration ? (auditData.duration + qsTr(" months")) : "-";
                     appWhitelistDetailDialog.cost = auditData.cost || "";
                     var whlProcs = DomainUtils.resolveWhitelistProcessesByRow(auditData);
