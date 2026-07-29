@@ -7,17 +7,14 @@ import DataSafebox.Components 1.0
 //
 // 弹窗打开即向信令服务申请一个 6 位取件码并开始等待对端；用户把码告诉对方，
 // 对方执行 `dv transfer recv <码>` 后开始点对点直传。传输过程中禁止关闭弹窗，
-// 因为关闭意味着中止传输。
+// 因为关闭意味着中止传输；取消改由进度卡片右上角的中止按钮发起。
 BaseDialog {
     id: root
-    dialogWidth: 480
-    title: qsTr("Send to Command Line Client")
+    dialogWidth: 448
+    title: qsTr("File Transfer")
 
-    // 传输进行中不允许误关；用户要中止得走"取消传输"按钮。
     closePolicy: root._active ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
     showCloseButton: !root._active
-
-    // 关闭动作统一在 onClosed 里收尾（BaseDialog 的关闭按钮自己会调 close()）。
 
     property string filePath: ""
     property string fileName: {
@@ -29,17 +26,89 @@ BaseDialog {
     }
 
     property string _roomCode: ""
-    property string _stageText: ""
     property string _errorText: ""
-    property int _progress: 0
     property bool _active: false
     property bool _done: false
 
+    // 原始字节数，用于文件大小展示和速度/剩余时间的客户端侧估算（SDK 只给
+    // processed/total，不给速度）。失败时保留最后一次进度，不清零。
+    property real _processedBytes: 0
+    property real _totalBytes: 0
+    property real _speedBps: 0
+    property real _lastProcessed: -1
+    property real _lastTimestamp: 0
+
+    readonly property int _progressPercent: root._totalBytes > 0 ? Math.round(root._processedBytes / root._totalBytes * 100) : 0
+
+    // 待接收/传输中/传输完成/传输中断 四态；SDK 没有"对方拒绝"这个协议概念
+    // （接收方是跑 CLI 命令，没有拒绝入口），所以失败一律归为"传输中断"。
+    readonly property string _badgeState: {
+        if (root._errorText !== "")
+            return "interrupted";
+        if (root._done)
+            return "succeeded";
+        if (root._processedBytes > 0)
+            return "transferring";
+        return "awaiting";
+    }
+
+    readonly property color _badgeColor: {
+        switch (root._badgeState) {
+        case "transferring":
+            return "#1447e6";
+        case "succeeded":
+            return "#008236";
+        case "interrupted":
+            return "#c10007";
+        default:
+            return "#e5a609";
+        }
+    }
+
+    readonly property color _badgeDotColor: root._badgeState === "succeeded" ? "#00c950" : root._badgeColor
+
+    readonly property string _badgeLabel: {
+        switch (root._badgeState) {
+        case "transferring":
+            return qsTr("Transferring");
+        case "succeeded":
+            return qsTr("Transfer Complete");
+        case "interrupted":
+            return qsTr("Transfer Interrupted");
+        default:
+            return qsTr("Awaiting Receipt");
+        }
+    }
+
+    // 进度百分比文字始终在进度条中点；条从左往右填充，一旦过半就会盖住文字，
+    // 此时需要换成白色才看得清。
+    readonly property bool _progressTextOnFill: root._progressPercent >= 50
+
+    readonly property string _remainingText: {
+        if (root._done)
+            return "00:00";
+        if (root._badgeState !== "transferring" || root._speedBps <= 0)
+            return "--";
+        var seconds = Math.round((root._totalBytes - root._processedBytes) / root._speedBps);
+        var m = Math.floor(seconds / 60);
+        var s = seconds % 60;
+        return (m < 10 ? "0" + m : "" + m) + ":" + (s < 10 ? "0" + s : "" + s);
+    }
+
+    readonly property string _speedText: {
+        if (root._badgeState !== "transferring" || root._speedBps <= 0)
+            return "--";
+        return (root._speedBps / (1024 * 1024)).toFixed(1) + " MB/s";
+    }
+
     onOpened: {
         root._roomCode = "";
-        root._stageText = "";
         root._errorText = "";
-        root._progress = 0;
+        root._processedBytes = 0;
+        root._totalBytes = 0;
+        root._speedBps = 0;
+        root._lastProcessed = -1;
+        root._lastTimestamp = 0;
         root._done = false;
         root._active = true;
         FileTransferBridge.sendFile(root.filePath);
@@ -52,6 +121,12 @@ BaseDialog {
         root._active = false;
     }
 
+    function copyToClipboard(text) {
+        codeClipboard.text = text;
+        codeClipboard.selectAll();
+        codeClipboard.copy();
+    }
+
     Connections {
         target: FileTransferBridge
 
@@ -59,21 +134,27 @@ BaseDialog {
             root._roomCode = roomCode;
         }
 
-        function onStageChanged(stageText) {
-            root._stageText = stageText;
-        }
-
         function onTransferProgress(processedBytes, totalBytes) {
-            if (totalBytes > 0)
-                root._progress = Math.round(Math.max(0, Math.min(1, processedBytes / totalBytes)) * 100);
+            var now = Date.now();
+            if (root._lastTimestamp > 0 && processedBytes > root._lastProcessed) {
+                var deltaSeconds = (now - root._lastTimestamp) / 1000;
+                if (deltaSeconds > 0) {
+                    var instantSpeed = (processedBytes - root._lastProcessed) / deltaSeconds;
+                    root._speedBps = root._speedBps > 0 ? (root._speedBps * 0.7 + instantSpeed * 0.3) : instantSpeed;
+                }
+            }
+            root._lastProcessed = processedBytes;
+            root._lastTimestamp = now;
+            root._processedBytes = processedBytes;
+            root._totalBytes = totalBytes;
         }
 
         // 参数刻意不叫 filePath，避免遮蔽同名的 root.filePath。
         function onTransferSucceeded(sentPath, totalBytes) {
             root._active = false;
             root._done = true;
-            root._progress = 100;
-            root._stageText = qsTr("Transfer complete");
+            root._totalBytes = totalBytes;
+            root._processedBytes = totalBytes;
         }
 
         function onTransferFailed(message) {
@@ -94,106 +175,259 @@ BaseDialog {
         width: parent.width
         spacing: 16
 
-        Text {
+        // ---- 取件码标签 + 状态徽标 ----
+        Item {
             width: parent.width
-            text: qsTr("File: %1").arg(root.fileName)
-            font.pixelSize: Theme.Typography.body
-            color: Theme.Colors.textHeading
-            elide: Text.ElideMiddle
-        }
-
-        // ---- 取件码 ----
-        Rectangle {
-            width: parent.width
-            height: 96
-            radius: 8
-            color: "#f1f5f9"
-            border.color: Qt.rgba(0, 0, 0, 0.08)
-            border.width: 1
-
-            Column {
-                anchors.centerIn: parent
-                spacing: 6
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: qsTr("Pickup Code")
-                    font.pixelSize: Theme.Typography.caption
-                    color: "#45556c"
-                }
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: root._roomCode !== "" ? root._roomCode : "······"
-                    font.pixelSize: 32
-                    font.weight: Font.Bold
-                    font.letterSpacing: 6
-                    font.family: "monospace"
-                    color: root._roomCode !== "" ? Theme.Colors.textHeading : "#94a3b8"
-                }
-            }
-
-            LinkText {
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 10
-                visible: root._roomCode !== ""
-                text: qsTr("Copy")
-                onClicked: {
-                    codeClipboard.text = root._roomCode;
-                    codeClipboard.selectAll();
-                    codeClipboard.copy();
-                }
-            }
-        }
-
-        Text {
-            width: parent.width
-            text: qsTr("On the target machine, run: dv transfer recv %1").arg(root._roomCode !== "" ? root._roomCode : "<code>")
-            font.pixelSize: Theme.Typography.caption
-            color: "#45556c"
-            wrapMode: Text.WrapAnywhere
-        }
-
-        Text {
-            width: parent.width
-            text: qsTr("The pickup code is valid for 1 hour and can only be used once. File contents are transferred peer-to-peer and never pass through the server.")
-            font.pixelSize: Theme.Typography.caption
-            color: "#64748b"
-            wrapMode: Text.WordWrap
-        }
-
-        // ---- 进度 ----
-        Column {
-            width: parent.width
-            spacing: 6
-            visible: root._errorText === ""
+            height: 20
 
             Text {
-                text: root._done ? qsTr("Transfer complete") : root._stageText
-                font.pixelSize: Theme.Typography.caption
-                color: "#45556c"
-                visible: text !== ""
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Pickup Code (valid for 1 hour)")
+                font.pixelSize: Theme.Typography.body
+                color: Theme.Colors.textCaption
             }
 
-            Rectangle {
-                width: parent.width
-                height: 6
-                radius: 3
-                color: "#e2e8f0"
-                visible: root._progress > 0 || root._done
+            Row {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 4
 
                 Rectangle {
-                    width: parent.width * (root._progress / 100)
-                    height: parent.height
-                    radius: parent.radius
-                    color: root._done ? "#16a34a" : Theme.Colors.textHeading
+                    visible: root._badgeState !== "interrupted"
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 8
+                    height: 8
+                    radius: 4
+                    color: root._badgeDotColor
+                }
 
-                    Behavior on width {
-                        NumberAnimation {
-                            duration: 120
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: (root._badgeState === "interrupted" ? "× " : "") + root._badgeLabel
+                    font.pixelSize: 12
+                    font.weight: Font.Medium
+                    color: root._badgeColor
+                }
+            }
+        }
+
+        // ---- 取件码格子 ----
+        Item {
+            width: parent.width
+            height: 48
+
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Repeater {
+                    model: 6
+
+                    delegate: Item {
+                        width: 50
+                        height: 48
+
+                        Rectangle {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            height: 2
+                            color: Theme.Colors.primary
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: root._roomCode.length > index ? root._roomCode.charAt(index) : ""
+                            font.pixelSize: 24
+                            font.weight: Font.ExtraBold
+                            color: "#1d1d1d"
                         }
                     }
+                }
+            }
+
+            Image {
+                id: copyCodeIcon
+                anchors.left: parent.horizontalCenter
+                anchors.leftMargin: 158
+                anchors.verticalCenter: parent.verticalCenter
+                width: 16
+                height: 16
+                source: "qrc:/icons/icon-copy.svg"
+                fillMode: Image.PreserveAspectFit
+                opacity: copyCodeArea.containsMouse ? 0.7 : 1.0
+
+                MouseArea {
+                    id: copyCodeArea
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.copyToClipboard(root._roomCode)
+                }
+            }
+        }
+
+        // ---- 说明文案 ----
+        Text {
+            width: parent.width
+            textFormat: Text.RichText
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+            text: qsTr("The recipient needs to run the following command in the %1 to complete the file transfer.").arg("<span style='color:#0f4c81;font-weight:600;text-decoration:underline;'>" + qsTr("Security Domain Instance") + "</span>")
+            font.pixelSize: Theme.Typography.small
+            color: Theme.Colors.textCaption
+        }
+
+        // ---- 命令行 ----
+        Rectangle {
+            width: parent.width
+            height: 28
+            radius: 8
+            color: "#38424f"
+
+            Text {
+                anchors.left: parent.left
+                anchors.leftMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                textFormat: Text.RichText
+                font.pixelSize: 12
+                text: "<span style='color:#9da8b8;'>1&#160;&#160;&#160;</span><span style='color:#f5bd0c;'>dv</span><span style='color:#9da8b8;'>&#160;</span><span style='color:#00c950;'>transfer</span><span style='color:#9da8b8;'>&#160;recv " + root._roomCode + "</span>"
+            }
+
+            Image {
+                anchors.right: parent.right
+                anchors.rightMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                width: 16
+                height: 16
+                source: "qrc:/icons/icon-copy-white.svg"
+                fillMode: Image.PreserveAspectFit
+                opacity: copyCmdArea.containsMouse ? 1.0 : 0.8
+
+                MouseArea {
+                    id: copyCmdArea
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.copyToClipboard("dv transfer recv " + root._roomCode)
+                }
+            }
+        }
+
+        // ---- 文件进度卡片 ----
+        Rectangle {
+            width: parent.width
+            height: 82
+            radius: 10
+            color: "#ffffff"
+            border.color: "#d9d9d9"
+            border.width: 1
+
+            Item {
+                anchors.fill: parent
+                anchors.margins: 14
+
+                Text {
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    text: root.fileName
+                    font.pixelSize: 13
+                    font.weight: Font.Medium
+                    color: "#485468"
+                    elide: Text.ElideMiddle
+                    width: parent.width * 0.6
+                }
+
+                Text {
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    text: (root._processedBytes > 0 ? Theme.Utils.formatSize(root._processedBytes) : "--") + " / " + (root._totalBytes > 0 ? Theme.Utils.formatSize(root._totalBytes) : "--")
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
+                    color: "#485468"
+                }
+
+                Rectangle {
+                    id: progressTrack
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.topMargin: 25
+                    height: 9
+                    radius: height / 2
+                    color: "#d9d9d9"
+
+                    Rectangle {
+                        width: parent.width * (root._progressPercent / 100)
+                        height: parent.height
+                        radius: parent.radius
+                        color: Theme.Colors.primary
+
+                        Behavior on width {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: root._progressPercent + "%"
+                        font.pixelSize: 11
+                        font.weight: Font.DemiBold
+                        color: root._progressTextOnFill ? "#ffffff" : "#485468"
+                    }
+                }
+
+                Text {
+                    anchors.left: parent.left
+                    anchors.top: progressTrack.bottom
+                    anchors.topMargin: 3
+                    text: qsTr("Remaining %1").arg(root._remainingText)
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
+                    color: "#485468"
+                }
+
+                Text {
+                    anchors.right: parent.right
+                    anchors.top: progressTrack.bottom
+                    anchors.topMargin: 3
+                    text: qsTr("Download Speed %1").arg(root._speedText)
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
+                    color: "#485468"
+                }
+            }
+
+            // 中止入口：只在真的有传输可中止时露出（传输中）。
+            Rectangle {
+                visible: root._badgeState === "transferring"
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: 8
+                width: 16
+                height: 16
+                radius: 8
+                color: "transparent"
+                border.color: "#c10007"
+                border.width: 1
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "×"
+                    font.pixelSize: 11
+                    color: "#c10007"
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -4
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: FileTransferBridge.cancel()
                 }
             }
         }
@@ -205,28 +439,6 @@ BaseDialog {
             font.pixelSize: Theme.Typography.caption
             color: "#dc2626"
             wrapMode: Text.WordWrap
-        }
-
-        Row {
-            anchors.right: parent.right
-            spacing: 8
-            topPadding: 4
-
-            SecondaryButton {
-                visible: root._active
-                accent: true
-                text: qsTr("Cancel Transfer")
-                onClicked: {
-                    FileTransferBridge.cancel();
-                    root._active = false;
-                }
-            }
-
-            PrimaryButton {
-                visible: !root._active
-                text: qsTr("Close")
-                onClicked: root.close()
-            }
         }
     }
 }

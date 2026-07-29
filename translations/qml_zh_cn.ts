@@ -2590,40 +2590,44 @@ Location: %1</source>
 <context>
     <name>SendToCliDialog</name>
     <message>
-        <source>Send to Command Line Client</source>
-        <translation>发送到命令行客户端</translation>
+        <source>File Transfer</source>
+        <translation>文件传输</translation>
     </message>
     <message>
-        <source>File: %1</source>
-        <translation>文件：%1</translation>
+        <source>Pickup Code (valid for 1 hour)</source>
+        <translation>取件码（1小时内有效）</translation>
     </message>
     <message>
-        <source>Pickup Code</source>
-        <translation>取件码</translation>
+        <source>Awaiting Receipt</source>
+        <translation>待接收</translation>
     </message>
     <message>
-        <source>Copy</source>
-        <translation>复制</translation>
+        <source>Transferring</source>
+        <translation>传输中</translation>
     </message>
     <message>
-        <source>On the target machine, run: dv transfer recv %1</source>
-        <translation>在目标机器上执行：dv transfer recv %1</translation>
-    </message>
-    <message>
-        <source>The pickup code is valid for 1 hour and can only be used once. File contents are transferred peer-to-peer and never pass through the server.</source>
-        <translation>取件码 1 小时内有效，且只能使用一次。文件内容点对点直传，不经过服务器。</translation>
-    </message>
-    <message>
-        <source>Transfer complete</source>
+        <source>Transfer Complete</source>
         <translation>传输完成</translation>
     </message>
     <message>
-        <source>Cancel Transfer</source>
-        <translation>取消传输</translation>
+        <source>Transfer Interrupted</source>
+        <translation>传输中断</translation>
     </message>
     <message>
-        <source>Close</source>
-        <translation>关闭</translation>
+        <source>Security Domain Instance</source>
+        <translation>安全域实例</translation>
+    </message>
+    <message>
+        <source>The recipient needs to run the following command in the %1 to complete the file transfer.</source>
+        <translation>接收方需在%1执行下述命令完成文件接收</translation>
+    </message>
+    <message>
+        <source>Remaining %1</source>
+        <translation>预计剩余 %1</translation>
+    </message>
+    <message>
+        <source>Download Speed %1</source>
+        <translation>下载速度 %1</translation>
     </message>
 </context>
 <context>

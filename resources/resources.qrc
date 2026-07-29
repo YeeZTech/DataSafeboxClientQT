@@ -127,5 +127,7 @@
         <file alias="icons/icon-customer-service-white.svg">../icons/icon-customer-service-white.svg</file>
         <file alias="icons/icon-file-generic.svg">../icons/icon-file-generic.svg</file>
         <file alias="icons/icon-empty-state.svg">../icons/icon-empty-state.svg</file>
+        <file alias="icons/icon-copy.svg">../icons/icon-copy.svg</file>
+        <file alias="icons/icon-copy-white.svg">../icons/icon-copy-white.svg</file>
     </qresource>
 </RCC>
