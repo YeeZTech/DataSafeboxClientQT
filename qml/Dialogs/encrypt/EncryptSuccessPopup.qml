@@ -8,8 +8,8 @@ BaseDialog {
     title: qsTr("Encryption Successful")
 
     property string encryptOutputDir: ""
-    // 本轮加密产出的 .sealed 路径。非空且信令服务已配置时，才提供"发送到命令行
-    // 客户端"入口 —— 一次只发一个文件，取最后一个产物。
+    // 本轮加密产出的 .sealed 路径。非空且信令服务已配置时，才提供"传输文件"
+    // 入口 —— 一次只发一个文件，取最后一个产物。
     property string encryptedFilePath: ""
 
     // 用户选择把加密文件直接传给命令行客户端，由宿主页面打开发送弹窗。
@@ -53,8 +53,8 @@ BaseDialog {
         Text {
             width: parent.width
             text: qsTr("File encryption successful! You can send the encrypted file to the recipient. After importing it into their security domain instance, they will be able to use it normally.")
-            font.pixelSize: Theme.Typography.body
-            color: "#45556c"
+            font.pixelSize: Theme.Typography.small
+            color: Theme.Colors.textLabel
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
         }
@@ -76,16 +76,7 @@ BaseDialog {
                 spacing: 8
 
                 SecondaryButton {
-                    visible: root._canSendToCli
                     accent: true
-                    text: qsTr("Send to Command Line Client")
-                    onClicked: {
-                        root.close();
-                        root.sendToCliRequested(root.encryptedFilePath);
-                    }
-                }
-
-                PrimaryButton {
                     text: qsTr("Open File Save Directory")
                     onClicked: {
                         var p = root.encryptOutputDir;
@@ -96,6 +87,15 @@ BaseDialog {
                             Qt.openUrlExternally(url);
                         }
                         root.close();
+                    }
+                }
+
+                PrimaryButton {
+                    visible: root._canSendToCli
+                    text: qsTr("Transfer File")
+                    onClicked: {
+                        root.close();
+                        root.sendToCliRequested(root.encryptedFilePath);
                     }
                 }
             }

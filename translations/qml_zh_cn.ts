@@ -2583,8 +2583,8 @@ Location: %1</source>
         <translation>打开文件保存目录</translation>
     </message>
     <message>
-        <source>Send to Command Line Client</source>
-        <translation>发送到命令行客户端</translation>
+        <source>Transfer File</source>
+        <translation>传输文件</translation>
     </message>
 </context>
 <context>

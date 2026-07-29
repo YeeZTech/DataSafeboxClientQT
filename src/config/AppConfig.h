@@ -57,7 +57,7 @@ inline constexpr ServerProfile PROD_PROFILE = {
     "https://dsbox.dianshudata.com/wallet",
     "https://dianshudata.com/userCenter/userInfo",
     "https://kms.dianshudata.com",
-    "", // transferSignalUrl：正式环境的信令服务部署后填入
+    "https://file-transfer.dianshudata.com",
 };
 
 inline constexpr ServerProfile TEST_PROFILE = {
@@ -72,7 +72,7 @@ inline constexpr ServerProfile TEST_PROFILE = {
     "https://test-dsbox.dianshudata.com/wallet",
     "https://test.dianshudata.com/userCenter/userInfo",
     "https://test-kms.dianshudata.com",
-    "", // transferSignalUrl：测试环境的信令服务部署后填入
+    "https://file-transfer.dianshudata.com",
 };
 
 // ── 共享配置（与环境无关）──────────────────────────────────
