@@ -181,6 +181,7 @@ BaseDialog {
             height: 20
 
             Text {
+                id: pickupCodeLabel
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
                 text: qsTr("Pickup Code (valid for 1 hour)")
@@ -189,7 +190,8 @@ BaseDialog {
             }
 
             Row {
-                anchors.right: parent.right
+                anchors.left: pickupCodeLabel.right
+                anchors.leftMargin: 8
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 4
 
@@ -204,7 +206,7 @@ BaseDialog {
 
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: (root._badgeState === "interrupted" ? "× " : "") + root._badgeLabel
+                    text: (root._badgeState === "interrupted" ? "X " : "") + root._badgeLabel
                     font.pixelSize: 12
                     font.weight: Font.Medium
                     color: root._badgeColor
@@ -326,8 +328,13 @@ BaseDialog {
             border.width: 1
 
             Item {
-                anchors.fill: parent
-                anchors.margins: 14
+                anchors.left: parent.left
+                anchors.leftMargin: 16
+                anchors.right: parent.right
+                anchors.rightMargin: 15
+                anchors.top: parent.top
+                anchors.topMargin: 10
+                height: 66
 
                 Text {
                     anchors.left: parent.left
@@ -353,6 +360,7 @@ BaseDialog {
                     id: progressTrack
                     anchors.left: parent.left
                     anchors.right: parent.right
+                    anchors.rightMargin: 28
                     anchors.top: parent.top
                     anchors.topMargin: 25
                     height: 9
@@ -403,25 +411,16 @@ BaseDialog {
             }
 
             // 中止入口：只在真的有传输可中止时露出（传输中）。
-            Rectangle {
+            Image {
                 visible: root._badgeState === "transferring"
                 anchors.right: parent.right
+                anchors.rightMargin: 15
                 anchors.top: parent.top
-                anchors.margins: 8
-                width: 16
-                height: 16
-                radius: 8
-                color: "transparent"
-                border.color: "#c10007"
-                border.width: 1
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "×"
-                    font.pixelSize: 11
-                    color: "#c10007"
-                }
-
+                anchors.topMargin: 32
+                width: 15
+                height: 15
+                source: "qrc:/icons/icon-transfer-cancel.svg"
+                fillMode: Image.PreserveAspectFit
                 MouseArea {
                     anchors.fill: parent
                     anchors.margins: -4

@@ -129,5 +129,6 @@
         <file alias="icons/icon-empty-state.svg">../icons/icon-empty-state.svg</file>
         <file alias="icons/icon-copy.svg">../icons/icon-copy.svg</file>
         <file alias="icons/icon-copy-white.svg">../icons/icon-copy-white.svg</file>
+        <file alias="icons/icon-transfer-cancel.svg">../icons/icon-transfer-cancel.svg</file>
     </qresource>
 </RCC>
