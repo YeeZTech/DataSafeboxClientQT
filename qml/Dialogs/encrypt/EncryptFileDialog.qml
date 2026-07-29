@@ -148,6 +148,9 @@ BaseDialog {
             return;
         root._encryptProgressDismissed = true;
         root._resultMessage = "";
+        // UI 是单文件选择器（只显示最后一次选择，没有列表/移除入口），
+        // 重新选择应丢弃上一次的选择，而不是累加进队列一起加密。
+        pathListModel.clear();
         var duplicates = [];
         for (var i = 0; i < paths.length; i++) {
             var p = paths[i];
