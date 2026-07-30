@@ -301,6 +301,10 @@
         <source>Ended</source>
         <translation>已结束</translation>
     </message>
+    <message>
+        <source>Expired</source>
+        <translation>已过期</translation>
+    </message>
 </context>
 <context>
     <name>CustomerServiceDialog</name>
