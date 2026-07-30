@@ -33,6 +33,7 @@ function normalizeInstanceStatus(statusValue) {
     if (statusText === "2") return "已拒绝"
     if (statusText === "3") return "运行中"
     if (statusText === "4") return "已结束"
+    if (statusText === "6") return "已过期"
     return statusText
 }
 

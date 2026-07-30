@@ -63,15 +63,32 @@ Component.prototype.createOperations = function() {
         // its QtWebEngineProcess helper keeps e.g. resources/icudtl.dat
         // memory-mapped) or carry a read-only attribute; either aborts
         // extraction with "Can't unlink already-existing object: Permission
-        // denied". Stop processes running from the target dir and clear
-        // attributes before the archives are extracted.
+        // denied". A fixed sleep after Stop-Process is a guess and does not
+        // cover a lock held by something outside the target dir (antivirus
+        // real-time scan, indexer, etc.), so this actually waits for our own
+        // processes to exit and then verifies every existing file can be
+        // opened exclusively before the archives are extracted, retrying
+        // for a few seconds if something still holds a handle.
         var unlockScript =
             "$targetDir = " + psLiteral(toWindowsPath(targetDirRaw)) + "; " +
             "try { " +
             "  if (Test-Path $targetDir) { " +
-            "    Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith(($targetDir.TrimEnd('\\') + '\\'), [StringComparison]::OrdinalIgnoreCase) } | Stop-Process -Force -ErrorAction SilentlyContinue; " +
-            "    Start-Sleep -Milliseconds 800; " +
-            "    attrib.exe -R ($targetDir.TrimEnd('\\') + '\\*') /S /D; " +
+            "    $prefix = $targetDir.TrimEnd('\\') + '\\'; " +
+            "    $procs = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase) }; " +
+            "    if ($procs) { " +
+            "      $procs | Stop-Process -Force -ErrorAction SilentlyContinue; " +
+            "      foreach ($p in $procs) { try { if (-not $p.HasExited) { $p.WaitForExit(5000) | Out-Null } } catch {} } " +
+            "    } " +
+            "    attrib.exe -R ($prefix + '*') /S /D; " +
+            "    $deadline = (Get-Date).AddSeconds(6); " +
+            "    do { " +
+            "      $locked = $false; " +
+            "      Get-ChildItem -Path $targetDir -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object { " +
+            "        try { ([System.IO.File]::Open($_.FullName, 'Open', 'ReadWrite', 'None')).Close() } catch { $locked = $true } " +
+            "      }; " +
+            "      if (-not $locked) { break }; " +
+            "      Start-Sleep -Milliseconds 300; " +
+            "    } while ((Get-Date) -lt $deadline); " +
             "  } " +
             "} catch {}; exit 0";
 
