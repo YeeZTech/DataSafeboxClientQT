@@ -1267,6 +1267,9 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         case 2:
             statusText = QStringLiteral("已拒绝");
             break;
+        case 3:
+            statusText = QStringLiteral("已过期");
+            break;
         default:
             statusText = QString::number(audit.status);
             break;
