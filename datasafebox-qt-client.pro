@@ -51,20 +51,22 @@ TARGET = DataSafebox
 
 # Application version — Single Source of Truth
 # Change this value to update all installer XML files and the C++ APP_VERSION macro.
-VERSION = 1.1.0
+VERSION = 1.1.2
 
 # Inject into C++ code
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
-# Sync version to installer XML files at qmake time
+# Sync version and release date to installer XML files at qmake time
 CONFIG_XML = $$PWD/installer/config/config.xml
 PKG_XML    = $$PWD/installer/packages/com.datasafebox.client/meta/package.xml
 win32 {
-    DUMMY = $$system("powershell -NoProfile -Command \"$e=New-Object Text.UTF8Encoding($false); foreach($p in @('$$CONFIG_XML','$$PKG_XML')){$c=[IO.File]::ReadAllText($p,$e); $c=$c -replace '<Version>[^<]*</Version>','<Version>$$VERSION</Version>'; [IO.File]::WriteAllText($p,$c,$e)}\"")
+    RELEASE_DATE = $$system("powershell -NoProfile -Command \"(Get-Date).ToString('yyyy-MM-dd')\"")
+    DUMMY = $$system("powershell -NoProfile -Command \"$e=New-Object Text.UTF8Encoding($false); foreach($p in @('$$CONFIG_XML','$$PKG_XML')){$c=[IO.File]::ReadAllText($p,$e); $c=$c -replace '<Version>[^<]*</Version>','<Version>$$VERSION</Version>' -replace '<ReleaseDate>[^<]*</ReleaseDate>','<ReleaseDate>$$RELEASE_DATE</ReleaseDate>'; [IO.File]::WriteAllText($p,$c,$e)}\"")
 } else {
-    DUMMY = $$system("perl -i -pe 's|<Version>[^<]*</Version>|<Version>$$VERSION</Version>|' '$$CONFIG_XML' '$$PKG_XML'")
+    RELEASE_DATE = $$system(date +%Y-%m-%d)
+    DUMMY = $$system("perl -i -pe 's|<Version>[^<]*</Version>|<Version>$$VERSION</Version>|; s|<ReleaseDate>[^<]*</ReleaseDate>|<ReleaseDate>$$RELEASE_DATE</ReleaseDate>|' '$$CONFIG_XML' '$$PKG_XML'")
 }
-message("Building version: $$VERSION")
+message("Building version: $$VERSION ($$RELEASE_DATE)")
 
 # The following defines are for the application itself.
 SOURCES += \
