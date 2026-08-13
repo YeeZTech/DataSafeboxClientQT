@@ -20,6 +20,7 @@ QtObject {
     readonly property string statusAuthorized: "已授权"
     readonly property string statusRejected: "已拒绝"
     readonly property string statusEnded: "已结束"
+    readonly property string statusPaused: "已暂停"
     readonly property string statusExpired: "已过期"
 
     // Status colors
@@ -79,6 +80,12 @@ QtObject {
                 dot: "#D4183D"
             },
             "已结束": {
+                bg: "#f1f5f9",
+                border: "#e2e8f0",
+                text: "#314158",
+                dot: "#90A1B9"
+            },
+            "已暂停": {
                 bg: "#f1f5f9",
                 border: "#e2e8f0",
                 text: "#314158",
@@ -188,6 +195,8 @@ QtObject {
             return qsTr("Rejected");
         if (s === "已结束")
             return qsTr("Ended");
+        if (s === "已暂停")
+            return qsTr("Paused");
         if (s === "已过期")
             return qsTr("Expired");
         return s;
