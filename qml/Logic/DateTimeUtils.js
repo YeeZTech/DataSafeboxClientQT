@@ -75,8 +75,21 @@ function sortByTimeDesc(list, primaryField, secondaryField) {
     return source
 }
 
+// 到期时刻：以后端下发的绝对时间 expireAt 为准（epoch 毫秒，0 = 永久授权，
+// 对应 domain_instance.expire_date / instance_apply.expire_date）。
+//
+// 字段名是 expireAt，不是 expiresAt——DsccBridge 从来没下发过后者，所以以前
+// 这里必然一路落到按 createdAt + duration 的推算，而 duration 兜底取的是
+// totalRunTime（累计运行时长），被当成"授权几个月"算出来的到期日毫无意义。
+// createdAt + duration 只留给还没有 expireAt 的旧记录兜底。
 function resolveExpiryDate(instance) {
     if (!instance) return null
+    if (instance.expireAt !== undefined && instance.expireAt !== null) {
+        var ms = Number(instance.expireAt)
+        // 0 = 永久授权：没有到期日，也不该再退回推算。
+        if (isFinite(ms) && ms > 0) return new Date(ms)
+        if (isFinite(ms)) return null
+    }
     if (instance.expiresAt) {
         var d = parseDateTime(instance.expiresAt)
         if (d) return d
@@ -84,11 +97,10 @@ function resolveExpiryDate(instance) {
     return calculateExpiryDate(instance.createdAt, instance.duration)
 }
 
+// 剩余天数；-1 表示无从判断（永久授权或缺数据），由调用方显示成 "-"。
+// 不再用 duration 当准入门槛：有 expireAt 的实例 duration 通常是 0，那道门槛
+// 会把它们一律判成 "-"，真正的授权期限反而永远显示不出来。
 function remainingDays(instance) {
-    var status = instance ? (instance.status || "") : ""
-    var durationMonths = parseDurationMonths(instance ? instance.duration : 0)
-    if (!durationMonths) return -1
-
     var expiryDate = resolveExpiryDate(instance)
     if (!expiryDate || isNaN(expiryDate.getTime())) return -1
 

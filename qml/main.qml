@@ -44,7 +44,11 @@ ApplicationWindow {
     // Arrears / paused state
     property bool isAccountArrears: false
     property bool isAccountPaused: false
-    readonly property string arrearsBillUrl: AppConfig ? AppConfig.apiBaseUrl().replace("api", "wallet") : "https://test-dsbox.dianshudata.com/wallet"
+    // 账单页地址取各环境 profile 里配好的 walletUrl（AppConfig.h），与侧边栏「我的账单」
+    // 同一来源。曾经是 apiBaseUrl().replace("api", "wallet")：正式环境的 API 域名是
+    // dsbox-api.dianshudata.com，替换后得到 dsbox-wallet.dianshudata.com——这个域名不
+    // 存在，点进去只有 DNS 解析失败。
+    readonly property string arrearsBillUrl: AppConfig ? AppConfig.walletUrl() : "https://test-dsbox.dianshudata.com/wallet"
     readonly property string arrearsBillLinkText: qsTr("\"My Bills\"")
     readonly property string arrearsAlertMessage: {
         if (window.isAccountPaused) {
@@ -934,10 +938,11 @@ ApplicationWindow {
         id: errorDialog
         leftPadding: 14
         rightPadding: 14
-        topPadding: 0
-        bottomPadding: 0
-        implicitWidth: Math.min(errorRow.implicitWidth + leftPadding + rightPadding, parent ? parent.width - 48 : 600)
-        implicitHeight: 46
+        topPadding: 12
+        bottomPadding: 12
+        implicitWidth: Math.min(errorRow.implicitWidth + leftPadding + rightPadding, maxWidth)
+        // 短提示仍是原来的单行高度，长提示按换行后的实际行数长高。
+        implicitHeight: Math.max(46, errorRow.implicitHeight + topPadding + bottomPadding)
         x: parent ? sidebarWidth + (parent.width - sidebarWidth - width) / 2 : 0
         y: 24
         modal: false
@@ -945,6 +950,13 @@ ApplicationWindow {
         parent: Overlay.overlay
 
         property string errorMessage: ""
+
+        // 提示条最宽只占到主内容区（不压侧边栏，两侧各留 24）。后端把接口路径和欠费
+        // 原因整句带回来时，单行远放不下：以前文案宽度直接决定 implicitWidth，被这里
+        // 的上限一夹就从右边裁掉，用户只能看到半句话。现在超出上限的部分换行。
+        readonly property real maxWidth: parent ? Math.max(320, parent.width - sidebarWidth - 48) : 600
+        // 文案可用宽度 = 卡片上限 - 左右内边距 - 图标(18) - 图标与文字的间距。
+        readonly property real maxTextWidth: maxWidth - leftPadding - rightPadding - 18 - errorRow.spacing
 
         background: Rectangle {
             color: Theme.Colors.backgroundWhite
@@ -971,13 +983,26 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignVCenter
             }
 
-            // 单行错误描述
+            // 错误描述：放得下就单行，放不下按 maxTextWidth 换行。
+            // 宽度取自 TextMetrics（单行排版宽度）而不是让布局去协商，避免
+            // "宽度取决于高度、高度又取决于宽度" 的绑定回环。
             Label {
+                id: errorLabel
                 Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: Math.min(Math.ceil(errorMetrics.advanceWidth) + 1, errorDialog.maxTextWidth)
                 text: errorDialog.errorMessage
+                // Wrap 而不是 WordWrap：报错里常有 /api/instanceApply/approve 这种
+                // 不含空格的长串，WordWrap 断不开它，仍会溢出。
+                wrapMode: Text.Wrap
                 font.pixelSize: Theme.Typography.caption
                 font.weight: Font.Medium
                 color: Theme.Colors.textHeading
+
+                TextMetrics {
+                    id: errorMetrics
+                    font: errorLabel.font
+                    text: errorDialog.errorMessage
+                }
             }
         }
 
@@ -1365,7 +1390,7 @@ ApplicationWindow {
     PausedReminderDialog {
         id: createDomainPausedReminder
         dataManager: window.dataManager
-        billUrl: AppConfig ? AppConfig.apiBaseUrl().replace("api", "wallet") : "https://test-dsbox.dianshudata.com/wallet"
+        billUrl: window.arrearsBillUrl
     }
 
     // 欠费顶部悬浮提示（登录后如发现欠费/暂停则自动弹出）
@@ -1377,7 +1402,12 @@ ApplicationWindow {
         closePolicy: Popup.NoAutoClose
         padding: 0
 
-        // 宽度跟随内容，居中悬浮于主内容区域
+        // 宽度跟随内容，居中悬浮于主内容区域；最宽不超过主内容区（两侧各留 24），
+        // 超出部分由文案换行承担——中文文案单行放得下，英文同一句要长得多，
+        // 没有上限时整条会顶出内容区被窗口边缘裁掉。
+        readonly property real maxWidth: Math.max(320, mainContentArea.width - 48)
+        // 文案可用宽度 = 卡片上限 - 内容左右留白(32) - 图标(20) - 图标与文字的间距(8)。
+        readonly property real maxTextWidth: maxWidth - 32 - 20 - 8
         x: sidebarWidth + (mainContentArea.width - width) / 2
         y: 12
 
@@ -1389,7 +1419,7 @@ ApplicationWindow {
         }
 
         contentItem: Item {
-            implicitWidth: arrearsAlertRow.implicitWidth + 32
+            implicitWidth: Math.min(arrearsAlertRow.implicitWidth + 32, arrearsAlertPopup.maxWidth)
             implicitHeight: arrearsAlertRow.implicitHeight + 20
 
             Row {
@@ -1416,9 +1446,15 @@ ApplicationWindow {
                     }
                 }
 
+                // 放得下就单行，放不下按 maxTextWidth 换行。宽度取自 TextMetrics
+                // （单行排版宽度）而不是让 Row 去协商，避免宽高互相依赖。
                 Text {
                     id: arrearsAlertText
                     anchors.verticalCenter: parent.verticalCenter
+                    // +2 是排版余量：富文本里链接带下划线，实际排版可能比纯文本量出来的
+                    // 宽半个像素，卡得太死会把最后一个字挤到第二行。
+                    width: Math.min(Math.ceil(arrearsAlertMetrics.advanceWidth) + 2, arrearsAlertPopup.maxTextWidth)
+                    wrapMode: Text.Wrap
                     textFormat: Text.RichText
                     text: {
                         var raw = window.arrearsAlertMessage;
@@ -1428,6 +1464,14 @@ ApplicationWindow {
                     font.pixelSize: Theme.Typography.caption
                     color: "#b91c1c"
                     onLinkActivated: Qt.openUrlExternally(window.arrearsBillUrl)
+
+                    // 量的是纯文案：带 <a> 标签的富文本串比渲染出来的宽得多，
+                    // 拿它测宽会把上限判早，短提示也被迫换行。
+                    TextMetrics {
+                        id: arrearsAlertMetrics
+                        font: arrearsAlertText.font
+                        text: window.arrearsAlertMessage
+                    }
                 }
             }
         }

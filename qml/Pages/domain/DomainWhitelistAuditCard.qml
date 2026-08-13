@@ -26,9 +26,10 @@ Card {
     readonly property int colAction: 64
 
     // Status column sized to the widest audit-status label in the active language
-    // (审核状态仅这三种)，英文长文案不再被截断；极端兜底仍由 badge 的 elide+tooltip 承担。
+    // （白名单授权带期限，到期后后端会置为「已过期」，列宽必须把它算进去）；
+    // 英文长文案不再被截断，极端兜底仍由 badge 的 elide+tooltip 承担。
     readonly property int colStatus: {
-        var codes = ["待审核", "已授权", "已拒绝"];
+        var codes = ["待审核", "已授权", "已拒绝", "已过期"];
         var w = 0;
         for (var i = 0; i < codes.length; i++)
             w = Math.max(w, statusFm.advanceWidth(Theme.Colors.translateStatus(codes[i])));

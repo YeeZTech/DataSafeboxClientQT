@@ -302,6 +302,10 @@
         <translation>已结束</translation>
     </message>
     <message>
+        <source>Paused</source>
+        <translation>已暂停</translation>
+    </message>
+    <message>
         <source>Expired</source>
         <translation>已过期</translation>
     </message>

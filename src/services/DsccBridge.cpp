@@ -1255,6 +1255,9 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         map.insert(QStringLiteral("instanceName"), instanceName);
         map.insert(QStringLiteral("instanceId"), audit.instance_code);
 
+        // 申请单状态：0 待审核 / 1 已授权 / 2 已拒绝 / 3 已过期（后端 ApplyEnum）。
+        // 白名单申请带授权期限，到期后由后端定时任务把 is_approved 置为 3；这里漏掉
+        // 那一支，界面上的「状态」列就会直接显示裸的 "3"。
         QString statusText;
         switch (audit.status)
         {
@@ -1267,8 +1270,12 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         case 2:
             statusText = QStringLiteral("已拒绝");
             break;
+        case 3:
+            statusText = QStringLiteral("已过期");
+            break;
         default:
-            statusText = QString::number(audit.status);
+            // 后端将来再扩状态码时，宁可显示一句看得懂的兜底，也不要甩一个数字。
+            statusText = QStringLiteral("未知状态(%1)").arg(audit.status);
             break;
         }
         map.insert(QStringLiteral("status"), statusText);

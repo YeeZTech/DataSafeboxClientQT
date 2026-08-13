@@ -33,7 +33,11 @@ function normalizeInstanceStatus(statusValue) {
     if (statusText === "2") return "已拒绝"
     if (statusText === "3") return "运行中"
     if (statusText === "4") return "已结束"
+    if (statusText === "5") return "已暂停"
     if (statusText === "6") return "已过期"
+    // 后端再扩状态码时，宁可显示一句看得懂的兜底，也不要把裸数字甩到状态列里
+    // （"5"/"6" 就是这么漏出去过的）。已经是文案的值原样返回。
+    if (/^\d+$/.test(statusText)) return "未知状态(" + statusText + ")"
     return statusText
 }
 
