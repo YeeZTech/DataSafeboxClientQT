@@ -1465,6 +1465,15 @@ ApplicationWindow {
                     color: "#b91c1c"
                     onLinkActivated: Qt.openUrlExternally(window.arrearsBillUrl)
 
+                    // 只为了在链接上把光标换成手型。acceptedButtons: Qt.NoButton 让点击
+                    // 继续落到 Text 上触发 onLinkActivated；hoverEnabled 保持默认的 false，
+                    // 否则会截走 hover 事件，Text 的 hoveredLink 就一直是空。
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.NoButton
+                        cursorShape: arrearsAlertText.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    }
+
                     // 量的是纯文案：带 <a> 标签的富文本串比渲染出来的宽得多，
                     // 拿它测宽会把上限判早，短提示也被迫换行。
                     TextMetrics {
