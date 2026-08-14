@@ -41,7 +41,7 @@ void LanguageManager::applyInitialLanguage()
 
 void LanguageManager::switchLanguage(const QString &languageCode)
 {
-    if (languageCode == m_currentLanguage)
+    if (languageLocked() || !isSupportedLanguage(languageCode) || languageCode == m_currentLanguage)
         return;
 
     loadLanguage(languageCode);

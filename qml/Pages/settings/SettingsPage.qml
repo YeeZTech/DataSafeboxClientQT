@@ -23,7 +23,7 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 20
-        spacing: 14
+        spacing: 20
 
         Text {
             text: qsTr("Settings")
@@ -32,111 +32,218 @@ Item {
             color: "#303542"
         }
 
-        Row {
+        // ── Language ──────────────────────────────────────────────
+        // Hidden when the build hard-codes the UI language (qmake USE_LANG).
+        Column {
             width: parent.width
-            spacing: 10
+            spacing: 14
+            visible: !LanguageManager.languageLocked
 
             Text {
-                text: qsTr("Default Cache Path:")
-                font.pixelSize: Theme.Typography.h3
-                color: "#7f8793"
+                text: qsTr("Language")
+                font.pixelSize: Theme.Typography.h2
+                font.weight: Font.DemiBold
+                color: Theme.Colors.textTitle
             }
 
-            Text {
-                width: parent.width - 130
-                text: PathManager && PathManager.cacheDir ? PathManager.cacheDir : ""
-                font.pixelSize: Theme.Typography.h3
-                color: "#687180"
-                wrapMode: Text.WrapAnywhere
-            }
-        }
+            Row {
+                width: parent.width
+                spacing: 10
 
-        Flow {
-            width: parent.width
-            spacing: 10
-
-            Text {
-                text: qsTr("Change Path")
-                font.pixelSize: Theme.Typography.h3
-                color: settingsChangePathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsChangePathMouse.containsMouse ? Theme.Colors.linkHover : Theme.Colors.primary
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: qsTr("Interface Language:")
+                    font.pixelSize: Theme.Typography.h3
+                    color: "#7f8793"
                 }
-                MouseArea {
-                    id: settingsChangePathMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: tempFolderDialog.open()
-                }
-            }
 
-            Text {
-                text: "|"
-                font.pixelSize: Theme.Typography.h3
-                color: "#c6ccd4"
-            }
+                // Segmented switch. Language names stay in their own language,
+                // so they are deliberately not wrapped in qsTr().
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: languageOptions.width + 6
+                    height: 36
+                    radius: 8
+                    color: Theme.Colors.buttonSecondaryBg
+                    border.width: 1
+                    border.color: Theme.Colors.border
 
-            Text {
-                text: qsTr("Open Path")
-                font.pixelSize: Theme.Typography.h3
-                color: settingsOpenPathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsOpenPathMouse.containsMouse ? Theme.Colors.linkHover : Theme.Colors.primary
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
-                }
-                MouseArea {
-                    id: settingsOpenPathMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (PathManager && PathManager.openTempDir) {
-                            var opened = PathManager.openTempDir();
-                            if (!opened) {
-                                root.statusText = qsTr("Failed to open directory, please check if path is accessible");
+                    Row {
+                        id: languageOptions
+                        anchors.centerIn: parent
+                        spacing: 2
+
+                        Repeater {
+                            model: [
+                                {
+                                    "code": "zh_cn",
+                                    "label": "简体中文"
+                                },
+                                {
+                                    "code": "en",
+                                    "label": "English"
+                                }
+                            ]
+
+                            Rectangle {
+                                id: languageOption
+
+                                readonly property bool selected: LanguageManager.currentLanguage === modelData.code
+
+                                width: languageOptionLabel.implicitWidth + 28
+                                height: 28
+                                radius: 6
+                                color: languageOption.selected ? "#ffffff" : languageOptionMouse.containsMouse ? Theme.Colors.buttonSecondaryHover : "transparent"
+                                border.width: languageOption.selected ? 1 : 0
+                                border.color: Theme.Colors.borderField
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 120
+                                    }
+                                }
+
+                                Text {
+                                    id: languageOptionLabel
+                                    anchors.centerIn: parent
+                                    text: modelData.label
+                                    font.pixelSize: Theme.Typography.body
+                                    font.weight: languageOption.selected ? Font.DemiBold : Font.Normal
+                                    color: languageOption.selected ? Theme.Colors.primary : Theme.Colors.textCaption
+                                }
+
+                                MouseArea {
+                                    id: languageOptionMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: languageOption.selected ? Qt.ArrowCursor : Qt.PointingHandCursor
+                                    onClicked: LanguageManager.switchLanguage(modelData.code)
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+
+        // ── Cache path ────────────────────────────────────────────
+        Column {
+            width: parent.width
+            spacing: 14
 
             Text {
-                text: "|"
-                font.pixelSize: Theme.Typography.h3
-                color: "#c6ccd4"
+                text: qsTr("Storage Path")
+                font.pixelSize: Theme.Typography.h2
+                font.weight: Font.DemiBold
+                color: Theme.Colors.textTitle
             }
 
-            Text {
-                text: qsTr("Clear Cache")
-                font.pixelSize: Theme.Typography.h3
-                color: settingsClearCacheMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsClearCacheMouse.containsMouse ? Theme.Colors.linkHover : Theme.Colors.primary
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
+            Row {
+                width: parent.width
+                spacing: 10
+
+                Text {
+                    text: qsTr("Default Cache Path:")
+                    font.pixelSize: Theme.Typography.h3
+                    color: "#7f8793"
+                }
+
+                Text {
+                    width: parent.width - 130
+                    text: PathManager && PathManager.cacheDir ? PathManager.cacheDir : ""
+                    font.pixelSize: Theme.Typography.h3
+                    color: "#687180"
+                    wrapMode: Text.WrapAnywhere
+                }
+            }
+
+            Flow {
+                width: parent.width
+                spacing: 10
+
+                Text {
+                    text: qsTr("Change Path")
+                    font.pixelSize: Theme.Typography.h3
+                    color: settingsChangePathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsChangePathMouse.containsMouse ? Theme.Colors.linkHover : Theme.Colors.primary
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 120
+                        }
+                    }
+                    MouseArea {
+                        id: settingsChangePathMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: tempFolderDialog.open()
                     }
                 }
-                MouseArea {
-                    id: settingsClearCacheMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (PathManager && PathManager.clearCache) {
-                            var cleaned = PathManager.clearCache();
-                            root.statusText = qsTr("Cache cleared:") + Theme.Utils.formatSize(cleaned);
+
+                Text {
+                    text: "|"
+                    font.pixelSize: Theme.Typography.h3
+                    color: "#c6ccd4"
+                }
+
+                Text {
+                    text: qsTr("Open Path")
+                    font.pixelSize: Theme.Typography.h3
+                    color: settingsOpenPathMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsOpenPathMouse.containsMouse ? Theme.Colors.linkHover : Theme.Colors.primary
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 120
+                        }
+                    }
+                    MouseArea {
+                        id: settingsOpenPathMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (PathManager && PathManager.openTempDir) {
+                                var opened = PathManager.openTempDir();
+                                if (!opened) {
+                                    root.statusText = qsTr("Failed to open directory, please check if path is accessible");
+                                }
+                            }
                         }
                     }
                 }
-            }
 
-            Text {
-                text: "(" + qsTr("approx.") + " " + Theme.Utils.formatSize(PathManager && PathManager.cacheSizeBytes ? PathManager.cacheSizeBytes : 0) + ")"
-                font.pixelSize: Theme.Typography.h3
-                color: "#8f96a1"
+                Text {
+                    text: "|"
+                    font.pixelSize: Theme.Typography.h3
+                    color: "#c6ccd4"
+                }
+
+                Text {
+                    text: qsTr("Clear Cache")
+                    font.pixelSize: Theme.Typography.h3
+                    color: settingsClearCacheMouse.pressed ? Qt.darker(Theme.Colors.primary, 1.4) : settingsClearCacheMouse.containsMouse ? Theme.Colors.linkHover : Theme.Colors.primary
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 120
+                        }
+                    }
+                    MouseArea {
+                        id: settingsClearCacheMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (PathManager && PathManager.clearCache) {
+                                var cleaned = PathManager.clearCache();
+                                root.statusText = qsTr("Cache cleared:") + Theme.Utils.formatSize(cleaned);
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    text: "(" + qsTr("approx.") + " " + Theme.Utils.formatSize(PathManager && PathManager.cacheSizeBytes ? PathManager.cacheSizeBytes : 0) + ")"
+                    font.pixelSize: Theme.Typography.h3
+                    color: "#8f96a1"
+                }
             }
         }
 

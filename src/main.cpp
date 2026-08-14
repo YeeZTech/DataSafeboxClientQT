@@ -522,6 +522,9 @@ int main(int argc, char *argv[])
     LanguageManager *languageManager = new LanguageManager(&app);
     languageManager->applyInitialLanguage();
     engine.rootContext()->setContextProperty("LanguageManager", languageManager);
+    // 运行时切换语言：重新求值所有含 qsTr() 的 QML 绑定，界面无需重启即可刷新。
+    QObject::connect(languageManager, &LanguageManager::languageChanged, &engine,
+                     [&engine]() { engine.retranslate(); });
 
     // Register DsccBridge (business logic dynamic library)
     // 向 DSCC 注入当前环境的服务地址（SSO 用户查询 + OpenBao KMS），必须在任何

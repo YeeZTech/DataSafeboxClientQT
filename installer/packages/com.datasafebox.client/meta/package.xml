@@ -3,7 +3,7 @@
     <DisplayName>数据安全柜控制台</DisplayName>
     <Description>数据安全柜控制台</Description>
     <Version>1.1.2</Version>
-    <ReleaseDate>2026-08-13</ReleaseDate>
+    <ReleaseDate>2026-08-14</ReleaseDate>
     <Default>true</Default>
     <Script>installscript.qs</Script>
     <Licenses>

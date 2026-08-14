@@ -2822,6 +2822,18 @@ Location: %1</source>
         <translation>设置</translation>
     </message>
     <message>
+        <source>Language</source>
+        <translation>语言设置</translation>
+    </message>
+    <message>
+        <source>Interface Language:</source>
+        <translation>界面语言：</translation>
+    </message>
+    <message>
+        <source>Storage Path</source>
+        <translation>路径设置</translation>
+    </message>
+    <message>
         <location line="+11"/>
         <source>Default Cache Path:</source>
         <translation>默认缓存路径：</translation>

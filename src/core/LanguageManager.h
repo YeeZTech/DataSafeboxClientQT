@@ -20,6 +20,7 @@ class LanguageManager : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString currentLanguage READ currentLanguage NOTIFY languageChanged)
+    Q_PROPERTY(bool languageLocked READ languageLocked CONSTANT)
 
   public:
     explicit LanguageManager(QObject *parent = nullptr);
@@ -28,6 +29,17 @@ class LanguageManager : public QObject
     QString currentLanguage() const
     {
         return m_currentLanguage;
+    }
+
+    // True when the build hard-codes the UI language (qmake USE_LANG). The
+    // settings page hides its language selector in that case.
+    static bool languageLocked()
+    {
+#ifdef FORCE_LANGUAGE
+        return true;
+#else
+        return false;
+#endif
     }
 
     void applyInitialLanguage();
