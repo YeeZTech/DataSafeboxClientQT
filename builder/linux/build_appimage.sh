@@ -88,9 +88,11 @@ info "检查 Qt ${QT_VERSION}..."
 if [[ ! -x "${QT_DIR}/bin/qmake" ]]; then
     info "安装 Qt ${QT_VERSION}（约 2-3 GB）..."
     pip3 install --quiet --upgrade aqtinstall
+    # Linux QtWebView has no non-WebEngine backend (unlike Windows' WebView2), so
+    # qtwebengine stays required here even though the app now targets qtwebview.
     aqt install-qt linux desktop "${QT_VERSION}" "${QT_ARCH_DIR}" \
         --outputdir "${HOME}/Qt" \
-        -m qtwebengine qtquick3d
+        -m qtwebview qtwebengine qtquick3d
     success "Qt ${QT_VERSION} 安装完成"
 else
     success "Qt ${QT_VERSION} 已安装"

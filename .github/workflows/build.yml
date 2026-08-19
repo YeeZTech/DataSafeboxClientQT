@@ -38,12 +38,19 @@ jobs:
             vcpkg_triplet: x64-windows
             dscc_asset: dscc-sdk-win-x64.zip
             installer_suffix: ''
+            aqt_source: ''
           - arch: arm64
             runner: windows-11-arm
             qt_arch: win64_msvc2022_arm64_cross_compiled
             vcpkg_triplet: arm64-windows
             dscc_asset: dscc-sdk-win-arm64.zip
             installer_suffix: '_arm64'
+            # Released aqtinstall (3.3.0) crashes patching this arch: it looks for
+            # bin/qmake.bat, but Qt 6.10.1+'s arm64 cross-compiled package prepends
+            # "host-" to that filename. Fixed upstream (miurahr/aqtinstall commit
+            # aed99b54, 2025-11-19) but not yet cut into a PyPI release — pull aqt
+            # straight from that commit until a release ships it.
+            aqt_source: 'git+https://github.com/miurahr/aqtinstall.git@aed99b54bac4a8c2d458b1c1b7fbaff7e4626bc3'
 
     steps:
       - name: Checkout
@@ -54,12 +61,13 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.10.2'
-          host:    'windows'
-          target:  'desktop'
-          arch:    ${{ matrix.qt_arch }}
-          modules: 'qtwebview qtwebchannel qtpositioning qtlocation qtquick3d'
-          cache:   true
+          version:   '6.10.2'
+          host:      'windows'
+          target:    'desktop'
+          arch:      ${{ matrix.qt_arch }}
+          modules:   'qtwebview qtwebchannel qtpositioning qtlocation qtquick3d'
+          cache:     true
+          aqtsource: ${{ matrix.aqt_source }}
 
       # 取用仓库自带的预编译 Qt IFW 4.10（binarycreator + installerbase，静态链接 Qt，
       # 经 release 资产分发）。aqt 的 tools_ifw 只到 4.7：其 installerbase 基于旧版 Qt、
@@ -163,7 +171,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 安装 Qt（含 WebEngine）
+      # 安装 Qt（不含 WebEngine——客户端已迁移到 QtWebView，macOS 走 WKWebView 原生后端）
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -171,7 +179,7 @@ jobs:
           host:    'mac'
           target:  'desktop'
           arch:    'clang_64'
-          modules: 'qtwebengine qtwebchannel qtpositioning qtlocation qtquick3d'
+          modules: 'qtwebview qtwebchannel qtpositioning qtlocation qtquick3d'
           cache:   true
 
       # 构建依赖：图标渲染(librsvg) + pkg-config + sentry-native(arm64) + Pillow

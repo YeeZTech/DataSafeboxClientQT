@@ -271,7 +271,7 @@ else
     if command -v aqt &>/dev/null; then
         aqt install-qt mac desktop "${QT_VERSION}" clang_64 \
             --outputdir "${HOME}/Qt" \
-            -m qtwebengine qtquick3d qtwebchannel qtpositioning qtlocation 2>&1 | tail -5 || true
+            -m qtwebview qtquick3d qtwebchannel qtpositioning qtlocation 2>&1 | tail -5 || true
     fi
     QT_DIR="$(find_qt_dir "${QT_VERSION}")" || true
     if [[ -n "${QT_DIR}" && -x "${QT_DIR}/bin/qmake" ]]; then
@@ -280,7 +280,7 @@ else
             || echo "export PATH=\"${QT_DIR}/bin:\$PATH\"" >> "${HOME}/.zshrc"
         ok "  Qt ${QT_VERSION} installed: ${QT_DIR}"
     else
-        fail_check "Qt ${QT_VERSION}  ->  aqt install-qt mac desktop ${QT_VERSION} clang_64 --outputdir ~/Qt -m qtwebengine qtquick3d qtwebchannel qtpositioning qtlocation"
+        fail_check "Qt ${QT_VERSION}  ->  aqt install-qt mac desktop ${QT_VERSION} clang_64 --outputdir ~/Qt -m qtwebview qtquick3d qtwebchannel qtpositioning qtlocation"
     fi
 fi
 
