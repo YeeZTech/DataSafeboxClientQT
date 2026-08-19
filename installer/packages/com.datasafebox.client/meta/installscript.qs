@@ -137,17 +137,21 @@ Component.prototype.createOperations = function() {
         "-Command", iconCacheRefreshScript
     );
 
-    var vcRedistPath = toWindowsPath(targetDir) + "\\vc_redist.x64.exe";
+    // The bundled data dir carries whichever arch's redistributable matches this
+    // build (vc_redist.x64.exe or vc_redist.arm64.exe) — this script doesn't know
+    // at packaging time which one, so it just runs whichever one is present.
+    var vcRedistDir = toWindowsPath(targetDir);
     var vcRedistScript =
-        "$exe = " + psLiteral(vcRedistPath) + "; " +
-        "if (Test-Path $exe) { " +
+        "$dir = " + psLiteral(vcRedistDir) + "; " +
+        "$exe = Get-ChildItem -Path $dir -Filter 'vc_redist.*.exe' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName; " +
+        "if ($exe -and (Test-Path $exe)) { " +
         "  try { " +
         "    $p = Start-Process -FilePath $exe -ArgumentList '/install','/quiet','/norestart' -Wait -PassThru -ErrorAction Stop; " +
         "    $code = $p.ExitCode; " +
         "    if ($code -eq 0 -or $code -eq 1638 -or $code -eq 3010) { Write-Host ('[VCRedist] OK exit=' + $code) } " +
         "    else { Write-Host ('[VCRedist] WARN exit=' + $code) } " +
         "  } catch { Write-Host ('[VCRedist] Error: ' + $_.ToString()) } " +
-        "} else { Write-Host '[VCRedist] vc_redist.x64.exe not found, skipping' } ; exit 0";
+        "} else { Write-Host '[VCRedist] no vc_redist.*.exe found, skipping' } ; exit 0";
 
     component.addOperation(
         "Execute",

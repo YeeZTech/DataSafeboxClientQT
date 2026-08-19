@@ -20,7 +20,7 @@ rem ===========================================================================
 rem ------------------------------------------------------------------
 rem Configurable paths (env vars take priority over defaults below)
 rem ------------------------------------------------------------------
-if not defined QT_VERSION  set "QT_VERSION=6.7.3"
+if not defined QT_VERSION  set "QT_VERSION=6.10.2"
 if not defined IFW_VERSION set "IFW_VERSION=4.10"
 
 if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
@@ -29,6 +29,12 @@ if /I "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
 ) else (
     if not defined QT_ARCH       set "QT_ARCH=msvc2022_64"
     if not defined VCPKG_TRIPLET set "VCPKG_TRIPLET=x64-windows"
+)
+
+rem VC++ redistributable arch: derived from VCPKG_TRIPLET (x64-windows -> x64,
+rem arm64-windows -> arm64) so it tracks an explicit VCPKG_TRIPLET override too.
+if not defined VC_REDIST_ARCH (
+    if /I "%VCPKG_TRIPLET%"=="arm64-windows" (set "VC_REDIST_ARCH=arm64") else (set "VC_REDIST_ARCH=x64")
 )
 
 if not defined QT_BIN for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$c = Get-Command qmake -EA SilentlyContinue; if ($c) { Split-Path $c.Source -Parent }"`) do if not "%%i"=="" set "QT_BIN=%%i"
@@ -120,7 +126,7 @@ rem ==================================================================
 rem --- read version (single source: installer/config/config.xml) ---
 for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "(Select-Xml -Path '%CONFIG_XML%' -XPath '/Installer/Version').Node.InnerText"`) do set "PACKAGE_VERSION=%%i"
 if not defined PACKAGE_VERSION (echo [Error] Failed to read version from config.xml & goto :fail)
-set "OUTPUT_BASENAME=DataSafebox_%PACKAGE_VERSION%"
+set "OUTPUT_BASENAME=DataSafebox_%PACKAGE_VERSION%%INSTALLER_SUFFIX%"
 set "OUTPUT_INSTALLER=%SCRIPT_DIR%%OUTPUT_BASENAME%.exe"
 echo [INFO] Version: %PACKAGE_VERSION%
 echo [INFO] Output : %OUTPUT_INSTALLER%
@@ -140,8 +146,9 @@ echo [1/6] Initializing MSVC build environment and compiling...
 where nmake >nul 2>&1
 if not errorlevel 1 goto :do_compile
 
+if /I "%VC_REDIST_ARCH%"=="arm64" (set "VCVARS_SCRIPT=vcvarsarm64.bat") else (set "VCVARS_SCRIPT=vcvars64.bat")
 set "VCVARS_LOG=%TEMP%\vcvars_%RANDOM%.log"
-call "%VS_INSTALL_PATH%\VC\Auxiliary\Build\vcvars64.bat" > "%VCVARS_LOG%" 2>&1
+call "%VS_INSTALL_PATH%\VC\Auxiliary\Build\%VCVARS_SCRIPT%" > "%VCVARS_LOG%" 2>&1
 del /Q "%VCVARS_LOG%" 2>nul
 @echo off
 
@@ -181,14 +188,15 @@ if errorlevel 1 goto :fail
 rem --- Step 4/6: installer data dir ---
 echo.
 echo [4/6] Preparing installer data directory...
-rem Preserve vc_redist.x64.exe across DATA_DIR rebuild (it is a static asset
-rem committed manually, not produced by the build).
+rem Preserve vc_redist.%VC_REDIST_ARCH%.exe across DATA_DIR rebuild (it is a
+rem static asset committed manually, not produced by the build).
+set "VC_REDIST_NAME=vc_redist.%VC_REDIST_ARCH%.exe"
 set "VC_REDIST_BACKUP=%TEMP%\vc_redist_%RANDOM%.exe"
-if exist "%DATA_DIR%\vc_redist.x64.exe" copy /Y "%DATA_DIR%\vc_redist.x64.exe" "%VC_REDIST_BACKUP%" >nul
+if exist "%DATA_DIR%\%VC_REDIST_NAME%" copy /Y "%DATA_DIR%\%VC_REDIST_NAME%" "%VC_REDIST_BACKUP%" >nul
 if exist "%DATA_DIR%" rd /s /q "%DATA_DIR%"
 mkdir "%DATA_DIR%"
 if exist "%VC_REDIST_BACKUP%" (
-    copy /Y "%VC_REDIST_BACKUP%" "%DATA_DIR%\vc_redist.x64.exe" >nul
+    copy /Y "%VC_REDIST_BACKUP%" "%DATA_DIR%\%VC_REDIST_NAME%" >nul
     del /Q "%VC_REDIST_BACKUP%" 2>nul
 )
 
@@ -199,11 +207,6 @@ robocopy "%BUILD_DIR%" "%DATA_DIR%" /E ^
   >nul
 if errorlevel 8 goto :fail
 
-if exist "%DATA_DIR%\translations\qtwebengine_locales" (
-    for %%f in ("%DATA_DIR%\translations\qtwebengine_locales\*.pak") do (
-        if /I not "%%~nf"=="zh-CN" if /I not "%%~nf"=="en-US" del /Q "%%f"
-    )
-)
 if exist "%DATA_DIR%\translations" (
     for %%f in ("%DATA_DIR%\translations\qt_*.qm") do (
         if /I not "%%~nf"=="qt_zh_CN" del /Q "%%f"
@@ -213,8 +216,19 @@ if exist "%DATA_DIR%\translations" (
 rem --- Strip files that are definitively not needed ---
 echo [OK] Stripping unnecessary files...
 
-rem WebEngine DevTools pak -- only used when DevTools is explicitly enabled in code.
-rem Never needed in production builds (saves ~9 MB).
+rem QtWebEngine runtime -- the app forces QT_WEBVIEW_PLUGIN=webview2 (main.cpp) and
+rem never loads the webview module's WebEngine-backed plugin, but windeployqt still
+rem conservatively deploys it (and its whole Chromium dependency chain) because that
+rem plugin DLL is present in the Qt SDK's webview\ folder. Strip it all (~150+ MB).
+if exist "%DATA_DIR%\webview\qtwebview_webengine.dll" del /Q "%DATA_DIR%\webview\qtwebview_webengine.dll"
+if exist "%DATA_DIR%\Qt6WebEngineCore.dll"  del /Q "%DATA_DIR%\Qt6WebEngineCore.dll"
+if exist "%DATA_DIR%\Qt6WebEngineQuick.dll" del /Q "%DATA_DIR%\Qt6WebEngineQuick.dll"
+if exist "%DATA_DIR%\QtWebEngineProcess.exe" del /Q "%DATA_DIR%\QtWebEngineProcess.exe"
+if exist "%DATA_DIR%\qml\QtWebEngine" rd /s /q "%DATA_DIR%\qml\QtWebEngine"
+if exist "%DATA_DIR%\translations\qtwebengine_locales" rd /s /q "%DATA_DIR%\translations\qtwebengine_locales"
+if exist "%DATA_DIR%\resources\qtwebengine_resources.pak"      del /Q "%DATA_DIR%\resources\qtwebengine_resources.pak"
+if exist "%DATA_DIR%\resources\qtwebengine_resources_100p.pak" del /Q "%DATA_DIR%\resources\qtwebengine_resources_100p.pak"
+if exist "%DATA_DIR%\resources\qtwebengine_resources_200p.pak" del /Q "%DATA_DIR%\resources\qtwebengine_resources_200p.pak"
 if exist "%DATA_DIR%\resources\qtwebengine_devtools_resources.pak" del /Q "%DATA_DIR%\resources\qtwebengine_devtools_resources.pak"
 
 rem Qt Quick Controls 2 unused style modules.
@@ -390,7 +404,8 @@ echo               Or run this script from the VS 2022 x64 Native Tools prompt
 echo.
 exit /b 0
 :check_msvc_scan
-for /f "usebackq tokens=*" %%i in (`"!VSWHERE!" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VS_INSTALL_PATH=%%i"
+if /I "%VC_REDIST_ARCH%"=="arm64" (set "VC_TOOLS_COMPONENT=Microsoft.VisualStudio.Component.VC.Tools.ARM64") else (set "VC_TOOLS_COMPONENT=Microsoft.VisualStudio.Component.VC.Tools.x86.x64")
+for /f "usebackq tokens=*" %%i in (`"!VSWHERE!" -latest -products * -requires %VC_TOOLS_COMPONENT% -property installationPath`) do set "VS_INSTALL_PATH=%%i"
 if defined VS_INSTALL_PATH goto :check_msvc_ok
 set "PREFLIGHT_FAIL=1"
 echo   [MISSING] MSVC C++ compiler tools
@@ -470,26 +485,26 @@ if "%DSCC_OK%"=="1" (
     echo.
 )
 :check_dscc_vcredist
-if exist "%DATA_DIR%\..\vc_redist.x64.exe" (
-    echo   [OK]      vc_redist.x64.exe found in installer data
+if exist "%DATA_DIR%\..\vc_redist.%VC_REDIST_ARCH%.exe" (
+    echo   [OK]      vc_redist.%VC_REDIST_ARCH%.exe found in installer data
     exit /b 0
 )
 set "VSWHERE_EXE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 if not exist "%VSWHERE_EXE%" set "VSWHERE_EXE=%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe"
 if exist "%VSWHERE_EXE%" (
-    for /f "usebackq delims=" %%i in (`"%VSWHERE_EXE%" -latest -products * -find VC\Redist\MSVC\*\vc_redist.x64.exe`) do set "VC_REDIST_SRC=%%i"
+    for /f "usebackq delims=" %%i in (`"%VSWHERE_EXE%" -latest -products * -find VC\Redist\MSVC\*\vc_redist.%VC_REDIST_ARCH%.exe`) do set "VC_REDIST_SRC=%%i"
 )
 if defined VC_REDIST_SRC if exist "!VC_REDIST_SRC!" (
-    echo   [INFO]    Copying vc_redist.x64.exe from Visual Studio installation...
+    echo   [INFO]    Copying vc_redist.%VC_REDIST_ARCH%.exe from Visual Studio installation...
     copy /Y "!VC_REDIST_SRC!" "%DATA_DIR%\..\" >nul
-    echo   [OK]      vc_redist.x64.exe copied
+    echo   [OK]      vc_redist.%VC_REDIST_ARCH%.exe copied
     exit /b 0
 )
 set "PREFLIGHT_FAIL=1"
-echo   [MISSING] vc_redist.x64.exe in installer data dir
-echo             Expected : %PACKAGES_DIR%\com.datasafebox.client\data\vc_redist.x64.exe
-echo             Fix: Download VC++ 2015-2022 x64 Runtime and place it there:
-echo               https://aka.ms/vs/17/release/vc_redist.x64.exe
+echo   [MISSING] vc_redist.%VC_REDIST_ARCH%.exe in installer data dir
+echo             Expected : %PACKAGES_DIR%\com.datasafebox.client\data\vc_redist.%VC_REDIST_ARCH%.exe
+echo             Fix: Download VC++ 2015-2022 %VC_REDIST_ARCH% Runtime and place it there:
+echo               https://aka.ms/vs/17/release/vc_redist.%VC_REDIST_ARCH%.exe
 echo             Or ensure Visual Studio 2022 is installed with C++ workload.
 echo             Without it, target machines lacking VC++ Runtime will fail to start.
 echo.

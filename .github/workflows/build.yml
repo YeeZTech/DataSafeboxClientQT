@@ -17,32 +17,56 @@ concurrency:
 
 jobs:
   # ============================================================
-  # Windows — MSVC2022 + Qt 6.7.3 + Qt IFW → .exe 安装包
-  # 单一安装包 DataSafebox_<version>.exe，内置测试/正式两套配置
+  # Windows — MSVC2022 + Qt 6.10 + Qt IFW → .exe 安装包
+  # x64（windows-2022）+ arm64（windows-11-arm，原生）两条腿。
+  # Qt 6.10 是硬性下限：QtWebView 的 WebView2 后端（免打包 QtWebEngine，
+  # arm64 上唯一可用的后端——QtWebEngine 本身在 Windows arm64 上没有官方
+  # 二进制）从 Qt 6.10 才开始提供，早期版本的 QtWebView 在 Windows 上仍
+  # 依赖 QtWebEngine 作为后端。
+  # 单一安装包 DataSafebox_<version>[_arm64].exe，内置测试/正式两套配置
   # ============================================================
   build-windows:
-    name: Windows
-    runs-on: windows-2022
+    name: Windows (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: windows-2022
+            qt_arch: win64_msvc2022_64
+            vcpkg_triplet: x64-windows
+            dscc_asset: dscc-sdk-win-x64.zip
+            installer_suffix: ''
+          - arch: arm64
+            runner: windows-11-arm
+            qt_arch: win64_msvc2022_arm64_cross_compiled
+            vcpkg_triplet: arm64-windows
+            dscc_asset: dscc-sdk-win-arm64.zip
+            installer_suffix: '_arm64'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 安装 Qt（含 WebEngine）。IFW 不从这里取——见下方 vendored 步骤。
+      # 安装 Qt（不含 WebEngine——客户端已迁移到 QtWebView/WebView2）。
+      # IFW 不从这里取——见下方 vendored 步骤。
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.7.3'
+          version: '6.10.2'
           host:    'windows'
           target:  'desktop'
-          arch:    'win64_msvc2019_64'   # Qt 6.7.3 ships no msvc2022 build; this is ABI-compatible with MSVC 2022
-          modules: 'qtwebengine qtwebchannel qtpositioning qtlocation qtquick3d'
+          arch:    ${{ matrix.qt_arch }}
+          modules: 'qtwebview qtwebchannel qtpositioning qtlocation qtquick3d'
           cache:   true
 
       # 取用仓库自带的预编译 Qt IFW 4.10（binarycreator + installerbase，静态链接 Qt，
       # 经 release 资产分发）。aqt 的 tools_ifw 只到 4.7：其 installerbase 基于旧版 Qt、
       # 不含 zh_CN，导致向导显示英文且样式陈旧；4.10 基于 Qt 6.7.2、内嵌 zh_CN 且带
       # Windows 11 风格，从而统一安装向导的语言与外观。
+      # 该 IFW 资产是 x64 二进制；在 windows-11-arm 上通过系统自带的 x64 模拟运行
+      # （仅用于打包阶段，非性能敏感）。
       - name: Fetch vendored Qt IFW 4.10
         shell: pwsh
         env:
@@ -57,19 +81,19 @@ jobs:
           "IFW_BIN=$($bc.DirectoryName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           Write-Host "IFW_BIN=$($bc.DirectoryName)"
 
-      # vcpkg 缓存 + 安装 sentry-native（x64-windows）
+      # vcpkg 缓存 + 安装 sentry-native（按 leg 的 triplet）
       - name: Cache vcpkg
         uses: actions/cache@v4
         with:
           path: C:/vcpkg/installed
-          key:  vcpkg-windows-sentry-${{ hashFiles('vcpkg.json') }}
+          key:  vcpkg-windows-${{ matrix.arch }}-sentry-${{ hashFiles('vcpkg.json') }}
 
       - name: Install sentry-native (vcpkg)
         shell: pwsh
         env:
           VCPKG_ROOT: C:/vcpkg
         # --classic：本仓库根有 vcpkg.json，默认会进入 manifest 模式而拒绝单包安装
-        run: C:/vcpkg/vcpkg.exe install sentry-native --triplet x64-windows --classic
+        run: C:/vcpkg/vcpkg.exe install sentry-native --triplet ${{ matrix.vcpkg_triplet }} --classic
 
       # 下载并解压 DSCC SDK（环境无关单包；私有仓库，需要 DSCC_TOKEN）
       - name: Download DSCC SDK
@@ -77,7 +101,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DSCC_TOKEN }}
         run: |
-          $asset = "dscc-sdk-win64.zip"
+          $asset = "${{ matrix.dscc_asset }}"
           gh release download feature-build --repo YeeZTech/data-safebox-core `
             --pattern $asset --dir dscc-zip
           New-Item -ItemType Directory -Force dscc-sdk | Out-Null
@@ -114,14 +138,15 @@ jobs:
       - name: Build & package installer
         shell: cmd
         env:
-          SENTRY_ROOT_DIR: C:/vcpkg/installed/x64-windows
+          SENTRY_ROOT_DIR: C:/vcpkg/installed/${{ matrix.vcpkg_triplet }}
+          INSTALLER_SUFFIX: ${{ matrix.installer_suffix }}
           # DSCC_DIR 与 IFW_BIN 已通过 GITHUB_ENV 注入
         run: call builder\windows\build_installer.bat
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DataSafebox-windows
+          name: DataSafebox-windows-${{ matrix.arch }}
           path: builder/windows/DataSafebox_*.exe
           if-no-files-found: error
           retention-days: 30
@@ -288,7 +313,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/DataSafebox-windows/DataSafebox_*.exe
+            artifacts/DataSafebox-windows-x64/DataSafebox_*.exe
+            artifacts/DataSafebox-windows-arm64/DataSafebox_*.exe
             artifacts/DataSafebox-macos/DataSafebox_*.dmg
           generate_release_notes: true
           draft: false
