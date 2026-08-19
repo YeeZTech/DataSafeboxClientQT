@@ -443,6 +443,13 @@ ApplicationWindow {
         visible: window.authPage === "login"
         z: 200
 
+        // 登录页是原生 WebView 窗口，永远绘制在 QML 内容之上（z 不起作用），
+        // 因此任何需要盖在登录页上的弹窗打开时，都要把网页内容移出可视区，
+        // 否则弹窗会被完全遮住。此处只需列出登录阶段可能出现的弹窗：登录成功后
+        // authPage 不再是 "login"，webContentOnScreen 已经为 false。
+        // 新增登录前弹窗时，记得一并加到这里。
+        webContentSuppressed: serverSelectDialog.visible || serverAddressDialog.visible || pendingInstallWarningDialog.visible || forceUpdateDialog.visible || errorDialog.visible || checkFailedDialog.visible || noUpdateDialog.visible
+
         onAuthCodeReceived: function (code, state) {
             CasdoorHelper.handleAuthCode(code, state);
         }

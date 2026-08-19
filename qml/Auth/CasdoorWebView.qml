@@ -349,11 +349,26 @@ Rectangle {
         }
     }
 
+    // Set by the host while a dialog has to be readable over the login page.
+    // The native window always paints on top of QML content regardless of z, so
+    // moving it out of view is the only way to show anything above it.
+    property bool webContentSuppressed: false
+
+    // QtWebView renders into a native child window, not into the Qt scene graph,
+    // and that window does not follow the QML `visible` property: a WebView that
+    // starts out invisible never gets shown at all (blank page forever), and
+    // setting visible=false later does not hide it. So web content is shown and
+    // hidden by moving it in and out of view instead — the native window does
+    // track the item's geometry, and is clipped to the app window.
+    readonly property bool webContentOnScreen: root.visible && !root.webContentSuppressed && !root.hideWebContentDuringHandover && root.pageContentReady
+
     WebView {
         id: webView
-        anchors.fill: parent
-        anchors.margins: 0
-        visible: !root.hideWebContentDuringHandover && root.pageContentReady
+        width: root.width
+        height: root.height
+        y: 0
+        x: root.webContentOnScreen ? 0 : -(root.width + 64)
+        visible: true
 
         httpUserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
@@ -397,6 +412,9 @@ Rectangle {
                         webView.url = "";
                         retryLoginTimer.restart();
                     } else {
+                        // Move the web content out of view so the login error
+                        // overlay is not covered by the native WebView window.
+                        root.pageContentReady = false;
                         root.loadError(loadRequest.errorString);
                     }
                 }
@@ -463,6 +481,7 @@ Rectangle {
                         root.isLoginFlowActive = false;
                         webView.stop();
                         webView.url = "";
+                        root.pageContentReady = false;
                         root.loadError("OAuth state missing");
                         return;
                     }
@@ -472,6 +491,7 @@ Rectangle {
                             root.isLoginFlowActive = false;
                             webView.stop();
                             webView.url = "";
+                            root.pageContentReady = false;
                             root.loadError("OAuth state mismatch");
                             return;
                         }

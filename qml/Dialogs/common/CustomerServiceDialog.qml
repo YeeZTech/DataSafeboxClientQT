@@ -54,11 +54,8 @@ Popup {
         return '<!DOCTYPE html><html><head>' + '<meta charset="utf-8">' + '<meta name="viewport" content="width=device-width,initial-scale=1">' + '<style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;}</style>' + '</head><body>' + '<scr' + 'ipt>' + '(function(d,t){' + 'var B="' + baseUrl + '";' + 'var g=d.createElement(t),s=d.getElementsByTagName(t)[0];' + 'g.src=B+"/packs/js/sdk.js";g.defer=true;' + 's.parentNode.insertBefore(g,s);' + 'g.onload=function(){' + 'window.chatwootSDK.run({websiteToken:"' + token + '",baseUrl:B});' + 'window.addEventListener("chatwoot:ready",function(){' + 'window.$chatwoot.toggle("open");' + '});' + '};' + '})(document,"script");' + '<' + '/script>' + '</body></html>';
     }
 
-    onOpened: webView.loadHtml(buildHtml(), AppConfig.customerServiceUrl())
-    onClosed: {
-        webView.stop();
-        webView.url = "about:blank";
-    }
+    // Loading is driven by webViewLoader.onLoaded: the WebView only exists while
+    // the dialog is open (see the loader below).
 
     // ── 背景：极轻轮廓阴影 + 清晰边框 ──────────────────────
     background: Item {
@@ -201,15 +198,26 @@ Popup {
         }
 
         // ── Chatwoot 聊天内容 ─────────────────────────────────
-        WebView {
-            id: webView
+        // QtWebView renders into a native child window rather than into the Qt
+        // scene graph, and that window ignores QML visibility: created while the
+        // dialog is closed it would never show at all, and once shown it would
+        // keep covering the app after the dialog closes. So the WebView only
+        // exists while the dialog is open — which also matches the existing
+        // behaviour of reloading the chat on every open.
+        Loader {
+            id: webViewLoader
             anchors.top: titleBar.bottom
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 13  // 必须 >= radius(12)，让底边圆角区域完整露出
 
-            httpUserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            active: root.visible
+            onLoaded: item.loadHtml(root.buildHtml(), AppConfig.customerServiceUrl())
+
+            sourceComponent: WebView {
+                httpUserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
         }
 
         // ── 底边缩放（上下拉伸高度）────────────────────────────
