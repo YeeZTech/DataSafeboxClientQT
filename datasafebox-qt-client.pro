@@ -1,4 +1,4 @@
-QT += quick qml network core svg quickcontrols2 widgets webenginequick
+QT += quick qml network core svg quickcontrols2 widgets webview
 
 CONFIG += c++17
 

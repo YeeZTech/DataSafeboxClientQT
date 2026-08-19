@@ -1,6 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtWebEngine
+import QtWebView
 import DataSafebox.Components 1.0
 import DataSafebox.Theme 1.0 as Theme
 
@@ -201,7 +201,7 @@ Popup {
         }
 
         // ── Chatwoot 聊天内容 ─────────────────────────────────
-        WebEngineView {
+        WebView {
             id: webView
             anchors.top: titleBar.bottom
             anchors.left: parent.left
@@ -209,19 +209,7 @@ Popup {
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 13  // 必须 >= radius(12)，让底边圆角区域完整露出
 
-            profile: WebEngineProfile {
-                storageName: "CustomerSupport"
-                offTheRecord: false
-                httpUserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            }
-            onCertificateError: function (error) {
-                // 仅在测试环境忽略自签名/无效证书；正式环境拒绝以防中间人攻击
-                if (typeof AppConfig !== "undefined" && AppConfig.isTestEnv && AppConfig.isTestEnv()) {
-                    error.ignoreCertificateError();
-                } else {
-                    error.rejectCertificate();
-                }
-            }
+            httpUserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
 
         // ── 底边缩放（上下拉伸高度）────────────────────────────

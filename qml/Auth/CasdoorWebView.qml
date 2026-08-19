@@ -1,6 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtWebEngine
+import QtWebView
 import DataSafebox.Theme 1.0 as Theme
 
 Rectangle {
@@ -113,9 +113,8 @@ Rectangle {
         lastNonBlankUrl = "";
         webView.stop();
         webView.url = "";
-    // Cookie cleanup is now handled by CasdoorHelper.logout() → performLocalCleanup()
-    // after the server-side logout request completes. Do NOT delete cookies here,
-    // because the C++ side needs casdoor_session_id to call POST /api/logout.
+    // Cookies are cleared at the start of the next login (startLoginTimer),
+    // not here — no need to duplicate it on every state reset.
     }
 
     function extractAuthCode(urlStr) {
@@ -295,11 +294,9 @@ Rectangle {
         interval: 300
         repeat: false
         onTriggered: {
-            // Always clear in-memory cookies right before navigation so Casdoor
+            // Always clear cookies right before navigation so Casdoor
             // never sees a stale session and shows "使用以下账号继续".
-            if (casdoorProfile && casdoorProfile.cookieStore) {
-                casdoorProfile.cookieStore.deleteAllCookies();
-            }
+            webView.deleteAllCookies();
             var signinUrl = CasdoorHelper.getSigninUrl();
             expectedStateValue = (CasdoorHelper.getStateValue ? CasdoorHelper.getStateValue() : "");
             isLoginFlowActive = true;
@@ -352,25 +349,21 @@ Rectangle {
         }
     }
 
-    WebEngineView {
+    WebView {
         id: webView
         anchors.fill: parent
         anchors.margins: 0
         visible: !root.hideWebContentDuringHandover && root.pageContentReady
 
-        settings.showScrollBars: false
-
-        Component.onCompleted: {
-            webView.settings.showScrollBars = false;
-        }
+        httpUserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
         onLoadingChanged: function (loadRequest) {
             var currentUrl = webView.url ? webView.url.toString() : "";
-            if (loadRequest.status === WebEngineView.LoadSucceededStatus) {
+            if (loadRequest.status === WebView.LoadSucceededStatus) {
                 // If the callback URL served actual content (e.g. phone binding page),
                 // stop the deferred handover timer so the user can interact with the page.
                 // When the user finishes binding, Casdoor will issue a fresh redirect
-                // that onNavigationRequested / onUrlChanged will capture normally.
+                // that onUrlChanged will capture normally.
                 if (root.isExpectedCallbackUrl(currentUrl) && root.pendingHandover) {
                     deferredHandoverTimer.stop();
                     codeExtractionTimer.stop();
@@ -381,7 +374,7 @@ Rectangle {
                 if (root.pendingCode !== "" && !root.codeAlreadyReceived) {
                     codeExtractionTimer.restart();
                 }
-            } else if (loadRequest.status === WebEngineView.LoadFailedStatus) {
+            } else if (loadRequest.status === WebView.LoadFailedStatus) {
                 // Callback pages may intentionally return 404 while still carrying valid OAuth code/state.
                 // Hide the 404 page immediately and continue deferred native handover.
                 var isExpectedCallbackFailure = root.isExpectedCallbackUrl(currentUrl);
@@ -407,17 +400,8 @@ Rectangle {
                         root.loadError(loadRequest.errorString);
                     }
                 }
-            } else if (loadRequest.status === WebEngineView.LoadStartedStatus) {
+            } else if (loadRequest.status === WebView.LoadStartedStatus) {
                 root.hasNotifiedReady = false;
-            }
-        }
-
-        onCertificateError: function (error) {
-            // 仅在测试环境忽略自签名/无效证书；正式环境必须拒绝以防中间人攻击
-            if (typeof AppConfig !== "undefined" && AppConfig.isTestEnv && AppConfig.isTestEnv()) {
-                error.ignoreCertificateError();
-            } else {
-                error.rejectCertificate();
             }
         }
 
@@ -427,33 +411,6 @@ Rectangle {
                 root.hasNotifiedReady = true;
                 root.pageContentReady = true;
                 root.pageReadyToShow();
-            }
-        }
-
-        onNavigationRequested: function (request) {
-            if (root.codeAlreadyReceived) {
-                return;
-            }
-            var targetUrl = request.url ? request.url.toString() : "";
-            var isExpected = root.isExpectedCallbackUrl(targetUrl);
-            var isCallbackPath = root.isCallbackPathUrl(targetUrl);
-            var code = root.extractAuthCode(targetUrl);
-            var state = root.extractState(targetUrl);
-            if (isExpected || isCallbackPath) {
-                // Capture code and avoid loading callback 404 page in WebView.
-                if (code.length > 0) {
-                    var callbackPathState = root.extractStateFromCallbackPath(targetUrl);
-                    if (callbackPathState.length > 0) {
-                        state = callbackPathState;
-                    }
-                    root.pendingHandover = true;
-                    root.pendingHandoverCode = code;
-                    root.pendingHandoverState = state;
-                    root.pendingCode = code;
-                    root.pendingState = state;
-                    deferredHandoverTimer.restart();
-                    return;
-                }
             }
         }
 
@@ -565,15 +522,6 @@ Rectangle {
             } else if (root.pendingHandover && isExpected) {
                 // We reached redirect_uri without a code in URL; defer handover with cached code.
                 deferredHandoverTimer.restart();
-            }
-        }
-
-        profile: WebEngineProfile {
-            id: casdoorProfile
-            offTheRecord: true
-            httpUserAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            Component.onCompleted: {
-                CasdoorHelper.setCasdoorWebProfile(casdoorProfile);
             }
         }
     }

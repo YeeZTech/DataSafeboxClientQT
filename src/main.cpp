@@ -28,9 +28,8 @@
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
-#include <QWebEngineProfile>
 #include <QtQml>
-#include <QtWebEngineQuick>
+#include <QtWebView>
 
 // Sentry library is linked via the .pro (LIBS += -lsentry).
 // The previous `#pragma comment(lib, "sentry.lib")` was MSVC-only and is removed for cross-platform builds.
@@ -296,26 +295,26 @@ int main(int argc, char *argv[])
         QDir().mkpath(startupRootDir);
         QDir().mkpath(startupCacheDir);
 
-        const QString webEngineDataPath = QDir(startupCacheDir).filePath("webengine/default-profile/storage");
         const QString qmlDiskCachePath = QDir(startupCacheDir).filePath("qml/disk-cache");
-        QDir().mkpath(webEngineDataPath);
         QDir().mkpath(qmlDiskCachePath);
 
-        // Force QtWebEngine/QML runtime files under local cache root, avoid Roaming writes.
-        qputenv("QTWEBENGINE_USER_DATA_PATH", webEngineDataPath.toUtf8());
-        qputenv("QTWEBENGINE_CHROMIUM_USER_DATA_DIR", webEngineDataPath.toUtf8());
+        // Force QML runtime files under local cache root, avoid Roaming writes.
         qputenv("QML_DISK_CACHE_PATH", qmlDiskCachePath.toUtf8());
         qputenv("QML_CACHE_PATH", qmlDiskCachePath.toUtf8());
     }
 
-    // Set WebEngine environment before initialization
-    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-gpu");
-
     // Auto-select render mode (software vs hardware) before any Qt windowing init
     autoSelectRenderMode();
 
-    // Initialize QtWebEngine BEFORE creating QApplication
-    QtWebEngineQuick::initialize();
+#ifdef Q_OS_WIN
+    // Force the WebView2-backed plugin (no Qt WebEngine shipped/linked) instead of
+    // relying on QtWebView's own plugin-probing order. Windows-only: "webview2" is
+    // not a valid plugin name on other platforms.
+    qputenv("QT_WEBVIEW_PLUGIN", "webview2");
+#endif
+
+    // Initialize QtWebView BEFORE creating QApplication
+    QtWebView::initialize();
 
     QQuickStyle::setStyle("Basic");
 
@@ -361,9 +360,9 @@ int main(int argc, char *argv[])
     const QString casdoorRootDir = QDir(appRootDir).filePath("casdoor");
     QDir().mkpath(casdoorRootDir);
 
-    // Remove legacy Casdoor persistent storage (cookies, localStorage) so the
-    // off-the-record WebEngineProfile starts with a clean slate on every launch.
-    // This prevents the Casdoor login page from showing "使用以下账号继续".
+    // Remove any leftover Casdoor storage from older (QtWebEngine-based) installs
+    // so a clean slate on every launch. This prevents the Casdoor login page from
+    // showing "使用以下账号继续".
     {
         QDir casdoorStorage(QDir(casdoorRootDir).filePath("storage"));
         if (casdoorStorage.exists())
@@ -381,25 +380,11 @@ int main(int argc, char *argv[])
     qputenv("APP_CACHE_DIR", pathManager->cacheDir().toUtf8());
     qputenv("CASDOOR_WORK_DIR", casdoorRootDir.toUtf8());
 
-    QWebEngineProfile *defaultWebProfile = QWebEngineProfile::defaultProfile();
-    defaultWebProfile->setPersistentCookiesPolicy(QWebEngineProfile::ForcePersistentCookies);
-
-    auto applyRuntimeCachePaths = [pathManager, defaultWebProfile](UpdateManager *manager) {
+    auto applyRuntimeCachePaths = [pathManager](UpdateManager *manager) {
         const QString cacheRoot = pathManager->cacheDir();
         qputenv("APP_CACHE_DIR", cacheRoot.toUtf8());
         qputenv("QML_DISK_CACHE_PATH", QDir(cacheRoot).filePath("qml/disk-cache").toUtf8());
         qputenv("QML_CACHE_PATH", QDir(cacheRoot).filePath("qml/disk-cache").toUtf8());
-
-        const QString webEngineProfileRoot = QDir(cacheRoot).filePath("webengine/default-profile");
-        const QString webEngineStoragePath = QDir(webEngineProfileRoot).filePath("storage");
-        const QString webEngineHttpCachePath = QDir(webEngineProfileRoot).filePath("http-cache");
-        QDir().mkpath(webEngineStoragePath);
-        QDir().mkpath(webEngineHttpCachePath);
-
-        qputenv("QTWEBENGINE_USER_DATA_PATH", webEngineStoragePath.toUtf8());
-        qputenv("QTWEBENGINE_CHROMIUM_USER_DATA_DIR", webEngineStoragePath.toUtf8());
-        defaultWebProfile->setPersistentStoragePath(webEngineStoragePath);
-        defaultWebProfile->setCachePath(webEngineHttpCachePath);
 
         if (manager)
         {

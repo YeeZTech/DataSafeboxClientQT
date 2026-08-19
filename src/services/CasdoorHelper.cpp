@@ -8,11 +8,9 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include <QQuickWebEngineProfile>
 #include <QUrl>
 #include <QUrlQuery>
 #include <QUuid>
-#include <QWebEngineCookieStore>
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -429,64 +427,6 @@ void CasdoorHelper::searchUser(const QString &username)
     });
 }
 
-void CasdoorHelper::setCasdoorWebProfile(QObject *profile)
-{
-    auto *webProfile = qobject_cast<QQuickWebEngineProfile *>(profile);
-    if (!webProfile)
-    {
-        qWarning() << "[CasdoorHelper] setCasdoorWebProfile: invalid profile object";
-        return;
-    }
-
-    QWebEngineCookieStore *store = webProfile->cookieStore();
-    if (!store)
-    {
-        qWarning() << "[CasdoorHelper] setCasdoorWebProfile: cookieStore() returned null";
-        return;
-    }
-
-    if (m_cookieStore == store)
-        return;
-
-    if (m_cookieStore)
-    {
-        disconnect(m_cookieStore, nullptr, this, nullptr);
-    }
-
-    m_cookieStore = store;
-    connect(m_cookieStore, &QWebEngineCookieStore::cookieAdded, this, &CasdoorHelper::onCookieAdded);
-    connect(m_cookieStore, &QWebEngineCookieStore::cookieRemoved, this, &CasdoorHelper::onCookieRemoved);
-
-    qInfo() << "[CasdoorHelper] Web profile cookie store registered";
-}
-
-void CasdoorHelper::onCookieAdded(const QNetworkCookie &cookie)
-{
-    if (cookie.name() == "casdoor_session_id")
-    {
-        m_casdoorSessionId = QString::fromUtf8(cookie.value());
-        qInfo() << "[CasdoorHelper] casdoor_session_id cached";
-    }
-}
-
-void CasdoorHelper::onCookieRemoved(const QNetworkCookie &cookie)
-{
-    if (cookie.name() == "casdoor_session_id")
-    {
-        m_casdoorSessionId.clear();
-        qInfo() << "[CasdoorHelper] casdoor_session_id cleared from cache";
-    }
-}
-
-void CasdoorHelper::clearCasdoorCookies()
-{
-    if (m_cookieStore)
-    {
-        m_cookieStore->deleteAllCookies();
-    }
-    m_casdoorSessionId.clear();
-}
-
 void CasdoorHelper::performLocalCleanup()
 {
     m_oauthState.clear();
@@ -494,52 +434,11 @@ void CasdoorHelper::performLocalCleanup()
     m_currentIdToken.clear();
     m_sessionToken.clear();
     m_sessionOwner.clear();
-    clearCasdoorCookies();
-}
-
-void CasdoorHelper::sendCasdoorLogoutRequest()
-{
-    QUrl url(endpoint + "/api/logout");
-    QNetworkRequest req(url);
-    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    req.setRawHeader("Cookie", ("casdoor_session_id=" + m_casdoorSessionId).toUtf8());
-    req.setTransferTimeout(8000);
-
-    qInfo().noquote() << QStringLiteral("[CasdoorHelper] POST %1 with casdoor_session_id").arg(url.toString());
-
-    QNetworkReply *reply = m_network->post(req, QByteArray());
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-        reply->deleteLater();
-        const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-
-        if (reply->error() != QNetworkReply::NoError)
-        {
-            qWarning().noquote() << QStringLiteral("[CasdoorHelper] Casdoor logout failed: %1 (HTTP %2)")
-                                        .arg(reply->errorString(), QString::number(httpStatus));
-            performLocalCleanup();
-            emit logoutFailed(reply->errorString());
-            emit logoutCompleted();
-            return;
-        }
-
-        qInfo().noquote()
-            << QStringLiteral("[CasdoorHelper] Casdoor logout succeeded (HTTP %1)").arg(QString::number(httpStatus));
-        performLocalCleanup();
-        emit logoutCompleted();
-    });
 }
 
 void CasdoorHelper::logout()
 {
     clearAuthExchangeState();
-
-    if (m_casdoorSessionId.isEmpty())
-    {
-        qInfo() << "[CasdoorHelper] No casdoor_session_id, skipping server logout";
-        performLocalCleanup();
-        emit logoutCompleted();
-        return;
-    }
-
-    sendCasdoorLogoutRequest();
+    performLocalCleanup();
+    emit logoutCompleted();
 }
