@@ -179,11 +179,43 @@ rem tools dir. The DLL name varies by vcpkg version (z.dll vs zlib1.dll), so cop
 rem whatever vcpkg placed there instead of hardcoding a single name.
 for %%D in ("%CRASHPAD_DIR%\*.dll") do call :copy_dep "%%D" "crashpad dependency missing"
 
-rem --- Step 3/6: windeployqt ---
+rem --- Step 3/6: windeployqt + Visual C++ runtime ---
 echo.
 echo [3/6] Running windeployqt...
 "%WINDEPLOYQT%" --qmldir "%PROJECT_ROOT%\qml" "%EXECUTABLE%"
 if errorlevel 1 goto :fail
+
+rem Ship the Visual C++ runtime next to the exe (app-local deployment) instead of
+rem relying on vc_redist.%VC_REDIST_ARCH%.exe having installed it system-wide.
+rem DataSafebox.exe imports VCRUNTIME140.dll/MSVCP140.dll, and if the matching
+rem architecture is not present the app dies at startup with 0xc000007b before any
+rem of its own code runs. x64 machines nearly always have the x64 runtime already,
+rem but the ARM64 runtime is usually absent on arm64 machines, so that build cannot
+rem depend on it. Copying the whole Microsoft.VC*.CRT set (~2 MB) also covers the
+rem split-out pieces (msvcp140_1/_2/_atomic_wait, vcruntime140_1) that Qt and the
+rem DSCC libraries may import.
+rem windeployqt --compiler-runtime is deliberately not used: it only deploys
+rem vc_redist.exe, not the runtime DLLs themselves.
+echo.
+echo [3/6] Deploying Visual C++ runtime (%VC_REDIST_ARCH%)...
+set "VC_CRT_COPIED=0"
+set "VSWHERE_CRT=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+if not exist "%VSWHERE_CRT%" set "VSWHERE_CRT=%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe"
+if exist "%VSWHERE_CRT%" (
+    for /f "usebackq delims=" %%i in (`"%VSWHERE_CRT%" -latest -products * -find VC\Redist\MSVC\*\%VC_REDIST_ARCH%\Microsoft.VC*.CRT\*.dll 2^>nul`) do (
+        copy /Y "%%i" "%BUILD_DIR%\" >nul
+        set "VC_CRT_COPIED=1"
+    )
+)
+if "%VC_CRT_COPIED%"=="0" (
+    echo [Error] Visual C++ %VC_REDIST_ARCH% runtime DLLs not found in the Visual Studio redist directory.
+    echo         Expected : VC\Redist\MSVC\*\%VC_REDIST_ARCH%\Microsoft.VC*.CRT\*.dll
+    echo         Fix: In Visual Studio Installer, add the C++ redistributable/build tools
+    echo              for %VC_REDIST_ARCH%. Without them the app fails to start with 0xc000007b
+    echo              on machines lacking the %VC_REDIST_ARCH% VC++ runtime.
+    goto :fail
+)
+echo [OK] Visual C++ runtime deployed
 
 rem --- Step 4/6: installer data dir ---
 echo.
