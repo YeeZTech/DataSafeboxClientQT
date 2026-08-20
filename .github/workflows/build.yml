@@ -3,12 +3,20 @@ name: Build & Release
 # 触发条件：
 #   - 推送到 feature/build 分支（出单一安装包：内置测试/正式两套配置，登录页选择环境）
 #   - 推送 release/v* 标签（例如 release/v1.0.4，额外创建 GitHub Release）
-#   - 手动触发（workflow_dispatch）
+#   - 手动触发（workflow_dispatch，可选只跑某一平台）
 on:
   push:
     branches: [ feature/build ]
     tags:     [ 'release/v*' ]
   workflow_dispatch:
+    inputs:
+      # 只改了一端时（例如只动 macOS 打包脚本）选 macos / windows，跳过另一端，
+      # 省 runner 时长。push / tag 触发没有 inputs，一律全平台。
+      platforms:
+        description: '要构建的平台'
+        type: choice
+        default: all
+        options: [ all, macos, windows ]
 
 # 同一分支/标签的旧构建在新构建开始时取消，避免排队浪费 runner 时长
 concurrency:
@@ -27,6 +35,7 @@ jobs:
   # ============================================================
   build-windows:
     name: Windows (${{ matrix.arch }})
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.platforms != 'macos' }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -160,12 +169,29 @@ jobs:
           retention-days: 30
 
   # ============================================================
-  # macOS (Apple Silicon) — Clang + Qt 6.7.3 + macdeployqt → .dmg
-  # 单一安装包 DataSafebox_<version>.dmg，内置测试/正式两套配置
+  # macOS — Clang + Qt 6.7.3 + macdeployqt → .dmg
+  # arm64（macos-14，Apple Silicon）+ x64（macos-15-intel，Intel）两条腿，
+  # 各自匹配 DSCC 的 macos-arm64 / macos-x64 SDK 包（两个包目录结构完全一致，
+  # 打包脚本无需按架构分支）。Qt 的 macOS desktop 包本身是 universal，两条腿
+  # 用同一个 clang_64 包；产出的二进制随宿主 runner 的架构。
+  # 单一安装包 DataSafebox_<version>_<arch>.dmg，内置测试/正式两套配置
   # ============================================================
   build-macos:
-    name: macOS
-    runs-on: macos-14        # Apple Silicon (arm64) — 与 DSCC macos-arm64 包匹配
+    name: macOS (${{ matrix.arch }})
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.platforms != 'windows' }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-14
+            dscc_asset: dscc-sdk-macos-arm64.zip
+            dmg_suffix: '_arm64'
+          - arch: x64
+            runner: macos-15-intel
+            dscc_asset: dscc-sdk-macos-x64.zip
+            dmg_suffix: '_x64'
 
     steps:
       - name: Checkout
@@ -182,7 +208,8 @@ jobs:
           modules: 'qtwebview qtwebchannel qtpositioning qtlocation qtquick3d'
           cache:   true
 
-      # 构建依赖：图标渲染(librsvg) + pkg-config + sentry-native(arm64) + Pillow
+      # 构建依赖：图标渲染(librsvg) + pkg-config + sentry-native + Pillow
+      # （brew 按 runner 架构装对应 bottle，两条腿共用这一步）
       - name: Install build dependencies (Homebrew)
         run: brew install librsvg pkg-config sentry-native
 
@@ -194,7 +221,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DSCC_TOKEN }}
         run: |
-          asset="dscc-sdk-macos-arm64.zip"
+          asset="${{ matrix.dscc_asset }}"
           gh release download feature-build --repo YeeZTech/data-safebox-core \
             --pattern "$asset" --dir dscc-zip
           mkdir -p dscc-sdk
@@ -265,6 +292,8 @@ jobs:
 
       # 编译 + 打包（build_dmg.sh 内部完成 lrelease/qmake/make/macdeployqt/签名/公证/制作 dmg）
       - name: Build & package dmg
+        env:
+          DMG_SUFFIX: ${{ matrix.dmg_suffix }}
         run: |
           export QT_DIR="$QT_ROOT_DIR"
           export SENTRY_ROOT_DIR="$(brew --prefix sentry-native)"
@@ -289,7 +318,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DataSafebox-macos
+          name: DataSafebox-macos-${{ matrix.arch }}
           path: builder/macos/DataSafebox_*.dmg
           if-no-files-found: error
           retention-days: 30
@@ -323,7 +352,8 @@ jobs:
           files: |
             artifacts/DataSafebox-windows-x64/DataSafebox_*.exe
             artifacts/DataSafebox-windows-arm64/DataSafebox_*.exe
-            artifacts/DataSafebox-macos/DataSafebox_*.dmg
+            artifacts/DataSafebox-macos-arm64/DataSafebox_*.dmg
+            artifacts/DataSafebox-macos-x64/DataSafebox_*.dmg
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}

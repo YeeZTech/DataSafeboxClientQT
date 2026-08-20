@@ -111,7 +111,11 @@ VERSION="$(grep -oE '<Version>[^<]+' \
     2>/dev/null | head -1 | sed 's|<Version>||')"
 VERSION="${VERSION:-1.0.0}"
 
-DMG_NAME="DataSafebox_${VERSION}.dmg"
+# Architecture suffix for the output name. CI sets it (_arm64 / _x64) so the two
+# macOS legs of the same version don't collide; local builds leave it empty and
+# still get plain DataSafebox_<version>.dmg.
+DMG_SUFFIX="${DMG_SUFFIX:-}"
+DMG_NAME="DataSafebox_${VERSION}${DMG_SUFFIX}.dmg"
 
 printf "\n"
 printf "==================================================\n"
@@ -460,15 +464,17 @@ for _lib in libcrypto.3.dylib libssl.3.dylib; do
 done
 
 # secp256k1 (required by libycrypto_stdeth)
-for _lib in libsecp256k1.6.dylib; do
-    _src="${DSCC_DIR}/deps/secp256k1/lib/${_lib}"
-    if [[ -f "${_src}" ]]; then
-        cp -f "${_src}" "${DSCC_FWDIR}/"
-        ok "bundled ${_lib}"
-    else
-        warn "${_src} not found -- bundle may be incomplete"
-    fi
+# The SONAME version travels with the SDK (libsecp256k1.6.dylib -> .7 in the
+# 2026-08 build), so match the versioned dylib by pattern instead of pinning a
+# filename that goes stale on the next bump.
+_secp_found=0
+for _src in "${DSCC_DIR}"/deps/secp256k1/lib/libsecp256k1.[0-9]*.dylib; do
+    [[ -e "${_src}" ]] || continue
+    cp -f "${_src}" "${DSCC_FWDIR}/"
+    ok "bundled $(basename "${_src}")"
+    _secp_found=1
 done
+[[ "${_secp_found}" == "1" ]] || warn "no versioned secp256k1 dylib in ${DSCC_DIR}/deps/secp256k1/lib -- bundle may be incomplete"
 
 # Boost: libdscc_common/core link the -mt variants (libboost_system-mt.dylib, …)
 # while libycrypto_core/toolkit link the plain names (libboost_filesystem.dylib).
@@ -628,9 +634,25 @@ rm -rf "${DMG_STAGING}"; mkdir -p "${DMG_STAGING}"
 ditto "${APP_BUNDLE}" "${DMG_STAGING}/${DMG_APP_NAME}.app"
 ln -s /Applications "${DMG_STAGING}/Applications"
 
+DMG_VOLNAME="DataSafebox ${VERSION}"
 rm -f "${DMG_TMP}" "${DIST_DIR}/${DMG_NAME}"
-hdiutil create -volname "DataSafebox ${VERSION}" -srcfolder "${DMG_STAGING}" \
-    -ov -format UDRW "${DMG_TMP}" >/dev/null
+
+# hdiutil create intermittently fails with "Resource busy" on CI runners -- the
+# image it just built is still held by disk arbitration / Spotlight when it tries
+# to mount it. Retrying after detaching any leftover volume clears it.
+for _attempt in 1 2 3; do
+    if hdiutil create -volname "${DMG_VOLNAME}" -srcfolder "${DMG_STAGING}" \
+           -ov -format UDRW "${DMG_TMP}" >/dev/null; then
+        break
+    fi
+    if [[ "${_attempt}" == "3" ]]; then
+        die "hdiutil create failed 3 times -- giving up"
+    fi
+    warn "hdiutil create failed (attempt ${_attempt}/3) -- retrying in 10s"
+    hdiutil detach "/Volumes/${DMG_VOLNAME}" -force >/dev/null 2>&1 || true
+    rm -f "${DMG_TMP}"
+    sleep 10
+done
 hdiutil convert "${DMG_TMP}" -format UDZO -o "${DIST_DIR}/${DMG_NAME}" >/dev/null
 rm -f "${DMG_TMP}"
 
