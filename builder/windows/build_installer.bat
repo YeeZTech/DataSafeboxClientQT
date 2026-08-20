@@ -215,6 +215,11 @@ if "%VC_CRT_COPIED%"=="0" (
     echo              on machines lacking the %VC_REDIST_ARCH% VC++ runtime.
     goto :fail
 )
+rem The redist folder for one architecture also ships binaries of another (the
+rem arm64 folder contains an x64 vcruntime140_1.dll). Nothing imports it here, but
+rem a wrong-architecture DLL has no business in the package, so drop by actual PE
+rem machine type rather than trusting the folder name.
+powershell -NoProfile -Command "$want = if ('%VC_REDIST_ARCH%' -eq 'arm64') { 0xAA64 } else { 0x8664 }; Get-ChildItem '%BUILD_DIR%\*.dll' | Where-Object { $_.Name -match '^(vcruntime|msvcp|concrt|vccorlib)140' } | ForEach-Object { $fs = [IO.File]::OpenRead($_.FullName); $br = New-Object IO.BinaryReader($fs); $fs.Seek(0x3C,'Begin') | Out-Null; $o = $br.ReadInt32(); $fs.Seek($o,'Begin') | Out-Null; $br.ReadUInt32() | Out-Null; $m = $br.ReadUInt16(); $br.Close(); $fs.Close(); if ($m -ne $want) { Write-Host ('  [INFO]    dropping ' + $_.Name + ' - not %VC_REDIST_ARCH%'); Remove-Item $_.FullName -Force } }"
 echo [OK] Visual C++ runtime deployed
 
 rem --- Step 4/6: installer data dir ---
