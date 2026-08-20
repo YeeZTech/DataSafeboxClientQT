@@ -555,6 +555,15 @@ fi
 macdeployqt "${APP_BUNDLE}" -qmldir="${PROJECT_DIR}/qml"
 ok "macdeployqt done"
 
+# QtWebView picks its backend through a plugin, and a missing one is silent: the
+# factory just warns and installs a null web view, so the app starts fine and the
+# login page is simply never there. main.cpp asks for the WKWebView backend
+# (QT_WEBVIEW_PLUGIN=native), so that plugin has to be in the bundle.
+WEBVIEW_PLUGIN="${APP_BUNDLE}/Contents/PlugIns/webview/libqtwebview_darwin.dylib"
+[[ -f "${WEBVIEW_PLUGIN}" ]] \
+    || die "macdeployqt did not bundle libqtwebview_darwin.dylib -- the login page would be blank"
+ok "WKWebView backend plugin bundled"
+
 # ===========================================================================
 # [3/5] Trim bundle  (reduce distribution size)
 # ===========================================================================

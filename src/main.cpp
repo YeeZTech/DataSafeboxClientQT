@@ -306,11 +306,20 @@ int main(int argc, char *argv[])
     // Auto-select render mode (software vs hardware) before any Qt windowing init
     autoSelectRenderMode();
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
     // Force the WebView2-backed plugin (no Qt WebEngine shipped/linked) instead of
     // relying on QtWebView's own plugin-probing order. Windows-only: "webview2" is
     // not a valid plugin name on other platforms.
     qputenv("QT_WEBVIEW_PLUGIN", "webview2");
+#elif defined(Q_OS_MACOS)
+    // Same reason, opposite default: QtWebView picks its backend by plugin key and
+    // qwebviewfactory.cpp hardcodes "webengine" as that default on macOS ("native"
+    // on every other platform). Since the WebEngine migration nothing ships Qt
+    // WebEngine, so the factory finds no plugin, warns "No WebView plug-in found!"
+    // and installs a QNullWebView — a WebView that never loads, never emits load
+    // signals, and therefore leaves the login page invisible with no error shown.
+    // "native" is the key of the WKWebView-backed darwin plugin.
+    qputenv("QT_WEBVIEW_PLUGIN", "native");
 #endif
 
     // Initialize QtWebView BEFORE creating QApplication
