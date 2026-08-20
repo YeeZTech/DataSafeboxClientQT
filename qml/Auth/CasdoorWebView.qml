@@ -362,6 +362,14 @@ Rectangle {
     // track the item's geometry, and is clipped to the app window.
     readonly property bool webContentOnScreen: root.visible && !root.webContentSuppressed && !root.hideWebContentDuringHandover && root.pageContentReady
 
+    // WKWebView (macOS) never reports HTTP status to Qt: every response that carries
+    // a body finishes as a successful load. The callback URL's intentional 404 therefore
+    // arrives as LoadSucceededStatus there, while WebEngine/WebView2 report it as
+    // LoadFailedStatus. On that backend a 404 cannot be told apart from a real page, so
+    // the callback is always treated as a pure handover trigger.
+    // (Qt 6 reports macOS as "osx"; that becomes "macos" in Qt 7.)
+    readonly property bool backendReportsHttpErrors: Qt.platform.os !== "osx"
+
     WebView {
         id: webView
         width: root.width
@@ -380,6 +388,16 @@ Rectangle {
                 // When the user finishes binding, Casdoor will issue a fresh redirect
                 // that onUrlChanged will capture normally.
                 if (root.isExpectedCallbackUrl(currentUrl) && root.pendingHandover) {
+                    if (!root.backendReportsHttpErrors) {
+                        // This backend reports the intentional 404 as a success too, so
+                        // "served content" cannot be distinguished here. Treat it exactly
+                        // like the LoadFailedStatus branch below does.
+                        root.hideWebContentDuringHandover = true;
+                        webView.stop();
+                        webView.url = "about:blank";
+                        deferredHandoverTimer.restart();
+                        return;
+                    }
                     deferredHandoverTimer.stop();
                     codeExtractionTimer.stop();
                     root.hideWebContentDuringHandover = false;
