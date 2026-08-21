@@ -237,10 +237,15 @@ if exist "%VC_REDIST_BACKUP%" (
     del /Q "%VC_REDIST_BACKUP%" 2>nul
 )
 
+rem Qt SQL driver plugins for databases this app does not use. Each one imports a
+rem vendor client library (libpq/odbc32/fbclient/OCI/MIMAPI64) that we neither
+rem ship nor want to, so Qt would only ever fail to load them. Dropping them keeps
+rem the package's dependency closure complete -- see the closure check in CI.
+rem The app talks to SQLite (via WCDB and QML LocalStorage), so qsqlite.dll stays.
 robocopy "%BUILD_DIR%" "%DATA_DIR%" /E ^
   /XD qmltooling generic ^
   /XF *.obj *.cpp *.h *.res *.qrc Makefile Makefile.Debug Makefile.Release ^
-      qsqlpsql.dll qsqlodbc.dll ^
+      qsqlpsql.dll qsqlodbc.dll qsqlibase.dll qsqloci.dll qsqlmimer.dll ^
   >nul
 if errorlevel 8 goto :fail
 

@@ -160,6 +160,17 @@ jobs:
           # DSCC_DIR 与 IFW_BIN 已通过 GITHUB_ENV 注入
         run: call builder\windows\build_installer.bat
 
+      # 静态自检：安装包里每个 dll/exe 的导入表所需 DLL，必须要么也在包里、要么由
+      # Windows 提供。此前 WCDB.dll 依赖 zlib1.dll 而包里没有，直到用户装到干净机器上
+      # 才暴露成"找不到 zlib1.dll"；x64 长期没事只是因为别的软件在 PATH 上留了一份。
+      # 检查的是 IFW 打包用的 data 目录，即安装后落到用户机器上的那份内容。
+      # 与 macOS 的 "Verify bundled dylib closure" 对称；脚本同步自 data-safebox-core。
+      - name: Verify bundled DLL closure
+        shell: pwsh
+        run: |
+          .github/scripts/check_windows_dep_closure.ps1 `
+            -Root installer/packages/com.datasafebox.client/data
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
