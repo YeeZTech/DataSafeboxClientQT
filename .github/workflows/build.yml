@@ -160,6 +160,31 @@ jobs:
           # DSCC_DIR 与 IFW_BIN 已通过 GITHUB_ENV 注入
         run: call builder\windows\build_installer.bat
 
+      # 上传调试符号（release\DataSafebox.pdb，由 .pro 的 force_debug_info 生成）到 Sentry，
+      # 用于原生崩溃堆栈符号化；PDB 本身不会被打进安装包（见 build_installer.bat 的 robocopy）。
+      # SENTRY_AUTH_TOKEN 未配置时跳过（本地/fork 构建没有该 secret 也能正常出包）。
+      - name: Setup sentry-cli
+        uses: getsentry/action-setup-sentry-cli@v2
+        with:
+          token: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          url: https://trace.dianshudata.com/
+          organization: sentry
+          project: datasafebox-client-qt
+
+      - name: Upload Sentry debug symbols
+        shell: pwsh
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_URL: https://trace.dianshudata.com/
+          SENTRY_ORG: sentry
+          SENTRY_PROJECT: datasafebox-client-qt
+        run: |
+          if ([string]::IsNullOrEmpty($env:SENTRY_AUTH_TOKEN)) {
+            Write-Host "::warning::SENTRY_AUTH_TOKEN not set -- skipping Sentry debug symbol upload"
+          } else {
+            sentry-cli debug-files upload --org sentry --project datasafebox-client-qt release\
+          }
+
       # 静态自检：安装包里每个 dll/exe 的导入表所需 DLL，必须要么也在包里、要么由
       # Windows 提供。此前 WCDB.dll 依赖 zlib1.dll 而包里没有，直到用户装到干净机器上
       # 才暴露成"找不到 zlib1.dll"；x64 长期没事只是因为别的软件在 PATH 上留了一份。
@@ -226,6 +251,15 @@ jobs:
 
       - name: Install Pillow
         run: python3 -m pip install --break-system-packages --quiet Pillow
+
+      # sentry-cli：build_dmg.sh 在打包阶段用它把调试符号上传到 Sentry（原生崩溃符号化）
+      - name: Setup sentry-cli
+        uses: getsentry/action-setup-sentry-cli@v2
+        with:
+          token: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          url: https://trace.dianshudata.com/
+          organization: sentry
+          project: datasafebox-client-qt
 
       # 下载并解压 DSCC SDK（环境无关单包；私有仓库，需要 DSCC_TOKEN）
       - name: Download DSCC SDK
@@ -305,6 +339,10 @@ jobs:
       - name: Build & package dmg
         env:
           DMG_SUFFIX: ${{ matrix.dmg_suffix }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_URL: https://trace.dianshudata.com/
+          SENTRY_ORG: sentry
+          SENTRY_PROJECT: datasafebox-client-qt
         run: |
           export QT_DIR="$QT_ROOT_DIR"
           export SENTRY_ROOT_DIR="$(brew --prefix sentry-native)"
@@ -368,3 +406,44 @@ jobs:
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
+
+  # ============================================================
+  # Sentry release：把这次构建的版本关联到 git commit，让 Sentry 能给出
+  # suspect commit / issue owner 建议（参考 prod-dianshu-client 的做法）。
+  # 两个平台共用同一个 release 实体，跑一次即可，不按 matrix leg 重复。
+  # ============================================================
+  sentry-release:
+    name: Create Sentry release
+    needs: [ build-windows, build-macos ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 完整历史，供 set-commits 关联 commit
+
+      - name: Setup sentry-cli
+        uses: getsentry/action-setup-sentry-cli@v2
+        with:
+          token: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          url: https://trace.dianshudata.com/
+          organization: sentry
+          project: datasafebox-client-qt
+
+      - name: Create & finalize Sentry release
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_URL: https://trace.dianshudata.com/
+          SENTRY_ORG: sentry
+          SENTRY_PROJECT: datasafebox-client-qt
+        run: |
+          if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+            echo "::warning::SENTRY_AUTH_TOKEN not set -- skipping Sentry release creation"
+            exit 0
+          fi
+          version="$(grep -m1 '^VERSION = ' datasafebox-qt-client.pro | sed 's/^VERSION = //')"
+          release="datasafebox-client@${version}"
+          sentry-cli releases new "$release"
+          sentry-cli releases set-commits "$release" --local
+          sentry-cli releases finalize "$release"

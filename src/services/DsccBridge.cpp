@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QLoggingCategory>
 #include <QMetaType>
 #include <QStandardPaths>
 #include <QStringList>
@@ -13,6 +14,7 @@
 #include <algorithm>
 
 #include "AppConfig.h"
+#include "SentryBridge.h"
 #include "dscc/core/common/logger.h"
 #include "dscc/core/db/table/domain_ops.h"
 #include "dscc/core/interface/app_assets.h"
@@ -23,6 +25,11 @@ namespace
 // with domains/audits/messages created on other endpoints (e.g. the CLI).
 constexpr int kSyncTimerIntervalMs = 15 * 1000;
 } // namespace
+
+// Notifications logged under this category are reported to Sentry explicitly (with
+// structured tags/extra) by logNotification() below, so sentryMessageHandler (main.cpp)
+// skips them to avoid double-reporting the same notification as a flattened string.
+Q_LOGGING_CATEGORY(dsccBridgeLog, "dscc")
 
 namespace
 {
@@ -60,15 +67,44 @@ QString notificationParamsText(const dscc::Notification &notification)
     return QStringLiteral("{%1}").arg(parts.join(QStringLiteral(", ")));
 }
 
+QVariantMap notificationParamsToVariantMap(const dscc::Notification &notification)
+{
+    QVariantMap map;
+    for (auto it = notification.params.cbegin(); it != notification.params.cend(); ++it)
+    {
+        map.insert(it.key(), it.value());
+    }
+    return map;
+}
+
 void logNotification(const QString &prefix, const dscc::Notification &notification)
 {
-    qWarning().noquote() << QStringLiteral("[DsccBridge] %1 code=%2 type=%3 localized=\"%4\" default=\"%5\" params=%6")
-                                .arg(prefix)
-                                .arg(static_cast<int>(notification.code))
-                                .arg(static_cast<int>(notification.type))
-                                .arg(notification.Localized())
-                                .arg(notification.DefaultText())
-                                .arg(notificationParamsText(notification));
+    qCWarning(dsccBridgeLog).noquote()
+        << QStringLiteral("[DsccBridge] %1 code=%2 type=%3 localized=\"%4\" default=\"%5\" params=%6")
+               .arg(prefix)
+               .arg(static_cast<int>(notification.code))
+               .arg(static_cast<int>(notification.type))
+               .arg(notification.Localized())
+               .arg(notification.DefaultText())
+               .arg(notificationParamsText(notification));
+
+    const QString message = notification.Localized().trimmed().isEmpty() ? notification.DefaultText().trimmed()
+                                                                         : notification.Localized().trimmed();
+    QVariantMap data = notificationParamsToVariantMap(notification);
+    data.insert(QStringLiteral("dscc_code"), static_cast<int>(notification.code));
+
+    if (notification.type == dscc::Notification::kError)
+    {
+        QVariantMap tags;
+        tags.insert(QStringLiteral("dscc_code"), static_cast<int>(notification.code));
+        SentryBridge::captureError(QStringLiteral("dscc"), QStringLiteral("%1: %2").arg(prefix, message), tags, data);
+    }
+    else
+    {
+        const QString level =
+            notification.type == dscc::Notification::kWarning ? QStringLiteral("warning") : QStringLiteral("info");
+        SentryBridge::addBreadcrumb(QStringLiteral("dscc"), level, QStringLiteral("%1: %2").arg(prefix, message), data);
+    }
 }
 
 QString notificationDisplayText(const dscc::Notification &notification, const QString &fallback)

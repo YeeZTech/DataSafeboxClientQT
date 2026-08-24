@@ -17,6 +17,7 @@
 #include <QDir>
 #include <QFile>
 #include <QIcon>
+#include <QLocale>
 #include <QLoggingCategory>
 #include <QProcess>
 #include <QQmlApplicationEngine>
@@ -24,7 +25,9 @@
 #include <QQuickStyle>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QSysInfo>
 #include <QTextStream>
+#include <QTimeZone>
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
@@ -160,29 +163,30 @@ static void sentryMessageHandler(QtMsgType type, const QMessageLogContext &conte
         g_logStream->flush();
     }
 
-    if (type == QtCriticalMsg || type == QtFatalMsg)
+    // "dscc" category messages are already reported to Sentry explicitly (with structured
+    // tags/extra) by DsccBridge::logNotification, so skip them here to avoid double-reporting.
+    const bool isDsccCategory = context.category && qstrcmp(context.category, "dscc") == 0;
+
+    if (!isDsccCategory)
     {
-        QByteArray utf8Message = msg.toUtf8();
-        sentry_value_t event = sentry_value_new_event();
-        sentry_value_set_by_key(event, "level", sentry_value_new_string("error"));
-        sentry_value_t messageObject = sentry_value_new_object();
-        sentry_value_set_by_key(messageObject, "formatted", sentry_value_new_string(utf8Message.constData()));
-        sentry_value_set_by_key(event, "message", messageObject);
-        sentry_value_set_by_key(event, "logger", sentry_value_new_string(context.category ? context.category : "qt"));
-        sentry_capture_event(event);
-        // Flush immediately for critical/fatal so events are sent even if the app crashes
-        sentry_flush(5000);
-    }
-    else if (type == QtWarningMsg)
-    {
-        QByteArray utf8Message = msg.toUtf8();
-        sentry_value_t event = sentry_value_new_event();
-        sentry_value_set_by_key(event, "level", sentry_value_new_string("warning"));
-        sentry_value_set_by_key(event, "logger", sentry_value_new_string("qt"));
-        sentry_value_t messageObject = sentry_value_new_object();
-        sentry_value_set_by_key(messageObject, "formatted", sentry_value_new_string(utf8Message.constData()));
-        sentry_value_set_by_key(event, "message", messageObject);
-        sentry_capture_event(event);
+        const QVariantMap data =
+            location.isEmpty() ? QVariantMap() : QVariantMap{{QStringLiteral("location"), location}};
+
+        if (type == QtCriticalMsg || type == QtFatalMsg)
+        {
+            // Real error / crash precursor: still its own Issue, now with structured extra.
+            SentryBridge::captureError(context.category ? QString::fromUtf8(context.category) : QStringLiteral("qt"),
+                                       msg, {}, data);
+            // Flush immediately for critical/fatal so events are sent even if the app crashes
+            sentry_flush(5000);
+        }
+        else
+        {
+            // Routine Qt logging: breadcrumb only, so it stops flooding the Issues list and
+            // instead shows up as pre-crash context on the next real error/crash event.
+            const char *level = type == QtWarningMsg ? "warning" : (type == QtDebugMsg ? "debug" : "info");
+            SentryBridge::addBreadcrumb(QStringLiteral("qt"), QString::fromUtf8(level), msg, data);
+        }
     }
 
     if (g_previousMessageHandler)
@@ -455,6 +459,19 @@ int main(int argc, char *argv[])
             if (sentryInitResult == 0)
             {
                 qInfo() << "[Config] Sentry initialized successfully";
+                // sentry-native only auto-populates "os"/"trace"; fill in the rest by hand so
+                // crash reports carry the same app/device/locale context dianshu's events do.
+                SentryBridge::setContext(
+                    QStringLiteral("app"),
+                    {{QStringLiteral("app_version"), appVersion},
+                     {QStringLiteral("app_start_time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate)}});
+                SentryBridge::setContext(QStringLiteral("device"),
+                                         {{QStringLiteral("arch"), QSysInfo::currentCpuArchitecture()},
+                                          {QStringLiteral("model"), QSysInfo::prettyProductName()}});
+                SentryBridge::setContext(
+                    QStringLiteral("culture"),
+                    {{QStringLiteral("locale"), QLocale::system().name()},
+                     {QStringLiteral("timezone"), QString::fromUtf8(QTimeZone::systemTimeZoneId())}});
             }
             else
             {
@@ -504,6 +521,8 @@ int main(int argc, char *argv[])
     QObject::connect(
         appConfig, &AppConfig::restartRequested, &app,
         [&app]() {
+            SentryBridge::addBreadcrumb(QStringLiteral("app"), QStringLiteral("info"),
+                                        QStringLiteral("environment switch requested"));
             app.releaseSingleInstance();
             // --server-switched：告知新实例本次启动源于切换服务器，登录页不再重复弹"选择服务器"
             QProcess::startDetached(QCoreApplication::applicationFilePath(), {QStringLiteral("--server-switched")});
@@ -519,6 +538,10 @@ int main(int argc, char *argv[])
     // 运行时切换语言：重新求值所有含 qsTr() 的 QML 绑定，界面无需重启即可刷新。
     QObject::connect(languageManager, &LanguageManager::languageChanged, &engine,
                      [&engine]() { engine.retranslate(); });
+    SentryBridge::setTag(QStringLiteral("language"), languageManager->currentLanguage());
+    QObject::connect(languageManager, &LanguageManager::languageChanged, [](const QString &languageCode) {
+        SentryBridge::setTag(QStringLiteral("language"), languageCode);
+    });
 
     // Register DsccBridge (business logic dynamic library)
     // 向 DSCC 注入当前环境的服务地址（SSO 用户查询 + OpenBao KMS），必须在任何
@@ -539,6 +562,83 @@ int main(int argc, char *argv[])
     // Register ArrearsManager (account arrears/paused status)
     ArrearsManager *arrearsManager = new ArrearsManager(&app);
     engine.rootContext()->setContextProperty("ArrearsManager", arrearsManager);
+
+    // Wire Sentry user identity + business breadcrumbs. Login/logout set the real Sentry
+    // user (replacing the random install id sentry-native uses by default); file-crypto and
+    // update-check milestones become breadcrumbs so a later crash/error carries context.
+    QObject::connect(casdoorHelper, &CasdoorHelper::loginSuccess, [](const QVariantMap &user) {
+        SentryBridge::setUser(user.value(QStringLiteral("authUserId")).toString(),
+                              user.value(QStringLiteral("userName")).toString(),
+                              user.value(QStringLiteral("email")).toString());
+        SentryBridge::addBreadcrumb(QStringLiteral("auth"), QStringLiteral("info"), QStringLiteral("login succeeded"));
+    });
+    QObject::connect(casdoorHelper, &CasdoorHelper::loginFailed, [](const QString &errorMessage) {
+        SentryBridge::addBreadcrumb(QStringLiteral("auth"), QStringLiteral("error"),
+                                    QStringLiteral("login failed: %1").arg(errorMessage));
+    });
+    QObject::connect(casdoorHelper, &CasdoorHelper::logoutCompleted, []() {
+        SentryBridge::addBreadcrumb(QStringLiteral("auth"), QStringLiteral("info"), QStringLiteral("logout completed"));
+        SentryBridge::clearUser();
+    });
+    QObject::connect(casdoorHelper, &CasdoorHelper::logoutFailed, [](const QString &errorMessage) {
+        SentryBridge::addBreadcrumb(QStringLiteral("auth"), QStringLiteral("warning"),
+                                    QStringLiteral("logout failed: %1").arg(errorMessage));
+    });
+
+    QObject::connect(dsccBridge, &DsccBridge::encryptFileStarted,
+                     [](uint32_t operationId, const QString &sourceFile, const QString &targetFile) {
+                         SentryBridge::addBreadcrumb(QStringLiteral("dscc.crypto"), QStringLiteral("info"),
+                                                     QStringLiteral("encryptFile started"),
+                                                     {{QStringLiteral("operation_id"), operationId},
+                                                      {QStringLiteral("source_file"), sourceFile},
+                                                      {QStringLiteral("target_file"), targetFile}});
+                     });
+    QObject::connect(dsccBridge, &DsccBridge::encryptFileSucceeded,
+                     [](uint32_t operationId, const QString &sourceFile, const QString &targetFile) {
+                         SentryBridge::addBreadcrumb(QStringLiteral("dscc.crypto"), QStringLiteral("info"),
+                                                     QStringLiteral("encryptFile succeeded"),
+                                                     {{QStringLiteral("operation_id"), operationId},
+                                                      {QStringLiteral("source_file"), sourceFile},
+                                                      {QStringLiteral("target_file"), targetFile}});
+                     });
+    QObject::connect(dsccBridge, &DsccBridge::encryptFileFailed,
+                     [](uint32_t operationId, const QString &sourceFile, const QString &targetFile,
+                        const dscc::Notification &notification) {
+                         Q_UNUSED(notification);
+                         SentryBridge::addBreadcrumb(QStringLiteral("dscc.crypto"), QStringLiteral("error"),
+                                                     QStringLiteral("encryptFile failed"),
+                                                     {{QStringLiteral("operation_id"), operationId},
+                                                      {QStringLiteral("source_file"), sourceFile},
+                                                      {QStringLiteral("target_file"), targetFile}});
+                     });
+    QObject::connect(dsccBridge, &DsccBridge::encryptFileCanceled,
+                     [](uint32_t operationId, const QString &sourceFile, const QString &targetFile) {
+                         SentryBridge::addBreadcrumb(QStringLiteral("dscc.crypto"), QStringLiteral("info"),
+                                                     QStringLiteral("encryptFile canceled"),
+                                                     {{QStringLiteral("operation_id"), operationId},
+                                                      {QStringLiteral("source_file"), sourceFile},
+                                                      {QStringLiteral("target_file"), targetFile}});
+                     });
+
+    QObject::connect(
+        updateManager, &UpdateManager::updateAvailable, [](const QString &version, const QString &desc, bool force) {
+            Q_UNUSED(desc);
+            SentryBridge::addBreadcrumb(QStringLiteral("update"), QStringLiteral("info"),
+                                        QStringLiteral("update available"),
+                                        {{QStringLiteral("version"), version}, {QStringLiteral("force"), force}});
+        });
+    QObject::connect(updateManager, &UpdateManager::checkUpdateFailed, [](const QString &message) {
+        SentryBridge::addBreadcrumb(QStringLiteral("update"), QStringLiteral("warning"),
+                                    QStringLiteral("check update failed: %1").arg(message));
+    });
+    QObject::connect(updateManager, &UpdateManager::downloadFinished, []() {
+        SentryBridge::addBreadcrumb(QStringLiteral("update"), QStringLiteral("info"),
+                                    QStringLiteral("update download finished"));
+    });
+    QObject::connect(updateManager, &UpdateManager::downloadFailed, [](const QString &message) {
+        SentryBridge::addBreadcrumb(QStringLiteral("update"), QStringLiteral("warning"),
+                                    QStringLiteral("update download failed: %1").arg(message));
+    });
 
     // Register custom protocol for dev environment
     registerCustomProtocol();

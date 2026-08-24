@@ -4,6 +4,9 @@ CONFIG += c++17
 
 CONFIG -= qtquickcompiler
 win32:CONFIG -= depend_includepath
+# Release builds still need a PDB so Sentry can symbolicate native crash stack traces
+# (uploaded to Sentry in CI, never shipped to users — see build_installer.bat's robocopy).
+win32:CONFIG(release, debug|release): CONFIG += force_debug_info
 
 # ── 敏感配置注入（密钥 / 令牌 / DSN）────────────────────────────────────
 # 不在源码中硬编码：构建时从 secrets.env 读取，以编译期宏 DSBOX_<KEY> 注入，

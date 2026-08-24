@@ -242,9 +242,11 @@ rem vendor client library (libpq/odbc32/fbclient/OCI/MIMAPI64) that we neither
 rem ship nor want to, so Qt would only ever fail to load them. Dropping them keeps
 rem the package's dependency closure complete -- see the closure check in CI.
 rem The app talks to SQLite (via WCDB and QML LocalStorage), so qsqlite.dll stays.
+rem *.pdb: debug symbols for DataSafebox.exe (force_debug_info in the .pro). These get
+rem uploaded to Sentry by CI for crash symbolication but must never ship to end users.
 robocopy "%BUILD_DIR%" "%DATA_DIR%" /E ^
   /XD qmltooling generic ^
-  /XF *.obj *.cpp *.h *.res *.qrc Makefile Makefile.Debug Makefile.Release ^
+  /XF *.obj *.cpp *.h *.res *.qrc Makefile Makefile.Debug Makefile.Release *.pdb ^
       qsqlpsql.dll qsqlodbc.dll qsqlibase.dll qsqloci.dll qsqlmimer.dll ^
   >nul
 if errorlevel 8 goto :fail

@@ -565,6 +565,24 @@ WEBVIEW_PLUGIN="${APP_BUNDLE}/Contents/PlugIns/webview/libqtwebview_darwin.dylib
 ok "WKWebView backend plugin bundled"
 
 # ===========================================================================
+# [2.5/5] Upload debug symbols to Sentry (must run before stripping below,
+# which removes the symbols this needs).
+# ===========================================================================
+printf "\n[2.5/5] Uploading debug symbols to Sentry...\n"
+if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
+    warn "SENTRY_AUTH_TOKEN not set -- skipping Sentry debug symbol upload (crashes won't be symbolicated)"
+elif ! command -v sentry-cli &>/dev/null; then
+    warn "sentry-cli not found -- skipping Sentry debug symbol upload"
+else
+    sentry-cli debug-files upload \
+        --org "${SENTRY_ORG:-sentry}" \
+        --project "${SENTRY_PROJECT:-datasafebox-client-qt}" \
+        "${APP_BUNDLE}" \
+        && ok "Uploaded debug symbols to Sentry" \
+        || warn "Sentry debug symbol upload failed (continuing build)"
+fi
+
+# ===========================================================================
 # [3/5] Trim bundle  (reduce distribution size)
 # ===========================================================================
 printf "\n[3/5] Trimming bundle...\n"
