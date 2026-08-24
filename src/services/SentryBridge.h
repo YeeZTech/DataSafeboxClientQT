@@ -23,6 +23,12 @@ class SentryBridge : public QObject
     static void clearUser();
     static void setContext(const QString &key, const QVariantMap &data);
     static void setTag(const QString &key, const QString &value);
+
+    // Populates the app/device/culture/runtime contexts and the machine-level tags that
+    // sentry-native does not collect on its own. Call once, after sentry_init().
+    static void installStartupContexts(const QString &appVersion);
+    // Re-reads the volatile parts (process/system memory) so reports carry current figures.
+    static void refreshRuntimeContext();
 };
 
 #endif // SENTRYBRIDGE_H

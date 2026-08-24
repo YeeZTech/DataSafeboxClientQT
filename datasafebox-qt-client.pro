@@ -185,6 +185,8 @@ INCLUDEPATH += "$$SENTRY_ROOT_DIR/include"
 LIBS        += -L"$$SENTRY_ROOT_DIR/lib" -lsentry
 # Linux 上 sentry-native 的 crashpad backend 依赖 curl
 linux: LIBS += -lcurl
+# GetProcessMemoryInfo（SentryBridge 采集进程内存写入 Sentry app 上下文）来自 psapi
+win32: LIBS += -lpsapi
 
 # 运行时依赖：
 #   Windows: sentry.dll + crashpad_handler.exe 需放入输出目录

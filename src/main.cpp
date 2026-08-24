@@ -17,7 +17,6 @@
 #include <QDir>
 #include <QFile>
 #include <QIcon>
-#include <QLocale>
 #include <QLoggingCategory>
 #include <QProcess>
 #include <QQmlApplicationEngine>
@@ -25,9 +24,7 @@
 #include <QQuickStyle>
 #include <QSettings>
 #include <QStandardPaths>
-#include <QSysInfo>
 #include <QTextStream>
-#include <QTimeZone>
 #include <QTimer>
 #include <QUrl>
 #include <QUrlQuery>
@@ -437,6 +434,9 @@ int main(int argc, char *argv[])
         sentry_options_set_dsn(options, AppCfg::SENTRY_DSN);
         sentry_options_set_release(options, qPrintable(QStringLiteral("datasafebox-client@") + appVersion));
         sentry_options_set_environment(options, AppCfg::currentProfile().isTest ? "test" : "production");
+        // Structured Logs: a separate, always-on stream (shown in Sentry's Logs explorer and
+        // trace-correlated on event detail pages) independent of breadcrumbs/Issues.
+        sentry_options_set_enable_logs(options, 1);
 #ifdef QT_DEBUG
         sentry_options_set_debug(options, 1);
 #endif
@@ -461,17 +461,7 @@ int main(int argc, char *argv[])
                 qInfo() << "[Config] Sentry initialized successfully";
                 // sentry-native only auto-populates "os"/"trace"; fill in the rest by hand so
                 // crash reports carry the same app/device/locale context dianshu's events do.
-                SentryBridge::setContext(
-                    QStringLiteral("app"),
-                    {{QStringLiteral("app_version"), appVersion},
-                     {QStringLiteral("app_start_time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate)}});
-                SentryBridge::setContext(QStringLiteral("device"),
-                                         {{QStringLiteral("arch"), QSysInfo::currentCpuArchitecture()},
-                                          {QStringLiteral("model"), QSysInfo::prettyProductName()}});
-                SentryBridge::setContext(
-                    QStringLiteral("culture"),
-                    {{QStringLiteral("locale"), QLocale::system().name()},
-                     {QStringLiteral("timezone"), QString::fromUtf8(QTimeZone::systemTimeZoneId())}});
+                SentryBridge::installStartupContexts(appVersion);
             }
             else
             {
@@ -482,10 +472,14 @@ int main(int argc, char *argv[])
     g_previousMessageHandler = qInstallMessageHandler(sentryMessageHandler);
     qInfo() << "[Startup] datasafebox-qt-client starting, version:" << appVersion << "build:" << __DATE__ << __TIME__;
 
-    // Periodically flush queued Sentry events (e.g. warnings) every 30 seconds
+    // Periodically flush queued Sentry events (e.g. warnings) every 30 seconds, refreshing
+    // the memory figures first so a later crash report reflects the current footprint.
     QTimer *sentryFlushTimer = new QTimer(&app);
     sentryFlushTimer->setInterval(30000);
-    QObject::connect(sentryFlushTimer, &QTimer::timeout, []() { sentry_flush(3000); });
+    QObject::connect(sentryFlushTimer, &QTimer::timeout, []() {
+        SentryBridge::refreshRuntimeContext();
+        sentry_flush(3000);
+    });
     sentryFlushTimer->start();
 
 #ifdef Q_OS_MACOS
