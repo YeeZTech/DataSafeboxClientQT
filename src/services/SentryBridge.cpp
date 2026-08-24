@@ -190,6 +190,15 @@ int cpuFrequencyMhz()
 // of whether anything ever crashes, so every breadcrumb/error we report also becomes one.
 void emitLog(const QString &level, const QString &message)
 {
+    // Debug-level output is deliberately not streamed: qDebug() still runs through the
+    // message handler in release builds (QT_NO_DEBUG_OUTPUT is not set), and Qt apps are
+    // chatty enough that forwarding it would dominate log ingest for little diagnostic
+    // value. It remains available as a breadcrumb on the events that matter.
+    if (level == QStringLiteral("debug"))
+    {
+        return;
+    }
+
     const QByteArray utf8 = message.toUtf8();
     if (level == QStringLiteral("error"))
     {
@@ -198,10 +207,6 @@ void emitLog(const QString &level, const QString &message)
     else if (level == QStringLiteral("warning"))
     {
         sentry_log_warn("%s", utf8.constData());
-    }
-    else if (level == QStringLiteral("debug"))
-    {
-        sentry_log_debug("%s", utf8.constData());
     }
     else
     {
@@ -346,12 +351,18 @@ void SentryBridge::installStartupContexts(const QString &appVersion)
     // Screens only exist once the GUI application is up; guard so this stays callable early.
     if (const QScreen *screen = QGuiApplication::primaryScreen())
     {
-        const QSize size = screen->size();
+        // QScreen reports device-independent pixels under Qt 6 high-DPI scaling, so a
+        // 2880x1800 panel at 200% would read as 1440x900. Sentry's screen_* fields are
+        // physical pixels (that is what the reference project reports), hence the scaling.
+        const qreal density = screen->devicePixelRatio();
+        const QSize logical = screen->size();
+        const int physicalWidth = qRound(logical.width() * density);
+        const int physicalHeight = qRound(logical.height() * density);
         g_staticDeviceContext.insert(QStringLiteral("screen_resolution"),
-                                     QStringLiteral("%1x%2").arg(size.width()).arg(size.height()));
-        g_staticDeviceContext.insert(QStringLiteral("screen_width_pixels"), size.width());
-        g_staticDeviceContext.insert(QStringLiteral("screen_height_pixels"), size.height());
-        g_staticDeviceContext.insert(QStringLiteral("screen_density"), screen->devicePixelRatio());
+                                     QStringLiteral("%1x%2").arg(physicalWidth).arg(physicalHeight));
+        g_staticDeviceContext.insert(QStringLiteral("screen_width_pixels"), physicalWidth);
+        g_staticDeviceContext.insert(QStringLiteral("screen_height_pixels"), physicalHeight);
+        g_staticDeviceContext.insert(QStringLiteral("screen_density"), density);
     }
 
     refreshRuntimeContext();

@@ -262,12 +262,62 @@ void DsccBridge::initialize()
     dscc::detail::SetLoggerFilePath(coreLogPath);
     qInfo().noquote() << QStringLiteral("[DsccBridge] corelib log file: \"%1\"").arg(coreLogPath);
 
+#ifdef DSCC_HAS_LOGGER_SINK
+    // Mirror corelib diagnostics into Sentry. Without this they only ever reach the log
+    // file above: several core failures (WCDB errors raised on a non-Qt worker thread,
+    // schema/migration failures) never become notifications, so the signal handlers below
+    // cannot see them at all.
+    //
+    // Breadcrumbs and structured logs only — never events. The notification-backed
+    // failures already become Issues via logNotification(), and every EmitError() also
+    // writes a "notify.*" log record, so raising events here would double-report them.
+    dscc::detail::SetLoggerSink(
+        [](dscc::detail::LogSeverity severity, const QString &message, const dscc::detail::LogFieldList &fields) {
+            // "notify.*" records are emitted alongside the Qt signal that logNotification()
+            // already reports; forwarding them would just duplicate that breadcrumb.
+            if (message.startsWith(QStringLiteral("notify.")))
+            {
+                return;
+            }
+
+            QVariantMap data;
+            for (const dscc::detail::LogField &field : fields)
+            {
+                data.insert(field.first, field.second);
+            }
+
+            QString level;
+            switch (severity)
+            {
+            case dscc::detail::LogSeverity::kError:
+                level = QStringLiteral("error");
+                break;
+            case dscc::detail::LogSeverity::kWarning:
+                level = QStringLiteral("warning");
+                break;
+            case dscc::detail::LogSeverity::kDebug:
+                level = QStringLiteral("debug");
+                break;
+            default:
+                level = QStringLiteral("info");
+                break;
+            }
+
+            SentryBridge::addBreadcrumb(QStringLiteral("dscc.core"), level, message, data);
+        });
+#endif
+
     dscc::AppAssets appAssets(m_metaDbPath);
     appAssets.AddTrustedServer(m_serverUrl, QStringLiteral("{}"));
 }
 
 void DsccBridge::shutdown()
 {
+#ifdef DSCC_HAS_LOGGER_SINK
+    // Detach before tearing down corelib: this object outlives sentry_close() (it is
+    // parented to the QApplication), and UserAssets::Shutdown() below still logs.
+    dscc::detail::SetLoggerSink({});
+#endif
     stopSyncTimer();
     if (m_assets)
     {
