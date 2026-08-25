@@ -54,7 +54,7 @@ TARGET = DataSafebox
 
 # Application version — Single Source of Truth
 # Change this value to update all installer XML files and the C++ APP_VERSION macro.
-VERSION = 1.1.2
+VERSION = 1.1.3
 
 # Inject into C++ code
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
