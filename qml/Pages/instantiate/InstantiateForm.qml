@@ -183,6 +183,8 @@ Rectangle {
                             anchors.topMargin: 4
                             anchors.bottomMargin: 4
                             verticalAlignment: TextInput.AlignVCenter
+                            // 超长文本必须裁掉，否则会画到输入框外面
+                            clip: true
                             font.pixelSize: Theme.Typography.body
                             color: Theme.Colors.textHeading
                             selectByMouse: true

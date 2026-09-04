@@ -476,7 +476,9 @@ Item {
             };
 
             // Add user to visibleUsers list
-            var users = root.visibleUsers;
+            // 必须整份复制：push 回同一个数组引用后再赋值，property var 会判定为"值没变"，
+            // 不发 visibleUsersChanged，VisibleUserTable 的绑定也就不会刷新
+            var users = root.visibleUsers ? root.visibleUsers.slice() : [];
             users.push(newUser);
             root.visibleUsers = users;
         }

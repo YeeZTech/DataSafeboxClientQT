@@ -109,6 +109,8 @@ BaseDialog {
                 anchors.topMargin: 4
                 anchors.bottomMargin: 4
                 verticalAlignment: TextInput.AlignVCenter
+                // 长文本必须裁掉，否则会画到输入框外面（占位提示同理，它是本 TextInput 的子项）
+                clip: true
                 font.pixelSize: Theme.Typography.body
                 color: Theme.Colors.textPrimary
                 selectByMouse: true
