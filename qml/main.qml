@@ -256,6 +256,15 @@ ApplicationWindow {
         }
     }
 
+    // 充值只能在浏览器里完成，而欠费状态客户端只在登录时查过一次，所以窗口重新拿到
+    // 焦点时必须重查，否则充完钱横幅还一直挂着。只在横幅亮着时查，正常账户不会因为
+    // 来回切窗口产生额外请求。
+    onActiveChanged: {
+        if (window.active && window.isLoggedIn && (window.isAccountArrears || window.isAccountPaused)) {
+            ArrearsManager.getArrearsOverview(window.currentUser.token || "");
+        }
+    }
+
     Timer {
         id: casdoorRetryTimer
         interval: 800
@@ -321,12 +330,10 @@ ApplicationWindow {
         }
 
         function onArrearsOverviewFetchFailed(error) {
+            // 查询失败保持现状，不清空：窗口重新激活时还会再查一次，而在这里清空会让一次
+            // 网络抖动就把正在显示的欠费横幅抹掉。登录首次查询失败时状态本来就是 false，
+            // 行为与之前一致。
             console.warn("[Arrears] overview fetch failed:", error);
-            window.isAccountArrears = false;
-            window.isAccountPaused = false;
-            window.dataManager.arrearsOverviewData = ({});
-            if (arrearsAlertPopup.opened)
-                arrearsAlertPopup.close();
         }
     }
 
