@@ -255,6 +255,17 @@
     </message>
 </context>
 <context>
+    <name>CasdoorWebView</name>
+    <message>
+        <source>Signing in...</source>
+        <translation>正在登录…</translation>
+    </message>
+    <message>
+        <source>Loading sign-in page...</source>
+        <translation>正在打开登录页…</translation>
+    </message>
+</context>
+<context>
     <name>Colors</name>
     <message>
         <location filename="../qml/Theme/Colors.qml" line="+83"/>

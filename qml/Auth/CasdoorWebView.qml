@@ -14,7 +14,7 @@ Rectangle {
 
     property alias url: webView.url
     property bool isLoading: webView.loading
-    // Whether the login page has rendered enough to be visible
+    // Whether loading has reached the threshold for showing the login page.
     property bool pageContentReady: false
     property bool codeAlreadyReceived: false
     property string pendingCode: ""
@@ -360,7 +360,7 @@ Rectangle {
     // setting visible=false later does not hide it. So web content is shown and
     // hidden by moving it in and out of view instead — the native window does
     // track the item's geometry, and is clipped to the app window.
-    readonly property bool webContentOnScreen: root.visible && !root.webContentSuppressed && !root.hideWebContentDuringHandover && root.pageContentReady
+    readonly property bool webContentOnScreen: root.visible && !root.webContentSuppressed && !root.hideWebContentDuringHandover && !root.codeAlreadyReceived && root.pageContentReady
 
     // WKWebView (macOS) never reports HTTP status to Qt: every response that carries
     // a body finishes as a successful load. The callback URL's intentional 404 therefore
@@ -407,6 +407,14 @@ Rectangle {
                 if (root.pendingCode !== "" && !root.codeAlreadyReceived) {
                     codeExtractionTimer.restart();
                 }
+                // Successful navigation is a fallback if progress did not reveal the page.
+                if (root.isLoginFlowActive && !root.codeAlreadyReceived && !root.hideWebContentDuringHandover && /^https?:\/\//i.test(currentUrl)) {
+                    root.pageContentReady = true;
+                    if (!root.hasNotifiedReady) {
+                        root.hasNotifiedReady = true;
+                        root.pageReadyToShow();
+                    }
+                }
             } else if (loadRequest.status === WebView.LoadFailedStatus) {
                 // Callback pages may intentionally return 404 while still carrying valid OAuth code/state.
                 // Hide the 404 page immediately and continue deferred native handover.
@@ -426,6 +434,7 @@ Rectangle {
                     if (root.retryCount < root.maxRetries) {
                         // Automatically retry after a short delay
                         root.retryCount++;
+                        root.pageContentReady = false;
                         webView.stop();
                         webView.url = "";
                         retryLoginTimer.restart();
@@ -443,7 +452,7 @@ Rectangle {
 
         onLoadProgressChanged: {
             var urlStr = webView.url.toString();
-            if (root.isLoginFlowActive && !root.hasNotifiedReady && webView.loadProgress >= 30 && urlStr.length > 0 && urlStr.indexOf("http") === 0) {
+            if (root.isLoginFlowActive && !root.codeAlreadyReceived && !root.hideWebContentDuringHandover && !root.hasNotifiedReady && webView.loadProgress >= 30 && /^https?:\/\//i.test(urlStr)) {
                 root.hasNotifiedReady = true;
                 root.pageContentReady = true;
                 root.pageReadyToShow();
@@ -561,6 +570,36 @@ Rectangle {
                 // We reached redirect_uri without a code in URL; defer handover with cached code.
                 deferredHandoverTimer.restart();
             }
+        }
+    }
+
+    // Keep loading and native token exchange visible while the WebView is off-screen.
+    Column {
+        anchors.centerIn: parent
+        spacing: 20
+        visible: !root.webContentOnScreen
+
+        Image {
+            anchors.horizontalCenter: parent.horizontalCenter
+            source: "qrc:/icons/SafeLogo.svg"
+            sourceSize: Qt.size(72, 72)
+            width: 72
+            height: 72
+            fillMode: Image.PreserveAspectFit
+        }
+
+        BusyIndicator {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 36
+            height: 36
+            running: visible
+        }
+
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: root.codeAlreadyReceived || root.hideWebContentDuringHandover ? qsTr("Signing in...") : qsTr("Loading sign-in page...")
+            font.pixelSize: Theme.Typography.body
+            color: Theme.Colors.textLabel
         }
     }
 }

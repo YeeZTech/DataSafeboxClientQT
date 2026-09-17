@@ -11,6 +11,7 @@
 #include "dscc/core/net/http/service_endpoints.h"
 #include "sentry.h"
 #include <QApplication>
+#include <QAtomicInt>
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDebug>
@@ -18,6 +19,7 @@
 #include <QFile>
 #include <QIcon>
 #include <QLoggingCategory>
+#include <QMutex>
 #include <QProcess>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -37,6 +39,8 @@
 static QtMessageHandler g_previousMessageHandler = nullptr;
 static QFile *g_logFile = nullptr;
 static QTextStream *g_logStream = nullptr;
+// Message handlers may run concurrently; serialize access to the shared log stream and file.
+static QMutex g_logMutex;
 
 static QString startupLocalRootPath()
 {
@@ -124,10 +128,48 @@ static QString logLevelToString(QtMsgType type)
     return "LOG";
 }
 
+// Bound the logging overhead of repeated pipeline failures while retaining initial diagnostics.
+static bool shouldDropRepeatedPipelineWarning(QtMsgType type, const QString &msg)
+{
+    if (type != QtWarningMsg)
+    {
+        return false;
+    }
+    if (!msg.contains(QLatin1String("Failed to build graphics pipeline state")) &&
+        !msg.contains(QLatin1String("MSL function for entry point")))
+    {
+        return false;
+    }
+
+    static QAtomicInt seen(0);
+    const int index = seen.fetchAndAddRelaxed(1);
+    static const int keepFirst = 10;
+    if (index < keepFirst)
+    {
+        return false;
+    }
+    if (index == keepFirst)
+    {
+        QMutexLocker locker(&g_logMutex);
+        if (g_logStream && g_logFile && g_logFile->isOpen())
+        {
+            (*g_logStream) << QDateTime::currentDateTime().toString(Qt::ISODate)
+                           << " [WARN] default further graphics pipeline warnings suppressed\n";
+            g_logStream->flush();
+        }
+    }
+    return true;
+}
+
 static void sentryMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     // Suppress noisy Qt internal clipboard retry warning (Windows clipboard contention)
     if (type == QtWarningMsg && msg.contains("Retrying to obtain clipboard"))
+    {
+        return;
+    }
+
+    if (shouldDropRepeatedPipelineWarning(type, msg))
     {
         return;
     }
@@ -153,11 +195,14 @@ static void sentryMessageHandler(QtMsgType type, const QMessageLogContext &conte
         location = context.category;
     }
 
-    if (g_logStream && g_logFile && g_logFile->isOpen())
     {
-        (*g_logStream) << QDateTime::currentDateTime().toString(Qt::ISODate) << " [" << logLevelToString(type) << "] "
-                       << (location.isEmpty() ? QString() : location + " ") << msg << '\n';
-        g_logStream->flush();
+        QMutexLocker locker(&g_logMutex);
+        if (g_logStream && g_logFile && g_logFile->isOpen())
+        {
+            (*g_logStream) << QDateTime::currentDateTime().toString(Qt::ISODate) << " [" << logLevelToString(type)
+                           << "] " << (location.isEmpty() ? QString() : location + " ") << msg << '\n';
+            g_logStream->flush();
+        }
     }
 
     // "dscc" category messages are already reported to Sentry explicitly (with structured
@@ -215,6 +260,14 @@ static void autoSelectRenderMode()
             qputenv("QT_OPENGL", "software");
             return;
         }
+    }
+#elif defined(Q_OS_MACOS)
+    // Compatibility workaround for the Metal pipeline failures observed in macOS logs.
+    // Keep explicit backend overrides available for diagnosis and future Qt upgrades.
+    if (qEnvironmentVariableIsEmpty("QSG_RHI_BACKEND") && qEnvironmentVariableIsEmpty("QT_QUICK_BACKEND") &&
+        qEnvironmentVariableIsEmpty("QMLSCENE_DEVICE"))
+    {
+        qputenv("QSG_RHI_BACKEND", "opengl");
     }
 #endif
 }
@@ -471,16 +524,14 @@ int main(int argc, char *argv[])
     }
     g_previousMessageHandler = qInstallMessageHandler(sentryMessageHandler);
     qInfo() << "[Startup] datasafebox-qt-client starting, version:" << appVersion << "build:" << __DATE__ << __TIME__;
+    qInfo() << "[Startup] Qt runtime:" << qVersion() << "QSG_RHI_BACKEND:" << qgetenv("QSG_RHI_BACKEND")
+            << "QT_QUICK_BACKEND:" << qgetenv("QT_QUICK_BACKEND") << "QMLSCENE_DEVICE:" << qgetenv("QMLSCENE_DEVICE");
 
-    // Periodically flush queued Sentry events (e.g. warnings) every 30 seconds, refreshing
-    // the memory figures first so a later crash report reflects the current footprint.
-    QTimer *sentryFlushTimer = new QTimer(&app);
-    sentryFlushTimer->setInterval(30000);
-    QObject::connect(sentryFlushTimer, &QTimer::timeout, []() {
-        SentryBridge::refreshRuntimeContext();
-        sentry_flush(3000);
-    });
-    sentryFlushTimer->start();
+    // Refresh crash context without blocking the GUI on Sentry's background transport.
+    QTimer *sentryContextTimer = new QTimer(&app);
+    sentryContextTimer->setInterval(30000);
+    QObject::connect(sentryContextTimer, &QTimer::timeout, []() { SentryBridge::refreshRuntimeContext(); });
+    sentryContextTimer->start();
 
 #ifdef Q_OS_MACOS
     // Keep the Dock icon from the bundle .icns; the SVG is full-bleed and makes the running app icon look oversized.
