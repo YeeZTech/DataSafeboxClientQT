@@ -1,0 +1,63 @@
+{
+  "name": "Notify on critical client failures",
+  "environment": null,
+  "actionMatch": "any",
+  "filterMatch": "any",
+  "frequency": 60,
+  "conditions": [
+    { "id": "sentry.rules.conditions.first_seen_event.FirstSeenEventCondition" },
+    { "id": "sentry.rules.conditions.regression_event.RegressionEventCondition" },
+    { "id": "sentry.rules.conditions.reappeared_event.ReappearedEventCondition" }
+  ],
+  "filters": [
+    {
+      "id": "sentry.rules.filters.level.LevelFilter",
+      "match": "eq",
+      "level": "50"
+    },
+    {
+      "id": "sentry.rules.filters.event_attribute.EventAttributeFilter",
+      "attribute": "error.unhandled",
+      "match": "eq",
+      "value": "true"
+    },
+    {
+      "id": "sentry.rules.filters.tagged_event.TaggedEventFilter",
+      "key": "alert_worthy",
+      "match": "eq",
+      "value": "true"
+    },
+    {
+      "id": "sentry.rules.filters.event_attribute.EventAttributeFilter",
+      "attribute": "message",
+      "match": "co",
+      "value": "UserAssets initialization failed"
+    },
+    {
+      "id": "sentry.rules.filters.event_attribute.EventAttributeFilter",
+      "attribute": "message",
+      "match": "co",
+      "value": "No WebView plug-in found!"
+    },
+    {
+      "id": "sentry.rules.filters.event_attribute.EventAttributeFilter",
+      "attribute": "message",
+      "match": "co",
+      "value": "MSL function for entry point"
+    },
+    {
+      "id": "sentry.rules.filters.event_attribute.EventAttributeFilter",
+      "attribute": "message",
+      "match": "co",
+      "value": "Failed to build graphics pipeline state"
+    }
+  ],
+  "actions": [
+    {
+      "id": "sentry.mail.actions.NotifyEmailAction",
+      "targetType": "IssueOwners",
+      "targetIdentifier": null,
+      "fallthroughType": "ActiveMembers"
+    }
+  ]
+}

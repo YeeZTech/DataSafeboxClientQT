@@ -16,6 +16,7 @@
 #include "AppConfig.h"
 #include "SentryBridge.h"
 #include "dscc/core/common/logger.h"
+#include "dscc/core/db/domain_db.h"
 #include "dscc/core/db/table/domain_ops.h"
 #include "dscc/core/interface/app_assets.h"
 
@@ -26,8 +27,8 @@ namespace
 constexpr int kSyncTimerIntervalMs = 15 * 1000;
 } // namespace
 
-// Notifications logged under this category are reported to Sentry explicitly (with
-// structured tags/extra) by logNotification() below, so sentryMessageHandler (main.cpp)
+// Notifications logged under this category are recorded as Sentry diagnostics (with
+// structured data) by logNotification() below, so sentryMessageHandler (main.cpp)
 // skips them to avoid double-reporting the same notification as a flattened string.
 Q_LOGGING_CATEGORY(dsccBridgeLog, "dscc")
 
@@ -77,6 +78,20 @@ QVariantMap notificationParamsToVariantMap(const dscc::Notification &notificatio
     return map;
 }
 
+QString notificationReasonCode(dscc::Notification::NotificationCode code)
+{
+    switch (code)
+    {
+#define DEF_NOTIFICATION(name, text)                                                                                   \
+    case dscc::Notification::name:                                                                                     \
+        return QStringLiteral(#name);
+#include "dscc/notification.def"
+#undef DEF_NOTIFICATION
+    default:
+        return QStringLiteral("unknown_notification");
+    }
+}
+
 void logNotification(const QString &prefix, const dscc::Notification &notification)
 {
     qCWarning(dsccBridgeLog).noquote()
@@ -93,18 +108,10 @@ void logNotification(const QString &prefix, const dscc::Notification &notificati
     QVariantMap data = notificationParamsToVariantMap(notification);
     data.insert(QStringLiteral("dscc_code"), static_cast<int>(notification.code));
 
-    if (notification.type == dscc::Notification::kError)
-    {
-        QVariantMap tags;
-        tags.insert(QStringLiteral("dscc_code"), static_cast<int>(notification.code));
-        SentryBridge::captureError(QStringLiteral("dscc"), QStringLiteral("%1: %2").arg(prefix, message), tags, data);
-    }
-    else
-    {
-        const QString level =
-            notification.type == dscc::Notification::kWarning ? QStringLiteral("warning") : QStringLiteral("info");
-        SentryBridge::addBreadcrumb(QStringLiteral("dscc"), level, QStringLiteral("%1: %2").arg(prefix, message), data);
-    }
+    const QString level = notification.type == dscc::Notification::kError     ? QStringLiteral("error")
+                          : notification.type == dscc::Notification::kWarning ? QStringLiteral("warning")
+                                                                              : QStringLiteral("info");
+    SentryBridge::addBreadcrumb(QStringLiteral("dscc"), level, QStringLiteral("%1: %2").arg(prefix, message), data);
 }
 
 QString notificationDisplayText(const dscc::Notification &notification, const QString &fallback)
@@ -268,9 +275,8 @@ void DsccBridge::initialize()
     // schema/migration failures) never become notifications, so the signal handlers below
     // cannot see them at all.
     //
-    // Breadcrumbs and structured logs only — never events. The notification-backed
-    // failures already become Issues via logNotification(), and every EmitError() also
-    // writes a "notify.*" log record, so raising events here would double-report them.
+    // Breadcrumbs and structured logs only. Critical failures are reported explicitly
+    // at their terminal boundary, rather than promoted from individual diagnostics.
     dscc::detail::SetLoggerSink(
         [](dscc::detail::LogSeverity severity, const QString &message, const dscc::detail::LogFieldList &fields) {
             // "notify.*" records are emitted alongside the Qt signal that logNotification()
@@ -378,12 +384,11 @@ void DsccBridge::setCurrentUser(const QString &userId, const QString &userName, 
     m_assets->SetCurrentUser(trimmedUserId, trimmedUserName, m_serverUrl, accessToken, refreshToken);
     m_initializingUserAssets = true;
     m_userAssetsInitializationError = dscc::Notification();
-    const bool domainDbExistedBeforeInitialize = QFileInfo::exists(domainDbPath);
     m_assets->Initialize();
     m_initializingUserAssets = false;
 
-    if (m_userAssetsInitializationError.IsEmpty() && !domainDbExistedBeforeInitialize &&
-        !QFileInfo::exists(domainDbPath))
+    const auto *domainDb = m_assets->GetDomainDb();
+    if (m_userAssetsInitializationError.IsEmpty() && (!domainDb || !domainDb->IsReady()))
     {
         m_userAssetsInitializationError =
             dscc::Notification(dscc::Notification::kDbNotInitialized, dscc::Notification::kError);
@@ -393,6 +398,11 @@ void DsccBridge::setCurrentUser(const QString &userId, const QString &userName, 
     {
         const dscc::Notification notification = m_userAssetsInitializationError;
         logNotification(QStringLiteral("corelib UserAssets initialization failed"), notification);
+        QVariantMap details = notificationParamsToVariantMap(notification);
+        details.insert(QStringLiteral("dscc_code"), static_cast<int>(notification.code));
+        details.insert(QStringLiteral("message"), notification.DefaultText());
+        SentryBridge::captureCritical(QStringLiteral("core.initialization_failed"),
+                                      notificationReasonCode(notification.code), details);
         if (m_assets)
         {
             m_assets->Shutdown();

@@ -4,7 +4,9 @@
 #include <QDebug>
 #include <QGuiApplication>
 #include <QLocale>
+#include <QMutex>
 #include <QScreen>
+#include <QSet>
 #include <QSettings>
 #include <QSysInfo>
 #include <QThread>
@@ -200,7 +202,11 @@ void emitLog(const QString &level, const QString &message)
     }
 
     const QByteArray utf8 = message.toUtf8();
-    if (level == QStringLiteral("error"))
+    if (level == QStringLiteral("fatal"))
+    {
+        sentry_log_fatal("%s", utf8.constData());
+    }
+    else if (level == QStringLiteral("error"))
     {
         sentry_log_error("%s", utf8.constData());
     }
@@ -219,7 +225,7 @@ SentryBridge::SentryBridge(QObject *parent) : QObject(parent)
 {
 }
 
-void SentryBridge::captureMessage(const QString &message, int level)
+void SentryBridge::recordMessage(const QString &message, int level)
 {
     const char *levelName = "info";
     if (level == 1)
@@ -231,18 +237,7 @@ void SentryBridge::captureMessage(const QString &message, int level)
         levelName = "error";
     }
 
-    QByteArray utf8Message = message.toUtf8();
-    sentry_value_t event = sentry_value_new_event();
-    sentry_value_set_by_key(event, "level", sentry_value_new_string(levelName));
-    sentry_value_set_by_key(event, "logger", sentry_value_new_string("qml"));
-
-    sentry_value_t messageObject = sentry_value_new_object();
-    sentry_value_set_by_key(messageObject, "formatted", sentry_value_new_string(utf8Message.constData()));
-    sentry_value_set_by_key(event, "message", messageObject);
-
-    sentry_capture_event(event);
-    emitLog(QString::fromUtf8(levelName), QStringLiteral("[qml] %1").arg(message));
-    sentry_flush(2000);
+    addBreadcrumb(QStringLiteral("qml"), QString::fromUtf8(levelName), message);
 }
 
 void SentryBridge::addBreadcrumb(const QString &category, const QString &level, const QString &message,
@@ -259,35 +254,44 @@ void SentryBridge::addBreadcrumb(const QString &category, const QString &level, 
     emitLog(level, QStringLiteral("[%1] %2").arg(category, message));
 }
 
-void SentryBridge::captureError(const QString &loggerName, const QString &message, const QVariantMap &tags,
-                                const QVariantMap &extra)
+void SentryBridge::captureCritical(const QString &eventKey, const QString &reasonCode, const QVariantMap &details)
 {
+    static QMutex mutex;
+    static QSet<QPair<QString, QString>> reported;
+    {
+        QMutexLocker locker(&mutex);
+        const auto key = qMakePair(eventKey, reasonCode);
+        if (reported.contains(key))
+        {
+            return;
+        }
+        reported.insert(key);
+    }
+
+    const QString message = QStringLiteral("%1: %2").arg(eventKey, reasonCode);
     sentry_value_t event = sentry_value_new_event();
     sentry_value_set_by_key(event, "level", sentry_value_new_string("error"));
-    sentry_value_set_by_key(event, "logger", sentry_value_new_string(loggerName.toUtf8().constData()));
+    sentry_value_set_by_key(event, "logger", sentry_value_new_string("app.critical"));
 
     sentry_value_t messageObject = sentry_value_new_object();
     sentry_value_set_by_key(messageObject, "formatted", sentry_value_new_string(message.toUtf8().constData()));
     sentry_value_set_by_key(event, "message", messageObject);
 
-    if (!tags.isEmpty())
+    sentry_value_t tags = qVariantMapToSentryObject({{QStringLiteral("alert_worthy"), QStringLiteral("true")},
+                                                     {QStringLiteral("event_key"), eventKey},
+                                                     {QStringLiteral("reason_code"), reasonCode}});
+    sentry_value_set_by_key(event, "tags", tags);
+    sentry_value_t fingerprint = sentry_value_new_list();
+    sentry_value_append(fingerprint, sentry_value_new_string(eventKey.toUtf8().constData()));
+    sentry_value_append(fingerprint, sentry_value_new_string(reasonCode.toUtf8().constData()));
+    sentry_value_set_by_key(event, "fingerprint", fingerprint);
+    if (!details.isEmpty())
     {
-        // Sentry tags are always strings.
-        sentry_value_t tagsObject = sentry_value_new_object();
-        for (auto it = tags.constBegin(); it != tags.constEnd(); ++it)
-        {
-            sentry_value_set_by_key(tagsObject, it.key().toUtf8().constData(),
-                                    sentry_value_new_string(it.value().toString().toUtf8().constData()));
-        }
-        sentry_value_set_by_key(event, "tags", tagsObject);
-    }
-    if (!extra.isEmpty())
-    {
-        sentry_value_set_by_key(event, "extra", qVariantMapToSentryObject(extra));
+        sentry_value_set_by_key(event, "extra", qVariantMapToSentryObject(details));
     }
 
     sentry_capture_event(event);
-    emitLog(QStringLiteral("error"), QStringLiteral("[%1] %2").arg(loggerName, message));
+    emitLog(QStringLiteral("error"), QStringLiteral("[app.critical] %1").arg(message));
 }
 
 void SentryBridge::setUser(const QString &id, const QString &username, const QString &email)

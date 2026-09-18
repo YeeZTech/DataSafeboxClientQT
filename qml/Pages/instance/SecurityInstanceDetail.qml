@@ -371,7 +371,7 @@ Item {
             onConfirmClicked: {
                 var instanceName = root.instanceData && root.instanceData.name ? root.instanceData.name : root.instanceName;
                 var msg = "支付成功确认: 实例=" + instanceName + ", 时长=" + (instantiationPaymentDialog.durationText || "-");
-                SentryBridge.captureMessage(msg, 0);
+                SentryBridge.recordMessage(msg, 0);
                 root.applyPaymentSuccess(instantiationPaymentDialog.durationText);
                 instantiationPaymentDialog.durationText = "";
             }

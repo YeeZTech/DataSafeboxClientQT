@@ -205,30 +205,42 @@ static void sentryMessageHandler(QtMsgType type, const QMessageLogContext &conte
         }
     }
 
-    // "dscc" category messages are already reported to Sentry explicitly (with structured
-    // tags/extra) by DsccBridge::logNotification, so skip them here to avoid double-reporting.
+    // "dscc" category messages already have structured breadcrumbs from logNotification.
     const bool isDsccCategory = context.category && qstrcmp(context.category, "dscc") == 0;
 
-    if (!isDsccCategory)
+    if (!isDsccCategory || type == QtFatalMsg)
     {
         const QVariantMap data =
             location.isEmpty() ? QVariantMap() : QVariantMap{{QStringLiteral("location"), location}};
 
-        if (type == QtCriticalMsg || type == QtFatalMsg)
+        const char *level = type == QtFatalMsg      ? "fatal"
+                            : type == QtCriticalMsg ? "error"
+                            : type == QtWarningMsg  ? "warning"
+                            : type == QtDebugMsg    ? "debug"
+                                                    : "info";
+        SentryBridge::addBreadcrumb(QStringLiteral("qt"), QString::fromUtf8(level), msg, data);
+
+        QVariantMap details = data;
+        details.insert(QStringLiteral("message"), msg);
+        if (type != QtFatalMsg && msg.contains(QLatin1String("No WebView plug-in found!")))
         {
-            // Real error / crash precursor: still its own Issue, now with structured extra.
-            SentryBridge::captureError(context.category ? QString::fromUtf8(context.category) : QStringLiteral("qt"),
-                                       msg, {}, data);
-            // Flush immediately for critical/fatal so events are sent even if the app crashes
-            sentry_flush(5000);
+            SentryBridge::captureCritical(QStringLiteral("startup.webview_unavailable"),
+                                          QStringLiteral("plugin_missing"), details);
         }
-        else
+        else if (type != QtFatalMsg && (msg.contains(QLatin1String("Failed to build graphics pipeline state")) ||
+                                        msg.contains(QLatin1String("MSL function for entry point"))))
         {
-            // Routine Qt logging: breadcrumb only, so it stops flooding the Issues list and
-            // instead shows up as pre-crash context on the next real error/crash event.
-            const char *level = type == QtWarningMsg ? "warning" : (type == QtDebugMsg ? "debug" : "info");
-            SentryBridge::addBreadcrumb(QStringLiteral("qt"), QString::fromUtf8(level), msg, data);
+            // The limiter retains the first warnings, and captureCritical coalesces both
+            // symptoms into one Issue without promoting unrelated Qt warnings.
+            SentryBridge::captureCritical(QStringLiteral("render.pipeline_failed"), QStringLiteral("graphics_pipeline"),
+                                          details);
         }
+    }
+
+    if (type == QtFatalMsg)
+    {
+        // Qt terminates after the handler returns; Crashpad captures the native failure.
+        sentry_flush(5000);
     }
 
     if (g_previousMessageHandler)
@@ -554,7 +566,7 @@ int main(int argc, char *argv[])
                      [applyRuntimeCachePaths, updateManager]() mutable { applyRuntimeCachePaths(updateManager); });
     engine.rootContext()->setContextProperty("UpdateManager", updateManager);
 
-    // Register SentryBridge (allows QML to call SentryBridge.captureMessage())
+    // Register diagnostics-only logging for QML.
     SentryBridge *sentryBridge = new SentryBridge(&app);
     engine.rootContext()->setContextProperty("SentryBridge", sentryBridge);
 
@@ -734,7 +746,12 @@ int main(int argc, char *argv[])
         &engine, &QQmlApplicationEngine::objectCreated, &app,
         [url](QObject *obj, const QUrl &objUrl) {
             if (!obj && url == objUrl)
+            {
+                SentryBridge::captureCritical(QStringLiteral("startup.qml_load_failed"),
+                                              QStringLiteral("root_object_missing"),
+                                              {{QStringLiteral("url"), objUrl.toString()}});
                 QCoreApplication::exit(-1);
+            }
         },
         Qt::QueuedConnection);
     engine.load(url);
