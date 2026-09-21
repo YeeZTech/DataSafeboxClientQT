@@ -122,6 +122,21 @@ function isInstanceCreatorVisibleUser(instance, visibleUsers) {
     return false
 }
 
+// 细粒度（带命令行）白名单申请里，有一条"申请文件"其实是命令行本身。
+//
+// 后端的 instance_apply_file 只有 fileName/fileHash/fileSize/isMaster 四列，
+// 审核签名也只覆盖 fileHash，所以整条命令行被放进 fileName、其规范化摘要放进
+// fileHash——审核人对这一行签名，等于给命令行背书。因此这里必须把它认出来：
+// 当成普通文件名展示的话，审核人看到的是"argv[exact]: ..."这么一串东西，而真正
+// 需要他判断的"到底批了哪条命令行"反倒被埋在依赖库列表里。
+var ARGV_DISPLAY_RE = /^argv\[(exact|prefix)\]:\s([\s\S]*)$/
+
+function parseArgvDisplay(fileName) {
+    var m = ARGV_DISPLAY_RE.exec(fileName || "")
+    if (!m) return null
+    return { matchMode: m[1], cmdline: m[2] }
+}
+
 function resolveWhitelistProcessesByRow(row) {
     function normProcs(src) {
         if (!src || src.length === 0) return []
@@ -134,19 +149,38 @@ function resolveWhitelistProcessesByRow(row) {
                 var parts = fp.split("/")
                 fn = parts[parts.length - 1] || fp
             }
+            var argv = parseArgvDisplay(fn)
             out.push({
-                fileName:       fn,
-                masterFileName: e.masterFileName || fn,
+                fileName:       argv ? argv.cmdline : fn,
+                masterFileName: e.masterFileName || (argv ? argv.cmdline : fn),
                 filePath:       e.filePath || e.path || "",
                 fileCode:       e.fileCode || "",
                 fileHash:       e.fileHash || e.hash || "",
-                status:         e.status || ""
+                status:         e.status || "",
+                isCmdline:      !!argv,
+                cmdline:        argv ? argv.cmdline : "",
+                matchMode:      argv ? argv.matchMode : ""
             })
         }
+        // 命令行那一条排到最前：它是这次审批真正要看的东西，不该混在 ldd 依赖里。
+        out.sort(function (a, b) {
+            return (b.isCmdline ? 1 : 0) - (a.isCmdline ? 1 : 0)
+        })
         return out
     }
     var rowSrc = row.processes || row.rawFiles || row.filePaths || []
     return normProcs(rowSrc)
+}
+
+// 该申请授权的命令行（没有则返回空对象），供列表行与详情弹窗直接取用。
+function whitelistCommandLine(procs) {
+    if (!procs) return { cmdline: "", matchMode: "" }
+    for (var i = 0; i < procs.length; i++) {
+        if (procs[i] && procs[i].isCmdline) {
+            return { cmdline: procs[i].cmdline, matchMode: procs[i].matchMode }
+        }
+    }
+    return { cmdline: "", matchMode: "" }
 }
 
 function dedupeWhitelistAudits(list) {

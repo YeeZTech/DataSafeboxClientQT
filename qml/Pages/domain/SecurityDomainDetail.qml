@@ -710,7 +710,19 @@ Item {
                     appWhitelistDetailDialog.duration = auditData.duration ? (auditData.duration + qsTr(" months")) : "-";
                     appWhitelistDetailDialog.cost = auditData.cost || "";
                     var whlProcs = DomainUtils.resolveWhitelistProcessesByRow(auditData);
-                    appWhitelistDetailDialog.appName = (whlProcs.length > 0 ? (whlProcs[0].masterFileName || "") : "") || qsTr("App Name");
+                    // 细粒度申请：命令行才是这次审批要判断的东西，单独取出来给弹窗；
+                    // 应用名退回第一条非命令行的文件名，免得标题栏显示一整条命令行。
+                    var whlCmd = DomainUtils.whitelistCommandLine(whlProcs);
+                    appWhitelistDetailDialog.commandLine = whlCmd.cmdline;
+                    appWhitelistDetailDialog.matchMode = whlCmd.matchMode;
+                    var whlAppName = "";
+                    for (var wi = 0; wi < whlProcs.length; wi++) {
+                        if (!whlProcs[wi].isCmdline) {
+                            whlAppName = whlProcs[wi].masterFileName || whlProcs[wi].fileName || "";
+                            break;
+                        }
+                    }
+                    appWhitelistDetailDialog.appName = whlAppName || qsTr("App Name");
                     appWhitelistDetailDialog.processes = whlProcs;
                     appWhitelistDetailDialog.selectedProcessIndex = 0;
                     appWhitelistDetailDialog.fileCode = (whlProcs.length > 0 && whlProcs[0]) ? (whlProcs[0].fileCode || "") : "";

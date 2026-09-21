@@ -21,6 +21,10 @@ BaseDialog {
     property string duration: ""                // 实例申请时长
     property string cost: ""                    // 实例费用
     property string appName: ""                 // 应用名称 label
+    // 细粒度（带命令行）白名单才有：被授权的整条命令行与匹配模式。空串表示这是
+    // 一条只按可执行文件路径授权的旧式申请。
+    property string commandLine: ""
+    property string matchMode: ""               // "exact" | "prefix"
     property var processes: []                  // [{path, hash}] 进程路径/Hash 表
     property int selectedProcessIndex: 0
     readonly property int processCount: (root.processes && root.processes.length) ? root.processes.length : 0
@@ -46,7 +50,11 @@ BaseDialog {
         var selected = root.processes[root.selectedProcessIndex] || {};
         root.fileCode = selected.fileCode || "";
         root.fileHash = selected.fileHash || "";
-        root.appName = selected.fileName || root.appName;
+        // 命令行那一行不是文件，它的"文件名"是整条命令行；拿它当应用名会把标题
+        // 区塞满，而命令行自有专门的展示区。
+        if (!selected.isCmdline) {
+            root.appName = selected.fileName || root.appName;
+        }
     }
 
     onProcessesChanged: {
@@ -214,6 +222,64 @@ BaseDialog {
                         color: "#000000"
                         elide: Text.ElideRight
                     }
+                }
+            }
+
+            // 授权的命令行。只在细粒度申请里出现。
+            //
+            // 这是本次审批真正要判断的东西：按可执行文件路径授权对解释器来说不成
+            // 其为身份——批了 /usr/bin/python3，就等于批了它能跑的任何脚本。批准
+            // 这一行等于对整条命令行签名，之后只有以这条命令行启动的进程才获得
+            // 豁免。因此它必须完整显示、可换行、不省略：省略号后面藏着什么都不
+            // 知道就签字，等于没审。
+            Column {
+                width: parent.width
+                spacing: 4
+                visible: root.commandLine !== ""
+
+                SelectableText {
+                    text: qsTr("Authorized command line")
+                    font.pixelSize: Theme.Typography.body
+                    color: Theme.Colors.textCaption
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: commandLineText.implicitHeight + 20
+                    radius: 6
+                    color: "#F5F7FA"
+                    border.width: 1
+                    border.color: "#E3E8EF"
+
+                    SelectableText {
+                        id: commandLineText
+                        x: 10
+                        y: 10
+                        width: parent.width - 20
+                        text: root.commandLine
+                        font.pixelSize: Theme.Typography.body
+                        font.family: "monospace"
+                        color: "#000000"
+                        wrapMode: Text.WrapAnywhere
+                    }
+                }
+
+                SelectableText {
+                    width: parent.width
+                    text: root.matchMode === "prefix"
+                          ? qsTr("Prefix match: the process may append further arguments.")
+                          : qsTr("Exact match: the command line must match argument for argument.")
+                    font.pixelSize: Theme.Typography.body
+                    color: Theme.Colors.textCaption
+                    wrapMode: Text.WordWrap
+                }
+
+                SelectableText {
+                    width: parent.width
+                    text: qsTr("Arguments that name a file are pinned by content hash, so replacing that file revokes the grant. A process whose environment carries LD_PRELOAD, PYTHONPATH or similar injection variables is never exempted, whatever the command line.")
+                    font.pixelSize: Theme.Typography.body
+                    color: Theme.Colors.textCaption
+                    wrapMode: Text.WordWrap
                 }
             }
 
@@ -424,7 +490,11 @@ BaseDialog {
                                         anchors.right: parent.right
                                         anchors.rightMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: modelData.fileName || root.appName || "-"
+                                        // 命令行那一行不是文件，标出来免得审核人
+                                        // 以为自己在批一个叫这名字的可执行文件。
+                                        text: modelData.isCmdline
+                                              ? (qsTr("Command line") + ": " + modelData.cmdline)
+                                              : (modelData.fileName || root.appName || "-")
                                         font.pixelSize: Theme.Typography.body
                                         color: "#000000"
                                         elide: Text.ElideMiddle
