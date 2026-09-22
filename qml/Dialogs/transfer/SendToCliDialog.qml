@@ -6,15 +6,14 @@ import DataSafebox.Components 1.0
 // 把加密好的 .sealed 文件点对点发给命令行客户端。
 //
 // 弹窗打开即向信令服务申请一个 6 位取件码并开始等待对端；用户把码告诉对方，
-// 对方执行 `dv transfer recv <码>` 后开始点对点直传。传输过程中禁止关闭弹窗，
-// 因为关闭意味着中止传输；取消改由进度卡片右上角的中止按钮发起。
+// 对方执行 `dv transfer recv <码>` 后开始点对点直传。关闭弹窗会中止等待或传输；
+// 传输过程中也可通过进度卡片右上角的中止按钮取消。
 BaseDialog {
     id: root
     dialogWidth: 448
     title: qsTr("File Transfer")
 
     closePolicy: root._active ? Popup.NoAutoClose : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
-    showCloseButton: !root._active
 
     property string filePath: ""
     property string fileName: {
