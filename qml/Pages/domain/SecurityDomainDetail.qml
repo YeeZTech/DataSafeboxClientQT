@@ -717,16 +717,15 @@ Item {
                     appWhitelistDetailDialog.matchMode = whlCmd.matchMode;
                     var whlAppName = "";
                     for (var wi = 0; wi < whlProcs.length; wi++) {
-                        if (!whlProcs[wi].isCmdline) {
+                        if (whlProcs[wi].isMaster) {
                             whlAppName = whlProcs[wi].masterFileName || whlProcs[wi].fileName || "";
                             break;
                         }
                     }
-                    appWhitelistDetailDialog.appName = whlAppName || qsTr("App Name");
+                    appWhitelistDetailDialog.appName = whlAppName || auditData.appName || qsTr("App Name");
+                    // 应用名与审批锚点 fileCode/fileHash 都由弹窗从主程序行取，
+                    // 见 AppWhitelistDetailDialog.masterProcessIndex()。
                     appWhitelistDetailDialog.processes = whlProcs;
-                    appWhitelistDetailDialog.selectedProcessIndex = 0;
-                    appWhitelistDetailDialog.fileCode = (whlProcs.length > 0 && whlProcs[0]) ? (whlProcs[0].fileCode || "") : "";
-                    appWhitelistDetailDialog.fileHash = (whlProcs.length > 0 && whlProcs[0]) ? (whlProcs[0].fileHash || "") : "";
                     appWhitelistDetailDialog.open();
                 }
 

@@ -38,6 +38,18 @@ BaseDialog {
 
     readonly property var statusStyle: Theme.Colors.getStatusColor(status)
 
+    // 整单里的主程序行。命令行那条被排到了列表最前（它才是审批要判断的东西），
+    // 但"应用名称"和审批锚点 fileCode 要的是主程序，不是命令行，也不是某个 ldd 依赖。
+    function masterProcessIndex() {
+        if (!root.processes)
+            return 0;
+        for (var i = 0; i < root.processes.length; i++) {
+            if (root.processes[i] && root.processes[i].isMaster)
+                return i;
+        }
+        return 0;
+    }
+
     function syncSelectedProcess() {
         if (!root.processes || root.processes.length === 0) {
             root.fileCode = "";
@@ -58,9 +70,7 @@ BaseDialog {
     }
 
     onProcessesChanged: {
-        if (selectedProcessIndex >= processCount) {
-            selectedProcessIndex = 0;
-        }
+        selectedProcessIndex = masterProcessIndex();
         syncSelectedProcess();
     }
 
@@ -266,9 +276,7 @@ BaseDialog {
 
                 SelectableText {
                     width: parent.width
-                    text: root.matchMode === "prefix"
-                          ? qsTr("Prefix match: the process may append further arguments.")
-                          : qsTr("Exact match: the command line must match argument for argument.")
+                    text: root.matchMode === "prefix" ? qsTr("Prefix match: the process may append further arguments.") : qsTr("Exact match: the command line must match argument for argument.")
                     font.pixelSize: Theme.Typography.body
                     color: Theme.Colors.textCaption
                     wrapMode: Text.WordWrap
@@ -318,7 +326,9 @@ BaseDialog {
         }
 
         SelectableText {
-            text: qsTr("App Whitelist Dependency Files")
+            // 表里不止依赖库：主程序、命令行、被内容锁定的参数文件都在其中，整单
+            // 一起批准，所以按"申请文件"称呼它，与 `dv audit whitelist-detail` 一致。
+            text: qsTr("Application Files")
             font.pixelSize: Theme.Typography.body
             color: Theme.Colors.textCaption
         }
@@ -378,7 +388,7 @@ BaseDialog {
 
                         Text {
                             anchors.centerIn: parent
-                            text: qsTr("Executable File Name")
+                            text: qsTr("File Name")
                             font.pixelSize: Theme.Typography.body
                             color: Theme.Colors.textCaption
                         }
@@ -491,10 +501,10 @@ BaseDialog {
                                         anchors.rightMargin: 8
                                         anchors.verticalCenter: parent.verticalCenter
                                         // 命令行那一行不是文件，标出来免得审核人
-                                        // 以为自己在批一个叫这名字的可执行文件。
-                                        text: modelData.isCmdline
-                                              ? (qsTr("Command line") + ": " + modelData.cmdline)
-                                              : (modelData.fileName || root.appName || "-")
+                                        // 以为自己在批一个叫这名字的可执行文件；
+                                        // 主程序也标出来，否则它混在十几条 ldd 依赖
+                                        // 里根本认不出来。
+                                        text: modelData.isCmdline ? (qsTr("Command line") + ": " + modelData.cmdline) : modelData.isMaster ? (qsTr("Main program") + ": " + (modelData.fileName || "-")) : (modelData.fileName || root.appName || "-")
                                         font.pixelSize: Theme.Typography.body
                                         color: "#000000"
                                         elide: Text.ElideMiddle

@@ -157,6 +157,7 @@ function resolveWhitelistProcessesByRow(row) {
                 fileCode:       e.fileCode || "",
                 fileHash:       e.fileHash || e.hash || "",
                 status:         e.status || "",
+                isMaster:       !!e.isMaster,
                 isCmdline:      !!argv,
                 cmdline:        argv ? argv.cmdline : "",
                 matchMode:      argv ? argv.matchMode : ""

@@ -110,18 +110,42 @@
         <translation>应用名称</translation>
     </message>
     <message>
+        <source>Authorized command line</source>
+        <translation>授权的命令行</translation>
+    </message>
+    <message>
+        <source>Prefix match: the process may append further arguments.</source>
+        <translation>前缀匹配：进程可以在这些参数之后再追加其他参数。</translation>
+    </message>
+    <message>
+        <source>Exact match: the command line must match argument for argument.</source>
+        <translation>全等匹配：命令行必须逐个参数完全一致。</translation>
+    </message>
+    <message>
+        <source>Arguments that name a file are pinned by content hash, so replacing that file revokes the grant. A process whose environment carries LD_PRELOAD, PYTHONPATH or similar injection variables is never exempted, whatever the command line.</source>
+        <translation>参数中指向文件的那些项按内容哈希锁定，该文件一旦被替换，授权随即失效。进程环境里带有 LD_PRELOAD、PYTHONPATH 等注入变量时，无论命令行是否匹配都不予豁免。</translation>
+    </message>
+    <message>
         <source>Authorized Until</source>
         <translation>申请授权有效期至</translation>
     </message>
     <message>
         <location line="+20"/>
-        <source>App Whitelist Dependency Files</source>
-        <translation>应用白名单依赖文件</translation>
+        <source>Application Files</source>
+        <translation>申请文件</translation>
     </message>
     <message>
         <location line="+57"/>
-        <source>Executable File Name</source>
-        <translation>可执行文件名</translation>
+        <source>File Name</source>
+        <translation>文件名称</translation>
+    </message>
+    <message>
+        <source>Command line</source>
+        <translation>命令行</translation>
+    </message>
+    <message>
+        <source>Main program</source>
+        <translation>主程序</translation>
     </message>
     <message>
         <location line="+12"/>

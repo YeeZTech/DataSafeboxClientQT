@@ -1331,10 +1331,53 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
     std::sort(audits.begin(), audits.end(),
               [](const dscc::AuditInfo &a, const dscc::AuditInfo &b) { return a.created_at > b.created_at; });
 
-    QVariantList list;
-    list.reserve(audits.size());
-    for (const dscc::AuditInfo &audit : audits)
+    // 一条白名单申请在后端展开成多行：主程序、命令行本身、被内容锁定的参数文件、
+    // ldd 依赖，全都共用同一个 apply_code。一行一条地发给界面，界面按 applyCode 去重
+    // 后只剩下第一行（通常是主程序），审核人于是看不到自己到底批了哪条命令行——而
+    // 审批本身是整单批的（见 CoreLib op_task_audit.cpp 的 whitelist 分支）。这里按
+    // apply_code 归组，每组出一行，组内所有行随 processes 一起带给弹窗。
+    // 导出申请没有这种展开，每行本来就是一条，按单元素组走同一条路径。
+    QList<QList<dscc::AuditInfo>> auditGroups;
     {
+        QHash<QString, int> groupIndexByApplyCode;
+        for (const dscc::AuditInfo &audit : audits)
+        {
+            // apply_code 为空时无从归组，各自成组，免得所有无编号的行被并成一条。
+            const int groupIndex = (applyType == 1 && !audit.apply_code.isEmpty())
+                                       ? groupIndexByApplyCode.value(audit.apply_code, -1)
+                                       : -1;
+            if (groupIndex < 0)
+            {
+                if (applyType == 1 && !audit.apply_code.isEmpty())
+                {
+                    groupIndexByApplyCode.insert(audit.apply_code, auditGroups.size());
+                }
+                auditGroups.append(QList<dscc::AuditInfo>{audit});
+            }
+            else
+            {
+                auditGroups[groupIndex].append(audit);
+            }
+        }
+    }
+
+    QVariantList list;
+    list.reserve(auditGroups.size());
+    for (const QList<dscc::AuditInfo> &group : auditGroups)
+    {
+        // 状态、授权期限、审批锚点 fileCode 一律以主程序行为准，与 webui 和
+        // `dv audit whitelist-detail` 一致；命令行那行只用来说明批的是什么。
+        const dscc::AuditInfo *masterRow = &group.first();
+        for (const dscc::AuditInfo &row : group)
+        {
+            if (row.is_master)
+            {
+                masterRow = &row;
+                break;
+            }
+        }
+        const dscc::AuditInfo &audit = *masterRow;
+
         QVariantMap map;
         map.insert(QStringLiteral("applyCode"), audit.apply_code);
         map.insert(QStringLiteral("id"), audit.apply_code);
@@ -1387,14 +1430,29 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         {
             map.insert(QStringLiteral("appName"), audit.file_name);
             map.insert(QStringLiteral("fileName"), audit.file_name);
-            if (!audit.file_name.isEmpty() || !audit.file_code.isEmpty() || !audit.file_hash.isEmpty())
+            // 整单的每一行都交给界面：命令行那行的 file_name 形如
+            // "argv[exact]: /usr/bin/python3 /opt/x.py"（CoreLib 的
+            // FormatArgvWhitelistDisplay），由 DomainUtils.js 认出来单独展示。
+            QVariantList processes;
+            processes.reserve(group.size());
+            for (const dscc::AuditInfo &row : group)
             {
+                if (row.file_name.isEmpty() && row.file_code.isEmpty() && row.file_hash.isEmpty())
+                {
+                    continue;
+                }
                 QVariantMap process;
-                process.insert(QStringLiteral("fileName"), audit.file_name);
-                process.insert(QStringLiteral("masterFileName"), audit.file_name);
-                process.insert(QStringLiteral("fileCode"), audit.file_code);
-                process.insert(QStringLiteral("fileHash"), audit.file_hash);
-                map.insert(QStringLiteral("processes"), QVariantList{process});
+                process.insert(QStringLiteral("fileName"), row.file_name);
+                process.insert(QStringLiteral("masterFileName"), row.file_name);
+                process.insert(QStringLiteral("fileCode"), row.file_code);
+                process.insert(QStringLiteral("fileHash"), row.file_hash);
+                process.insert(QStringLiteral("fileSize"), quint64(row.file_size));
+                process.insert(QStringLiteral("isMaster"), row.is_master);
+                processes.append(process);
+            }
+            if (!processes.isEmpty())
+            {
+                map.insert(QStringLiteral("processes"), processes);
             }
         }
         else
@@ -1408,10 +1466,11 @@ void DsccBridge::loadAudits(const QString &domainCode, int applyType)
         list.append(map);
     }
 
-    qInfo().noquote() << QStringLiteral("[DsccBridge] loadAudits domainCode=\"%1\" applyType=%2 count=%3")
+    qInfo().noquote() << QStringLiteral("[DsccBridge] loadAudits domainCode=\"%1\" applyType=%2 count=%3 rows=%4")
                              .arg(trimmedDomainCode)
                              .arg(applyType)
-                             .arg(list.size());
+                             .arg(list.size())
+                             .arg(audits.size());
     emit auditsLoaded(trimmedDomainCode, applyType, list);
 }
 

@@ -298,9 +298,7 @@ Card {
                                     anchors.fill: parent
                                     // 细粒度申请按命令行展示：审核列表里只写
                                     // "python3"会让两条批不同脚本的申请长得一模一样。
-                                    value: DomainUtils.whitelistCommandLine(
-                                               DomainUtils.resolveWhitelistProcessesByRow(modelData)
-                                           ).cmdline || modelData.appName || ""
+                                    value: DomainUtils.whitelistCommandLine(DomainUtils.resolveWhitelistProcessesByRow(modelData)).cmdline || modelData.appName || ""
                                     textPixelSize: 14
                                     textColor: Theme.Colors.textLabel
                                     leftMargin: 6
